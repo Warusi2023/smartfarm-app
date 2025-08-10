@@ -1,0 +1,72 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "username": "admin",
+      "email": "admin@smartfarm.com",
+      "role": "admin",
+      "createdAt": "2025-08-03T18:07:01.863Z"
+    },
+    {
+      "id": 2,
+      "username": "farmer",
+      "email": "farmer@smartfarm.com",
+      "role": "farmer",
+      "createdAt": "2025-08-03T18:07:01.865Z"
+    }
+  ],
+  "farms": [
+    {
+      "id": 1,
+      "name": "Green Valley Farm",
+      "location": "California, USA",
+      "size": 500,
+      "ownerId": 1,
+      "createdAt": "2025-08-03T18:07:01.865Z"
+    }
+  ],
+  "livestock": [
+    {
+      "id": 1,
+      "name": "Daisy",
+      "type": "cow",
+      "breed": "Holstein",
+      "farmId": 1,
+      "healthStatus": "healthy",
+      "createdAt": "2025-08-03T18:07:01.865Z"
+    }
+  ],
+  "crops": [
+    {
+      "id": 1,
+      "name": "Corn",
+      "field": "Field A",
+      "farmId": 1,
+      "status": "growing",
+      "plantedDate": "2025-08-03T18:07:01.865Z",
+      "createdAt": "2025-08-03T18:07:01.865Z"
+    }
+  ],
+  "inventory": [
+    {
+      "id": 1,
+      "name": "Fertilizer",
+      "category": "supplies",
+      "quantity": 100,
+      "unit": "kg",
+      "farmId": 1,
+      "createdAt": "2025-08-03T18:07:01.865Z"
+    }
+  ],
+  "financialRecords": [
+    {
+      "id": 1,
+      "type": "income",
+      "amount": 5000,
+      "description": "Crop sale",
+      "farmId": 1,
+      "date": "2025-08-03T18:07:01.865Z",
+      "createdAt": "2025-08-03T18:07:01.865Z"
+    }
+  ]
+}

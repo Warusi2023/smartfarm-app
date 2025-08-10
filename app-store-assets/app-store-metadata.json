@@ -1,0 +1,48 @@
+﻿{
+    "app-build":  "100",
+    "app-name":  "SmartFarm",
+    "app-languages":  [
+                          "English",
+                          "Spanish",
+                          "French",
+                          "German",
+                          "Portuguese",
+                          "Chinese",
+                          "Japanese",
+                          "Korean",
+                          "Arabic",
+                          "Hindi"
+                      ],
+    "app-terms":  "https://smartfarm.com/terms",
+    "app-version":  "1.0.0",
+    "app-pricing":  "Free with Premium Features",
+    "app-support":  "support@smartfarm.com",
+    "app-category":  "Business",
+    "app-website":  "https://smartfarm.com",
+    "app-age-rating":  "4+",
+    "app-bundle-id":  "com.smartfarm.web",
+    "app-platforms":  [
+                          "Web",
+                          "iOS",
+                          "Android"
+                      ],
+    "app-features":  [
+                         "Livestock Management",
+                         "Crop Management",
+                         "Financial Tracking",
+                         "Inventory Management",
+                         "Employee Management",
+                         "Weather Integration",
+                         "Market Price Tracking",
+                         "Document Management",
+                         "AI Expert Chat",
+                         "Advanced Analytics",
+                         "Multi-language Support",
+                         "Offline Functionality",
+                         "PWA Installation",
+                         "Real-time Sync"
+                     ],
+    "app-developer":  "SmartFarm Development Team",
+    "app-subtitle":  "Intelligent Farm Management",
+    "app-privacy":  "https://smartfarm.com/privacy"
+}

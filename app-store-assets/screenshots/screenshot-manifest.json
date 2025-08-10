@@ -1,0 +1,74 @@
+﻿{
+    "screenshots":  [
+                        {
+                            "devices":  [
+
+                                        ],
+                            "description":  "AI Expert Chat - Smart Assistance",
+                            "name":  "expert-chat"
+                        },
+                        {
+                            "devices":  [
+
+                                        ],
+                            "description":  "Document Management - File Organization",
+                            "name":  "document-management"
+                        },
+                        {
+                            "devices":  [
+
+                                        ],
+                            "description":  "Inventory Management - Stock Control",
+                            "name":  "inventory-tracking"
+                        },
+                        {
+                            "devices":  [
+
+                                        ],
+                            "description":  "Weather Integration - Real-time Data",
+                            "name":  "weather-monitoring"
+                        },
+                        {
+                            "devices":  [
+
+                                        ],
+                            "description":  "Employee Management - Workforce Planning",
+                            "name":  "employee-scheduling"
+                        },
+                        {
+                            "devices":  [
+
+                                        ],
+                            "description":  "Market Price Tracking - AI Predictions",
+                            "name":  "market-prices"
+                        },
+                        {
+                            "devices":  [
+
+                                        ],
+                            "description":  "Crop Management - Field Planning",
+                            "name":  "crop-management"
+                        },
+                        {
+                            "devices":  [
+
+                                        ],
+                            "description":  "Financial Management - Profit Tracking",
+                            "name":  "financial-analytics"
+                        },
+                        {
+                            "devices":  [
+
+                                        ],
+                            "description":  "Home Dashboard - Farm Overview",
+                            "name":  "home-dashboard"
+                        },
+                        {
+                            "devices":  [
+
+                                        ],
+                            "description":  "Livestock Management - Animal Tracking",
+                            "name":  "livestock-management"
+                        }
+                    ]
+}

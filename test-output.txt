@@ -1,0 +1,3 @@
+﻿This is a test file created by the simple test script.
+Parameter: test-value
+Timestamp: 08/02/2025 23:17:31
