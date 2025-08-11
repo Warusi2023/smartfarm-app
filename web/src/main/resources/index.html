@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SmartFarm - Intelligent Farm Management</title>
-    <meta name="description" content="SmartFarm - Comprehensive farm management solution with AI-powered insights">
-    <meta name="keywords" content="farm management, agriculture, livestock, crops, weather, analytics">
+    <meta name="description" content="SmartFarm - Comprehensive farm management solution with AI-powered insights, weather monitoring, livestock tracking, and crop management">
+    <meta name="keywords" content="farm management, agriculture, livestock, crops, weather, analytics, smart farming, precision agriculture">
     <meta name="author" content="SmartFarm Team">
     
     <!-- PWA Meta Tags -->
@@ -24,6 +24,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <!-- Styles -->
     <link rel="stylesheet" href="/styles.css">
     
@@ -33,21 +36,417 @@
         "@context": "https://schema.org",
         "@type": "WebApplication",
         "name": "SmartFarm",
-        "description": "Intelligent farm management solution",
+        "description": "Intelligent farm management solution with comprehensive features for modern agriculture",
         "url": "https://smartfarm.app",
         "applicationCategory": "ProductivityApplication",
-        "operatingSystem": "Web Browser",
+        "operatingSystem": "Web Browser, Android, iOS",
         "offers": {
             "@type": "Offer",
             "price": "0",
             "priceCurrency": "USD"
-        }
+        },
+        "featureList": [
+            "Weather Monitoring",
+            "Crop Management",
+            "Livestock Tracking",
+            "Financial Analytics",
+            "Task Management",
+            "Expert Chat Support"
+        ]
     }
     </script>
 </head>
 <body>
-    <div id="root"></div>
-    
+    <!-- Navigation Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-leaf"></i>
+                <span>SmartFarm</span>
+            </div>
+            <nav class="nav">
+                <a href="#dashboard" class="nav-link active" data-section="dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#crops" class="nav-link" data-section="crops">
+                    <i class="fas fa-seedling"></i>
+                    <span>Crops</span>
+                </a>
+                <a href="#livestock" class="nav-link" data-section="livestock">
+                    <i class="fas fa-cow"></i>
+                    <span>Livestock</span>
+                </a>
+                <a href="#weather" class="nav-link" data-section="weather">
+                    <i class="fas fa-cloud-sun"></i>
+                    <span>Weather</span>
+                </a>
+                <a href="#analytics" class="nav-link" data-section="analytics">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Analytics</span>
+                </a>
+                <a href="#tasks" class="nav-link" data-section="tasks">
+                    <i class="fas fa-tasks"></i>
+                    <span>Tasks</span>
+                </a>
+            </nav>
+            <div class="header-actions">
+                <button class="btn btn-icon" id="notifications-btn">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge">3</span>
+                </button>
+                <button class="btn btn-icon" id="profile-btn">
+                    <i class="fas fa-user-circle"></i>
+                </button>
+                <button class="btn btn-menu" id="mobile-menu-btn">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile Navigation Menu -->
+    <div class="mobile-menu" id="mobile-menu">
+        <div class="mobile-menu-header">
+            <span>Menu</span>
+            <button class="btn btn-icon" id="close-menu-btn">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <nav class="mobile-nav">
+            <a href="#dashboard" class="mobile-nav-link active" data-section="dashboard">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="#crops" class="mobile-nav-link" data-section="crops">
+                <i class="fas fa-seedling"></i>
+                <span>Crops</span>
+            </a>
+            <a href="#livestock" class="mobile-nav-link" data-section="livestock">
+                <i class="fas fa-cow"></i>
+                <span>Livestock</span>
+            </a>
+            <a href="#weather" class="mobile-nav-link" data-section="weather">
+                <i class="fas fa-cloud-sun"></i>
+                <span>Weather</span>
+            </a>
+            <a href="#analytics" class="mobile-nav-link" data-section="analytics">
+                <i class="fas fa-chart-line"></i>
+                <span>Analytics</span>
+            </a>
+            <a href="#tasks" class="mobile-nav-link" data-section="tasks">
+                <i class="fas fa-tasks"></i>
+                <span>Tasks</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="content-section active">
+            <div class="section-header">
+                <h1>Farm Dashboard</h1>
+                <p>Monitor your farm's key metrics and activities</p>
+            </div>
+            
+            <!-- Quick Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-seedling"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>Active Crops</h3>
+                        <p class="stat-value">12</p>
+                        <p class="stat-change positive">+2 this month</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-cow"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>Livestock</h3>
+                        <p class="stat-value">47</p>
+                        <p class="stat-change positive">+5 this month</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-cloud-sun"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>Weather</h3>
+                        <p class="stat-value">72°F</p>
+                        <p class="stat-change">Partly Cloudy</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>Pending Tasks</h3>
+                        <p class="stat-value">8</p>
+                        <p class="stat-change warning">Due today</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Activities -->
+            <div class="activities-section">
+                <h2>Recent Activities</h2>
+                <div class="activity-list">
+                    <div class="activity-item">
+                        <div class="activity-icon">
+                            <i class="fas fa-seedling"></i>
+                        </div>
+                        <div class="activity-content">
+                            <h4>Wheat planting completed</h4>
+                            <p>Field A3 - 15 acres planted</p>
+                            <span class="activity-time">2 hours ago</span>
+                        </div>
+                    </div>
+                    
+                    <div class="activity-item">
+                        <div class="activity-icon">
+                            <i class="fas fa-cow"></i>
+                        </div>
+                        <div class="activity-content">
+                            <h4>Livestock health check</h4>
+                            <p>All cattle vaccinated successfully</p>
+                            <span class="activity-time">1 day ago</span>
+                        </div>
+                    </div>
+                    
+                    <div class="activity-item">
+                        <div class="activity-icon">
+                            <i class="fas fa-cloud-rain"></i>
+                        </div>
+                        <div class="activity-content">
+                            <h4>Weather alert</h4>
+                            <p>Heavy rain expected tomorrow</p>
+                            <span class="activity-time">3 hours ago</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Crops Section -->
+        <section id="crops" class="content-section">
+            <div class="section-header">
+                <h1>Crop Management</h1>
+                <p>Track and manage your crops efficiently</p>
+            </div>
+            
+            <div class="crops-grid">
+                <div class="crop-card">
+                    <div class="crop-header">
+                        <h3>Wheat</h3>
+                        <span class="crop-status active">Active</span>
+                    </div>
+                    <div class="crop-details">
+                        <p><strong>Field:</strong> A3</p>
+                        <p><strong>Area:</strong> 15 acres</p>
+                        <p><strong>Planted:</strong> March 15, 2024</p>
+                        <p><strong>Expected Harvest:</strong> July 2024</p>
+                    </div>
+                    <div class="crop-actions">
+                        <button class="btn btn-sm btn-primary">View Details</button>
+                        <button class="btn btn-sm btn-secondary">Update</button>
+                    </div>
+                </div>
+                
+                <div class="crop-card">
+                    <div class="crop-header">
+                        <h3>Corn</h3>
+                        <span class="crop-status planning">Planning</span>
+                    </div>
+                    <div class="crop-details">
+                        <p><strong>Field:</strong> B2</p>
+                        <p><strong>Area:</strong> 20 acres</p>
+                        <p><strong>Planned:</strong> April 2024</p>
+                        <p><strong>Expected Harvest:</strong> September 2024</p>
+                    </div>
+                    <div class="crop-actions">
+                        <button class="btn btn-sm btn-primary">Plan Details</button>
+                        <button class="btn btn-sm btn-success">Start Planning</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Livestock Section -->
+        <section id="livestock" class="content-section">
+            <div class="section-header">
+                <h1>Livestock Management</h1>
+                <p>Monitor and manage your livestock health and records</p>
+            </div>
+            
+            <div class="livestock-summary">
+                <div class="livestock-stats">
+                    <div class="livestock-stat">
+                        <h3>Cattle</h3>
+                        <p class="stat-number">32</p>
+                    </div>
+                    <div class="livestock-stat">
+                        <h3>Sheep</h3>
+                        <p class="stat-number">15</p>
+                    </div>
+                    <div class="livestock-stat">
+                        <h3>Poultry</h3>
+                        <p class="stat-number">120</p>
+                    </div>
+                </div>
+                
+                <div class="health-alerts">
+                    <h3>Health Alerts</h3>
+                    <div class="alert-item warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>3 cattle due for vaccination</span>
+                    </div>
+                    <div class="alert-item info">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Monthly health check scheduled</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Weather Section -->
+        <section id="weather" class="content-section">
+            <div class="section-header">
+                <h1>Weather Monitoring</h1>
+                <p>Real-time weather data and forecasts for your farm</p>
+            </div>
+            
+            <div class="weather-container">
+                <div class="current-weather">
+                    <div class="weather-main">
+                        <h2>Current Weather</h2>
+                        <div class="weather-info">
+                            <div class="temperature">72°F</div>
+                            <div class="weather-desc">Partly Cloudy</div>
+                            <div class="weather-details">
+                                <span>Humidity: 65%</span>
+                                <span>Wind: 8 mph</span>
+                                <span>Pressure: 29.92 in</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="weather-forecast">
+                    <h3>5-Day Forecast</h3>
+                    <div class="forecast-grid">
+                        <div class="forecast-day">
+                            <div class="forecast-date">Tomorrow</div>
+                            <div class="forecast-icon">
+                                <i class="fas fa-cloud-rain"></i>
+                            </div>
+                            <div class="forecast-temp">68°F</div>
+                        </div>
+                        <div class="forecast-day">
+                            <div class="forecast-date">Wed</div>
+                            <div class="forecast-icon">
+                                <i class="fas fa-sun"></i>
+                            </div>
+                            <div class="forecast-temp">75°F</div>
+                        </div>
+                        <div class="forecast-day">
+                            <div class="forecast-date">Thu</div>
+                            <div class="forecast-icon">
+                                <i class="fas fa-cloud"></i>
+                            </div>
+                            <div class="forecast-temp">70°F</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Analytics Section -->
+        <section id="analytics" class="content-section">
+            <div class="section-header">
+                <h1>Farm Analytics</h1>
+                <p>Data-driven insights for better decision making</p>
+            </div>
+            
+            <div class="analytics-grid">
+                <div class="chart-container">
+                    <h3>Crop Yield Trends</h3>
+                    <canvas id="yieldChart" width="400" height="200"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <h3>Revenue Analysis</h3>
+                    <canvas id="revenueChart" width="400" height="200"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <h3>Weather Patterns</h3>
+                    <canvas id="weatherChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tasks Section -->
+        <section id="tasks" class="content-section">
+            <div class="section-header">
+                <h1>Task Management</h1>
+                <p>Organize and track your farm tasks</p>
+            </div>
+            
+            <div class="tasks-container">
+                <div class="task-filters">
+                    <button class="btn btn-sm active" data-filter="all">All</button>
+                    <button class="btn btn-sm" data-filter="urgent">Urgent</button>
+                    <button class="btn btn-sm" data-filter="today">Today</button>
+                    <button class="btn btn-sm" data-filter="week">This Week</button>
+                </div>
+                
+                <div class="task-list">
+                    <div class="task-item urgent">
+                        <div class="task-checkbox">
+                            <input type="checkbox" id="task1">
+                            <label for="task1"></label>
+                        </div>
+                        <div class="task-content">
+                            <h4>Fertilize wheat field</h4>
+                            <p>Apply nitrogen fertilizer to field A3</p>
+                            <span class="task-due">Due: Today</span>
+                        </div>
+                        <div class="task-actions">
+                            <button class="btn btn-sm btn-primary">Edit</button>
+                            <button class="btn btn-sm btn-success">Complete</button>
+                        </div>
+                    </div>
+                    
+                    <div class="task-item">
+                        <div class="task-checkbox">
+                            <input type="checkbox" id="task2">
+                            <label for="task2"></label>
+                        </div>
+                        <div class="task-content">
+                            <h4>Check irrigation system</h4>
+                            <p>Inspect and test all irrigation lines</p>
+                            <span class="task-due">Due: Tomorrow</span>
+                        </div>
+                        <div class="task-actions">
+                            <button class="btn btn-sm btn-primary">Edit</button>
+                            <button class="btn btn-sm btn-success">Complete</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
     <!-- Loading indicator -->
     <div id="loading" class="loading-overlay">
         <div class="loading-spinner">
@@ -55,7 +454,7 @@
             <p>Loading SmartFarm...</p>
         </div>
     </div>
-    
+
     <!-- Service Worker Registration -->
     <script>
         if ('serviceWorker' in navigator) {
