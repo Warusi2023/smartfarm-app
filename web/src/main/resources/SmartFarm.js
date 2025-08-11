@@ -1,128 +1,179 @@
 /**
- * SmartFarm Web Application - Main JavaScript File
- * Provides cross-platform compatibility with Android app functionality
+ * SmartFarm Web Application
+ * Comprehensive farm management solution with modern UI/UX
  */
 
 class SmartFarmApp {
     constructor() {
         this.currentSection = 'dashboard';
-        this.data = {
-            crops: [],
-            livestock: [],
-            weather: {},
-            tasks: [],
-            analytics: {}
-        };
+        this.tasks = [];
+        this.notifications = [];
+        this.crops = [];
+        this.livestock = [];
+        this.equipment = [];
+        this.financialData = {};
+        this.charts = {};
+        this.settings = this.loadSettings();
+        
         this.init();
     }
 
     init() {
         this.setupEventListeners();
-        this.loadInitialData();
+        this.loadData();
         this.initializeCharts();
-        this.setupServiceWorker();
-        this.setupResponsiveBehavior();
-        this.hideLoadingScreen();
+        this.updateDashboard();
+        this.hideLoading();
+        this.applyTheme();
     }
 
     setupEventListeners() {
         // Navigation
-        document.querySelectorAll('.nav-link, .mobile-nav-link').forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                const section = link.getAttribute('data-section');
-                this.navigateToSection(section);
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                this.navigateToSection(e.currentTarget.dataset.section);
             });
         });
 
-        // Mobile menu toggle
-        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-        const closeMenuBtn = document.getElementById('close-menu-btn');
-        const mobileMenu = document.getElementById('mobile-menu');
+        // Header actions
+        document.getElementById('addTaskBtn')?.addEventListener('click', () => {
+            this.showTaskModal();
+        });
 
-        if (mobileMenuBtn) {
-            mobileMenuBtn.addEventListener('click', () => {
-                mobileMenu.classList.add('active');
-            });
-        }
+        document.getElementById('notificationsBtn')?.addEventListener('click', () => {
+            this.toggleNotificationsPanel();
+        });
 
-        if (closeMenuBtn) {
-            closeMenuBtn.addEventListener('click', () => {
-                mobileMenu.classList.remove('active');
-            });
-        }
+        document.getElementById('settingsBtn')?.addEventListener('click', () => {
+            this.showSettingsModal();
+        });
 
-        // Close mobile menu when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!mobileMenu.contains(e.target) && !mobileMenuBtn.contains(e.target)) {
-                mobileMenu.classList.remove('active');
+        // Quick action buttons
+        document.getElementById('addCropBtn')?.addEventListener('click', () => {
+            this.showAddCropModal();
+        });
+
+        document.getElementById('addLivestockBtn')?.addEventListener('click', () => {
+            this.showAddLivestockModal();
+        });
+
+        document.getElementById('scheduleTaskBtn')?.addEventListener('click', () => {
+            this.showTaskModal();
+        });
+
+        document.getElementById('viewReportsBtn')?.addEventListener('click', () => {
+            this.showReportsModal();
+        });
+
+        // Modal events
+        this.setupModalEvents();
+
+        // Settings
+        this.setupSettingsEvents();
+
+        // Touch and keyboard support
+        this.setupAccessibility();
+    }
+
+    setupModalEvents() {
+        // Task modal
+        const taskModal = document.getElementById('taskModal');
+        const closeTaskModal = document.getElementById('closeTaskModal');
+        const cancelTask = document.getElementById('cancelTask');
+        const saveTask = document.getElementById('saveTask');
+
+        closeTaskModal?.addEventListener('click', () => this.hideTaskModal());
+        cancelTask?.addEventListener('click', () => this.hideTaskModal());
+        saveTask?.addEventListener('click', () => this.saveTask());
+
+        // Settings modal
+        const settingsModal = document.getElementById('settingsModal');
+        const closeSettingsModal = document.getElementById('closeSettingsModal');
+        const saveSettings = document.getElementById('saveSettings');
+
+        closeSettingsModal?.addEventListener('click', () => this.hideSettingsModal());
+        saveSettings?.addEventListener('click', () => this.saveSettings());
+
+        // Close modals on outside click
+        [taskModal, settingsModal].forEach(modal => {
+            if (modal) {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.classList.remove('active');
+                    }
+                });
             }
         });
+    }
 
-        // Task filters
-        document.querySelectorAll('.task-filters .btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const filter = e.target.getAttribute('data-filter');
-                this.filterTasks(filter);
-            });
+    setupSettingsEvents() {
+        const themeSelect = document.getElementById('themeSelect');
+        const fontSizeSelect = document.getElementById('fontSizeSelect');
+        const enableNotifications = document.getElementById('enableNotifications');
+        const enableSound = document.getElementById('enableSound');
+
+        themeSelect?.addEventListener('change', (e) => {
+            this.settings.theme = e.target.value;
+            this.applyTheme();
         });
 
-        // Task checkboxes
-        document.addEventListener('change', (e) => {
-            if (e.target.type === 'checkbox' && e.target.closest('.task-item')) {
-                this.toggleTaskComplete(e.target);
-            }
+        fontSizeSelect?.addEventListener('change', (e) => {
+            this.settings.fontSize = e.target.value;
+            this.applyFontSize();
         });
 
-        // Task action buttons
-        document.addEventListener('click', (e) => {
-            if (e.target.classList.contains('btn')) {
-                if (e.target.textContent === 'Complete') {
-                    this.completeTask(e.target.closest('.task-item'));
-                } else if (e.target.textContent === 'Edit') {
-                    this.editTask(e.target.closest('.task-item'));
-                }
-            }
+        enableNotifications?.addEventListener('change', (e) => {
+            this.settings.enableNotifications = e.target.checked;
         });
 
-        // Notification button
-        const notificationsBtn = document.getElementById('notifications-btn');
-        if (notificationsBtn) {
-            notificationsBtn.addEventListener('click', () => {
-                this.showNotifications();
-            });
-        }
+        enableSound?.addEventListener('change', (e) => {
+            this.settings.enableSound = e.target.checked;
+        });
+    }
 
-        // Profile button
-        const profileBtn = document.getElementById('profile-btn');
-        if (profileBtn) {
-            profileBtn.addEventListener('click', () => {
-                this.showProfile();
-            });
-        }
-
+    setupAccessibility() {
         // Keyboard navigation
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
-                mobileMenu.classList.remove('active');
+                this.closeAllModals();
             }
         });
 
-        // Resize handler
-        window.addEventListener('resize', () => {
-            this.handleResize();
+        // Touch gestures
+        let touchStartX = 0;
+        let touchStartY = 0;
+
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        });
+
+        document.addEventListener('touchend', (e) => {
+            const touchEndX = e.changedTouches[0].clientX;
+            const touchEndY = e.changedTouches[0].clientY;
+            const diffX = touchStartX - touchEndX;
+            const diffY = touchStartY - touchEndY;
+
+            // Swipe left/right for navigation
+            if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+                if (diffX > 0) {
+                    this.navigateToNextSection();
+                } else {
+                    this.navigateToPreviousSection();
+                }
+            }
         });
     }
 
     navigateToSection(section) {
         // Hide all sections
-        document.querySelectorAll('.content-section').forEach(sectionEl => {
-            sectionEl.classList.remove('active');
+        document.querySelectorAll('.content-section').forEach(s => {
+            s.classList.remove('active');
         });
 
-        // Remove active class from all nav links
-        document.querySelectorAll('.nav-link, .mobile-nav-link').forEach(link => {
-            link.classList.remove('active');
+        // Remove active class from all nav items
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.classList.remove('active');
         });
 
         // Show selected section
@@ -132,304 +183,275 @@ class SmartFarmApp {
             this.currentSection = section;
         }
 
-        // Add active class to corresponding nav link
-        const activeLink = document.querySelector(`[data-section="${section}"]`);
-        if (activeLink) {
-            activeLink.classList.add('active');
+        // Update navigation
+        const activeNavItem = document.querySelector(`[data-section="${section}"]`);
+        if (activeNavItem) {
+            activeNavItem.classList.add('active');
         }
 
-        // Close mobile menu
-        const mobileMenu = document.getElementById('mobile-menu');
-        if (mobileMenu) {
-            mobileMenu.classList.remove('active');
-        }
-
-        // Update URL hash
-        window.location.hash = section;
-
-        // Load section-specific data
-        this.loadSectionData(section);
-
-        // Smooth scroll to top
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        // Update charts if needed
+        this.updateChartsForSection(section);
     }
 
-    loadSectionData(section) {
-        switch (section) {
-            case 'dashboard':
-                this.loadDashboardData();
-                break;
-            case 'crops':
-                this.loadCropsData();
-                break;
-            case 'livestock':
-                this.loadLivestockData();
-                break;
-            case 'weather':
-                this.loadWeatherData();
-                break;
-            case 'analytics':
-                this.loadAnalyticsData();
-                break;
-            case 'tasks':
-                this.loadTasksData();
-                break;
-        }
+    navigateToNextSection() {
+        const sections = ['dashboard', 'crops', 'livestock', 'equipment', 'finance', 'analytics'];
+        const currentIndex = sections.indexOf(this.currentSection);
+        const nextIndex = (currentIndex + 1) % sections.length;
+        this.navigateToSection(sections[nextIndex]);
     }
 
-    loadInitialData() {
-        // Simulate loading data from API
-        this.data = {
-            crops: [
-                {
-                    id: 1,
-                    name: 'Wheat',
-                    field: 'A3',
-                    area: 15,
-                    planted: '2024-03-15',
-                    harvest: '2024-07-15',
-                    status: 'active'
-                },
-                {
-                    id: 2,
-                    name: 'Corn',
-                    field: 'B2',
-                    area: 20,
-                    planted: null,
-                    harvest: '2024-09-15',
-                    status: 'planning'
-                }
-            ],
-            livestock: {
-                cattle: 32,
-                sheep: 15,
-                poultry: 120
+    navigateToPreviousSection() {
+        const sections = ['dashboard', 'crops', 'livestock', 'equipment', 'finance', 'analytics'];
+        const currentIndex = sections.indexOf(this.currentSection);
+        const prevIndex = currentIndex === 0 ? sections.length - 1 : currentIndex - 1;
+        this.navigateToSection(sections[prevIndex]);
+    }
+
+    loadData() {
+        // Simulate API calls for demo data
+        this.loadCrops();
+        this.loadLivestock();
+        this.loadEquipment();
+        this.loadFinancialData();
+        this.loadTasks();
+        this.loadNotifications();
+    }
+
+    loadCrops() {
+        this.crops = [
+            {
+                id: 1,
+                name: 'Wheat',
+                field: 'A3',
+                area: 15,
+                planted: '2024-03-15',
+                harvest: '2024-07-15',
+                status: 'active',
+                health: 85,
+                yield: 0
             },
-            weather: {
-                current: {
-                    temperature: 72,
-                    description: 'Partly Cloudy',
-                    humidity: 65,
-                    wind: 8,
-                    pressure: 29.92
-                },
-                forecast: [
-                    { day: 'Tomorrow', temp: 68, icon: 'cloud-rain' },
-                    { day: 'Wed', temp: 75, icon: 'sun' },
-                    { day: 'Thu', temp: 70, icon: 'cloud' }
-                ]
+            {
+                id: 2,
+                name: 'Corn',
+                field: 'B2',
+                area: 20,
+                planted: '2024-04-01',
+                harvest: '2024-09-01',
+                status: 'active',
+                health: 92,
+                yield: 0
             },
-            tasks: [
-                {
-                    id: 1,
-                    title: 'Fertilize wheat field',
-                    description: 'Apply nitrogen fertilizer to field A3',
-                    due: 'Today',
-                    urgent: true,
-                    completed: false
-                },
-                {
-                    id: 2,
-                    title: 'Check irrigation system',
-                    description: 'Inspect and test all irrigation lines',
-                    due: 'Tomorrow',
-                    urgent: false,
-                    completed: false
-                }
-            ],
-            analytics: {
-                yield: [65, 72, 68, 75, 80, 78],
-                revenue: [12000, 13500, 12800, 14200, 15800, 15200],
-                weather: [45, 52, 48, 55, 62, 58]
+            {
+                id: 3,
+                name: 'Soybeans',
+                field: 'C1',
+                area: 12,
+                planted: '2024-04-15',
+                harvest: '2024-10-15',
+                status: 'planning',
+                health: 0,
+                yield: 0
+            }
+        ];
+    }
+
+    loadLivestock() {
+        this.livestock = [
+            {
+                id: 1,
+                type: 'Cattle',
+                count: 32,
+                health: 95,
+                production: 85,
+                lastCheck: '2024-01-15'
+            },
+            {
+                id: 2,
+                type: 'Sheep',
+                count: 15,
+                health: 88,
+                production: 78,
+                lastCheck: '2024-01-10'
+            },
+            {
+                id: 3,
+                type: 'Poultry',
+                count: 120,
+                health: 92,
+                production: 90,
+                lastCheck: '2024-01-12'
+            }
+        ];
+    }
+
+    loadEquipment() {
+        this.equipment = [
+            {
+                id: 1,
+                name: 'Tractor JD 5075E',
+                type: 'Tractor',
+                status: 'operational',
+                lastMaintenance: '2024-01-01',
+                nextMaintenance: '2024-04-01',
+                hours: 1250
+            },
+            {
+                id: 2,
+                name: 'Planter Case IH',
+                type: 'Planter',
+                status: 'operational',
+                lastMaintenance: '2024-01-05',
+                nextMaintenance: '2024-04-05',
+                hours: 450
+            },
+            {
+                id: 3,
+                name: 'Harvester New Holland',
+                type: 'Harvester',
+                status: 'maintenance',
+                lastMaintenance: '2024-01-10',
+                nextMaintenance: '2024-02-10',
+                hours: 2100
+            }
+        ];
+    }
+
+    loadFinancialData() {
+        this.financialData = {
+            revenue: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                data: [45000, 52000, 48000, 61000, 58000, 65000]
+            },
+            expenses: {
+                labels: ['Feed', 'Fertilizer', 'Equipment', 'Labor', 'Utilities'],
+                data: [15000, 12000, 8000, 20000, 5000]
+            },
+            profit: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                data: [25000, 30000, 28000, 35000, 32000, 38000]
             }
         };
-
-        this.updateDashboardStats();
-        this.updateWeatherDisplay();
-        this.updateTasksDisplay();
     }
 
-    updateDashboardStats() {
-        // Update stats cards
-        const stats = {
-            crops: this.data.crops.filter(crop => crop.status === 'active').length,
-            livestock: Object.values(this.data.livestock).reduce((a, b) => a + b, 0),
-            weather: this.data.weather.current.temperature,
-            tasks: this.data.tasks.filter(task => !task.completed).length
-        };
-
-        // Update crop count
-        const cropStat = document.querySelector('.stat-card:nth-child(1) .stat-value');
-        if (cropStat) cropStat.textContent = stats.crops;
-
-        // Update livestock count
-        const livestockStat = document.querySelector('.stat-card:nth-child(2) .stat-value');
-        if (livestockStat) livestockStat.textContent = stats.livestock;
-
-        // Update weather
-        const weatherStat = document.querySelector('.stat-card:nth-child(3) .stat-value');
-        if (weatherStat) weatherStat.textContent = `${stats.weather}°F`;
-
-        // Update tasks
-        const taskStat = document.querySelector('.stat-card:nth-child(4) .stat-value');
-        if (taskStat) taskStat.textContent = stats.tasks;
-    }
-
-    updateWeatherDisplay() {
-        const currentWeather = this.data.weather.current;
-        const forecast = this.data.weather.forecast;
-
-        // Update current weather
-        const tempEl = document.querySelector('.temperature');
-        if (tempEl) tempEl.textContent = `${currentWeather.temperature}°F`;
-
-        const descEl = document.querySelector('.weather-desc');
-        if (descEl) descEl.textContent = currentWeather.description;
-
-        // Update weather details
-        const detailsEl = document.querySelector('.weather-details');
-        if (detailsEl) {
-            detailsEl.innerHTML = `
-                <span>Humidity: ${currentWeather.humidity}%</span>
-                <span>Wind: ${currentWeather.wind} mph</span>
-                <span>Pressure: ${currentWeather.pressure} in</span>
-            `;
-        }
-
-        // Update forecast
-        const forecastGrid = document.querySelector('.forecast-grid');
-        if (forecastGrid) {
-            forecastGrid.innerHTML = forecast.map(day => `
-                <div class="forecast-day">
-                    <div class="forecast-date">${day.day}</div>
-                    <div class="forecast-icon">
-                        <i class="fas fa-${day.icon}"></i>
-                    </div>
-                    <div class="forecast-temp">${day.temp}°F</div>
-                </div>
-            `).join('');
-        }
-    }
-
-    updateTasksDisplay() {
-        const taskList = document.querySelector('.task-list');
-        if (!taskList) return;
-
-        taskList.innerHTML = this.data.tasks.map(task => `
-            <div class="task-item ${task.urgent ? 'urgent' : ''}" data-task-id="${task.id}">
-                <div class="task-checkbox">
-                    <input type="checkbox" id="task${task.id}" ${task.completed ? 'checked' : ''}>
-                    <label for="task${task.id}"></label>
-                </div>
-                <div class="task-content">
-                    <h4>${task.title}</h4>
-                    <p>${task.description}</p>
-                    <span class="task-due">Due: ${task.due}</span>
-                </div>
-                <div class="task-actions">
-                    <button class="btn btn-sm btn-primary">Edit</button>
-                    <button class="btn btn-sm btn-success">Complete</button>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    filterTasks(filter) {
-        const taskItems = document.querySelectorAll('.task-item');
-        const filterBtns = document.querySelectorAll('.task-filters .btn');
-
-        // Update active filter button
-        filterBtns.forEach(btn => btn.classList.remove('active'));
-        event.target.classList.add('active');
-
-        // Filter tasks
-        taskItems.forEach(item => {
-            let show = true;
-            
-            switch (filter) {
-                case 'urgent':
-                    show = item.classList.contains('urgent');
-                    break;
-                case 'today':
-                    show = item.querySelector('.task-due').textContent.includes('Today');
-                    break;
-                case 'week':
-                    show = !item.querySelector('.task-due').textContent.includes('Next week');
-                    break;
-                case 'all':
-                default:
-                    show = true;
-                    break;
+    loadTasks() {
+        this.tasks = [
+            {
+                id: 1,
+                title: 'Fertilize wheat field',
+                description: 'Apply nitrogen fertilizer to field A3',
+                priority: 'high',
+                dueDate: '2024-01-20',
+                category: 'crops',
+                completed: false
+            },
+            {
+                id: 2,
+                title: 'Check irrigation system',
+                description: 'Inspect and test all irrigation lines',
+                priority: 'medium',
+                dueDate: '2024-01-22',
+                category: 'maintenance',
+                completed: false
+            },
+            {
+                id: 3,
+                title: 'Livestock vaccination',
+                description: 'Vaccinate cattle herd',
+                priority: 'high',
+                dueDate: '2024-01-25',
+                category: 'livestock',
+                completed: false
             }
-
-            item.style.display = show ? 'flex' : 'none';
-        });
+        ];
     }
 
-    toggleTaskComplete(checkbox) {
-        const taskItem = checkbox.closest('.task-item');
-        const taskId = parseInt(taskItem.getAttribute('data-task-id'));
-        const task = this.data.tasks.find(t => t.id === taskId);
-        
-        if (task) {
-            task.completed = checkbox.checked;
-            if (task.completed) {
-                taskItem.style.opacity = '0.6';
-                taskItem.style.textDecoration = 'line-through';
-            } else {
-                taskItem.style.opacity = '1';
-                taskItem.style.textDecoration = 'none';
+    loadNotifications() {
+        this.notifications = [
+            {
+                id: 1,
+                title: 'Weather Alert',
+                message: 'Heavy rain expected tomorrow',
+                type: 'warning',
+                time: '2 hours ago',
+                read: false
+            },
+            {
+                id: 2,
+                title: 'Maintenance Due',
+                message: 'Tractor maintenance scheduled',
+                type: 'info',
+                time: '1 day ago',
+                read: false
+            },
+            {
+                id: 3,
+                title: 'Harvest Ready',
+                message: 'Wheat field A3 ready for harvest',
+                type: 'success',
+                time: '3 days ago',
+                read: true
             }
-        }
-    }
-
-    completeTask(taskItem) {
-        const taskId = parseInt(taskItem.getAttribute('data-task-id'));
-        const task = this.data.tasks.find(t => t.id === taskId);
-        
-        if (task) {
-            task.completed = true;
-            taskItem.style.opacity = '0.6';
-            taskItem.style.textDecoration = 'line-through';
-            
-            // Show success message
-            this.showNotification('Task completed successfully!', 'success');
-        }
-    }
-
-    editTask(taskItem) {
-        const taskId = parseInt(taskItem.getAttribute('data-task-id'));
-        const task = this.data.tasks.find(t => t.id === taskId);
-        
-        if (task) {
-            // Show edit modal (simplified for demo)
-            const newTitle = prompt('Edit task title:', task.title);
-            if (newTitle && newTitle.trim()) {
-                task.title = newTitle.trim();
-                taskItem.querySelector('h4').textContent = newTitle.trim();
-                this.showNotification('Task updated successfully!', 'success');
-            }
-        }
+        ];
     }
 
     initializeCharts() {
-        // Initialize Chart.js charts
-        this.createYieldChart();
-        this.createRevenueChart();
-        this.createWeatherChart();
+        this.initializeYieldChart();
+        this.initializeRevenueChart();
+        this.initializeExpenseChart();
+        this.initializeWeatherChart();
+        this.initializeResourceChart();
     }
 
-    createYieldChart() {
+    initializeYieldChart() {
         const ctx = document.getElementById('yieldChart');
         if (!ctx) return;
 
-        new Chart(ctx, {
+        this.charts.yield = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
                 datasets: [{
-                    label: 'Crop Yield (tons/acre)',
-                    data: this.data.analytics.yield,
+                    label: 'Wheat Yield (tons)',
+                    data: [0, 0, 0, 0, 0, 0],
+                    borderColor: '#4CAF50',
+                    backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                    tension: 0.4
+                }, {
+                    label: 'Corn Yield (tons)',
+                    data: [0, 0, 0, 0, 0, 0],
+                    borderColor: '#FF9800',
+                    backgroundColor: 'rgba(255, 152, 0, 0.1)',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+
+    initializeRevenueChart() {
+        const ctx = document.getElementById('revenueChart');
+        if (!ctx) return;
+
+        this.charts.revenue = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: this.financialData.revenue.labels,
+                datasets: [{
+                    label: 'Revenue ($)',
+                    data: this.financialData.revenue.data,
                     borderColor: '#4CAF50',
                     backgroundColor: 'rgba(76, 175, 80, 0.1)',
                     tension: 0.4,
@@ -441,39 +463,35 @@ class SmartFarmApp {
                 maintainAspectRatio: false,
                 plugins: {
                     legend: {
-                        display: false
+                        position: 'top',
                     }
                 },
                 scales: {
                     y: {
-                        beginAtZero: true,
-                        grid: {
-                            color: 'rgba(0, 0, 0, 0.1)'
-                        }
-                    },
-                    x: {
-                        grid: {
-                            display: false
-                        }
+                        beginAtZero: true
                     }
                 }
             }
         });
     }
 
-    createRevenueChart() {
-        const ctx = document.getElementById('revenueChart');
+    initializeExpenseChart() {
+        const ctx = document.getElementById('expenseChart');
         if (!ctx) return;
 
-        new Chart(ctx, {
-            type: 'bar',
+        this.charts.expense = new Chart(ctx, {
+            type: 'doughnut',
             data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                labels: this.financialData.expenses.labels,
                 datasets: [{
-                    label: 'Revenue ($)',
-                    data: this.data.analytics.revenue,
-                    backgroundColor: '#2196F3',
-                    borderRadius: 4
+                    data: this.financialData.expenses.data,
+                    backgroundColor: [
+                        '#FF9800',
+                        '#4CAF50',
+                        '#2196F3',
+                        '#9C27B0',
+                        '#607D8B'
+                    ]
                 }]
             },
             options: {
@@ -481,41 +499,30 @@ class SmartFarmApp {
                 maintainAspectRatio: false,
                 plugins: {
                     legend: {
-                        display: false
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: {
-                            color: 'rgba(0, 0, 0, 0.1)'
-                        }
-                    },
-                    x: {
-                        grid: {
-                            display: false
-                        }
+                        position: 'bottom',
                     }
                 }
             }
         });
     }
 
-    createWeatherChart() {
+    initializeWeatherChart() {
         const ctx = document.getElementById('weatherChart');
         if (!ctx) return;
 
-        new Chart(ctx, {
-            type: 'line',
+        this.charts.weather = new Chart(ctx, {
+            type: 'bar',
             data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                labels: ['Sunny', 'Cloudy', 'Rainy', 'Stormy'],
                 datasets: [{
-                    label: 'Average Temperature (°F)',
-                    data: this.data.analytics.weather,
-                    borderColor: '#FF9800',
-                    backgroundColor: 'rgba(255, 152, 0, 0.1)',
-                    tension: 0.4,
-                    fill: true
+                    label: 'Days',
+                    data: [15, 8, 5, 2],
+                    backgroundColor: [
+                        '#FFD700',
+                        '#87CEEB',
+                        '#4682B4',
+                        '#483D8B'
+                    ]
                 }]
             },
             options: {
@@ -528,137 +535,351 @@ class SmartFarmApp {
                 },
                 scales: {
                     y: {
-                        grid: {
-                            color: 'rgba(0, 0, 0, 0.1)'
-                        }
-                    },
-                    x: {
-                        grid: {
-                            display: false
-                        }
+                        beginAtZero: true
                     }
                 }
             }
         });
     }
 
-    showNotification(message, type = 'info') {
-        // Create notification element
-        const notification = document.createElement('div');
-        notification.className = `notification notification-${type}`;
-        notification.innerHTML = `
-            <i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'}"></i>
-            <span>${message}</span>
-            <button class="notification-close">&times;</button>
-        `;
+    initializeResourceChart() {
+        const ctx = document.getElementById('resourceChart');
+        if (!ctx) return;
 
-        // Add to page
-        document.body.appendChild(notification);
-
-        // Show notification
-        setTimeout(() => {
-            notification.classList.add('show');
-        }, 100);
-
-        // Auto-hide after 5 seconds
-        setTimeout(() => {
-            notification.classList.remove('show');
-            setTimeout(() => {
-                notification.remove();
-            }, 300);
-        }, 5000);
-
-        // Close button functionality
-        const closeBtn = notification.querySelector('.notification-close');
-        closeBtn.addEventListener('click', () => {
-            notification.classList.remove('show');
-            setTimeout(() => {
-                notification.remove();
-            }, 300);
+        this.charts.resource = new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: ['Water', 'Fertilizer', 'Pesticides', 'Fuel', 'Labor'],
+                datasets: [{
+                    label: 'Current Usage',
+                    data: [75, 60, 45, 80, 70],
+                    borderColor: '#2196F3',
+                    backgroundColor: 'rgba(33, 150, 243, 0.2)',
+                    pointBackgroundColor: '#2196F3'
+                }, {
+                    label: 'Optimal Usage',
+                    data: [80, 70, 50, 75, 75],
+                    borderColor: '#4CAF50',
+                    backgroundColor: 'rgba(76, 175, 80, 0.2)',
+                    pointBackgroundColor: '#4CAF50'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                }
+            }
         });
     }
 
-    showNotifications() {
-        // Show notifications panel (simplified for demo)
-        this.showNotification('You have 3 new notifications', 'info');
+    updateChartsForSection(section) {
+        switch (section) {
+            case 'analytics':
+                this.updateAnalyticsCharts();
+                break;
+            case 'finance':
+                this.updateFinanceCharts();
+                break;
+        }
     }
 
-    showProfile() {
-        // Show profile panel (simplified for demo)
-        this.showNotification('Profile settings coming soon', 'info');
+    updateAnalyticsCharts() {
+        // Update analytics charts with real-time data
+        if (this.charts.yield) {
+            // Simulate yield data updates
+            const wheatData = [0, 0, 0, 0, 0, 0];
+            const cornData = [0, 0, 0, 0, 0, 0];
+            
+            // Add some simulated yield data
+            wheatData[4] = Math.floor(Math.random() * 50) + 100; // 100-150 tons
+            cornData[5] = Math.floor(Math.random() * 80) + 120; // 120-200 tons
+            
+            this.charts.yield.data.datasets[0].data = wheatData;
+            this.charts.yield.data.datasets[1].data = cornData;
+            this.charts.yield.update();
+        }
     }
 
-    setupServiceWorker() {
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.ready.then(registration => {
-                console.log('Service Worker is ready');
-                
-                // Check for updates
-                registration.update();
+    updateFinanceCharts() {
+        // Finance charts are already populated with static data
+        // In a real app, this would fetch latest financial data
+    }
+
+    updateDashboard() {
+        this.updateStats();
+        this.updateRecentActivities();
+        this.updateNotificationCount();
+    }
+
+    updateStats() {
+        const totalCrops = document.getElementById('totalCrops');
+        const totalLivestock = document.getElementById('totalLivestock');
+        const pendingTasks = document.getElementById('pendingTasks');
+        const monthlyRevenue = document.getElementById('monthlyRevenue');
+
+        if (totalCrops) totalCrops.textContent = this.crops.filter(c => c.status === 'active').length;
+        if (totalLivestock) totalLivestock.textContent = this.livestock.reduce((sum, l) => sum + l.count, 0);
+        if (pendingTasks) pendingTasks.textContent = this.tasks.filter(t => !t.completed).length;
+        if (monthlyRevenue) monthlyRevenue.textContent = `$${this.financialData.revenue.data[5].toLocaleString()}`;
+    }
+
+    updateRecentActivities() {
+        const activitiesContainer = document.getElementById('recentActivities');
+        if (!activitiesContainer) return;
+
+        const activities = [
+            {
+                icon: 'fas fa-seedling',
+                title: 'Wheat planting completed',
+                description: 'Field A3 - 15 acres planted',
+                time: '2 hours ago'
+            },
+            {
+                icon: 'fas fa-cow',
+                title: 'Livestock health check',
+                description: 'All cattle vaccinated successfully',
+                time: '1 day ago'
+            },
+            {
+                icon: 'fas fa-cloud-rain',
+                title: 'Weather alert',
+                description: 'Heavy rain expected tomorrow',
+                time: '3 hours ago'
+            }
+        ];
+
+        activitiesContainer.innerHTML = activities.map(activity => `
+            <div class="activity-item">
+                <div class="activity-icon">
+                    <i class="${activity.icon}"></i>
+                </div>
+                <div class="activity-content">
+                    <h4>${activity.title}</h4>
+                    <p>${activity.description}</p>
+                    <span class="activity-time">${activity.time}</span>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    updateNotificationCount() {
+        const notificationCount = document.getElementById('notificationCount');
+        if (notificationCount) {
+            const unreadCount = this.notifications.filter(n => !n.read).length;
+            notificationCount.textContent = unreadCount;
+            notificationCount.style.display = unreadCount > 0 ? 'block' : 'none';
+        }
+    }
+
+    showTaskModal() {
+        const modal = document.getElementById('taskModal');
+        if (modal) {
+            modal.classList.add('active');
+        }
+    }
+
+    hideTaskModal() {
+        const modal = document.getElementById('taskModal');
+        if (modal) {
+            modal.classList.remove('active');
+            // Reset form
+            document.getElementById('taskForm')?.reset();
+        }
+    }
+
+    saveTask() {
+        const form = document.getElementById('taskForm');
+        if (!form) return;
+
+        const formData = new FormData(form);
+        const task = {
+            id: Date.now(),
+            title: formData.get('taskTitle') || document.getElementById('taskTitle').value,
+            description: document.getElementById('taskDescription').value,
+            priority: document.getElementById('taskPriority').value,
+            dueDate: document.getElementById('taskDueDate').value,
+            category: document.getElementById('taskCategory').value,
+            completed: false
+        };
+
+        this.tasks.push(task);
+        this.updateDashboard();
+        this.hideTaskModal();
+        this.showNotification('Task added successfully', 'success');
+    }
+
+    showSettingsModal() {
+        const modal = document.getElementById('settingsModal');
+        if (modal) {
+            modal.classList.add('active');
+            this.loadSettingsIntoForm();
+        }
+    }
+
+    hideSettingsModal() {
+        const modal = document.getElementById('settingsModal');
+        if (modal) {
+            modal.classList.remove('active');
+        }
+    }
+
+    loadSettingsIntoForm() {
+        const themeSelect = document.getElementById('themeSelect');
+        const fontSizeSelect = document.getElementById('fontSizeSelect');
+        const enableNotifications = document.getElementById('enableNotifications');
+        const enableSound = document.getElementById('enableSound');
+
+        if (themeSelect) themeSelect.value = this.settings.theme;
+        if (fontSizeSelect) fontSizeSelect.value = this.settings.fontSize;
+        if (enableNotifications) enableNotifications.checked = this.settings.enableNotifications;
+        if (enableSound) enableSound.checked = this.settings.enableSound;
+    }
+
+    saveSettings() {
+        this.settings.theme = document.getElementById('themeSelect').value;
+        this.settings.fontSize = document.getElementById('fontSizeSelect').value;
+        this.settings.enableNotifications = document.getElementById('enableNotifications').checked;
+        this.settings.enableSound = document.getElementById('enableSound').checked;
+
+        this.saveSettingsToStorage();
+        this.applyTheme();
+        this.applyFontSize();
+        this.hideSettingsModal();
+        this.showNotification('Settings saved successfully', 'success');
+    }
+
+    loadSettings() {
+        const defaultSettings = {
+            theme: 'light',
+            fontSize: 'medium',
+            enableNotifications: true,
+            enableSound: true
+        };
+
+        try {
+            const saved = localStorage.getItem('smartfarm-settings');
+            return saved ? { ...defaultSettings, ...JSON.parse(saved) } : defaultSettings;
+        } catch {
+            return defaultSettings;
+        }
+    }
+
+    saveSettingsToStorage() {
+        try {
+            localStorage.setItem('smartfarm-settings', JSON.stringify(this.settings));
+        } catch (error) {
+            console.error('Failed to save settings:', error);
+        }
+    }
+
+    applyTheme() {
+        const theme = this.settings.theme;
+        let finalTheme = theme;
+
+        if (theme === 'auto') {
+            finalTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+
+        document.documentElement.setAttribute('data-theme', finalTheme);
+    }
+
+    applyFontSize() {
+        const fontSize = this.settings.fontSize;
+        const sizes = {
+            small: '14px',
+            medium: '16px',
+            large: '18px'
+        };
+
+        document.documentElement.style.fontSize = sizes[fontSize] || sizes.medium;
+    }
+
+    toggleNotificationsPanel() {
+        const panel = document.getElementById('notificationsPanel');
+        if (panel) {
+            panel.classList.toggle('active');
+            this.updateNotificationsList();
+        }
+    }
+
+    updateNotificationsList() {
+        const list = document.getElementById('notificationsList');
+        if (!list) return;
+
+        list.innerHTML = this.notifications.map(notification => `
+            <div class="notification-item ${notification.read ? 'read' : ''}">
+                <div class="notification-title">${notification.title}</div>
+                <div class="notification-message">${notification.message}</div>
+                <div class="notification-time">${notification.time}</div>
+            </div>
+        `).join('');
+    }
+
+    showNotification(message, type = 'info') {
+        if (!this.settings.enableNotifications) return;
+
+        const notification = {
+            id: Date.now(),
+            title: type.charAt(0).toUpperCase() + type.slice(1),
+            message: message,
+            type: type,
+            time: 'Just now',
+            read: false
+        };
+
+        this.notifications.unshift(notification);
+        this.updateNotificationCount();
+
+        // Show browser notification if supported
+        if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('SmartFarm', {
+                body: message,
+                icon: '/favicon.ico'
             });
         }
-    }
 
-    setupResponsiveBehavior() {
-        // Handle responsive behavior
-        this.handleResize();
-        
-        // Add touch support for mobile
-        if ('ontouchstart' in window) {
-            this.setupTouchSupport();
+        // Play sound if enabled
+        if (this.settings.enableSound) {
+            this.playNotificationSound();
         }
     }
 
-    setupTouchSupport() {
-        // Add touch-specific behaviors
-        let touchStartY = 0;
-        let touchEndY = 0;
+    playNotificationSound() {
+        // Create a simple notification sound
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
 
-        document.addEventListener('touchstart', (e) => {
-            touchStartY = e.touches[0].clientY;
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+        oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1);
+
+        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.2);
+    }
+
+    closeAllModals() {
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.classList.remove('active');
         });
-
-        document.addEventListener('touchend', (e) => {
-            touchEndY = e.changedTouches[0].clientY;
-            this.handleSwipe(touchStartY, touchEndY);
-        });
     }
 
-    handleSwipe(startY, endY) {
-        const threshold = 50;
-        const diff = startY - endY;
-
-        if (Math.abs(diff) > threshold) {
-            if (diff > 0) {
-                // Swipe up - could be used for navigation
-                console.log('Swipe up detected');
-            } else {
-                // Swipe down - could be used for refresh
-                console.log('Swipe down detected');
-            }
-        }
-    }
-
-    handleResize() {
-        const width = window.innerWidth;
-        
-        // Adjust layout based on screen size
-        if (width <= 768) {
-            document.body.classList.add('mobile');
-        } else {
-            document.body.classList.remove('mobile');
-        }
-
-        // Adjust chart sizes
-        this.resizeCharts();
-    }
-
-    resizeCharts() {
-        // Trigger chart resize events
-        window.dispatchEvent(new Event('resize'));
-    }
-
-    hideLoadingScreen() {
+    hideLoading() {
         const loading = document.getElementById('loading');
         if (loading) {
             setTimeout(() => {
@@ -670,123 +891,65 @@ class SmartFarmApp {
         }
     }
 
-    // API methods for future integration
-    async fetchData(endpoint) {
-        try {
-            const response = await fetch(`/api/${endpoint}`);
-            return await response.json();
-        } catch (error) {
-            console.error('Error fetching data:', error);
-            return null;
+    // Additional feature methods
+    showAddCropModal() {
+        this.showNotification('Add Crop feature coming soon!', 'info');
+    }
+
+    showAddLivestockModal() {
+        this.showNotification('Add Livestock feature coming soon!', 'info');
+    }
+
+    showReportsModal() {
+        this.showNotification('Reports feature coming soon!', 'info');
+    }
+
+    // Service Worker Management
+    setupServiceWorker() {
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.addEventListener('message', (event) => {
+                if (event.data.type === 'CACHE_UPDATED') {
+                    this.showNotification('App updated! Refresh to see changes.', 'info');
+                }
+            });
         }
     }
 
-    async saveData(endpoint, data) {
-        try {
-            const response = await fetch(`/api/${endpoint}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data)
+    // Offline Support
+    setupOfflineSupport() {
+        window.addEventListener('online', () => {
+            this.showNotification('Connection restored', 'success');
+            this.loadData(); // Reload data when back online
+        });
+
+        window.addEventListener('offline', () => {
+            this.showNotification('You are offline. Some features may be limited.', 'warning');
+        });
+    }
+
+    // Performance Monitoring
+    setupPerformanceMonitoring() {
+        if ('performance' in window) {
+            window.addEventListener('load', () => {
+                setTimeout(() => {
+                    const perfData = performance.getEntriesByType('navigation')[0];
+                    if (perfData) {
+                        console.log('Page load time:', perfData.loadEventEnd - perfData.loadEventStart, 'ms');
+                    }
+                }, 0);
             });
-            return await response.json();
-        } catch (error) {
-            console.error('Error saving data:', error);
-            return null;
         }
     }
 }
 
-// Initialize the app when DOM is loaded
+// Initialize the application when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     window.smartFarmApp = new SmartFarmApp();
 });
 
-// Add CSS for notifications
-const notificationStyles = `
-    .notification {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: white;
-        border: 1px solid #e0e0e0;
-        border-radius: 8px;
-        padding: 16px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        z-index: 10000;
-        transform: translateX(100%);
-        transition: transform 0.3s ease;
-        max-width: 300px;
-    }
-
-    .notification.show {
-        transform: translateX(0);
-    }
-
-    .notification-success {
-        border-left: 4px solid #4CAF50;
-    }
-
-    .notification-info {
-        border-left: 4px solid #2196F3;
-    }
-
-    .notification-warning {
-        border-left: 4px solid #FF9800;
-    }
-
-    .notification-error {
-        border-left: 4px solid #F44336;
-    }
-
-    .notification i {
-        font-size: 20px;
-    }
-
-    .notification-success i {
-        color: #4CAF50;
-    }
-
-    .notification-info i {
-        color: #2196F3;
-    }
-
-    .notification-warning i {
-        color: #FF9800;
-    }
-
-    .notification-error i {
-        color: #F44336;
-    }
-
-    .notification-close {
-        background: none;
-        border: none;
-        font-size: 20px;
-        cursor: pointer;
-        color: #757575;
-        margin-left: auto;
-    }
-
-    .notification-close:hover {
-        color: #212121;
-    }
-
-    @media (max-width: 768px) {
-        .notification {
-            top: 10px;
-            right: 10px;
-            left: 10px;
-            max-width: none;
-        }
-    }
-`;
-
-// Inject notification styles
-const styleSheet = document.createElement('style');
-styleSheet.textContent = notificationStyles;
-document.head.appendChild(styleSheet);
+// Handle service worker updates
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+        window.location.reload();
+    });
+}
