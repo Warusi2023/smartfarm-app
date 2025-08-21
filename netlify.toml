@@ -1,6 +1,7 @@
 [build]
-  publish = "web/build/distributions/web"
-  command = "./gradlew buildWeb"
+  command = ""
+  publish = "."
+
 
 [build.environment]
   NODE_VERSION = "18"
