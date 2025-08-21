@@ -3,20 +3,22 @@ pluginManagement {
         google()
         mavenCentral()
         gradlePluginPortal()
-        maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
     }
 }
 
 dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.PREFER_PROJECT)
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
     repositories {
         google()
         mavenCentral()
-        maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
+        maven { url = uri("https://jitpack.io") } // For MPAndroidChart
+        maven { url = uri("https://maven.pkg.jetbrains.space/public/p/compose/dev") }
+        maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev") }
+        ivy { url = uri("https://nodejs.org/dist") } // For Kotlin JS Node.js support
     }
 }
 
 rootProject.name = "SmartFarm"
-include(":app")
+include(":androidApp")
 include(":shared")
 include(":web")

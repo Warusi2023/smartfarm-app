@@ -1,97 +1,86 @@
 {
   "project_info": {
-    "project_number": "123456789012",
-    "project_id": "smartfarm-production",
-    "storage_bucket": "smartfarm-production.appspot.com"
+    "project_number": "831410054870",
+    "project_id": "smart-farm-291d5",
+    "storage_bucket": "smart-farm-291d5.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:123456789012:android:abcdef1234567890",
+        "mobilesdk_app_id": "1:831410054870:android:de0bcf1739841bc1348b77",
         "android_client_info": {
-          "package_name": "com.example.smartfarm"
+          "package_name": "com.yourcompany.smartfarm"
         }
       },
-      "oauth_client": [
-        {
-          "client_id": "123456789012-abcdefghijklmnop.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
+      "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBQJQJQJQJQJQJQJQJQJQJQJQJQJQJQJQ"
+          "current_key": "AIzaSyCS_Q467Ub6ijh2MIGa-NC6PMCrbGfQqxM"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "123456789012-abcdefghijklmnop.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
+          "other_platform_oauth_client": []
         }
       }
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:123456789012:android:abcdef1234567891",
+        "mobilesdk_app_id": "1:831410054870:android:de0bcf1739841bc1348b77",
         "android_client_info": {
-          "package_name": "com.example.smartfarm.debug"
+          "package_name": "com.yourcompany.smartfarm.debug"
         }
       },
-      "oauth_client": [
-        {
-          "client_id": "123456789012-abcdefghijklmnop.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
+      "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBQJQJQJQJQJQJQJQJQJQJQJQJQJQJQJQ"
+          "current_key": "AIzaSyCS_Q467Ub6ijh2MIGa-NC6PMCrbGfQqxM"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "123456789012-abcdefghijklmnop.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
+          "other_platform_oauth_client": []
         }
       }
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:123456789012:android:abcdef1234567892",
+        "mobilesdk_app_id": "1:831410054870:android:de0bcf1739841bc1348b77",
         "android_client_info": {
-          "package_name": "com.example.smartfarm.internal"
+          "package_name": "com.yourcompany.smartfarm.internal"
         }
       },
-      "oauth_client": [
-        {
-          "client_id": "123456789012-abcdefghijklmnop.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
+      "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBQJQJQJQJQJQJQJQJQJQJQJQJQJQJQJQ"
+          "current_key": "AIzaSyCS_Q467Ub6ijh2MIGa-NC6PMCrbGfQqxM"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "123456789012-abcdefghijklmnop.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:831410054870:android:de0bcf1739841bc1348b77",
+        "android_client_info": {
+          "package_name": "com.yourcompany.smartfarm.unsigned"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCS_Q467Ub6ijh2MIGa-NC6PMCrbGfQqxM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
         }
       }
     }
   ],
   "configuration_version": "1"
-} 
+}

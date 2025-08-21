@@ -1,8 +1,8 @@
 1<?xml version="1.0" encoding="utf-8"?>
 2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-3    package="com.example.smartfarm.shared" >
+3    package="com.smartfarm.shared" >
 4
 5    <uses-sdk android:minSdkVersion="24" />
-5-->E:\Document\SmartFarm\shared\build\intermediates\tmp\ProcessLibraryManifest\debug\tempAndroidManifest1429110689080872648.xml
+5-->E:\Document\SmartFarm\shared\build\intermediates\tmp\ProcessLibraryManifest\debug\tempAndroidManifest6356205469487461362.xml
 6
 7</manifest>

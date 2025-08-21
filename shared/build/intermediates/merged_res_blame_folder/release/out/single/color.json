@@ -1,0 +1,10 @@
+[
+    {
+        "merged": "com.smartfarm.shared-merged_res-3:/color/vector_tint_color.xml",
+        "source": "com.smartfarm.shared-ui-release-30:/color/vector_tint_color.xml"
+    },
+    {
+        "merged": "com.smartfarm.shared-merged_res-3:/color/vector_tint_theme_color.xml",
+        "source": "com.smartfarm.shared-ui-release-30:/color/vector_tint_theme_color.xml"
+    }
+]

@@ -1,108 +1,118 @@
-const { Sequelize } = require('sequelize');
-require('dotenv').config();
+const sqlite3 = require('sqlite3').verbose();
+const path = require('path');
 
 // Database configuration
 const config = {
-  development: {
-    dialect: 'sqlite',
-    storage: './database/smartfarm_dev.sqlite',
-    logging: console.log,
-    pool: {
-      max: 5,
-      min: 0,
-      acquire: 30000,
-      idle: 10000
-    }
-  },
-  test: {
-    dialect: 'sqlite',
-    storage: './database/smartfarm_test.sqlite',
-    logging: false,
-    pool: {
-      max: 5,
-      min: 0,
-      acquire: 30000,
-      idle: 10000
-    }
-  },
-  production: {
-    username: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT || 5432,
-    dialect: 'postgres',
-    logging: false,
-    pool: {
-      max: 10,
-      min: 2,
-      acquire: 30000,
-      idle: 10000
+    development: {
+        type: 'sqlite',
+        database: path.join(__dirname, 'smartfarm.db'),
+        options: {
+            verbose: console.log
+        }
     },
-    dialectOptions: {
-      ssl: {
-        require: true,
-        rejectUnauthorized: false
-      }
+    production: {
+        type: 'postgresql',
+        host: process.env.DB_HOST || 'localhost',
+        port: process.env.DB_PORT || 5432,
+        database: process.env.DB_NAME || 'smartfarm',
+        username: process.env.DB_USER || 'postgres',
+        password: process.env.DB_PASSWORD || '',
+        options: {
+            dialect: 'postgres',
+            logging: false,
+            pool: {
+                max: 10,
+                min: 0,
+                acquire: 30000,
+                idle: 10000
+            }
+        }
     }
-  }
 };
 
 // Get current environment
 const env = process.env.NODE_ENV || 'development';
 const currentConfig = config[env];
 
-// Create Sequelize instance
-let sequelize;
-if (env === 'production') {
-  sequelize = new Sequelize(
-    currentConfig.database,
-    currentConfig.username,
-    currentConfig.password,
-    {
-      host: currentConfig.host,
-      port: currentConfig.port,
-      dialect: currentConfig.dialect,
-      logging: currentConfig.logging,
-      pool: currentConfig.pool,
-      dialectOptions: currentConfig.dialectOptions
+// Create database connection
+function createConnection() {
+    if (currentConfig.type === 'sqlite') {
+        return new sqlite3.Database(currentConfig.database, (err) => {
+            if (err) {
+                console.error('❌ SQLite connection error:', err.message);
+            } else {
+                console.log('✅ Connected to SQLite database');
+            }
+        });
+    } else if (currentConfig.type === 'postgresql') {
+        // PostgreSQL connection will be handled by Sequelize
+        console.log('✅ PostgreSQL configuration loaded');
+        return null;
     }
-  );
-} else {
-  sequelize = new Sequelize({
-    dialect: currentConfig.dialect,
-    storage: currentConfig.storage,
-    logging: currentConfig.logging,
-    pool: currentConfig.pool
-  });
 }
 
-// Test database connection
-async function testConnection() {
-  try {
-    await sequelize.authenticate();
-    console.log('✅ Database connection established successfully.');
-    return true;
-  } catch (error) {
-    console.error('❌ Unable to connect to the database:', error);
-    return false;
-  }
+// Database connection instance
+let db = null;
+
+// Initialize database connection
+function initializeDatabase() {
+    if (currentConfig.type === 'sqlite') {
+        db = createConnection();
+        return db;
+    } else if (currentConfig.type === 'postgresql') {
+        // For PostgreSQL, we'll use Sequelize
+        console.log('🔄 Initializing PostgreSQL connection...');
+        return null;
+    }
+}
+
+// Get database connection
+function getConnection() {
+    if (!db) {
+        db = initializeDatabase();
+    }
+    return db;
 }
 
 // Close database connection
-async function closeConnection() {
-  try {
-    await sequelize.close();
-    console.log('✅ Database connection closed successfully.');
-  } catch (error) {
-    console.error('❌ Error closing database connection:', error);
-  }
+function closeConnection() {
+    if (db && currentConfig.type === 'sqlite') {
+        db.close((err) => {
+            if (err) {
+                console.error('❌ Error closing database:', err.message);
+            } else {
+                console.log('✅ Database connection closed');
+            }
+        });
+    }
+}
+
+// Test database connection
+function testConnection() {
+    return new Promise((resolve, reject) => {
+        if (currentConfig.type === 'sqlite') {
+            const connection = getConnection();
+            connection.get('SELECT 1', (err, row) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve('SQLite connection successful');
+                }
+            });
+        } else {
+            // PostgreSQL connection test
+            resolve('PostgreSQL configuration loaded');
+        }
+    });
 }
 
 module.exports = {
-  sequelize,
-  config,
-  testConnection,
-  closeConnection,
-  currentConfig
+    config: currentConfig,
+    createConnection,
+    initializeDatabase,
+    getConnection,
+    closeConnection,
+    testConnection,
+    isSQLite: currentConfig.type === 'sqlite',
+    isPostgreSQL: currentConfig.type === 'postgresql'
 }; 

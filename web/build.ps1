@@ -34,11 +34,48 @@ foreach ($file in $files) {
     }
 }
 
-# Create _redirects file for SPA routing
+# Create _redirects file for SPA routing (CRITICAL for Netlify)
 $redirectsPath = Join-Path $buildDir "_redirects"
 "/*    /index.html   200" | Out-File -FilePath $redirectsPath -Encoding UTF8
 Write-Host "✅ Created _redirects for SPA routing" -ForegroundColor Green
 
+# Create netlify.toml with correct publish directory
+$netlifyConfig = @"
+[build]
+  publish = "."
+  command = "echo 'Build completed'"
+
+[build.environment]
+  NODE_VERSION = "18"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[build.processing]
+  skip_processing = false
+
+[build.processing.css]
+  bundle = true
+  minify = true
+
+[build.processing.js]
+  bundle = true
+  minify = true
+
+[build.processing.html]
+  pretty_urls = true
+
+[build.processing.images]
+  compress = true
+"@
+
+$netlifyConfig | Out-File -FilePath (Join-Path $buildDir "netlify.toml") -Encoding UTF8
+Write-Host "✅ Created netlify.toml configuration" -ForegroundColor Green
+
 Write-Host "🎉 Build completed successfully!" -ForegroundColor Green
 Write-Host "📁 Build files are in: $buildDir" -ForegroundColor Yellow
 Write-Host "🚀 Ready for deployment to Netlify!" -ForegroundColor Green
+Write-Host ""
+Write-Host "⚠️  IMPORTANT: Make sure to set publish directory to 'dist' in Netlify!" -ForegroundColor Yellow

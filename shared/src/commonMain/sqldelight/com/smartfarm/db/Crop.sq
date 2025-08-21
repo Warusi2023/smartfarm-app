@@ -1,0 +1,52 @@
+CREATE TABLE Crop (
+    id TEXT NOT NULL PRIMARY KEY,
+    farmId TEXT NOT NULL,
+    name TEXT NOT NULL,
+    variety TEXT NOT NULL,
+    type TEXT NOT NULL,
+    plantingDate INTEGER NOT NULL,
+    expectedHarvestDate INTEGER NOT NULL,
+    area REAL NOT NULL,
+    status TEXT NOT NULL,
+    health TEXT NOT NULL,
+    yieldQuantity REAL,
+    yieldUnit TEXT,
+    yieldQuality TEXT,
+    harvestDate INTEGER,
+    createdAt INTEGER NOT NULL,
+    updatedAt INTEGER NOT NULL,
+    FOREIGN KEY (farmId) REFERENCES Farm(id) ON DELETE CASCADE
+);
+
+getAllCrops:
+SELECT * FROM Crop ORDER BY plantingDate DESC;
+
+getCropById:
+SELECT * FROM Crop WHERE id = ?;
+
+getCropsByFarmId:
+SELECT * FROM Crop WHERE farmId = ? ORDER BY plantingDate DESC;
+
+getCropsByType:
+SELECT * FROM Crop WHERE type = ? ORDER BY plantingDate DESC;
+
+getCropsByStatus:
+SELECT * FROM Crop WHERE status = ? ORDER BY plantingDate DESC;
+
+getCropsByStatusAndFarmId:
+SELECT * FROM Crop WHERE status = ? AND farmId = ? ORDER BY plantingDate DESC;
+
+searchCrops:
+SELECT * FROM Crop WHERE name LIKE '%' || ? || '%' OR variety LIKE '%' || ? || '%' ORDER BY plantingDate DESC;
+
+insertCrop:
+INSERT INTO Crop(id, farmId, name, variety, type, plantingDate, expectedHarvestDate, area, status, health, yieldQuantity, yieldUnit, yieldQuality, harvestDate, createdAt, updatedAt)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+updateCrop:
+UPDATE Crop
+SET farmId = ?, name = ?, variety = ?, type = ?, plantingDate = ?, expectedHarvestDate = ?, area = ?, status = ?, health = ?, yieldQuantity = ?, yieldUnit = ?, yieldQuality = ?, harvestDate = ?, updatedAt = ?
+WHERE id = ?;
+
+deleteCrop:
+DELETE FROM Crop WHERE id = ?;

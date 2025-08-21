@@ -1,4 +1,4 @@
-package com.example.smartfarm
+package com.yourcompany.smartfarm
 
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -7,9 +7,9 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.UiObject2
 import androidx.test.uiautomator.UiSelector
-import com.example.smartfarm.data.model.*
-import com.example.smartfarm.data.repository.UserRepository
-import com.example.smartfarm.ui.LivestockScreen
+import com.yourcompany.smartfarm.data.model.*
+import com.yourcompany.smartfarm.data.repository.UserRepository
+import com.yourcompany.smartfarm.ui.LivestockScreen
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -371,27 +371,27 @@ class AccessibilityTest {
 }
 
 // Fake DAOs for testing
-class FakeUserDao : com.example.smartfarm.data.database.UserDao {
+class FakeUserDao : com.yourcompany.smartfarm.data.database.UserDao {
     override suspend fun insert(user: User) = 1L
     override fun getAllUsers() = kotlinx.coroutines.flow.flowOf(emptyList<User>())
     override suspend fun getUserById(id: Long) = null
 }
 
-class FakeLivestockDao : com.example.smartfarm.data.database.LivestockDao {
-    override fun getAllLivestock() = kotlinx.coroutines.flow.flowOf(emptyList<com.example.smartfarm.data.model.Livestock>())
-    override fun getLivestockByCategory(category: LivestockCategory) = kotlinx.coroutines.flow.flowOf(emptyList<com.example.smartfarm.data.model.Livestock>())
+class FakeLivestockDao : com.yourcompany.smartfarm.data.database.LivestockDao {
+    override fun getAllLivestock() = kotlinx.coroutines.flow.flowOf(emptyList<com.yourcompany.smartfarm.data.model.Livestock>())
+    override fun getLivestockByCategory(category: LivestockCategory) = kotlinx.coroutines.flow.flowOf(emptyList<com.yourcompany.smartfarm.data.model.Livestock>())
     override suspend fun getLivestockById(id: Long) = null
-    override fun searchLivestock(query: String) = kotlinx.coroutines.flow.flowOf(emptyList<com.example.smartfarm.data.model.Livestock>())
-    override suspend fun insertLivestock(livestock: com.example.smartfarm.data.model.Livestock) = 1L
-    override suspend fun insertLivestockList(livestockList: List<com.example.smartfarm.data.model.Livestock>) {}
-    override suspend fun updateLivestock(livestock: com.example.smartfarm.data.model.Livestock) {}
-    override suspend fun deleteLivestock(livestock: com.example.smartfarm.data.model.Livestock) {}
+    override fun searchLivestock(query: String) = kotlinx.coroutines.flow.flowOf(emptyList<com.yourcompany.smartfarm.data.model.Livestock>())
+    override suspend fun insertLivestock(livestock: com.yourcompany.smartfarm.data.model.Livestock) = 1L
+    override suspend fun insertLivestockList(livestockList: List<com.yourcompany.smartfarm.data.model.Livestock>) {}
+    override suspend fun updateLivestock(livestock: com.yourcompany.smartfarm.data.model.Livestock) {}
+    override suspend fun deleteLivestock(livestock: com.yourcompany.smartfarm.data.model.Livestock) {}
     override fun getAllCategories() = kotlinx.coroutines.flow.flowOf(emptyList<LivestockCategory>())
 }
 
-class FakeLivestockReminderDao : com.example.smartfarm.data.database.LivestockReminderDao {
-    override suspend fun insert(reminder: com.example.smartfarm.data.model.LivestockReminder) = 1L
-    override suspend fun delete(reminder: com.example.smartfarm.data.model.LivestockReminder) {}
-    override fun getRemindersForLivestock(livestockId: Long) = kotlinx.coroutines.flow.flowOf(emptyList<com.example.smartfarm.data.model.LivestockReminder>())
-    override fun getAllReminders() = kotlinx.coroutines.flow.flowOf(emptyList<com.example.smartfarm.data.model.LivestockReminder>())
+class FakeLivestockReminderDao : com.yourcompany.smartfarm.data.database.LivestockReminderDao {
+    override suspend fun insert(reminder: com.yourcompany.smartfarm.data.model.LivestockReminder) = 1L
+    override suspend fun delete(reminder: com.yourcompany.smartfarm.data.model.LivestockReminder) {}
+    override fun getRemindersForLivestock(livestockId: Long) = kotlinx.coroutines.flow.flowOf(emptyList<com.yourcompany.smartfarm.data.model.LivestockReminder>())
+    override fun getAllReminders() = kotlinx.coroutines.flow.flowOf(emptyList<com.yourcompany.smartfarm.data.model.LivestockReminder>())
 } 

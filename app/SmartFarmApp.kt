@@ -1,4 +1,4 @@
-package com.example.smartfarm
+package com.yourcompany.smartfarm
 
 import android.app.Application
 

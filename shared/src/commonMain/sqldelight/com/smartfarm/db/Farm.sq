@@ -1,0 +1,39 @@
+CREATE TABLE Farm (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    latitude REAL NOT NULL,
+    longitude REAL NOT NULL,
+    address TEXT,
+    size REAL NOT NULL,
+    type TEXT NOT NULL,
+    status TEXT NOT NULL,
+    createdAt INTEGER NOT NULL,
+    updatedAt INTEGER NOT NULL
+);
+
+getAllFarms:
+SELECT * FROM Farm ORDER BY name ASC;
+
+getFarmById:
+SELECT * FROM Farm WHERE id = ?;
+
+getFarmsByType:
+SELECT * FROM Farm WHERE type = ? ORDER BY name ASC;
+
+getFarmsByStatus:
+SELECT * FROM Farm WHERE status = ? ORDER BY name ASC;
+
+searchFarms:
+SELECT * FROM Farm WHERE name LIKE '%' || ? || '%' OR address LIKE '%' || ? || '%' ORDER BY name ASC;
+
+insertFarm:
+INSERT INTO Farm(id, name, latitude, longitude, address, size, type, status, createdAt, updatedAt)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+updateFarm:
+UPDATE Farm
+SET name = ?, latitude = ?, longitude = ?, address = ?, size = ?, type = ?, status = ?, updatedAt = ?
+WHERE id = ?;
+
+deleteFarm:
+DELETE FROM Farm WHERE id = ?;

@@ -1,10 +1,10 @@
-package com.example.smartfarm.ui
+package com.yourcompany.smartfarm.ui
 
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.example.smartfarm.data.model.*
-import com.example.smartfarm.data.repository.UserRepository
+import com.yourcompany.smartfarm.data.model.*
+import com.yourcompany.smartfarm.data.repository.UserRepository
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -295,7 +295,7 @@ class SettingsScreenTest {
 }
 
 // Fake DAO for testing
-class FakeUserDao : com.example.smartfarm.data.database.UserDao {
+class FakeUserDao : com.yourcompany.smartfarm.data.database.UserDao {
     override suspend fun insert(user: User) = 1L
     override fun getAllUsers() = kotlinx.coroutines.flow.flowOf(emptyList<User>())
     override suspend fun getUserById(id: Long) = null

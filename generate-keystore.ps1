@@ -1,84 +1,119 @@
 # SmartFarm Keystore Generation Script
-# This script generates a keystore for Google Play Store app signing
+# Simple version for generating secure keystore
 
-Write-Host "Generating SmartFarm Upload Keystore..." -ForegroundColor Green
+Write-Host "SmartFarm Keystore Generation" -ForegroundColor Green
+Write-Host "==============================" -ForegroundColor Green
+Write-Host ""
 
-# Keystore configuration
+# Configuration
 $keystorePath = "smartfarm-upload-key.jks"
-$alias = "smartfarm-upload-key"
-$storePass = "smartfarm123"
-$keyPass = "smartfarm123"
-$validity = "10000"
+$keyAlias = "smartfarm-upload-key"
 
-# Try to find keytool in common locations
-$keytoolPaths = @(
-    "C:\Program Files\Java\jdk*\bin\keytool.exe",
-    "C:\Program Files\Android\Android Studio\jbr\bin\keytool.exe",
-    "C:\Users\$env:USERNAME\AppData\Local\Android\Sdk\build-tools\*\keytool.exe",
-    "C:\Program Files\Android\Android Studio\jre\bin\keytool.exe"
-)
+Write-Host "Configuration:" -ForegroundColor Yellow
+Write-Host "   Keystore Path: $keystorePath" -ForegroundColor Gray
+Write-Host "   Key Alias: $keyAlias" -ForegroundColor Gray
+Write-Host ""
 
-$keytool = $null
-foreach ($path in $keytoolPaths) {
-    $found = Get-ChildItem -Path $path -ErrorAction SilentlyContinue | Select-Object -First 1
-    if ($found) {
-        $keytool = $found.FullName
-        Write-Host "Found keytool at: $keytool" -ForegroundColor Yellow
-        break
-    }
-}
-
-if (-not $keytool) {
-    Write-Host "Error: keytool not found. Please ensure Java JDK or Android SDK is installed." -ForegroundColor Red
-    Write-Host "You can manually generate the keystore using one of these methods:" -ForegroundColor Yellow
-    Write-Host "1. Install Java JDK and use: keytool -genkey -v -keystore $keystorePath -keyalg RSA -keysize 2048 -validity $validity -alias $alias" -ForegroundColor Cyan
-    Write-Host "2. Use Android Studio: Build > Generate Signed Bundle/APK" -ForegroundColor Cyan
-    Write-Host "3. Use the keystore generation tool in Android Studio" -ForegroundColor Cyan
-    exit 1
-}
-
-# Generate the keystore
-try {
-    $dname = "CN=SmartFarm, OU=Development, O=SmartFarm Inc, L=City, S=State, C=US"
+# Check if keystore already exists
+if (Test-Path $keystorePath) {
+    Write-Host "Keystore already exists!" -ForegroundColor Yellow
+    $backupChoice = Read-Host "Do you want to create a backup and overwrite? (y/N)"
     
-    $arguments = @(
-        "-genkey",
-        "-v",
-        "-keystore", $keystorePath,
-        "-keyalg", "RSA",
-        "-keysize", "2048",
-        "-validity", $validity,
-        "-alias", $alias,
-        "-storepass", $storePass,
-        "-keypass", $keyPass,
-        "-dname", $dname
-    )
-    
-    Write-Host "Generating keystore with the following parameters:" -ForegroundColor Yellow
-    Write-Host "Keystore: $keystorePath" -ForegroundColor Cyan
-    Write-Host "Alias: $alias" -ForegroundColor Cyan
-    Write-Host "Validity: $validity days" -ForegroundColor Cyan
-    Write-Host "Key Algorithm: RSA 2048" -ForegroundColor Cyan
-    
-    & $keytool $arguments
-    
-    if (Test-Path $keystorePath) {
-        Write-Host "`nKeystore generated successfully!" -ForegroundColor Green
-        Write-Host "Keystore location: $(Resolve-Path $keystorePath)" -ForegroundColor Green
-        Write-Host "`nIMPORTANT: Keep this keystore safe and secure!" -ForegroundColor Red
-        Write-Host "Store password: $storePass" -ForegroundColor Yellow
-        Write-Host "Key password: $keyPass" -ForegroundColor Yellow
-        Write-Host "Alias: $alias" -ForegroundColor Yellow
+    if ($backupChoice -eq "y" -or $backupChoice -eq "Y") {
+        $backupPath = "$keystorePath.backup.$(Get-Date -Format 'yyyy-MM-dd_HH-mm-ss')"
+        Copy-Item $keystorePath $backupPath
+        Write-Host "Backup created: $backupPath" -ForegroundColor Green
+        Write-Host ""
     } else {
-        Write-Host "Error: Keystore generation failed." -ForegroundColor Red
-        exit 1
+        Write-Host "Keystore generation cancelled" -ForegroundColor Red
+        exit
     }
+}
+
+# Check if keytool is available
+try {
+    $null = Get-Command keytool -ErrorAction Stop
+    Write-Host "Keytool found" -ForegroundColor Green
 } catch {
-    Write-Host "Error generating keystore: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "Keytool not found!" -ForegroundColor Red
+    Write-Host "   Please install Java JDK and ensure keytool is in PATH" -ForegroundColor Gray
+    Write-Host "   Download from: https://adoptium.net/" -ForegroundColor Blue
     exit 1
 }
 
-Write-Host "`nNext steps:" -ForegroundColor Green
-Write-Host "1. Update your build.gradle.kts with the keystore configuration" -ForegroundColor Cyan
-Write-Host "2. Set up Google Play App Signing in the Google Play Console" -ForegroundColor Cyan
-Write-Host "3. Upload your app bundle to Google Play Store" -ForegroundColor Cyan 
+Write-Host ""
+Write-Host "Generating Keystore..." -ForegroundColor Blue
+Write-Host ""
+
+# Prompt for keystore details
+Write-Host "Please provide the following information:" -ForegroundColor Cyan
+Write-Host ""
+
+$keystorePassword = Read-Host "Enter keystore password" -AsSecureString
+$keyPassword = Read-Host "Enter key password (or press Enter to use same as keystore)" -AsSecureString
+
+# If key password is empty, use keystore password
+if ($keyPassword.Length -eq 0) {
+    $keyPassword = $keystorePassword
+}
+
+# Convert secure strings to plain text for keytool
+$keystorePasswordPlain = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($keystorePassword))
+$keyPasswordPlain = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($keyPassword))
+
+# Prompt for certificate details
+Write-Host ""
+Write-Host "Certificate Information:" -ForegroundColor Cyan
+$firstName = Read-Host "First and Last Name"
+$organizationalUnit = Read-Host "Organizational Unit (e.g., Development)"
+$organization = Read-Host "Organization (e.g., SmartFarm)"
+$city = Read-Host "City or Locality"
+$state = Read-Host "State or Province"
+$countryCode = Read-Host "Country Code (2 letters, e.g., US)"
+
+Write-Host ""
+Write-Host "Generating keystore with keytool..." -ForegroundColor Blue
+
+# Build keytool command
+$keytoolCommand = "keytool -genkey -v -keystore `"$keystorePath`" -keyalg RSA -keysize 2048 -validity 10000 -alias `"$keyAlias`" -storepass `"$keystorePasswordPlain`" -keypass `"$keyPasswordPlain`" -dname `"CN=$firstName, OU=$organizationalUnit, O=$organization, L=$city, ST=$state, C=$countryCode`""
+
+# Execute keytool command
+Invoke-Expression $keytoolCommand
+
+# Check if keystore was created
+if (Test-Path $keystorePath) {
+    Write-Host ""
+    Write-Host "Keystore generated successfully!" -ForegroundColor Green
+    Write-Host "   Path: $keystorePath" -ForegroundColor Gray
+    Write-Host ""
+    
+    Write-Host "Next Steps:" -ForegroundColor Yellow
+    Write-Host "===========" -ForegroundColor Yellow
+    Write-Host ""
+    
+    Write-Host "1. Update local.properties:" -ForegroundColor Blue
+    Write-Host "   Open app/local.properties and update:" -ForegroundColor Gray
+    Write-Host "   KEYSTORE_PASSWORD=$keystorePasswordPlain" -ForegroundColor White
+    Write-Host "   KEY_PASSWORD=$keyPasswordPlain" -ForegroundColor White
+    Write-Host ""
+    
+    Write-Host "2. Test the build:" -ForegroundColor Blue
+    Write-Host "   ./gradlew assembleRelease" -ForegroundColor White
+    Write-Host ""
+    
+    Write-Host "IMPORTANT SECURITY NOTES:" -ForegroundColor Red
+    Write-Host "   - Keep your keystore file secure" -ForegroundColor Gray
+    Write-Host "   - Never commit passwords to version control" -ForegroundColor Gray
+    Write-Host "   - Store keystore backup in a safe location" -ForegroundColor Gray
+    Write-Host "   - You will need this keystore for all future app updates" -ForegroundColor Gray
+    Write-Host ""
+    
+} else {
+    Write-Host "Keystore generation failed!" -ForegroundColor Red
+    Write-Host "   Please check the error messages above" -ForegroundColor Gray
+}
+
+# Clear sensitive data from memory
+$keystorePasswordPlain = $null
+$keyPasswordPlain = $null
+[System.GC]::Collect()

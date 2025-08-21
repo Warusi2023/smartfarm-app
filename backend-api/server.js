@@ -33,6 +33,7 @@ app.use('/api/weather', authenticateToken, require('./routes/weather'));
 app.use('/api/inventory', authenticateToken, require('./routes/inventory'));
 app.use('/api/employees', authenticateToken, require('./routes/employees'));
 app.use('/api/financial', authenticateToken, require('./routes/financial'));
+app.use('/api/tasks', authenticateToken, require('./routes/tasks'));
 app.use('/api/analytics', authenticateToken, require('./routes/analytics'));
 app.use('/api/documents', authenticateToken, require('./routes/documents'));
 
@@ -112,9 +113,13 @@ app.get('/api/docs', (req, res) => {
             },
             inventory: {
                 'GET /inventory': 'Get all inventory (authenticated)',
+                'GET /inventory/:id': 'Get inventory item by ID (authenticated)',
                 'POST /inventory': 'Add inventory item (authenticated)',
                 'PUT /inventory/:id': 'Update inventory item (authenticated)',
-                'DELETE /inventory/:id': 'Delete inventory item (authenticated)'
+                'DELETE /inventory/:id': 'Delete inventory item (authenticated)',
+                'PATCH /inventory/:id/quantity': 'Update inventory quantity (authenticated)',
+                'GET /inventory/:id/analytics': 'Get inventory analytics (authenticated)',
+                'GET /inventory/stats/overview': 'Get inventory statistics (authenticated)'
             },
             employees: {
                 'GET /employees': 'Get all employees (authenticated)',
@@ -127,6 +132,16 @@ app.get('/api/docs', (req, res) => {
                 'POST /financial': 'Add financial record (authenticated)',
                 'PUT /financial/:id': 'Update financial record (authenticated)',
                 'DELETE /financial/:id': 'Delete financial record (authenticated)'
+            },
+            tasks: {
+                'GET /tasks': 'Get all tasks (authenticated)',
+                'GET /tasks/:id': 'Get task by ID (authenticated)',
+                'POST /tasks': 'Create new task (authenticated)',
+                'PUT /tasks/:id': 'Update task (authenticated)',
+                'DELETE /tasks/:id': 'Delete task (authenticated)',
+                'PATCH /tasks/:id/status': 'Update task status (authenticated)',
+                'GET /tasks/:id/analytics': 'Get task analytics (authenticated)',
+                'GET /tasks/stats/overview': 'Get task statistics (authenticated)'
             },
             documents: {
                 'GET /documents': 'Get all documents (authenticated)',
@@ -173,6 +188,7 @@ app.use('*', (req, res) => {
             '/api/analytics/*',
             '/api/livestock/*',
             '/api/crops/*',
+            '/api/tasks/*',
             '/api/inventory/*',
             '/api/employees/*',
             '/api/financial/*',

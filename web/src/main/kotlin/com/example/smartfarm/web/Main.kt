@@ -1,7 +1,7 @@
-package com.example.smartfarm.web
+package com.yourcompany.smartfarm.web
 
 import org.jetbrains.compose.web.renderComposable
-import com.example.smartfarm.web.App
+import com.yourcompany.smartfarm.web.App
 
 fun main() {
     renderComposable(rootElementId = "root") {

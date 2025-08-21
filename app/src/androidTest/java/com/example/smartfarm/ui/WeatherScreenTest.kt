@@ -1,10 +1,10 @@
-package com.example.smartfarm.ui
+package com.yourcompany.smartfarm.ui
 
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.example.smartfarm.data.model.*
-import com.example.smartfarm.data.repository.WeatherRepository
+import com.yourcompany.smartfarm.data.model.*
+import com.yourcompany.smartfarm.data.repository.WeatherRepository
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -236,7 +236,7 @@ class WeatherScreenTest {
 }
 
 // Fake WeatherService for testing
-class FakeWeatherService : com.example.smartfarm.data.service.WeatherService {
+class FakeWeatherService : com.yourcompany.smartfarm.data.service.WeatherService {
     override suspend fun getCurrentWeather(
         lat: Double,
         lon: Double,

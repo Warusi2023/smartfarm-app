@@ -179,10 +179,20 @@
             <div class="section-header">
                 <h2>Crop Management</h2>
                 <p>Monitor and manage your crops</p>
+                <button class="btn btn-secondary" data-action="upload-image">
+                    <i class="fas fa-camera"></i>
+                    Add Crop Image
+                </button>
             </div>
             
             <div class="crops-grid" id="cropsGrid">
                 <!-- Crops will be populated by JavaScript -->
+            </div>
+            
+            <!-- Crop Images Gallery -->
+            <div class="image-gallery">
+                <h3>Crop Images</h3>
+                <div class="gallery-grid" id="gallery-crops"></div>
             </div>
         </section>
 
@@ -191,10 +201,20 @@
             <div class="section-header">
                 <h2>Livestock Management</h2>
                 <p>Track your livestock health and production</p>
+                <button class="btn btn-secondary" data-action="upload-image">
+                    <i class="fas fa-camera"></i>
+                    Add Animal Photo
+                </button>
             </div>
             
             <div class="livestock-summary" id="livestockSummary">
                 <!-- Livestock data will be populated by JavaScript -->
+            </div>
+            
+            <!-- Animal Photos Gallery -->
+            <div class="image-gallery">
+                <h3>Animal Photos</h3>
+                <div class="gallery-grid" id="gallery-livestock"></div>
             </div>
         </section>
 
@@ -203,10 +223,20 @@
             <div class="section-header">
                 <h2>Equipment Management</h2>
                 <p>Track maintenance and usage of farm equipment</p>
+                <button class="btn btn-secondary" data-action="upload-image">
+                    <i class="fas fa-camera"></i>
+                    Add Equipment Photo
+                </button>
             </div>
             
             <div class="equipment-grid" id="equipmentGrid">
                 <!-- Equipment will be populated by JavaScript -->
+            </div>
+            
+            <!-- Equipment Photos Gallery -->
+            <div class="image-gallery">
+                <h3>Equipment Photos</h3>
+                <div class="gallery-grid" id="gallery-equipment"></div>
             </div>
         </section>
 
@@ -365,6 +395,7 @@
 
     <!-- Scripts -->
     <script src="SmartFarm.js"></script>
+    <script src="image-management.js"></script>
     
     <!-- Service Worker Registration -->
     <script>
