@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SmartFarm - Coming Soon</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: linear-gradient(135deg, #4caf50, #2e7d32);
+      color: #fff;
+      text-align: center;
+    }
+    .container {
+      max-width: 600px;
+      padding: 20px;
+    }
+    h1 {
+      font-size: 3em;
+      margin-bottom: 0.3em;
+    }
+    p {
+      font-size: 1.2em;
+      margin-bottom: 1.5em;
+    }
+    .email-box {
+      display: flex;
+      justify-content: center;
+    }
+    input[type="email"] {
+      padding: 10px;
+      border: none;
+      border-radius: 4px 0 0 4px;
+      outline: none;
+      width: 70%;
+    }
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 0 4px 4px 0;
+      background: #1b5e20;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover {
+      background: #145214;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🌱 SmartFarm</h1>
+    <p>We’re working hard to launch something amazing.<br />Stay tuned!</p>
+    
+    <form name="notify" method="POST" data-netlify="true">
+      <div class="email-box">
+        <input type="email" name="email" placeholder="Enter your email" required />
+        <button type="submit">Notify Me</button>
+      </div>
+    </form>
+  </div>
+</body>
+</html>
