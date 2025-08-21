@@ -63,7 +63,19 @@
         <input type="email" name="email" placeholder="Enter your email" required />
         <button type="submit">Notify Me</button>
       </div>
-    </form>
+    <form name="notify" method="POST" data-netlify="true" netlify-honeypot="bot-field">
+  <!-- Netlify needs this hidden field -->
+  <input type="hidden" name="form-name" value="notify" />
+  <!-- Spam trap (hidden to humans) -->
+  <p style="display:none">
+    <label>Don’t fill this out if you're human: <input name="bot-field" /></label>
+  </p>
+
+  <div class="email-box">
+    <input type="email" name="email" placeholder="Enter your email" required />
+    <button type="submit">Notify Me</button>
+  </div>
+</form>
   </div>
 </body>
 </html>
