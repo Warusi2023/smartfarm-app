@@ -12,11 +12,13 @@ const config = {
     },
     production: {
         type: 'postgresql',
-        host: process.env.DB_HOST || 'localhost',
-        port: process.env.DB_PORT || 5432,
-        database: process.env.DB_NAME || 'smartfarm',
-        username: process.env.DB_USER || 'postgres',
-        password: process.env.DB_PASSWORD || '',
+        // Railway provides DATABASE_URL, parse it for individual components
+        url: process.env.DATABASE_URL,
+        host: process.env.DB_HOST || process.env.PGHOST || 'localhost',
+        port: process.env.DB_PORT || process.env.PGPORT || 5432,
+        database: process.env.DB_NAME || process.env.PGDATABASE || 'smartfarm',
+        username: process.env.DB_USER || process.env.PGUSER || 'postgres',
+        password: process.env.DB_PASSWORD || process.env.PGPASSWORD || '',
         options: {
             dialect: 'postgres',
             logging: false,
@@ -25,6 +27,13 @@ const config = {
                 min: 0,
                 acquire: 30000,
                 idle: 10000
+            },
+            // Railway-specific SSL configuration
+            dialectOptions: {
+                ssl: process.env.NODE_ENV === 'production' ? {
+                    require: true,
+                    rejectUnauthorized: false
+                } : false
             }
         }
     }
