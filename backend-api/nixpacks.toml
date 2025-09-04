@@ -5,7 +5,7 @@ nixPkgs = ['nodejs-18_x', 'npm-9_x']
 cmds = ['npm ci --only=production']
 
 [phases.build]
-cmds = ['npm run build']
+cmds = ['echo "No build step required for Node.js backend"']
 
 [start]
 cmd = 'npm start'
