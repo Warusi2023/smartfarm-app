@@ -1,0 +1,18 @@
+# Ignore Android project files
+android-project/
+*.gradle
+*.gradle.kts
+gradle/
+gradlew
+gradlew.bat
+build/
+.gradle/
+
+# Ignore other non-backend files
+web-project/
+*.svg
+*.md
+!backend-api/*.md
+
+# Keep only backend-api directory
+!backend-api/

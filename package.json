@@ -1,0 +1,28 @@
+{
+  "name": "smartfarm",
+  "version": "1.0.0",
+  "description": "SmartFarm - AI-powered agricultural management platform",
+  "main": "backend-api/server.js",
+  "scripts": {
+    "start": "cd backend-api && npm start",
+    "install": "cd backend-api && npm install",
+    "build": "cd backend-api && npm run build"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Warusi2023/smartfarm-app.git"
+  },
+  "keywords": [
+    "agriculture",
+    "farming",
+    "ai",
+    "blockchain",
+    "sustainability"
+  ],
+  "author": "SmartFarm Team",
+  "license": "MIT"
+}
