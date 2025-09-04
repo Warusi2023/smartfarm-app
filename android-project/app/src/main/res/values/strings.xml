@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">SmartFarm</string>
+    
+    <!-- Login Activity -->
+    <string name="welcome_to_smartfarm">Welcome to SmartFarm</string>
+    <string name="ai_powered_agriculture">AI-Powered Agriculture Management</string>
+    <string name="sign_in">Sign In</string>
+    <string name="access_your_dashboard">Access your SmartFarm dashboard</string>
+    <string name="email_address">Email address</string>
+    <string name="password">Password</string>
+    <string name="remember_me">Remember me for 30 days</string>
+    <string name="forgot_password">Forgot password?</string>
+    <string name="signing_in">Signing in…</string>
+    <string name="or_continue_with">or continue with</string>
+    <string name="google">Google</string>
+    <string name="facebook">Facebook</string>
+    <string name="dont_have_account">Don\'t have an account?</string>
+    <string name="sign_up">Sign up</string>
+    <string name="demo_credentials">Demo Credentials</string>
+    <string name="demo_email_password">Email: demo@smartfarm.com\nPassword: demo123</string>
+    
+    <!-- Alert Messages -->
+    <string name="login_successful">Login successful! Redirecting…</string>
+    <string name="error_invalid_credentials">Invalid email or password. Please try again.</string>
+    <string name="error_login_failed">Login failed. Please check your connection and try again.</string>
+    
+    <!-- Error Messages -->
+    <string name="error_email_required">Email is required</string>
+    <string name="error_email_invalid">Please enter a valid email address</string>
+    <string name="error_password_required">Password is required</string>
+    <string name="error_password_short">Password must be at least 6 characters</string>
+    
+    <!-- Icons and UI -->
+    <string name="app_logo">SmartFarm Logo</string>
+    <string name="success_icon">Success</string>
+    <string name="error_icon">Error</string>
+    <string name="close_alert">Close alert</string>
+    
+    <!-- Content Descriptions -->
+    <string name="cd_email_field">Email input field</string>
+    <string name="cd_password_field">Password input field</string>
+    <string name="cd_login_button">Login button</string>
+    <string name="cd_remember_me">Remember me checkbox</string>
+    <string name="cd_social_google">Sign in with Google</string>
+    <string name="cd_social_facebook">Sign in with Facebook</string>
+    
+    <!-- Contact Activity -->
+    <string name="contact_smartfarm">Contact SmartFarm</string>
+    <string name="contact_subtitle">Get in touch with our team for support, questions, or feedback</string>
+    <string name="get_in_touch">Get in Touch</string>
+    <string name="email_us_directly">Email Us Directly</string>
+    <string name="call_support">Call Support</string>
+    <string name="visit_website">Visit Website</string>
+    <string name="send_us_message">Send Us a Message</string>
+    <string name="contact_form_subtitle">Fill out the form below and we\'ll get back to you within 24 hours</string>
+    <string name="first_name">First Name</string>
+    <string name="last_name">Last Name</string>
+    <string name="phone_number">Phone Number</string>
+    <string name="subject">Subject</string>
+    <string name="message">Message</string>
+    <string name="newsletter_subscription">Subscribe to our newsletter for farming tips and updates</string>
+    <string name="send_message">Send Message</string>
+    <string name="sending_message">Sending…</string>
+    <string name="contact_information">Contact Information</string>
+    <string name="response_time_24h">Response within 24 hours</string>
+    
+    <!-- Contact Form Validation -->
+    <string name="error_first_name_required">First name is required</string>
+    <string name="error_first_name_short">First name must be at least 2 characters</string>
+    <string name="error_last_name_required">Last name is required</string>
+    <string name="error_last_name_short">Last name must be at least 2 characters</string>
+    <string name="error_subject_required">Subject is required</string>
+    <string name="error_subject_short">Subject must be at least 5 characters</string>
+    <string name="error_message_required">Message is required</string>
+    <string name="error_message_short">Message must be at least 10 characters</string>
+    <string name="error_contact_failed">Failed to send message. Please try again.</string>
+    <string name="contact_successful">Message sent successfully! We\'ll get back to you soon.</string>
+    
+    <!-- Icons and UI -->
+    <string name="contact_icon">Contact Icon</string>
+    <string name="email_icon">Email Icon</string>
+    <string name="clock_icon">Clock Icon</string>
+    <string name="globe_icon">Globe Icon</string>
+    <string name="error_icon">Error Icon</string>
+    <string name="error_message">Error message</string>
+</resources>

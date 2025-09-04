@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - SmartFarm</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --primary-dark: #2E7D32;
+            --primary-light: #8BC34A;
+            --secondary-color: #2196F3;
+            --accent-color: #FF9800;
+            --text-dark: #1B5E20;
+            --text-light: #757575;
+            --background-light: #F5F5F5;
+            --white: #FFFFFF;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary-color) 50%, var(--primary-dark) 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .contact-container {
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .contact-header {
+            text-align: center;
+            color: var(--white);
+            margin-bottom: 50px;
+        }
+
+        .contact-header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .contact-header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .contact-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .contact-card {
+            background: var(--white);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+        }
+
+        .contact-card:hover {
+            box-shadow: var(--shadow-hover);
+            transform: translateY(-5px);
+        }
+
+        .contact-info {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            color: var(--white);
+            padding: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .contact-info::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .contact-info h3 {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .contact-method {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .contact-method i {
+            font-size: 1.5rem;
+            margin-right: 20px;
+            width: 40px;
+            text-align: center;
+            color: var(--primary-light);
+        }
+
+        .contact-method .details h5 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .contact-method .details p {
+            font-size: 1rem;
+            opacity: 0.9;
+            margin: 0;
+        }
+
+        .contact-form {
+            padding: 40px;
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .form-header h3 {
+            color: var(--text-dark);
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .form-header p {
+            color: var(--text-light);
+            font-size: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-label {
+            color: var(--text-dark);
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .form-control {
+            border: 2px solid #E0E0E0;
+            border-radius: 12px;
+            padding: 15px 20px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #FAFAFA;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25);
+            background: var(--white);
+        }
+
+        .form-control.is-invalid {
+            border-color: #dc3545;
+            background: #FFF5F5;
+        }
+
+        .form-control.is-valid {
+            border-color: var(--primary-color);
+            background: #F0FFF4;
+        }
+
+        .invalid-feedback {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 5px;
+            display: block;
+        }
+
+        .form-select {
+            border: 2px solid #E0E0E0;
+            border-radius: 12px;
+            padding: 15px 20px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #FAFAFA;
+        }
+
+        .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25);
+        }
+
+        textarea.form-control {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            border: none;
+            border-radius: 12px;
+            padding: 15px 40px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--white);
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+        }
+
+        .loading.show {
+            display: inline-block;
+        }
+
+        .alert {
+            border-radius: 12px;
+            border: none;
+            padding: 15px 20px;
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+        }
+
+        .alert-success {
+            background: #F0FDF4;
+            color: #16A34A;
+            border-left: 4px solid #16A34A;
+        }
+
+        .alert-danger {
+            background: #FEF2F2;
+            color: #DC2626;
+            border-left: 4px solid #DC2626;
+        }
+
+        .contact-stats {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+
+        .stat-item {
+            margin-bottom: 20px;
+        }
+
+        .stat-item i {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        .stat-item h4 {
+            color: var(--text-dark);
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .stat-item p {
+            color: var(--text-light);
+            font-size: 1rem;
+            margin: 0;
+        }
+
+        .faq-section {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+        }
+
+        .faq-item {
+            margin-bottom: 20px;
+            border-bottom: 1px solid #E0E0E0;
+            padding-bottom: 20px;
+        }
+
+        .faq-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .faq-question {
+            color: var(--text-dark);
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .faq-answer {
+            color: var(--text-light);
+            font-size: 1rem;
+            line-height: 1.6;
+            display: none;
+        }
+
+        .faq-answer.show {
+            display: block;
+        }
+
+        .faq-toggle {
+            transition: transform 0.3s ease;
+        }
+
+        .faq-toggle.rotated {
+            transform: rotate(180deg);
+        }
+
+        @media (max-width: 768px) {
+            .contact-header h1 {
+                font-size: 2.5rem;
+            }
+
+            .contact-info, .contact-form {
+                padding: 30px 20px;
+            }
+
+            .contact-method {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .contact-method i {
+                margin-right: 0;
+                margin-bottom: 15px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .contact-container {
+                padding: 20px 10px;
+            }
+
+            .contact-header h1 {
+                font-size: 2rem;
+            }
+
+            .contact-info, .contact-form {
+                padding: 25px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="contact-container">
+        <!-- Header -->
+        <div class="contact-header">
+            <h1>Contact SmartFarm</h1>
+            <p>Have questions about our AI-powered agriculture platform? We're here to help! Send us your queries and we'll get back to you within 24 hours.</p>
+        </div>
+
+        <div class="contact-content">
+            <!-- Contact Information Card -->
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="contact-card">
+                        <div class="contact-info">
+                            <h3>Get in Touch</h3>
+                            
+                            <div class="contact-method">
+                                <i class="fas fa-envelope"></i>
+                                <div class="details">
+                                    <h5>Email</h5>
+                                    <p>info@smartfarm-app.com</p>
+                                </div>
+                            </div>
+
+                            <div class="contact-method">
+                                <i class="fas fa-clock"></i>
+                                <div class="details">
+                                    <h5>Response Time</h5>
+                                    <p>Within 24 hours</p>
+                                </div>
+                            </div>
+
+                            <div class="contact-method">
+                                <i class="fas fa-globe"></i>
+                                <div class="details">
+                                    <h5>Website</h5>
+                                    <p>smartfarm-app.com</p>
+                                </div>
+                            </div>
+
+                            <div class="contact-method">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <div class="details">
+                                    <h5>Location</h5>
+                                    <p>Global Support</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact Form -->
+                <div class="col-lg-8">
+                    <div class="contact-card">
+                        <div class="contact-form">
+                            <div class="form-header">
+                                <h3>Send us a Message</h3>
+                                <p>Fill out the form below and we'll respond as soon as possible</p>
+                            </div>
+
+                            <!-- Alert Messages -->
+                            <div id="alertContainer"></div>
+
+                            <!-- Contact Form -->
+                            <form id="contactForm" novalidate>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="firstName" class="form-label">First Name *</label>
+                                            <input type="text" class="form-control" id="firstName" required>
+                                            <div class="invalid-feedback">
+                                                First name is required.
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="lastName" class="form-label">Last Name *</label>
+                                            <input type="text" class="form-control" id="lastName" required>
+                                            <div class="invalid-feedback">
+                                                Last name is required.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="email" class="form-label">Email Address *</label>
+                                            <input type="email" class="form-control" id="email" required>
+                                            <div class="invalid-feedback">
+                                                Please enter a valid email address.
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="phone" class="form-label">Phone Number</label>
+                                            <input type="tel" class="form-control" id="phone">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="subject" class="form-label">Subject *</label>
+                                    <select class="form-select" id="subject" required>
+                                        <option value="">Select a subject</option>
+                                        <option value="General Inquiry">General Inquiry</option>
+                                        <option value="Technical Support">Technical Support</option>
+                                        <option value="Feature Request">Feature Request</option>
+                                        <option value="Bug Report">Bug Report</option>
+                                        <option value="Partnership">Partnership</option>
+                                        <option value="Pricing">Pricing</option>
+                                        <option value="Training">Training & Support</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                    <div class="invalid-feedback">
+                                        Please select a subject.
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="message" class="form-label">Message *</label>
+                                    <textarea class="form-control" id="message" rows="5" placeholder="Please describe your inquiry in detail..." required></textarea>
+                                    <div class="invalid-feedback">
+                                        Message is required (minimum 10 characters).
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="newsletter" checked>
+                                        <label class="form-check-label" for="newsletter">
+                                            Subscribe to our newsletter for updates and farming tips
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn btn-submit">
+                                    <span class="btn-text">Send Message</span>
+                                    <span class="loading">
+                                        <i class="fas fa-spinner fa-spin"></i> Sending...
+                                    </span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Statistics -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="contact-stats">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="stat-item">
+                                    <i class="fas fa-users"></i>
+                                    <h4>10,000+</h4>
+                                    <p>Happy Farmers</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="stat-item">
+                                    <i class="fas fa-clock"></i>
+                                    <h4>24h</h4>
+                                    <p>Response Time</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="stat-item">
+                                    <i class="fas fa-star"></i>
+                                    <h4>4.9/5</h4>
+                                    <p>Customer Rating</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="stat-item">
+                                    <i class="fas fa-globe"></i>
+                                    <h4>50+</h4>
+                                    <p>Countries Served</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ Section -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="faq-section">
+                        <h3 class="text-center mb-4">Frequently Asked Questions</h3>
+                        
+                        <div class="faq-item">
+                            <div class="faq-question" onclick="toggleFAQ(this)">
+                                How do I get started with SmartFarm?
+                                <i class="fas fa-chevron-down faq-toggle"></i>
+                            </div>
+                            <div class="faq-answer">
+                                Getting started is easy! Simply download our mobile app or visit our web platform, create an account, and follow our setup wizard. Our team will guide you through the initial configuration of your farm profile and sensors.
+                            </div>
+                        </div>
+
+                        <div class="faq-item">
+                            <div class="faq-question" onclick="toggleFAQ(this)">
+                                What kind of support do you offer?
+                                <i class="fas fa-chevron-down faq-toggle"></i>
+                            </div>
+                            <div class="faq-answer">
+                                We offer comprehensive support including 24/7 technical assistance, training sessions, documentation, video tutorials, and a community forum where farmers can share experiences and best practices.
+                            </div>
+                        </div>
+
+                        <div class="faq-item">
+                            <div class="faq-question" onclick="toggleFAQ(this)">
+                                Can I integrate SmartFarm with existing farm equipment?
+                                <i class="fas fa-chevron-down faq-toggle"></i>
+                            </div>
+                            <div class="faq-answer">
+                                Yes! SmartFarm is designed to work with most existing farm equipment. We provide integration guides and support for popular brands. Our open API also allows custom integrations for specialized equipment.
+                            </div>
+                        </div>
+
+                        <div class="faq-item">
+                            <div class="faq-question" onclick="toggleFAQ(this)">
+                                How accurate are the AI predictions?
+                                <i class="fas fa-chevron-down faq-toggle"></i>
+                            </div>
+                            <div class="faq-answer">
+                                Our AI models achieve 85-95% accuracy for yield predictions and disease detection. Accuracy improves over time as the system learns from your specific farm conditions and data patterns.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Form validation and submission
+        document.getElementById('contactForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (validateForm()) {
+                submitForm();
+            }
+        });
+
+        function validateForm() {
+            const firstName = document.getElementById('firstName');
+            const lastName = document.getElementById('lastName');
+            const email = document.getElementById('email');
+            const subject = document.getElementById('subject');
+            const message = document.getElementById('message');
+            
+            let isValid = true;
+
+            // Reset validation states
+            [firstName, lastName, email, subject, message].forEach(field => {
+                field.classList.remove('is-invalid', 'is-valid');
+            });
+
+            // First Name validation
+            if (!firstName.value.trim()) {
+                firstName.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                firstName.classList.add('is-valid');
+            }
+
+            // Last Name validation
+            if (!lastName.value.trim()) {
+                lastName.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                lastName.classList.add('is-valid');
+            }
+
+            // Email validation
+            if (!email.value.trim()) {
+                email.classList.add('is-invalid');
+                isValid = false;
+            } else if (!isValidEmail(email.value)) {
+                email.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                email.classList.add('is-valid');
+            }
+
+            // Subject validation
+            if (!subject.value) {
+                subject.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                subject.classList.add('is-valid');
+            }
+
+            // Message validation
+            if (!message.value.trim()) {
+                message.classList.add('is-invalid');
+                isValid = false;
+            } else if (message.value.trim().length < 10) {
+                message.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                message.classList.add('is-valid');
+            }
+
+            return isValid;
+        }
+
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        function submitForm() {
+            const btnText = document.querySelector('.btn-text');
+            const loading = document.querySelector('.loading');
+            const formData = {
+                firstName: document.getElementById('firstName').value.trim(),
+                lastName: document.getElementById('lastName').value.trim(),
+                email: document.getElementById('email').value.trim(),
+                phone: document.getElementById('phone').value.trim(),
+                subject: document.getElementById('subject').value,
+                message: document.getElementById('message').value.trim(),
+                newsletter: document.getElementById('newsletter').checked
+            };
+
+            // Show loading state
+            btnText.style.display = 'none';
+            loading.classList.add('show');
+
+            // Simulate form submission
+            setTimeout(() => {
+                // Here you would normally send the data to your server
+                // For demo purposes, we'll simulate a successful submission
+                
+                showAlert('Thank you for your message! We\'ll get back to you within 24 hours.', 'success');
+                
+                // Reset form
+                document.getElementById('contactForm').reset();
+                
+                // Remove validation states
+                document.querySelectorAll('.form-control, .form-select').forEach(field => {
+                    field.classList.remove('is-invalid', 'is-valid');
+                });
+                
+                // Hide loading state
+                btnText.style.display = 'inline';
+                loading.classList.remove('show');
+                
+                // Scroll to top to show success message
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                
+            }, 2000);
+        }
+
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+            const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+            
+            alertContainer.innerHTML = `
+                <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+        }
+
+        function toggleFAQ(element) {
+            const answer = element.nextElementSibling;
+            const toggle = element.querySelector('.faq-toggle');
+            
+            if (answer.classList.contains('show')) {
+                answer.classList.remove('show');
+                toggle.classList.remove('rotated');
+            } else {
+                // Close all other FAQ items
+                document.querySelectorAll('.faq-answer').forEach(item => {
+                    item.classList.remove('show');
+                });
+                document.querySelectorAll('.faq-toggle').forEach(item => {
+                    item.classList.remove('rotated');
+                });
+                
+                // Open current item
+                answer.classList.add('show');
+                toggle.classList.add('rotated');
+            }
+        }
+
+        // Real-time validation
+        document.getElementById('firstName').addEventListener('blur', function() {
+            if (this.value.trim()) {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            }
+        });
+
+        document.getElementById('lastName').addEventListener('blur', function() {
+            if (this.value.trim()) {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            }
+        });
+
+        document.getElementById('email').addEventListener('blur', function() {
+            if (this.value.trim() && isValidEmail(this.value)) {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            }
+        });
+
+        document.getElementById('subject').addEventListener('change', function() {
+            if (this.value) {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            }
+        });
+
+        document.getElementById('message').addEventListener('blur', function() {
+            if (this.value.trim() && this.value.trim().length >= 10) {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            }
+        });
+    </script>
+</body>
+</html>

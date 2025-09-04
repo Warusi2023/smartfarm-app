@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="360" height="640" viewBox="0 0 360 640" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="360" height="640" fill="#F5F5F5"/>
+  
+  <!-- Status bar -->
+  <rect width="360" height="24" fill="#1B5E20"/>
+  <text x="20" y="16" fill="white" font-family="Arial" font-size="12">9:41</text>
+  <text x="320" y="16" fill="white" font-family="Arial" font-size="12">100%</text>
+  
+  <!-- Header -->
+  <rect x="0" y="24" width="360" height="80" fill="#FF9800"/>
+  <text x="20" y="60" fill="white" font-family="Arial" font-size="24" font-weight="bold">🔗 Blockchain Trace</text>
+  <text x="20" y="80" fill="white" font-family="Arial" font-size="14">Supply Chain Transparency</text>
+  
+  <!-- QR Code Scanner -->
+  <rect x="20" y="120" width="320" height="120" rx="12" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+  <text x="35" y="145" fill="#1B5E20" font-family="Arial" font-size="18" font-weight="bold">Scan Product QR Code</text>
+  
+  <!-- QR Code Display -->
+  <rect x="130" y="160" width="100" height="100" fill="#F5F5F5" stroke="#E0E0E0" stroke-width="2"/>
+  <text x="180" y="210" text-anchor="middle" fill="#9E9E9E" font-family="Arial" font-size="12">QR Code</text>
+  <text x="180" y="225" text-anchor="middle" fill="#9E9E9E" font-family="Arial" font-size="10">Scanner</text>
+  
+  <!-- Product Journey -->
+  <rect x="20" y="260" width="320" height="200" rx="12" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+  <text x="35" y="285" fill="#1B5E20" font-family="Arial" font-size="18" font-weight="bold">Product Journey</text>
+  
+  <!-- Timeline -->
+  <line x1="50" y1="310" x2="50" y2="420" stroke="#FF9800" stroke-width="3"/>
+  
+  <!-- Timeline Events -->
+  <circle cx="50" cy="310" r="8" fill="#4CAF50"/>
+  <text x="70" y="315" fill="#2E7D32" font-family="Arial" font-size="12" font-weight="bold">🌱 Planting</text>
+  <text x="70" y="330" fill="#9E9E9E" font-family="Arial" font-size="10">March 15, 2024</text>
+  <text x="70" y="345" fill="#9E9E9E" font-family="Arial" font-size="10">Field A, Wheat</text>
+  
+  <circle cx="50" cy="350" r="8" fill="#2196F3"/>
+  <text x="70" y="355" fill="#1976D2" font-family="Arial" font-size="12" font-weight="bold">💧 Irrigation</text>
+  <text x="70" y="370" fill="#9E9E9E" font-family="Arial" font-size="10">April 2, 2024</text>
+  <text x="70" y="385" fill="#9E9E9E" font-family="Arial" font-size="10">Automated system</text>
+  
+  <circle cx="50" cy="390" r="8" fill="#FF9800"/>
+  <text x="70" y="395" fill="#F57C00" font-family="Arial" font-size="12" font-weight="bold">🛡️ Treatment</text>
+  <text x="70" y="410" fill="#9E9E9E" font-family="Arial" font-size="10">May 10, 2024</text>
+  <text x="70" y="425" fill="#9E9E9E" font-family="Arial" font-size="10">Organic fertilizer</text>
+  
+  <circle cx="50" cy="430" r="8" fill="#9C27B0"/>
+  <text x="70" y="435" fill="#7B1FA2" font-family="Arial" font-size="12" font-weight="bold">🌾 Harvest</text>
+  <text x="70" y="450" fill="#9E9E9E" font-family="Arial" font-size="10">July 20, 2024</text>
+  <text x="70" y="465" fill="#9E9E9E" font-family="Arial" font-size="10">Yield: 2.5 tons</text>
+  
+  <!-- Verification Status -->
+  <rect x="20" y="480" width="320" height="120" rx="12" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+  <text x="35" y="505" fill="#1B5E20" font-family="Arial" font-size="18" font-weight="bold">Verification Status</text>
+  
+  <!-- Status Indicators -->
+  <rect x="35" y="520" width="90" height="60" rx="8" fill="#E8F5E8"/>
+  <text x="80" y="540" text-anchor="middle" fill="#4CAF50" font-family="Arial" font-size="24">✅</text>
+  <text x="80" y="560" text-anchor="middle" fill="#2E7D32" font-family="Arial" font-size="10">Authentic</text>
+  
+  <rect x="135" y="520" width="90" height="60" rx="8" fill="#E3F2FD"/>
+  <text x="180" y="540" text-anchor="middle" fill="#2196F3" font-family="Arial" font-size="24">🌱</text>
+  <text x="180" y="560" text-anchor="middle" fill="#1976D2" font-family="Arial" font-size="10">Organic</text>
+  
+  <rect x="235" y="520" width="90" height="60" rx="8" fill="#FFF3E0"/>
+  <text x="280" y="540" text-anchor="middle" fill="#FF9800" font-family="Arial" font-size="24">♻️</text>
+  <text x="280" y="560" text-anchor="middle" fill="#F57C00" font-family="Arial" font-size="10">Sustainable</text>
+  
+  <!-- Bottom Navigation -->
+  <rect x="0" y="600" width="360" height="40" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+  <text x="45" y="625" text-anchor="middle" fill="#9E9E9E" font-family="Arial" font-size="10">🏠</text>
+  <text x="45" y="635" text-anchor="middle" fill="#9E9E9E" font-family="Arial" font-size="8">Home</text>
+  
+  <text x="108" y="625" text-anchor="middle" fill="#9E9E9E" font-family="Arial" font-size="10">📊</text>
+  <text x="108" y="635" text-anchor="middle" fill="#9E9E9E" font-family="Arial" font-size="8">Analytics</text>
+  
+  <text x="171" y="625" text-anchor="middle" fill="#FF9800" font-family="Arial" font-size="10">🔗</text>
+  <text x="171" y="635" text-anchor="middle" fill="#FF9800" font-family="Arial" font-size="8">Trace</text>
+  
+  <text x="234" y="625" text-anchor="middle" fill="#9E9E9E" font-family="Arial" font-size="10">👥</text>
+  <text x="234" y="635" text-anchor="middle" fill="#9E9E9E" font-family="Arial" font-size="8">Community</text>
+  
+  <text x="297" y="625" text-anchor="middle" fill="#9E9E9E" font-family="Arial" font-size="10">👤</text>
+  <text x="297" y="635" text-anchor="middle" fill="#9E9E9E" font-family="Arial" font-size="8">Profile</text>
+</svg>

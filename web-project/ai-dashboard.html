@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartFarm AI Analytics Dashboard</title>
+    <meta name="description" content="AI-powered agricultural intelligence platform with predictive analytics, disease detection, and market forecasting">
+    <meta name="keywords" content="AI farming, agricultural analytics, crop prediction, disease detection, smart agriculture">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #2e7d32;
+            --secondary-color: #4caf50;
+            --accent-color: #8bc34a;
+            --dark-color: #1b5e20;
+            --light-color: #c8e6c9;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        
+        .navbar {
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .hero-section {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--dark-color) 100%);
+            color: white;
+            padding: 80px 0;
+            text-align: center;
+        }
+        
+        .feature-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: none;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+        
+        .ai-prediction {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+        }
+        
+        .disease-detection {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+        }
+        
+        .market-forecast {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+        }
+        
+        .sustainability-metrics {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .metric-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-left: 5px solid var(--primary-color);
+        }
+        
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .metric-label {
+            color: #666;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .ai-insight {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            backdrop-filter: blur(10px);
+        }
+        
+        .btn-ai {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-ai:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            color: white;
+        }
+        
+        .footer {
+            background: var(--dark-color);
+            color: white;
+            padding: 40px 0;
+            margin-top: 60px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-leaf me-2"></i>SmartFarm AI
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#dashboard">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#features">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#analytics">Analytics</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#community">Community</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <h1 class="display-4 fw-bold mb-4">
+                <i class="fas fa-brain me-3"></i>AI-Powered Agricultural Intelligence
+            </h1>
+            <p class="lead mb-4">
+                Leverage machine learning and predictive analytics to optimize your farming operations, 
+                detect diseases early, and forecast market trends with unprecedented accuracy.
+            </p>
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="row">
+                        <div class="col-md-3 col-6 mb-3">
+                            <div class="metric-card">
+                                <div class="metric-value">95%</div>
+                                <div class="metric-label">Prediction Accuracy</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6 mb-3">
+                            <div class="metric-card">
+                                <div class="metric-value">30%</div>
+                                <div class="metric-label">Yield Increase</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6 mb-3">
+                            <div class="metric-value">24/7</div>
+                            <div class="metric-label">Monitoring</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6 mb-3">
+                            <div class="metric-card">
+                                <div class="metric-value">AI</div>
+                                <div class="metric-label">Powered</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- AI Features Section -->
+    <section id="features" class="py-5">
+        <div class="container">
+            <h2 class="text-center mb-5">Revolutionary AI Features</h2>
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="ai-prediction">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3>Crop Yield Prediction</h3>
+                        <p>Advanced machine learning models analyze historical data, weather patterns, soil conditions, and management practices to predict crop yields with 95% accuracy.</p>
+                        <div class="ai-insight">
+                            <h5><i class="fas fa-lightbulb me-2"></i>AI Insight</h5>
+                            <p>Based on current conditions, your wheat crop is projected to yield 15% above average this season.</p>
+                        </div>
+                        <button class="btn btn-ai mt-3">
+                            <i class="fas fa-robot me-2"></i>View Predictions
+                        </button>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="disease-detection">
+                        <div class="feature-icon">
+                            <i class="fas fa-microscope"></i>
+                        </div>
+                        <h3>Plant Disease Detection</h3>
+                        <p>Computer vision AI analyzes plant images to detect diseases before visible symptoms appear, enabling early intervention and preventing crop losses.</p>
+                        <div class="ai-insight">
+                            <h5><i class="fas fa-exclamation-triangle me-2"></i>AI Alert</h5>
+                            <p>Early blight detected in 3 tomato plants. Recommended treatment: Remove affected leaves and apply copper-based fungicide.</p>
+                        </div>
+                        <button class="btn btn-ai mt-3">
+                            <i class="fas fa-camera me-2"></i>Scan Plants
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-4">
+                <div class="col-lg-6">
+                    <div class="market-forecast">
+                        <div class="feature-icon">
+                            <i class="fas fa-trending-up"></i>
+                        </div>
+                        <h3>Market Price Forecasting</h3>
+                        <p>AI algorithms analyze market trends, supply-demand dynamics, and global factors to predict crop prices, helping you optimize harvest timing and maximize profits.</p>
+                        <div class="ai-insight">
+                            <h5><i class="fas fa-chart-bar me-2"></i>Market Prediction</h5>
+                            <p>Corn prices expected to rise 12% in the next 3 months. Consider delaying harvest for better returns.</p>
+                        </div>
+                        <button class="btn btn-ai mt-3">
+                            <i class="fas fa-dollar-sign me-2"></i>View Forecasts
+                        </button>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="sustainability-metrics">
+                        <div class="feature-icon">
+                            <i class="fas fa-leaf"></i>
+                        </div>
+                        <h3>Sustainability Analytics</h3>
+                        <p>Track your farm's environmental impact, calculate carbon footprint, and generate carbon credits through sustainable farming practices.</p>
+                        <div class="ai-insight">
+                            <h5><i class="fas fa-seedling me-2"></i>Sustainability Score</h5>
+                            <p>Your farm's sustainability score is 85/100. Implement cover cropping to reach 90+ and qualify for carbon credits.</p>
+                        </div>
+                        <button class="btn btn-ai mt-3">
+                            <i class="fas fa-chart-pie me-2"></i>View Metrics
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Analytics Dashboard -->
+    <section id="analytics" class="py-5 bg-light">
+        <div class="container">
+            <h2 class="text-center mb-5">Real-Time Analytics Dashboard</h2>
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="chart-container">
+                        <h4>Crop Yield Predictions vs. Actual</h4>
+                        <canvas id="yieldChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="chart-container">
+                        <h4>Disease Detection Accuracy</h4>
+                        <canvas id="diseaseChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-4">
+                <div class="col-lg-6">
+                    <div class="chart-container">
+                        <h4>Weather Impact on Yield</h4>
+                        <canvas id="weatherChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="chart-container">
+                        <h4>Market Price Trends</h4>
+                        <canvas id="marketChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Community & Knowledge -->
+    <section id="community" class="py-5">
+        <div class="container">
+            <h2 class="text-center mb-5">AI-Enhanced Community & Knowledge</h2>
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="feature-card text-center">
+                        <div class="feature-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h4>Expert Forums</h4>
+                        <p>Connect with agricultural scientists, experienced farmers, and AI specialists. Share knowledge and get personalized recommendations.</p>
+                        <button class="btn btn-ai">Join Community</button>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="feature-card text-center">
+                        <div class="feature-icon">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <h4>AI Learning Paths</h4>
+                        <p>Personalized educational content and certification programs. Learn at your own pace with AI-driven recommendations.</p>
+                        <button class="btn btn-ai">Start Learning</button>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="feature-card text-center">
+                        <div class="feature-icon">
+                            <i class="fas fa-globe"></i>
+                        </div>
+                        <h4>Regional Best Practices</h4>
+                        <p>AI-curated farming techniques and best practices specific to your region, climate, and soil conditions.</p>
+                        <button class="btn btn-ai">Explore Practices</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5><i class="fas fa-leaf me-2"></i>SmartFarm AI</h5>
+                    <p>Revolutionizing agriculture through artificial intelligence and sustainable practices.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p>&copy; 2025 SmartFarm AI. All rights reserved.</p>
+                    <div class="social-links">
+                        <a href="#" class="text-white me-3"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-white me-3"><i class="fab fa-linkedin"></i></a>
+                        <a href="#" class="text-white"><i class="fab fa-facebook"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Initialize charts when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts();
+            initializeAIAnimations();
+        });
+
+        function initializeCharts() {
+            // Yield Prediction Chart
+            const yieldCtx = document.getElementById('yieldChart').getContext('2d');
+            new Chart(yieldCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'AI Prediction',
+                        data: [85, 87, 89, 92, 94, 96],
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.4
+                    }, {
+                        label: 'Actual Yield',
+                        data: [84, 86, 88, 91, 93, 95],
+                        borderColor: '#4caf50',
+                        backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+
+            // Disease Detection Chart
+            const diseaseCtx = document.getElementById('diseaseChart').getContext('2d');
+            new Chart(diseaseCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Early Detection', 'On-time Detection', 'Late Detection'],
+                    datasets: [{
+                        data: [75, 20, 5],
+                        backgroundColor: ['#4caf50', '#ff9800', '#f44336']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        }
+                    }
+                }
+            });
+
+            // Weather Impact Chart
+            const weatherCtx = document.getElementById('weatherChart').getContext('2d');
+            new Chart(weatherCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Temperature', 'Rainfall', 'Humidity', 'Wind'],
+                    datasets: [{
+                        label: 'Impact Score',
+                        data: [85, 92, 78, 65],
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.8)',
+                            'rgba(54, 162, 235, 0.8)',
+                            'rgba(255, 206, 86, 0.8)',
+                            'rgba(75, 192, 192, 0.8)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+
+            // Market Price Chart
+            const marketCtx = document.getElementById('marketChart').getContext('2d');
+            new Chart(marketCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                    datasets: [{
+                        label: 'Corn Price ($/bushel)',
+                        data: [4.25, 4.35, 4.42, 4.38],
+                        borderColor: '#4facfe',
+                        backgroundColor: 'rgba(79, 172, 254, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            min: 4.0,
+                            max: 4.5
+                        }
+                    }
+                }
+            });
+        }
+
+        function initializeAIAnimations() {
+            // Add AI-powered animations and interactions
+            const aiElements = document.querySelectorAll('.ai-insight, .feature-card');
+            
+            aiElements.forEach(element => {
+                element.addEventListener('mouseenter', function() {
+                    this.style.transform = 'scale(1.02)';
+                    this.style.transition = 'transform 0.3s ease';
+                });
+                
+                element.addEventListener('mouseleave', function() {
+                    this.style.transform = 'scale(1)';
+                });
+            });
+
+            // Simulate real-time AI updates
+            setInterval(() => {
+                updateAIMetrics();
+            }, 10000); // Update every 10 seconds
+        }
+
+        function updateAIMetrics() {
+            // Simulate real-time AI metric updates
+            const metrics = document.querySelectorAll('.metric-value');
+            metrics.forEach(metric => {
+                if (Math.random() > 0.7) { // 30% chance to update
+                    const currentValue = parseFloat(metric.textContent);
+                    const change = (Math.random() - 0.5) * 2; // ±1 change
+                    metric.textContent = Math.max(0, Math.min(100, currentValue + change)).toFixed(0) + '%';
+                }
+            });
+        }
+
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

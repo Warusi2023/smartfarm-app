@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="360" height="640" viewBox="0 0 360 640" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="360" height="640" fill="#F5F5F5"/>
+  
+  <!-- Status bar -->
+  <rect width="360" height="24" fill="#1B5E20"/>
+  <text x="20" y="16" fill="white" font-family="Arial" font-size="12">9:41</text>
+  <text x="320" y="16" fill="white" font-family="Arial" font-size="12">100%</text>
+  
+  <!-- Header -->
+  <rect x="0" y="24" width="360" height="80" fill="#2196F3"/>
+  <text x="20" y="60" fill="white" font-family="Arial" font-size="24" font-weight="bold">🤖 AI Analytics</text>
+  <text x="20" y="80" fill="white" font-family="Arial" font-size="14">Powered by Machine Learning</text>
+  
+  <!-- Yield Prediction Chart -->
+  <rect x="20" y="120" width="320" height="180" rx="12" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+  <text x="35" y="145" fill="#1B5E20" font-family="Arial" font-size="18" font-weight="bold">Crop Yield Prediction</text>
+  
+  <!-- Chart Area -->
+  <rect x="35" y="160" width="290" height="120" fill="#F8F9FA" rx="4"/>
+  
+  <!-- Chart Lines -->
+  <path d="M35,220 L85,200 L135,180 L185,190 L235,160 L285,140" stroke="#4CAF50" stroke-width="3" fill="none"/>
+  <path d="M35,240 L85,230 L135,210 L185,220 L235,200 L285,180" stroke="#FF9800" stroke-width="2" fill="none" stroke-dasharray="5,5"/>
+  
+  <!-- Chart Labels -->
+  <text x="35" y="290" fill="#9E9E9E" font-family="Arial" font-size="10">Jan</text>
+  <text x="85" y="290" fill="#9E9E9E" font-family="Arial" font-size="10">Feb</text>
+  <text x="135" y="290" fill="#9E9E9E" font-family="Arial" font-size="10">Mar</text>
+  <text x="185" y="290" fill="#9E9E9E" font-family="Arial" font-size="10">Apr</text>
+  <text x="235" y="290" fill="#9E9E9E" font-family="Arial" font-size="10">May</text>
+  <text x="285" y="290" fill="#9E9E9E" font-family="Arial" font-size="10">Jun</text>
+  
+  <!-- Legend -->
+  <circle cx="35" cy="310" r="4" fill="#4CAF50"/>
+  <text x="45" y="315" fill="#2E7D32" font-family="Arial" font-size="10">Predicted</text>
+  <circle cx="120" cy="310" r="4" fill="#FF9800"/>
+  <text x="130" y="315" fill="#F57C00" font-family="Arial" font-size="10">Historical</text>
+  
+  <!-- AI Insights -->
+  <rect x="20" y="320" width="320" height="120" rx="12" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+  <text x="35" y="345" fill="#1B5E20" font-family="Arial" font-size="18" font-weight="bold">AI Recommendations</text>
+  
+  <rect x="35" y="360" width="310" height="25" fill="#E8F5E8" rx="4"/>
+  <text x="45" y="377" fill="#2E7D32" font-family="Arial" font-size="12">🌱 Plant wheat 2 weeks earlier this year</text>
+  
+  <rect x="35" y="390" width="310" height="25" fill="#E3F2FD" rx="4"/>
+  <text x="45" y="407" fill="#1976D2" font-family="Arial" font-size="12">💧 Increase irrigation by 15% in April</text>
+  
+  <rect x="35" y="420" width="310" height="25" fill="#FFF3E0" rx="4"/>
+  <text x="45" y="437" fill="#F57C00" font-family="Arial" font-size="12">🛡️ Apply fungicide before rainy season</text>
+  
+  <!-- Disease Detection -->
+  <rect x="20" y="460" width="320" height="120" rx="12" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+  <text x="35" y="485" fill="#1B5E20" font-family="Arial" font-size="18" font-weight="bold">Disease Detection</text>
+  
+  <!-- Plant Health Status -->
+  <rect x="35" y="500" width="70" height="60" rx="8" fill="#E8F5E8"/>
+  <text x="70" y="520" text-anchor="middle" fill="#4CAF50" font-family="Arial" font-size="24">🌾</text>
+  <text x="70" y="540" text-anchor="middle" fill="#2E7D32" font-family="Arial" font-size="10">Wheat</text>
+  <text x="70" y="550" text-anchor="middle" fill="#4CAF50" font-family="Arial" font-size="8">Healthy</text>
+  
+  <rect x="115" y="500" width="70" height="60" rx="8" fill="#FFF3E0"/>
+  <text x="150" y="520" text-anchor="middle" fill="#FF9800" font-family="Arial" font-size="24">🌽</text>
+  <text x="150" y="540" text-anchor="middle" fill="#F57C00" font-family="Arial" font-size="10">Corn</text>
+  <text x="150" y="550" text-anchor="middle" fill="#FF9800" font-family="Arial" font-size="8">Monitor</text>
+  
+  <rect x="195" y="500" width="70" height="60" rx="8" fill="#FFEBEE"/>
+  <text x="230" y="520" text-anchor="middle" fill="#F44336" font-family="Arial" font-size="24">🥔</text>
+  <text x="230" y="540" text-anchor="middle" fill="#D32F2F" font-family="Arial" font-size="10">Potato</text>
+  <text x="230" y="550" text-anchor="middle" fill="#F44336" font-family="Arial" font-size="8">Alert</text>
+  
+  <rect x="275" y="500" width="70" height="60" rx="8" fill="#E8F5E8"/>
+  <text x="310" y="520" text-anchor="middle" fill="#4CAF50" font-family="Arial" font-size="24">🍅</text>
+  <text x="310" y="540" text-anchor="middle" fill="#2E7D32" font-family="Arial" font-size="10">Tomato</text>
+  <text x="310" y="550" text-anchor="middle" fill="#4CAF50" font-family="Arial" font-size="8">Healthy</text>
+  
+  <!-- Bottom Navigation -->
+  <rect x="0" y="600" width="360" height="40" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+  <text x="45" y="625" text-anchor="middle" fill="#9E9E9E" font-family="Arial" font-size="10">🏠</text>
+  <text x="45" y="635" text-anchor="middle" fill="#9E9E9E" font-family="Arial" font-size="8">Home</text>
+  
+  <text x="108" y="625" text-anchor="middle" fill="#2196F3" font-family="Arial" font-size="10">📊</text>
+  <text x="108" y="635" text-anchor="middle" fill="#2196F3" font-family="Arial" font-size="8">Analytics</text>
+  
+  <text x="171" y="625" text-anchor="middle" fill="#9E9E9E" font-family="Arial" font-size="10">🔗</text>
+  <text x="171" y="635" text-anchor="middle" fill="#9E9E9E" font-family="Arial" font-size="8">Trace</text>
+  
+  <text x="234" y="625" text-anchor="middle" fill="#9E9E9E" font-family="Arial" font-size="10">👥</text>
+  <text x="234" y="635" text-anchor="middle" fill="#9E9E9E" font-family="Arial" font-size="8">Community</text>
+  
+  <text x="297" y="625" text-anchor="middle" fill="#9E9E9E" font-family="Arial" font-size="10">👤</text>
+  <text x="297" y="635" text-anchor="middle" fill="#9E9E9E" font-family="Arial" font-size="8">Profile</text>
+</svg>

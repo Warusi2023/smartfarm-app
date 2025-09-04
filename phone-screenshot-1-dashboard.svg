@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="360" height="640" viewBox="0 0 360 640" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="360" height="640" fill="#F5F5F5"/>
+  
+  <!-- Status bar -->
+  <rect width="360" height="24" fill="#1B5E20"/>
+  <text x="20" y="16" fill="white" font-family="Arial" font-size="12">9:41</text>
+  <text x="320" y="16" fill="white" font-family="Arial" font-size="12">100%</text>
+  
+  <!-- Header -->
+  <rect x="0" y="24" width="360" height="80" fill="#4CAF50"/>
+  <text x="20" y="60" fill="white" font-family="Arial" font-size="24" font-weight="bold">SmartFarm</text>
+  <text x="20" y="80" fill="white" font-family="Arial" font-size="14">Welcome back, Farmer John</text>
+  
+  <!-- Quick Stats -->
+  <rect x="20" y="120" width="320" height="100" rx="12" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+  <text x="35" y="145" fill="#1B5E20" font-family="Arial" font-size="18" font-weight="bold">Today's Overview</text>
+  
+  <!-- Stats Grid -->
+  <rect x="35" y="160" width="90" height="50" rx="8" fill="#E8F5E8"/>
+  <text x="80" y="180" text-anchor="middle" fill="#2E7D32" font-family="Arial" font-size="20" font-weight="bold">24°C</text>
+  <text x="80" y="195" text-anchor="middle" fill="#4CAF50" font-family="Arial" font-size="12">Temperature</text>
+  
+  <rect x="135" y="160" width="90" height="50" rx="8" fill="#E3F2FD"/>
+  <text x="180" y="180" text-anchor="middle" fill="#1976D2" font-family="Arial" font-size="20" font-weight="bold">65%</text>
+  <text x="180" y="195" text-anchor="middle" fill="#2196F3" font-family="Arial" font-size="12">Humidity</text>
+  
+  <rect x="235" y="160" width="90" height="50" rx="8" fill="#FFF3E0"/>
+  <text x="280" y="180" text-anchor="middle" fill="#F57C00" font-family="Arial" font-size="20" font-weight="bold">12mm</text>
+  <text x="280" y="195" text-anchor="middle" fill="#FF9800" font-family="Arial" font-size="12">Rainfall</text>
+  
+  <!-- AI Insights Card -->
+  <rect x="20" y="240" width="320" height="120" rx="12" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+  <text x="35" y="265" fill="#1B5E20" font-family="Arial" font-size="18" font-weight="bold">🤖 AI Insights</text>
+  <text x="35" y="285" fill="#2E7D32" font-family="Arial" font-size="14">Optimal planting time: Tomorrow</text>
+  <text x="35" y="305" fill="#2E7D32" font-family="Arial" font-size="14">Expected yield: +15% this season</text>
+  <text x="35" y="325" fill="#2E7D32" font-family="Arial" font-size="14">Disease risk: Low (monitoring active)</text>
+  <text x="35" y="345" fill="#4CAF50" font-family="Arial" font-size="12">Tap for detailed analysis →</text>
+  
+  <!-- Quick Actions -->
+  <rect x="20" y="380" width="320" height="80" rx="12" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+  <text x="35" y="405" fill="#1B5E20" font-family="Arial" font-size="18" font-weight="bold">Quick Actions</text>
+  
+  <!-- Action Buttons -->
+  <rect x="35" y="420" width="70" height="30" rx="15" fill="#4CAF50"/>
+  <text x="70" y="440" text-anchor="middle" fill="white" font-family="Arial" font-size="12">Scan Plant</text>
+  
+  <rect x="115" y="420" width="70" height="30" rx="15" fill="#2196F3"/>
+  <text x="150" y="440" text-anchor="middle" fill="white" font-family="Arial" font-size="12">Add Record</text>
+  
+  <rect x="195" y="420" width="70" height="30" rx="15" fill="#FF9800"/>
+  <text x="230" y="440" text-anchor="middle" fill="white" font-family="Arial" font-size="12">Community</text>
+  
+  <rect x="275" y="420" width="70" height="30" rx="15" fill="#9C27B0"/>
+  <text x="310" y="440" text-anchor="middle" fill="white" font-family="Arial" font-size="12">Analytics</text>
+  
+  <!-- Recent Activity -->
+  <rect x="20" y="480" width="320" height="120" rx="12" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+  <text x="35" y="505" fill="#1B5E20" font-family="Arial" font-size="18" font-weight="bold">Recent Activity</text>
+  
+  <rect x="35" y="520" width="310" height="25" fill="#F5F5F5" rx="4"/>
+  <text x="45" y="537" fill="#2E7D32" font-family="Arial" font-size="12">🌱 Wheat planted in Field A</text>
+  <text x="300" y="537" fill="#9E9E9E" font-family="Arial" font-size="10">2h ago</text>
+  
+  <rect x="35" y="550" width="310" height="25" fill="#F5F5F5" rx="4"/>
+  <text x="45" y="567" fill="#2E7D32" font-family="Arial" font-size="12">💧 Irrigation scheduled for tomorrow</text>
+  <text x="300" y="567" fill="#9E9E9E" font-family="Arial" font-size="10">4h ago</text>
+  
+  <rect x="35" y="580" width="310" height="25" fill="#F5F5F5" rx="4"/>
+  <text x="45" y="597" fill="#2E7D32" font-family="Arial" font-size="12">📊 Weekly report generated</text>
+  <text x="300" y="597" fill="#9E9E9E" font-family="Arial" font-size="10">1d ago</text>
+  
+  <!-- Bottom Navigation -->
+  <rect x="0" y="600" width="360" height="40" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+  <text x="45" y="625" text-anchor="middle" fill="#4CAF50" font-family="Arial" font-size="10">🏠</text>
+  <text x="45" y="635" text-anchor="middle" fill="#4CAF50" font-family="Arial" font-size="8">Home</text>
+  
+  <text x="108" y="625" text-anchor="middle" fill="#9E9E9E" font-family="Arial" font-size="10">📊</text>
+  <text x="108" y="635" text-anchor="middle" fill="#9E9E9E" font-family="Arial" font-size="8">Analytics</text>
+  
+  <text x="171" y="625" text-anchor="middle" fill="#9E9E9E" font-family="Arial" font-size="10">🔗</text>
+  <text x="171" y="635" text-anchor="middle" fill="#9E9E9E" font-family="Arial" font-size="8">Trace</text>
+  
+  <text x="234" y="625" text-anchor="middle" fill="#9E9E9E" font-family="Arial" font-size="10">👥</text>
+  <text x="234" y="635" text-anchor="middle" fill="#9E9E9E" font-family="Arial" font-size="8">Community</text>
+  
+  <text x="297" y="625" text-anchor="middle" fill="#9E9E9E" font-family="Arial" font-size="10">👤</text>
+  <text x="297" y="635" text-anchor="middle" fill="#9E9E9E" font-family="Arial" font-size="8">Profile</text>
+</svg>

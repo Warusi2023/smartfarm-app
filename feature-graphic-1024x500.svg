@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1024" height="500" viewBox="0 0 1024 500" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background gradient -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1B5E20;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#2E7D32;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#4CAF50;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="cardGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:rgba(255,255,255,0.95);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgba(255,255,255,0.85);stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="techGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2196F3;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1976D2;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="blockchainGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF9800;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#F57C00;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="4" dy="4" stdDeviation="8" flood-color="rgba(0,0,0,0.3)"/>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1024" height="500" fill="url(#bgGradient)"/>
+  
+  <!-- Decorative elements -->
+  <circle cx="100" cy="100" r="60" fill="rgba(255,255,255,0.1)"/>
+  <circle cx="924" cy="400" r="80" fill="rgba(255,255,255,0.1)"/>
+  <circle cx="800" cy="80" r="40" fill="rgba(255,255,255,0.1)"/>
+  
+  <!-- Main title area -->
+  <rect x="50" y="50" width="400" height="120" rx="20" fill="url(#cardGradient)" filter="url(#shadow)"/>
+  <text x="70" y="100" fill="#1B5E20" font-family="Arial, sans-serif" font-size="48" font-weight="bold">SmartFarm</text>
+  <text x="70" y="130" fill="#2E7D32" font-family="Arial, sans-serif" font-size="24">AI-Powered Agriculture</text>
+  <text x="70" y="155" fill="#4CAF50" font-family="Arial, sans-serif" font-size="18">Blockchain • Community • Sustainability</text>
+  
+  <!-- Feature cards -->
+  <!-- AI Analytics Card -->
+  <rect x="50" y="200" width="280" height="120" rx="15" fill="url(#cardGradient)" filter="url(#shadow)"/>
+  <circle cx="80" cy="230" r="25" fill="url(#techGradient)"/>
+  <path d="M70,220 L75,230 L90,215 M75,230 L85,240 M85,240 L90,215" stroke="white" stroke-width="3" fill="none"/>
+  <text x="120" y="235" fill="#1B5E20" font-family="Arial, sans-serif" font-size="20" font-weight="bold">AI Analytics</text>
+  <text x="120" y="255" fill="#2E7D32" font-family="Arial, sans-serif" font-size="14">Predictive insights</text>
+  <text x="120" y="275" fill="#4CAF50" font-family="Arial, sans-serif" font-size="14">Crop optimization</text>
+  <text x="120" y="295" fill="#4CAF50" font-family="Arial, sans-serif" font-size="14">Disease detection</text>
+  
+  <!-- Blockchain Card -->
+  <rect x="370" y="200" width="280" height="120" rx="15" fill="url(#cardGradient)" filter="url(#shadow)"/>
+  <circle cx="400" cy="230" r="25" fill="url(#blockchainGradient)"/>
+  <circle cx="400" cy="230" r="15" fill="#FFC107"/>
+  <text x="440" y="235" fill="#1B5E20" font-family="Arial, sans-serif" font-size="20" font-weight="bold">Blockchain</text>
+  <text x="440" y="255" fill="#2E7D32" font-family="Arial, sans-serif" font-size="14">Supply chain transparency</text>
+  <text x="440" y="275" fill="#4CAF50" font-family="Arial, sans-serif" font-size="14">Product verification</text>
+  <text x="440" y="295" fill="#4CAF50" font-family="Arial, sans-serif" font-size="14">Immutable records</text>
+  
+  <!-- Community Card -->
+  <rect x="50" y="340" width="280" height="120" rx="15" fill="url(#cardGradient)" filter="url(#shadow)"/>
+  <circle cx="80" cy="370" r="25" fill="#9C27B0"/>
+  <path d="M70,360 Q80,350 90,360 Q80,370 70,360" fill="white"/>
+  <path d="M75,365 Q80,355 85,365 Q80,375 75,365" fill="white"/>
+  <text x="120" y="375" fill="#1B5E20" font-family="Arial, sans-serif" font-size="20" font-weight="bold">Community</text>
+  <text x="120" y="395" fill="#2E7D32" font-family="Arial, sans-serif" font-size="14">Expert knowledge sharing</text>
+  <text x="120" y="415" fill="#4CAF50" font-family="Arial, sans-serif" font-size="14">Regional best practices</text>
+  <text x="120" y="435" fill="#4CAF50" font-family="Arial, sans-serif" font-size="14">Learning platform</text>
+  
+  <!-- Sustainability Card -->
+  <rect x="370" y="340" width="280" height="120" rx="15" fill="url(#cardGradient)" filter="url(#shadow)"/>
+  <circle cx="400" cy="370" r="25" fill="#4CAF50"/>
+  <path d="M390,360 L400,350 L410,360 M400,350 L400,370 M400,370 L390,360 M400,370 L410,360" stroke="white" stroke-width="3" fill="none"/>
+  <text x="440" y="375" fill="#1B5E20" font-family="Arial, sans-serif" font-size="20" font-weight="bold">Sustainability</text>
+  <text x="440" y="395" fill="#2E7D32" font-family="Arial, sans-serif" font-size="14">Carbon footprint tracking</text>
+  <text x="440" y="415" fill="#4CAF50" font-family="Arial, sans-serif" font-size="14">Carbon credits</text>
+  <text x="440" y="435" fill="#4CAF50" font-family="Arial, sans-serif" font-size="14">ESG reporting</text>
+  
+  <!-- Right side illustration -->
+  <g transform="translate(700, 100)">
+    <!-- Farm landscape -->
+    <rect x="0" y="200" width="300" height="100" fill="#8BC34A"/>
+    <rect x="0" y="200" width="300" height="20" fill="#4CAF50"/>
+    
+    <!-- Farm buildings -->
+    <rect x="50" y="150" width="60" height="50" fill="#8D6E63"/>
+    <polygon points="50,150 80,130 110,150" fill="#8D6E63"/>
+    <rect x="60" y="160" width="15" height="20" fill="#81C784"/>
+    <rect x="85" y="160" width="15" height="20" fill="#81C784"/>
+    
+    <!-- Growing crops -->
+    <ellipse cx="200" cy="180" rx="20" ry="30" fill="#4CAF50"/>
+    <ellipse cx="220" cy="170" rx="15" ry="25" fill="#8BC34A"/>
+    <ellipse cx="240" cy="185" rx="18" ry="28" fill="#4CAF50"/>
+    
+    <!-- Technology overlay -->
+    <circle cx="150" cy="120" r="20" fill="url(#techGradient)" opacity="0.8"/>
+    <path d="M140,110 L145,120 L160,105 M145,120 L155,130 M155,130 L160,105" stroke="white" stroke-width="2" fill="none"/>
+    
+    <!-- Blockchain nodes -->
+    <circle cx="250" cy="100" r="12" fill="url(#blockchainGradient)"/>
+    <circle cx="250" cy="100" r="8" fill="#FFC107"/>
+    <text x="250" y="104" text-anchor="middle" fill="white" font-family="Arial" font-size="8" font-weight="bold">B</text>
+    
+    <!-- Connection lines -->
+    <line x1="150" y1="120" x2="250" y2="100" stroke="#FF9800" stroke-width="2" stroke-dasharray="3,3"/>
+  </g>
+  
+  <!-- Call to action -->
+  <rect x="700" y="400" width="280" height="60" rx="30" fill="#FF5722" filter="url(#shadow)"/>
+  <text x="840" y="440" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="24" font-weight="bold">Download Now</text>
+</svg>

@@ -6,6 +6,11 @@ const { runMigrations } = require('./migrations');
 const dbPath = path.join(__dirname, 'smartfarm.db');
 const db = new sqlite3.Database(dbPath);
 
+// Wait for database to be ready
+db.on('open', () => {
+    console.log('✅ Database connection established');
+});
+
 // Initialize database with migrations
 async function initializeDatabase() {
     try {
@@ -13,6 +18,9 @@ async function initializeDatabase() {
         
         // Run migrations to set up schema
         await runMigrations();
+        
+        // Wait a bit for database to be ready
+        await new Promise(resolve => setTimeout(resolve, 1000));
         
         // Insert sample data
         await insertSampleData();

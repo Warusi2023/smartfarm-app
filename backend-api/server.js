@@ -16,7 +16,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Database initialization
-const db = require('./database/init');
+const { initializeDatabase } = require('./database/init');
 
 // Import routes with authentication middleware
 const { router: authRouter, authenticateToken, authorizeRole } = require('./routes/auth');
@@ -198,13 +198,27 @@ app.use('*', (req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
-    console.log(`🚀 SmartFarm Backend API running on port ${PORT}`);
-    console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
-    console.log(`📚 API Documentation: http://localhost:${PORT}/api/docs`);
-    console.log(`🔐 Authentication: JWT Bearer Token`);
-    console.log(`💾 Database: SQLite`);
-    console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
-});
+async function startServer() {
+    try {
+        // Initialize database first
+        await initializeDatabase();
+        
+        // Start the server
+        app.listen(PORT, () => {
+            console.log(`🚀 SmartFarm Backend API running on port ${PORT}`);
+            console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
+            console.log(`📚 API Documentation: http://localhost:${PORT}/api/docs`);
+            console.log(`🔐 Authentication: JWT Bearer Token`);
+            console.log(`💾 Database: SQLite`);
+            console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+        });
+    } catch (error) {
+        console.error('❌ Failed to start server:', error);
+        process.exit(1);
+    }
+}
+
+// Start the server
+startServer();
 
 module.exports = app; 

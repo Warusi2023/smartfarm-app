@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1366" height="768" viewBox="0 0 1366 768" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="1366" height="768" fill="#F5F5F5"/>
+  
+  <!-- Browser Chrome -->
+  <rect x="0" y="0" width="1366" height="80" fill="#E0E0E0"/>
+  <rect x="0" y="0" width="1366" height="40" fill="#F5F5F5"/>
+  
+  <!-- Browser Tabs -->
+  <rect x="0" y="40" width="200" height="40" fill="#4CAF50"/>
+  <text x="20" y="65" fill="white" font-family="Arial" font-size="14" font-weight="bold">SmartFarm Dashboard</text>
+  
+  <rect x="200" y="40" width="150" height="40" fill="#E0E0E0"/>
+  <text x="220" y="65" fill="#424242" font-family="Arial" font-size="14">AI Analytics</text>
+  
+  <rect x="350" y="40" width="150" height="40" fill="#E0E0E0"/>
+  <text x="370" y="65" fill="#424242" font-family="Arial" font-size="14">Blockchain</text>
+  
+  <!-- Header -->
+  <rect x="0" y="80" width="1366" height="120" fill="#4CAF50"/>
+  <text x="80" y="130" fill="white" font-family="Arial" font-size="56" font-weight="bold">SmartFarm</text>
+  <text x="80" y="170" fill="white" font-family="Arial" font-size="28">AI-Powered Agriculture Management Platform</text>
+  
+  <!-- Main Dashboard Grid -->
+  <!-- Top Row -->
+  <rect x="40" y="224" width="400" height="200" rx="20" fill="white" stroke="#E0E0E0" stroke-width="2"/>
+  <text x="64" y="260" fill="#1B5E20" font-family="Arial" font-size="32" font-weight="bold">Weather Overview</text>
+  
+  <!-- Weather Stats -->
+  <rect x="80" y="280" width="110" height="100" rx="16" fill="#E8F5E8"/>
+  <text x="135" y="320" text-anchor="middle" fill="#2E7D32" font-family="Arial" font-size="40" font-weight="bold">24°C</text>
+  <text x="135" y="350" text-anchor="middle" fill="#4CAF50" font-family="Arial" font-size="18">Temperature</text>
+  
+  <rect x="200" y="280" width="110" height="100" rx="16" fill="#E3F2FD"/>
+  <text x="255" y="320" text-anchor="middle" fill="#1976D2" font-family="Arial" font-size="40" font-weight="bold">65%</text>
+  <text x="255" y="350" text-anchor="middle" fill="#2196F3" font-family="Arial" font-size="18">Humidity</text>
+  
+  <rect x="320" y="280" width="110" height="100" rx="16" fill="#FFF3E0"/>
+  <text x="375" y="320" text-anchor="middle" fill="#F57C00" font-family="Arial" font-size="40" font-weight="bold">12mm</text>
+  <text x="375" y="350" text-anchor="middle" fill="#FF9800" font-family="Arial" font-size="18">Rainfall</text>
+  
+  <!-- AI Insights -->
+  <rect x="460" y="224" width="400" height="200" rx="20" fill="white" stroke="#E0E0E0" stroke-width="2"/>
+  <text x="484" y="260" fill="#1B5E20" font-family="Arial" font-size="32" font-weight="bold">🤖 AI Insights</text>
+  
+  <rect x="500" y="280" width="360" height="120" rx="16" fill="#F8F9FA"/>
+  <text x="520" y="308" fill="#2E7D32" font-family="Arial" font-size="20" font-weight="bold">Optimal planting time: Tomorrow</text>
+  <text x="520" y="340" fill="#2E7D32" font-family="Arial" font-size="20">Expected yield: +15% this season</text>
+  <text x="520" y="372" fill="#2E7D32" font-family="Arial" font-size="20">Disease risk: Low (monitoring active)</text>
+  <text x="520" y="404" fill="#4CAF50" font-family="Arial" font-size="18">Tap for detailed analysis →</text>
+  
+  <!-- Quick Actions -->
+  <rect x="880" y="224" width="400" height="200" rx="20" fill="white" stroke="#E0E0E0" stroke-width="2"/>
+  <text x="904" y="260" fill="#1B5E20" font-family="Arial" font-size="32" font-weight="bold">Quick Actions</text>
+  
+  <!-- Action Buttons Grid -->
+  <rect x="920" y="280" width="170" height="80" rx="16" fill="#4CAF50"/>
+  <text x="1005" y="310" text-anchor="middle" fill="white" font-family="Arial" font-size="32" font-weight="bold">📱</text>
+  <text x="1005" y="340" text-anchor="middle" fill="white" font-family="Arial" font-size="18">Scan Plant</text>
+  
+  <rect x="1110" y="280" width="170" height="80" rx="16" fill="#2196F3"/>
+  <text x="1195" y="310" text-anchor="middle" fill="white" font-family="Arial" font-size="32" font-weight="bold">📝</text>
+  <text x="1195" y="340" text-anchor="middle" fill="white" font-family="Arial" font-size="18">Add Record</text>
+  
+  <rect x="920" y="370" width="170" height="80" rx="16" fill="#FF9800"/>
+  <text x="1005" y="400" text-anchor="middle" fill="white" font-family="Arial" font-size="32" font-weight="bold">👥</text>
+  <text x="1005" y="430" text-anchor="middle" fill="white" font-family="Arial" font-size="18">Community</text>
+  
+  <rect x="1110" y="370" width="170" height="80" rx="16" fill="#9C27B0"/>
+  <text x="1195" y="400" text-anchor="middle" fill="white" font-family="Arial" font-size="32" font-weight="bold">📊</text>
+  <text x="1195" y="430" text-anchor="middle" fill="white" font-family="Arial" font-size="18">Analytics</text>
+  
+  <!-- Middle Row -->
+  <rect x="40" y="448" width="600" height="200" rx="20" fill="white" stroke="#E0E0E0" stroke-width="2"/>
+  <text x="64" y="484" fill="#1B5E20" font-family="Arial" font-size="32" font-weight="bold">Recent Activity</text>
+  
+  <!-- Activity List -->
+  <rect x="80" y="500" width="560" height="40" fill="#F5F5F5" rx="8"/>
+  <text x="100" y="525" fill="#2E7D32" font-family="Arial" font-size="18">🌱 Wheat planted in Field A</text>
+  <text x="520" y="525" fill="#9E9E9E" font-family="Arial" font-size="16">2h ago</text>
+  
+  <rect x="80" y="550" width="560" height="40" fill="#F5F5F5" rx="8"/>
+  <text x="100" y="575" fill="#2E7D32" font-family="Arial" font-size="18">💧 Irrigation scheduled for tomorrow</text>
+  <text x="520" y="575" fill="#9E9E9E" font-family="Arial" font-size="16">4h ago</text>
+  
+  <rect x="80" y="600" width="560" height="40" fill="#F5F5F5" rx="8"/>
+  <text x="100" y="625" fill="#2E7D32" font-family="Arial" font-size="18">📊 Weekly report generated</text>
+  <text x="520" y="625" fill="#9E9E9E" font-family="Arial" font-size="16">1d ago</text>
+  
+  <rect x="80" y="650" width="560" height="40" fill="#F5F5F5" rx="8"/>
+  <text x="100" y="675" fill="#2E7D32" font-family="Arial" font-size="18">🔗 Blockchain record updated</text>
+  <text x="520" y="675" fill="#9E9E9E" font-family="Arial" font-size="16">2d ago</text>
+  
+  <!-- Sustainability Metrics -->
+  <rect x="680" y="448" width="600" height="200" rx="20" fill="white" stroke="#E0E0E0" stroke-width="2"/>
+  <text x="704" y="484" fill="#1B5E20" font-family="Arial" font-size="32" font-weight="bold">Sustainability Score</text>
+  
+  <!-- Sustainability Indicators -->
+  <rect x="720" y="500" width="120" height="120" rx="16" fill="#E8F5E8"/>
+  <text x="780" y="560" text-anchor="middle" fill="#2E7D32" font-family="Arial" font-size="48" font-weight="bold">92</text>
+  <text x="780" y="590" text-anchor="middle" fill="#4CAF50" font-family="Arial" font-size="18">Overall</text>
+  
+  <rect x="860" y="500" width="120" height="120" rx="16" fill="#E3F2FD"/>
+  <text x="920" y="560" text-anchor="middle" fill="#1976D2" font-family="Arial" font-size="48" font-weight="bold">85</text>
+  <text x="920" y="590" text-anchor="middle" fill="#2196F3" font-family="Arial" font-size="18">Carbon</text>
+  
+  <rect x="1000" y="500" width="120" height="120" rx="16" fill="#FFF3E0"/>
+  <text x="1060" y="560" text-anchor="middle" fill="#F57C00" font-family="Arial" font-size="48" font-weight="bold">78</text>
+  <text x="1060" y="590" text-anchor="middle" fill="#FF9800" font-family="Arial" font-size="18">Water</text>
+  
+  <rect x="1140" y="500" width="120" height="120" rx="16" fill="#F3E5F5"/>
+  <text x="1200" y="560" text-anchor="middle" fill="#9C27B0" font-family="Arial" font-size="48" font-weight="bold">95</text>
+  <text x="1200" y="590" text-anchor="middle" fill="#7B1FA2" font-family="Arial" font-size="18">Biodiversity</text>
+  
+  <!-- Bottom Row -->
+  <rect x="40" y="672" width="1240" height="80" rx="20" fill="white" stroke="#E0E0E0" stroke-width="2"/>
+  
+  <!-- Bottom Navigation -->
+  <text x="160" y="705" text-anchor="middle" fill="#4CAF50" font-family="Arial" font-size="20">🏠</text>
+  <text x="160" y="725" text-anchor="middle" fill="#4CAF50" font-family="Arial" font-size="14">Home</text>
+  
+  <text x="320" y="705" text-anchor="middle" fill="#9E9E9E" font-family="Arial" font-size="20">📊</text>
+  <text x="320" y="725" text-anchor="middle" fill="#9E9E9E" font-family="Arial" font-size="14">Analytics</text>
+  
+  <text x="480" y="705" text-anchor="middle" fill="#9E9E9E" font-family="Arial" font-size="20">🔗</text>
+  <text x="480" y="725" text-anchor="middle" fill="#9E9E9E" font-family="Arial" font-size="14">Trace</text>
+  
+  <text x="640" y="705" text-anchor="middle" fill="#9E9E9E" font-family="Arial" font-size="20">👥</text>
+  <text x="640" y="725" text-anchor="middle" fill="#9E9E9E" font-family="Arial" font-size="14">Community</text>
+  
+  <text x="800" y="705" text-anchor="middle" fill="#9E9E9E" font-family="Arial" font-size="20">♻️</text>
+  <text x="800" y="725" text-anchor="middle" fill="#9E9E9E" font-family="Arial" font-size="14">Sustainability</text>
+  
+  <text x="960" y="705" text-anchor="middle" fill="#9E9E9E" font-family="Arial" font-size="20">📚</text>
+  <text x="960" y="725" text-anchor="middle" fill="#9E9E9E" font-family="Arial" font-size="14">Learn</text>
+  
+  <text x="1120" y="705" text-anchor="middle" fill="#9E9E9E" font-family="Arial" font-size="20">👤</text>
+  <text x="1120" y="725" text-anchor="middle" fill="#9E9E9E" font-family="Arial" font-size="14">Profile</text>
+  
+  <!-- Sidebar -->
+  <rect x="1280" y="80" width="86" height="688" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+  
+  <!-- Sidebar Icons -->
+  <text x="1323" y="120" text-anchor="middle" fill="#4CAF50" font-family="Arial" font-size="24">🏠</text>
+  <text x="1323" y="180" text-anchor="middle" fill="#9E9E9E" font-family="Arial" font-size="24">📊</text>
+  <text x="1323" y="240" text-anchor="middle" fill="#9E9E9E" font-family="Arial" font-size="24">🔗</text>
+  <text x="1323" y="300" text-anchor="middle" fill="#9E9E9E" font-family="Arial" font-size="24">👥</text>
+  <text x="1323" y="360" text-anchor="middle" fill="#9E9E9E" font-family="Arial" font-size="24">♻️</text>
+  <text x="1323" y="420" text-anchor="middle" fill="#9E9E9E" font-family="Arial" font-size="24">📚</text>
+  <text x="1323" y="480" text-anchor="middle" fill="#9E9E9E" font-family="Arial" font-size="24">👤</text>
+  <text x="1323" y="540" text-anchor="middle" fill="#9E9E9E" font-family="Arial" font-size="24">⚙️</text>
+</svg>

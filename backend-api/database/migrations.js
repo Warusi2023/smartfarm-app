@@ -243,13 +243,13 @@ const migrations = [
         version: '002',
         name: 'Add User Permissions and Settings',
         up: `
-            -- Add permissions column to users table
+            -- Add permissions column to users table (if not exists)
             ALTER TABLE users ADD COLUMN permissions TEXT DEFAULT '[]';
             
-            -- Add settings column to users table
+            -- Add settings column to users table (if not exists)
             ALTER TABLE users ADD COLUMN settings TEXT DEFAULT '{}';
             
-            -- Add notification preferences
+            -- Add notification preferences (if not exists)
             ALTER TABLE users ADD COLUMN notificationPreferences TEXT DEFAULT '{}';
             
             -- Create user sessions table
@@ -347,35 +347,180 @@ function getAppliedMigrations() {
 }
 
 // Apply migration
-function applyMigration(migration) {
+// Helper function to check if column exists
+function columnExists(tableName, columnName) {
     return new Promise((resolve, reject) => {
-        db.serialize(() => {
-            db.run('BEGIN TRANSACTION');
-            
-            db.run(migration.up, (err) => {
-                if (err) {
-                    db.run('ROLLBACK');
-                    reject(err);
-                    return;
-                }
+        db.all(`PRAGMA table_info(${tableName})`, (err, rows) => {
+            if (err) {
+                reject(err);
+                return;
+            }
+            const exists = rows.some(row => row.name === columnName);
+            resolve(exists);
+        });
+    });
+}
+
+// Helper function to safely add column
+async function safeAddColumn(tableName, columnName, columnDef) {
+    const exists = await columnExists(tableName, columnName);
+    if (!exists) {
+        return new Promise((resolve, reject) => {
+            db.run(`ALTER TABLE ${tableName} ADD COLUMN ${columnName} ${columnDef}`, (err) => {
+                if (err) reject(err);
+                else resolve();
+            });
+        });
+    }
+    return Promise.resolve();
+}
+
+function applyMigration(migration) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            db.serialize(() => {
+                db.run('BEGIN TRANSACTION');
                 
-                const checksum = require('crypto').createHash('md5').update(migration.up).digest('hex');
-                db.run(
-                    'INSERT INTO migrations (version, name, checksum) VALUES (?, ?, ?)',
-                    [migration.version, migration.name, checksum],
-                    (err) => {
+                // Handle migration 002 specially to avoid duplicate column errors
+                if (migration.version === '002') {
+                    // Check if columns exist before adding them
+                    db.all("PRAGMA table_info(users)", (err, rows) => {
                         if (err) {
                             db.run('ROLLBACK');
                             reject(err);
                             return;
                         }
                         
-                        db.run('COMMIT');
-                        resolve();
-                    }
-                );
+                        const columnNames = rows.map(row => row.name);
+                        const columnsToAdd = [];
+                        
+                        if (!columnNames.includes('permissions')) {
+                            columnsToAdd.push("ALTER TABLE users ADD COLUMN permissions TEXT DEFAULT '[]'");
+                        }
+                        if (!columnNames.includes('settings')) {
+                            columnsToAdd.push("ALTER TABLE users ADD COLUMN settings TEXT DEFAULT '{}'");
+                        }
+                        if (!columnNames.includes('notificationPreferences')) {
+                            columnsToAdd.push("ALTER TABLE users ADD COLUMN notificationPreferences TEXT DEFAULT '{}'");
+                        }
+                        
+                        // Execute column additions
+                        let completed = 0;
+                        const total = columnsToAdd.length + 3; // +3 for table creation and 2 indexes
+                        
+                        if (columnsToAdd.length === 0) {
+                            completed = columnsToAdd.length;
+                        } else {
+                            columnsToAdd.forEach(sql => {
+                                db.run(sql, (err) => {
+                                    if (err) {
+                                        console.log(`Column already exists or error: ${err.message}`);
+                                    }
+                                    completed++;
+                                    if (completed >= total) {
+                                        finishMigration();
+                                    }
+                                });
+                            });
+                        }
+                        
+                        // Create user sessions table
+                        db.run(`
+                            CREATE TABLE IF NOT EXISTS user_sessions (
+                                id TEXT PRIMARY KEY,
+                                userId TEXT NOT NULL,
+                                token TEXT NOT NULL,
+                                deviceInfo TEXT,
+                                ipAddress TEXT,
+                                expiresAt DATETIME NOT NULL,
+                                createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+                                FOREIGN KEY (userId) REFERENCES users (id)
+                            );
+                        `, (err) => {
+                            if (err) {
+                                console.log(`Table creation error: ${err.message}`);
+                            }
+                            completed++;
+                            if (completed >= total) {
+                                finishMigration();
+                            }
+                        });
+                        
+                        // Create indexes
+                        db.run('CREATE INDEX IF NOT EXISTS idx_user_sessions_user ON user_sessions(userId);', (err) => {
+                            if (err) {
+                                console.log(`Index creation error: ${err.message}`);
+                            }
+                            completed++;
+                            if (completed >= total) {
+                                finishMigration();
+                            }
+                        });
+                        
+                        db.run('CREATE INDEX IF NOT EXISTS idx_user_sessions_token ON user_sessions(token);', (err) => {
+                            if (err) {
+                                console.log(`Index creation error: ${err.message}`);
+                            }
+                            completed++;
+                            if (completed >= total) {
+                                finishMigration();
+                            }
+                        });
+                        
+                        function finishMigration() {
+                            const checksum = require('crypto').createHash('md5').update(migration.up).digest('hex');
+                            db.run(
+                                'INSERT INTO migrations (version, name, checksum) VALUES (?, ?, ?)',
+                                [migration.version, migration.name, checksum],
+                                (err) => {
+                                    if (err) {
+                                        db.run('ROLLBACK');
+                                        reject(err);
+                                        return;
+                                    }
+                                    
+                                    db.run('COMMIT');
+                                    resolve();
+                                }
+                            );
+                        }
+                    });
+                } else {
+                    // Handle other migrations normally
+                    console.log(`Executing migration ${migration.version}: ${migration.name}`);
+                    console.log(`SQL length: ${migration.up.length} characters`);
+                    
+                    db.run(migration.up, (err) => {
+                        if (err) {
+                            console.error(`Migration ${migration.version} failed:`, err);
+                            db.run('ROLLBACK');
+                            reject(err);
+                            return;
+                        }
+                        
+                        console.log(`Migration ${migration.version} executed successfully`);
+                        
+                        const checksum = require('crypto').createHash('md5').update(migration.up).digest('hex');
+                        db.run(
+                            'INSERT INTO migrations (version, name, checksum) VALUES (?, ?, ?)',
+                            [migration.version, migration.name, checksum],
+                            (err) => {
+                                if (err) {
+                                    db.run('ROLLBACK');
+                                    reject(err);
+                                    return;
+                                }
+                                
+                                db.run('COMMIT');
+                                resolve();
+                            }
+                        );
+                    });
+                }
             });
-        });
+        } catch (err) {
+            reject(err);
+        }
     });
 }
 
