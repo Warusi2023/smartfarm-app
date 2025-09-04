@@ -1,29 +1,8 @@
-# Ignore Android project files
-android-project/
-*.gradle
-*.gradle.kts
-gradle/
-gradlew
-gradlew.bat
-build/
-.gradle/
-settings.gradle.kts
+# Ignore everything except backend-api
+*
 
-# Ignore other non-backend files
-web-project/
-*.svg
-*.md
-!backend-api/*.md
-!README.md
-
-# Ignore all documentation files
-*.ps1
-*.bat
-*.log
-*.properties
-
-# Keep only backend-api directory and essential files
+# Allow only backend-api and essential files
 !backend-api/
 !package.json
 !railway.toml
-!Procfile
+!README.md
