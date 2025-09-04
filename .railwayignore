@@ -7,12 +7,23 @@ gradlew
 gradlew.bat
 build/
 .gradle/
+settings.gradle.kts
 
 # Ignore other non-backend files
 web-project/
 *.svg
 *.md
 !backend-api/*.md
+!README.md
 
-# Keep only backend-api directory
+# Ignore all documentation files
+*.ps1
+*.bat
+*.log
+*.properties
+
+# Keep only backend-api directory and essential files
 !backend-api/
+!package.json
+!railway.toml
+!Procfile
