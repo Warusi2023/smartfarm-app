@@ -1,39 +1,57 @@
-# Ignore Android project completely
-android-project/
-*.gradle
-*.gradle.kts
-gradle/
-gradlew
-gradlew.bat
-build/
-.gradle/
-settings.gradle.kts
-local.properties
+# Railway ignore file - exclude unnecessary directories from deployment
 
-# Ignore web project
-web-project/
-
-# Ignore documentation and assets
-*.md
-!README.md
-*.svg
-*.ps1
-*.bat
-*.log
-*.properties
-
-# Ignore other directories
-keystore-backups/
-app-store-assets/
-app-store-screenshots/
-screenshots/
-launch-prep/
+# Advanced features (not needed for main deployment)
 advanced-features/
 
-# Keep only backend-api and essential config files
-!backend-api/
-!package.json
-!railway.json
-!nixpacks.toml
-!railway.toml
-!.railway/
+# Android project (not needed for backend)
+android-project/
+
+# Web project (deployed separately to Netlify)
+web-project/
+
+# Documentation and guides
+*.md
+!README.md
+
+# Development files
+.git/
+.gitignore
+.vscode/
+.idea/
+
+# Logs
+*.log
+logs/
+
+# Dependencies
+node_modules/
+
+# Build artifacts
+dist/
+build/
+
+# Environment files (use Railway variables instead)
+.env
+.env.local
+.env.production
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDE files
+*.swp
+*.swo
+*~
+
+# Test files
+test/
+tests/
+__tests__/
+
+# Coverage reports
+coverage/
+
+# Temporary files
+tmp/
+temp/
