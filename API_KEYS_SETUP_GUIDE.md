@@ -1,272 +1,142 @@
-# SmartFarm API Keys Setup Guide
+# 🔑 API Keys Setup Guide
 
-## 🔑 **Required API Keys for SmartFarm**
+## 🚨 **CRITICAL: Fix CORS Issue First!**
 
-SmartFarm requires the following API keys for full functionality:
+Your backend is currently configured for `https://www.smartfarm-app.com` but your actual frontend is `https://dulcet-sawine-92d6a8.netlify.app`.
+
+### **Fix CORS in Railway Dashboard:**
+1. Go to your Railway dashboard
+2. Find your service settings
+3. Add/Update this environment variable:
+```
+CORS_ORIGIN=https://dulcet-sawine-92d6a8.netlify.app
+```
+
+## 🔑 **API Keys Setup**
 
 ### **1. Google Maps API Key**
-**Purpose:** Maps integration, location services, geolocation features
+**Purpose**: Location services, maps, geolocation
 
-#### **Setup Steps:**
-1. **Go to Google Cloud Console**
-   - Visit [console.cloud.google.com](https://console.cloud.google.com)
-   - Sign in with your Google account
+**How to get it:**
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select existing
+3. Enable "Maps JavaScript API" and "Geocoding API"
+4. Go to "Credentials" → "Create Credentials" → "API Key"
+5. Copy the API key
 
-2. **Create or Select Project**
-   - Click on the project dropdown at the top
-   - Click "New Project" or select existing project
-   - Give it a name like "SmartFarm"
-
-3. **Enable APIs**
-   - Go to "APIs & Services" > "Library"
-   - Search for and enable these APIs:
-     - Maps JavaScript API
-     - Geocoding API
-     - Places API
-     - Directions API
-
-4. **Create API Key**
-   - Go to "APIs & Services" > "Credentials"
-   - Click "Create Credentials" > "API Key"
-   - Copy the generated key
-
-5. **Restrict API Key (Recommended)**
-   - Click on the created API key
-   - Under "Application restrictions":
-     - Select "HTTP referrers (web sites)"
-     - Add your domain: `*.yourdomain.com/*`
-   - Under "API restrictions":
-     - Select "Restrict key"
-     - Select the APIs you enabled above
-
-#### **Environment Variable:**
-```bash
-GOOGLE_MAPS_API_KEY=your_google_maps_api_key_here
+**Set in Railway:**
+```
+MAPS_API_KEY=your_google_maps_api_key_here
 ```
 
----
+**Set in Netlify:**
+```
+VITE_GOOGLE_MAPS_API_KEY=your_google_maps_api_key_here
+```
 
 ### **2. OpenWeather API Key**
-**Purpose:** Real-time weather data, forecasts, weather alerts
+**Purpose**: Weather forecasts, climate data
 
-#### **Setup Steps:**
-1. **Go to OpenWeatherMap**
-   - Visit [openweathermap.org](https://openweathermap.org)
-   - Click "Sign Up" or "Sign In"
+**How to get it:**
+1. Go to [OpenWeatherMap](https://openweathermap.org/api)
+2. Sign up for a free account
+3. Go to "API Keys" section
+4. Copy your API key
 
-2. **Create Account**
-   - Fill in your details
-   - Verify your email address
-
-3. **Get API Key**
-   - Go to "My API Keys" section
-   - Copy your default API key
-   - Or create a new one with a specific name
-
-4. **Choose Plan (Free tier available)**
-   - Free: 1,000 calls/day
-   - Paid plans for higher limits
-
-#### **Environment Variable:**
-```bash
-OPENWEATHER_API_KEY=your_openweather_api_key_here
+**Set in Railway:**
+```
+WEATHER_API_KEY=your_openweather_api_key_here
 ```
 
----
+**Set in Netlify:**
+```
+VITE_OPENWEATHER_API_KEY=your_openweather_api_key_here
+```
 
 ### **3. OpenAI API Key**
-**Purpose:** Expert Chat feature, AI-powered farming advice
+**Purpose**: AI chat features, expert advice
 
-#### **Setup Steps:**
-1. **Go to OpenAI Platform**
-   - Visit [platform.openai.com](https://platform.openai.com)
-   - Sign up or sign in
+**How to get it:**
+1. Go to [OpenAI Platform](https://platform.openai.com/)
+2. Sign up or log in
+3. Go to "API Keys" section
+4. Create a new API key
+5. Copy the key (starts with `sk-`)
 
-2. **Add Payment Method**
-   - OpenAI requires a payment method
-   - Set up usage limits to control costs
-
-3. **Create API Key**
-   - Go to "API Keys" section
-   - Click "Create new secret key"
-   - Copy the generated key (store it securely)
-
-4. **Set Usage Limits**
-   - Go to "Usage" section
-   - Set daily/monthly limits to control costs
-   - Monitor usage regularly
-
-#### **Environment Variable:**
-```bash
+**Set in Railway:**
+```
 OPENAI_API_KEY=your_openai_api_key_here
 ```
 
----
-
-## 🚀 **Deployment Platform Configuration**
-
-### **Netlify Environment Variables**
-1. Go to your Netlify dashboard
-2. Select your SmartFarm site
-3. Go to "Site settings" > "Environment variables"
-4. Add each variable:
-   ```
-   GOOGLE_MAPS_API_KEY=your_key_here
-   OPENWEATHER_API_KEY=your_key_here
-   OPENAI_API_KEY=your_key_here
-   ```
-
-### **Vercel Environment Variables**
-1. Go to your Vercel dashboard
-2. Select your SmartFarm project
-3. Go to "Settings" > "Environment Variables"
-4. Add each variable for Production environment
-
-### **GitHub Pages (GitHub Secrets)**
-1. Go to your GitHub repository
-2. Go to "Settings" > "Secrets and variables" > "Actions"
-3. Add each secret:
-   ```
-   GOOGLE_MAPS_API_KEY=your_key_here
-   OPENWEATHER_API_KEY=your_key_here
-   OPENAI_API_KEY=your_key_here
-   ```
-
----
-
-## 🔒 **Security Best Practices**
-
-### **API Key Security**
-- ✅ **Never commit API keys to version control**
-- ✅ **Use environment variables**
-- ✅ **Restrict API keys to your domain**
-- ✅ **Set usage limits and monitor usage**
-- ✅ **Rotate keys regularly**
-
-### **Google Maps API Security**
-```javascript
-// Example of restricting Google Maps API key
-// In your HTML or JavaScript
-<script>
-  // Restrict to your domain
-  const API_KEY = 'your_restricted_api_key';
-  // The key should be restricted to *.yourdomain.com/*
-</script>
+**Set in Netlify:**
+```
+VITE_OPENAI_API_KEY=your_openai_api_key_here
 ```
 
-### **OpenAI API Security**
-- Set up usage alerts
-- Monitor token usage
-- Implement rate limiting in your application
+### **4. JWT Secret (Backend Only)**
+**Purpose**: User authentication security
 
----
-
-## 🧪 **Testing API Keys**
-
-### **Test Google Maps API**
-```javascript
-// Test in browser console
-fetch(`https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places`)
-  .then(response => console.log('Google Maps API working'))
-  .catch(error => console.error('Google Maps API error:', error));
+**Generate a secure secret:**
+```bash
+# Use this command to generate a secure JWT secret
+node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 ```
 
-### **Test OpenWeather API**
-```javascript
-// Test in browser console
-fetch(`https://api.openweathermap.org/data/2.5/weather?q=London&appid=YOUR_API_KEY`)
-  .then(response => response.json())
-  .then(data => console.log('OpenWeather API working:', data))
-  .catch(error => console.error('OpenWeather API error:', error));
+**Set in Railway:**
+```
+JWT_SECRET=your_generated_jwt_secret_here
 ```
 
-### **Test OpenAI API**
-```javascript
-// Test in browser console (requires backend proxy)
-fetch('/api/openai/test', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ message: 'Hello' })
-})
-.then(response => response.json())
-.then(data => console.log('OpenAI API working:', data))
-.catch(error => console.error('OpenAI API error:', error));
+## 🚀 **Complete Environment Variables Setup**
+
+### **Railway Dashboard Environment Variables:**
+```
+CORS_ORIGIN=https://dulcet-sawine-92d6a8.netlify.app
+NODE_ENV=production
+PORT=3000
+JWT_SECRET=your_generated_jwt_secret_here
+WEATHER_API_KEY=your_openweather_api_key_here
+MAPS_API_KEY=your_google_maps_api_key_here
+OPENAI_API_KEY=your_openai_api_key_here
 ```
 
----
+### **Netlify Dashboard Environment Variables:**
+```
+VITE_API_URL=https://smartfarm-app-production.up.railway.app
+VITE_GOOGLE_MAPS_API_KEY=your_google_maps_api_key_here
+VITE_OPENWEATHER_API_KEY=your_openweather_api_key_here
+VITE_OPENAI_API_KEY=your_openai_api_key_here
+```
 
-## 💰 **Cost Management**
+## 🧪 **Testing Your Setup**
 
-### **Google Maps API Costs**
-- **Free tier:** $200 credit per month
-- **Maps JavaScript API:** $7 per 1,000 loads
-- **Geocoding API:** $5 per 1,000 requests
-- **Places API:** $17 per 1,000 requests
+### **1. Test CORS Fix:**
+```bash
+curl -H "Origin: https://dulcet-sawine-92d6a8.netlify.app" https://smartfarm-app-production.up.railway.app/api/health
+```
 
-### **OpenWeather API Costs**
-- **Free tier:** 1,000 calls/day
-- **Paid plans:** Starting from $40/month
+### **2. Test Frontend:**
+Visit: `https://dulcet-sawine-92d6a8.netlify.app`
 
-### **OpenAI API Costs**
-- **GPT-3.5-turbo:** $0.002 per 1K tokens
-- **GPT-4:** $0.03 per 1K tokens (input)
-- **Set usage limits to control costs**
+### **3. Test API Integration:**
+Check if the frontend can successfully call backend APIs
 
----
+## 📋 **Priority Order:**
+1. **FIRST**: Fix CORS issue in Railway
+2. **SECOND**: Set up Google Maps API (for location features)
+3. **THIRD**: Set up OpenWeather API (for weather data)
+4. **FOURTH**: Set up OpenAI API (for AI features)
+5. **FIFTH**: Generate and set JWT secret
 
-## 🚨 **Troubleshooting**
+## 🔒 **Security Notes:**
+- Never commit API keys to your repository
+- Use environment variables for all sensitive data
+- Regularly rotate your API keys
+- Monitor API usage to avoid unexpected charges
 
-### **Common Issues**
-
-1. **API Key Not Working**
-   - Check if key is correctly copied
-   - Verify key is not restricted too much
-   - Check billing status (Google Maps)
-
-2. **CORS Errors**
-   - Ensure API keys are used server-side when possible
-   - Configure CORS headers in your backend
-
-3. **Rate Limiting**
-   - Implement caching for API responses
-   - Add retry logic with exponential backoff
-   - Monitor usage and upgrade plans if needed
-
-4. **Billing Issues**
-   - Check payment method is valid
-   - Verify billing is enabled (Google Cloud)
-   - Set up billing alerts
-
----
-
-## 📞 **Support Resources**
-
-### **Google Maps API**
-- [Google Maps API Documentation](https://developers.google.com/maps/documentation)
-- [Google Cloud Console](https://console.cloud.google.com)
-- [Google Cloud Support](https://cloud.google.com/support)
-
-### **OpenWeather API**
-- [OpenWeather API Documentation](https://openweathermap.org/api)
-- [OpenWeather Support](https://openweathermap.org/support)
-
-### **OpenAI API**
-- [OpenAI API Documentation](https://platform.openai.com/docs)
-- [OpenAI Support](https://help.openai.com)
-
----
-
-## ✅ **Setup Checklist**
-
-- [ ] Google Maps API key created and restricted
-- [ ] OpenWeather API key obtained
-- [ ] OpenAI API key created with billing setup
-- [ ] Environment variables configured in deployment platform
-- [ ] API keys tested and working
-- [ ] Usage limits and monitoring set up
-- [ ] Security measures implemented
-- [ ] Cost management plan in place
-
----
-
-**Your SmartFarm application is now ready for production with full API functionality! 🌾🚀** 
+## 🆘 **Need Help?**
+If you encounter any issues:
+1. Check Railway logs for backend errors
+2. Check Netlify logs for frontend errors
+3. Verify environment variables are set correctly
+4. Test API endpoints individually
