@@ -1,0 +1,86 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+    
+    - name: Install dependencies
+      run: |
+        cd web-project && npm ci
+        cd ../railway-minimal && npm ci
+    
+    - name: Build web application
+      run: |
+        cd web-project
+        npm run build
+    
+    - name: Build Android APK
+      run: |
+        cd android-project
+        chmod +x ./gradlew
+        ./gradlew assembleRelease
+    
+    - name: Create Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        body: |
+          ## 🚀 SmartFarm Release ${{ github.ref }}
+          
+          ### 📦 Downloads
+          - **Web Application**: Built and ready for deployment
+          - **Android APK**: Available in release assets
+          
+          ### 🔧 Installation
+          1. Download the appropriate package for your platform
+          2. Follow the installation instructions in the documentation
+          3. Configure your environment variables
+          
+          ### 📚 Documentation
+          - [Installation Guide](docs/INSTALLATION.md)
+          - [User Manual](docs/USER_MANUAL.md)
+          - [API Documentation](docs/API.md)
+          
+          ### 🐛 Bug Reports
+          If you encounter any issues, please report them on our [Issues Page](https://github.com/Warusi2023/smartfarm-app/issues).
+        draft: false
+        prerelease: false
+    
+    - name: Upload Web Build
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./web-project/dist/
+        asset_name: smartfarm-web-${{ github.ref_name }}.zip
+        asset_content_type: application/zip
+    
+    - name: Upload Android APK
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./android-project/app/build/outputs/apk/release/app-release.apk
+        asset_name: smartfarm-android-${{ github.ref_name }}.apk
+        asset_content_type: application/vnd.android.package-archive
