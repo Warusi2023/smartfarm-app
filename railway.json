@@ -1,7 +1,6 @@
 {
   "build": {
-    "builder": "nixpacks",
-    "buildCommand": "npm install"
+    "builder": "nixpacks"
   },
   "deploy": {
     "startCommand": "npm start",
