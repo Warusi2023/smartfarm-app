@@ -1,7 +1,7 @@
 [build]
 builder = "nixpacks"
 rootDirectory = "railway-backend"
-buildCommand = "npm install"
+buildCommand = "npm install --production"
 
 [deploy]
 startCommand = "npm start"

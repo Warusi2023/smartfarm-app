@@ -1,4 +1,5 @@
 # Railway ignore file - ONLY include railway-backend directory
+# This ensures Railway only sees the railway-backend directory and nothing else
 
 # Ignore everything except railway-backend
 *
@@ -6,3 +7,57 @@
 !railway-backend/**
 !railway.json
 !railway.toml
+
+# Explicitly ignore all other directories
+advanced-features/
+android-project/
+web-project/
+backend-api/
+keystore-backups/
+launch-prep/
+netlify-deploy/
+screenshots/
+app-store-assets/
+app-store-screenshots/
+
+# Ignore all documentation
+*.md
+!railway-backend/README.md
+
+# Ignore all scripts
+*.ps1
+*.bat
+*.sh
+
+# Ignore all configuration files except Railway ones
+*.gradle
+*.kts
+*.sql
+*.log
+
+# Ignore all build artifacts
+dist/
+build/
+node_modules/
+!railway-backend/node_modules/
+
+# Ignore all environment files
+.env*
+!.railwayignore
+
+# Ignore all IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Ignore all OS files
+.DS_Store
+Thumbs.db
+
+# Ignore all temporary files
+tmp/
+temp/
+*.tmp
+*.temp

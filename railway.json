@@ -1,7 +1,7 @@
 {
   "build": {
     "builder": "nixpacks",
-    "buildCommand": "npm install"
+    "buildCommand": "npm install --production"
   },
   "deploy": {
     "startCommand": "npm start",
@@ -12,9 +12,3 @@
   },
   "rootDirectory": "railway-backend"
 }
-
-
-
-
-
-
