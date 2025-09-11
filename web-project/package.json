@@ -6,7 +6,9 @@
   "scripts": {
     "build": "echo 'Static files already in place'",
     "start": "echo 'Static HTML files - no server needed'",
-    "dev": "echo 'Static HTML files - no dev server needed'"
+    "dev": "echo 'Static HTML files - no dev server needed'",
+    "lint": "echo 'No linting configured for static HTML'",
+    "test": "echo 'No tests configured for static HTML'"
   },
   "keywords": [
     "smartfarm",
