@@ -3,7 +3,7 @@ builder = "nixpacks"
 rootDirectory = "backend-api"
 
 [deploy]
-startCommand = "npm ci --only=production && npm start"
+startCommand = "npm install --production && npm start"
 healthcheckPath = "/api/health"
 healthcheckTimeout = 100
 restartPolicyType = "ON_FAILURE"

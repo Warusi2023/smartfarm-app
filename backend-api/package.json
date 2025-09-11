@@ -2,9 +2,9 @@
   "name": "smartfarm-backend",
   "version": "1.0.0",
   "description": "SmartFarm Backend API",
-  "main": "server.js",
+  "main": "railway-server.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "node railway-server.js",
     "dev": "nodemon server.js",
     "build": "echo 'No build step required for Node.js'",
     "deploy": "npm install && npm start",
