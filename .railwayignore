@@ -14,6 +14,7 @@ android-project/
 web-project/
 backend-api/
 railway-backend/
+railway-minimal/
 keystore-backups/
 launch-prep/
 netlify-deploy/
@@ -23,7 +24,6 @@ app-store-screenshots/
 
 # Ignore all documentation
 *.md
-!railway-backend/README.md
 
 # Ignore all scripts
 *.ps1
@@ -40,7 +40,6 @@ app-store-screenshots/
 dist/
 build/
 node_modules/
-!railway-backend/node_modules/
 
 # Ignore all environment files
 .env*
