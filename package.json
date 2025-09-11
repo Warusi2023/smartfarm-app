@@ -1,28 +1,18 @@
 {
-  "name": "smartfarm",
+  "name": "smartfarm-railway-backend",
   "version": "1.0.0",
-  "description": "SmartFarm - AI-powered agricultural management platform",
-  "main": "backend-api/server.js",
+  "description": "SmartFarm Railway Backend API",
+  "main": "server.js",
   "scripts": {
-    "start": "cd backend-api && npm start",
-    "install": "cd backend-api && npm install",
-    "build": "cd backend-api && npm run build"
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2"
   },
   "engines": {
-    "node": ">=18.0.0",
-    "npm": ">=9.0.0"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Warusi2023/smartfarm-app.git"
-  },
-  "keywords": [
-    "agriculture",
-    "farming",
-    "ai",
-    "blockchain",
-    "sustainability"
-  ],
-  "author": "SmartFarm Team",
-  "license": "MIT"
+    "node": ">=16.0.0"
+  }
 }
