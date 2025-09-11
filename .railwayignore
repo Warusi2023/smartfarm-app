@@ -2,6 +2,9 @@
 
 # Advanced features (not needed for main deployment)
 advanced-features/
+advanced-features/backend/
+advanced-features/frontend/
+advanced-features/ios/
 
 # Android project (not needed for backend)
 android-project/
@@ -55,3 +58,8 @@ coverage/
 # Temporary files
 tmp/
 temp/
+
+# Specific files to ignore
+advanced-features/backend/package.json
+advanced-features/frontend/package.json
+android-project/app/build.gradle
