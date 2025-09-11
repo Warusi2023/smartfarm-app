@@ -9,5 +9,5 @@
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10
   },
-  "rootDirectory": "railway-minimal"
+  "rootDirectory": "railway-clean"
 }

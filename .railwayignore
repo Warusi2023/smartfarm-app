@@ -1,10 +1,10 @@
-# Railway ignore file - ONLY include railway-minimal directory
-# This ensures Railway only sees the railway-minimal directory and nothing else
+# Railway ignore file - ONLY include railway-clean directory
+# This ensures Railway only sees the railway-clean directory and nothing else
 
-# Ignore everything except railway-minimal
+# Ignore everything except railway-clean
 *
-!railway-minimal/
-!railway-minimal/**
+!railway-clean/
+!railway-clean/**
 !railway.json
 !railway.toml
 

@@ -1,19 +1,15 @@
 {
-  "name": "smartfarm-railway-backend",
+  "name": "smartfarm-railway-clean",
   "version": "1.0.0",
-  "description": "SmartFarm Railway Backend API - Clean Deployment",
+  "description": "SmartFarm Railway Clean Deployment",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js",
-    "build": "echo 'No build step required'",
-    "test": "echo 'No tests configured'"
+    "test": "echo \"No tests specified\" && exit 0"
   },
   "dependencies": {
     "express": "^4.18.2",
-    "cors": "^2.8.5",
-    "bcryptjs": "^2.4.3",
-    "jsonwebtoken": "^9.0.2"
+    "cors": "^2.8.5"
   },
   "engines": {
     "node": ">=16.0.0",
@@ -21,8 +17,8 @@
   },
   "keywords": [
     "smartfarm",
+    "agriculture",
     "api",
-    "backend",
     "railway"
   ],
   "author": "SmartFarm Team",
