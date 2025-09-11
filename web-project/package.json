@@ -1,0 +1,23 @@
+{
+  "name": "smartfarm-web",
+  "version": "1.0.0",
+  "description": "SmartFarm Web Application",
+  "main": "index.html",
+  "scripts": {
+    "build": "echo 'Static files already in place'",
+    "start": "echo 'Static HTML files - no server needed'",
+    "dev": "echo 'Static HTML files - no dev server needed'"
+  },
+  "keywords": [
+    "smartfarm",
+    "agriculture",
+    "web",
+    "static"
+  ],
+  "author": "SmartFarm Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  }
+}
