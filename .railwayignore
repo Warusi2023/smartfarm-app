@@ -1,8 +1,39 @@
-# Ignore everything except backend-api
-*
+# Ignore Android project completely
+android-project/
+*.gradle
+*.gradle.kts
+gradle/
+gradlew
+gradlew.bat
+build/
+.gradle/
+settings.gradle.kts
+local.properties
 
-# Allow only backend-api and essential files
+# Ignore web project
+web-project/
+
+# Ignore documentation and assets
+*.md
+!README.md
+*.svg
+*.ps1
+*.bat
+*.log
+*.properties
+
+# Ignore other directories
+keystore-backups/
+app-store-assets/
+app-store-screenshots/
+screenshots/
+launch-prep/
+advanced-features/
+
+# Keep only backend-api and essential config files
 !backend-api/
 !package.json
+!railway.json
+!nixpacks.toml
 !railway.toml
-!README.md
+!.railway/
