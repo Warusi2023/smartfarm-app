@@ -109,6 +109,26 @@
             color: var(--primary-light);
         }
 
+        .section-divider {
+            margin: 30px 0 20px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #E0E0E0;
+        }
+
+        .section-title {
+            color: var(--primary-dark);
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title i {
+            color: var(--primary-color);
+            margin-right: 8px;
+        }
+
         .register-right {
             padding: 60px 40px;
             display: flex;
@@ -338,11 +358,16 @@
 
                         <!-- Registration Form -->
                         <form id="registerForm" novalidate>
+                            <!-- Personal Information Section -->
+                            <div class="section-divider">
+                                <h6 class="section-title"><i class="fas fa-user me-2"></i>Personal Information</h6>
+                            </div>
+                            
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <i class="fas fa-user input-icon"></i>
-                                        <input type="text" class="form-control input-with-icon" id="firstName" placeholder="First Name" required>
+                                        <input type="text" class="form-control input-with-icon" id="firstName" placeholder="First Name *" required>
                                         <div class="invalid-feedback">
                                             Please enter your first name.
                                         </div>
@@ -351,7 +376,7 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <i class="fas fa-user input-icon"></i>
-                                        <input type="text" class="form-control input-with-icon" id="lastName" placeholder="Last Name" required>
+                                        <input type="text" class="form-control input-with-icon" id="lastName" placeholder="Last Name *" required>
                                         <div class="invalid-feedback">
                                             Please enter your last name.
                                         </div>
@@ -359,44 +384,54 @@
                                 </div>
                             </div>
 
-                            <div class="form-group">
-                                <i class="fas fa-envelope input-icon"></i>
-                                <input type="email" class="form-control input-with-icon" id="email" placeholder="Email address" required>
-                                <div class="invalid-feedback">
-                                    Please enter a valid email address.
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <i class="fas fa-envelope input-icon"></i>
+                                        <input type="email" class="form-control input-with-icon" id="email" placeholder="Email Address *" required>
+                                        <div class="invalid-feedback">
+                                            Please enter a valid email address.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <i class="fas fa-phone input-icon"></i>
+                                        <input type="tel" class="form-control input-with-icon" id="phone" placeholder="Phone Number *" required>
+                                        <div class="invalid-feedback">
+                                            Please enter a valid phone number.
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div class="form-group">
-                                <i class="fas fa-phone input-icon"></i>
-                                <input type="tel" class="form-control input-with-icon" id="phone" placeholder="Phone number" required>
-                                <div class="invalid-feedback">
-                                    Please enter a valid phone number.
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <i class="fas fa-user input-icon"></i>
+                                        <input type="text" class="form-control input-with-icon" id="username" placeholder="Username *" required>
+                                        <div class="invalid-feedback">
+                                            Please choose a username.
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-
-                            <div class="form-group">
-                                <i class="fas fa-user input-icon"></i>
-                                <input type="text" class="form-control input-with-icon" id="username" placeholder="Username" required>
-                                <div class="invalid-feedback">
-                                    Please choose a username.
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <i class="fas fa-lock input-icon"></i>
+                                        <input type="password" class="form-control input-with-icon" id="password" placeholder="Password *" required>
+                                        <button type="button" class="password-toggle" onclick="togglePassword('password')">
+                                            <i class="fas fa-eye" id="passwordIcon"></i>
+                                        </button>
+                                        <div class="invalid-feedback">
+                                            Password must be at least 8 characters.
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
                             <div class="form-group">
                                 <i class="fas fa-lock input-icon"></i>
-                                <input type="password" class="form-control input-with-icon" id="password" placeholder="Password" required>
-                                <button type="button" class="password-toggle" onclick="togglePassword('password')">
-                                    <i class="fas fa-eye" id="passwordIcon"></i>
-                                </button>
-                                <div class="invalid-feedback">
-                                    Password must be at least 8 characters.
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <i class="fas fa-lock input-icon"></i>
-                                <input type="password" class="form-control input-with-icon" id="confirmPassword" placeholder="Confirm Password" required>
+                                <input type="password" class="form-control input-with-icon" id="confirmPassword" placeholder="Confirm Password *" required>
                                 <button type="button" class="password-toggle" onclick="togglePassword('confirmPassword')">
                                     <i class="fas fa-eye" id="confirmPasswordIcon"></i>
                                 </button>
@@ -405,18 +440,236 @@
                                 </div>
                             </div>
 
-                            <div class="form-group">
-                                <i class="fas fa-tractor input-icon"></i>
-                                <input type="text" class="form-control input-with-icon" id="farmName" placeholder="Farm Name" required>
-                                <div class="invalid-feedback">
-                                    Please enter your farm name.
+                            <!-- Location Information Section -->
+                            <div class="section-divider">
+                                <h6 class="section-title"><i class="fas fa-map-marker-alt me-2"></i>Location Information</h6>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <i class="fas fa-globe input-icon"></i>
+                                        <select class="form-control input-with-icon" id="country" required>
+                                            <option value="">Select Country *</option>
+                                            <option value="Fiji">Fiji</option>
+                                            <option value="Australia">Australia</option>
+                                            <option value="New Zealand">New Zealand</option>
+                                            <option value="Papua New Guinea">Papua New Guinea</option>
+                                            <option value="Solomon Islands">Solomon Islands</option>
+                                            <option value="Vanuatu">Vanuatu</option>
+                                            <option value="Samoa">Samoa</option>
+                                            <option value="Tonga">Tonga</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                        <div class="invalid-feedback">
+                                            Please select your country.
+                                        </div>
+                                    </div>
                                 </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <i class="fas fa-map input-icon"></i>
+                                        <input type="text" class="form-control input-with-icon" id="region" placeholder="Region/State *" required>
+                                        <div class="invalid-feedback">
+                                            Please enter your region or state.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <i class="fas fa-city input-icon"></i>
+                                        <input type="text" class="form-control input-with-icon" id="district" placeholder="District/City *" required>
+                                        <div class="invalid-feedback">
+                                            Please enter your district or city.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <i class="fas fa-home input-icon"></i>
+                                        <input type="text" class="form-control input-with-icon" id="village" placeholder="Village/Suburb">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Farm Information Section -->
+                            <div class="section-divider">
+                                <h6 class="section-title"><i class="fas fa-seedling me-2"></i>Farm Information</h6>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <i class="fas fa-tractor input-icon"></i>
+                                        <input type="text" class="form-control input-with-icon" id="farmName" placeholder="Farm Name *" required>
+                                        <div class="invalid-feedback">
+                                            Please enter your farm name.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <i class="fas fa-ruler input-icon"></i>
+                                        <input type="number" class="form-control input-with-icon" id="farmSize" placeholder="Farm Size (Hectares) *" min="0.1" step="0.1" required>
+                                        <div class="invalid-feedback">
+                                            Please enter your farm size.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <i class="fas fa-leaf input-icon"></i>
+                                        <select class="form-control input-with-icon" id="farmType" required>
+                                            <option value="">Select Farm Type *</option>
+                                            <option value="vegetable">Vegetable Farming</option>
+                                            <option value="fruit">Fruit Farming</option>
+                                            <option value="livestock">Livestock Farming</option>
+                                            <option value="mixed">Mixed Farming</option>
+                                            <option value="dairy">Dairy Farming</option>
+                                            <option value="poultry">Poultry Farming</option>
+                                            <option value="aquaculture">Aquaculture</option>
+                                            <option value="horticulture">Horticulture</option>
+                                            <option value="floriculture">Floriculture</option>
+                                            <option value="other">Other</option>
+                                        </select>
+                                        <div class="invalid-feedback">
+                                            Please select your farm type.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <i class="fas fa-calendar input-icon"></i>
+                                        <select class="form-control input-with-icon" id="experience" required>
+                                            <option value="">Farming Experience *</option>
+                                            <option value="beginner">Beginner (0-2 years)</option>
+                                            <option value="intermediate">Intermediate (3-10 years)</option>
+                                            <option value="experienced">Experienced (11-20 years)</option>
+                                            <option value="expert">Expert (20+ years)</option>
+                                        </select>
+                                        <div class="invalid-feedback">
+                                            Please select your experience level.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <i class="fas fa-seedling input-icon"></i>
+                                        <input type="text" class="form-control input-with-icon" id="crops" placeholder="Main Crops/Livestock">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <i class="fas fa-tint input-icon"></i>
+                                        <select class="form-control input-with-icon" id="irrigation">
+                                            <option value="">Irrigation Method</option>
+                                            <option value="rainfed">Rainfed</option>
+                                            <option value="drip">Drip Irrigation</option>
+                                            <option value="sprinkler">Sprinkler</option>
+                                            <option value="flood">Flood Irrigation</option>
+                                            <option value="manual">Manual Watering</option>
+                                            <option value="mixed">Mixed Methods</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Additional Information Section -->
+                            <div class="section-divider">
+                                <h6 class="section-title"><i class="fas fa-info-circle me-2"></i>Additional Information</h6>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <i class="fas fa-graduation-cap input-icon"></i>
+                                        <select class="form-control input-with-icon" id="education">
+                                            <option value="">Education Level</option>
+                                            <option value="primary">Primary School</option>
+                                            <option value="secondary">Secondary School</option>
+                                            <option value="diploma">Diploma/Certificate</option>
+                                            <option value="bachelor">Bachelor's Degree</option>
+                                            <option value="master">Master's Degree</option>
+                                            <option value="phd">PhD</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <i class="fas fa-dollar-sign input-icon"></i>
+                                        <select class="form-control input-with-icon" id="income">
+                                            <option value="">Annual Farm Income Range</option>
+                                            <option value="under-10k">Under FJD 10,000</option>
+                                            <option value="10k-25k">FJD 10,000 - 25,000</option>
+                                            <option value="25k-50k">FJD 25,000 - 50,000</option>
+                                            <option value="50k-100k">FJD 50,000 - 100,000</option>
+                                            <option value="100k-250k">FJD 100,000 - 250,000</option>
+                                            <option value="over-250k">Over FJD 250,000</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <i class="fas fa-store input-icon"></i>
+                                        <select class="form-control input-with-icon" id="marketing">
+                                            <option value="">Primary Marketing Channel</option>
+                                            <option value="local-market">Local Markets</option>
+                                            <option value="supermarkets">Supermarkets</option>
+                                            <option value="restaurants">Restaurants/Hotels</option>
+                                            <option value="export">Export</option>
+                                            <option value="direct-sale">Direct Sales</option>
+                                            <option value="cooperative">Cooperative</option>
+                                            <option value="online">Online Sales</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <i class="fas fa-mobile-alt input-icon"></i>
+                                        <select class="form-control input-with-icon" id="technology">
+                                            <option value="">Technology Usage</option>
+                                            <option value="basic">Basic (Phone calls, SMS)</option>
+                                            <option value="intermediate">Intermediate (Smartphone, Internet)</option>
+                                            <option value="advanced">Advanced (Apps, GPS, Sensors)</option>
+                                            <option value="expert">Expert (IoT, AI, Automation)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <i class="fas fa-exclamation-triangle input-icon"></i>
+                                <textarea class="form-control input-with-icon" id="challenges" placeholder="Main Farming Challenges (e.g., Weather variability, pest control, market access...)" rows="3"></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <i class="fas fa-target input-icon"></i>
+                                <textarea class="form-control input-with-icon" id="goals" placeholder="Farming Goals (e.g., Increase yield by 20%, reduce water usage, expand to new markets...)" rows="3"></textarea>
+                            </div>
+
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="newsletter">
+                                <label class="form-check-label" for="newsletter">
+                                    Subscribe to farming tips, market updates, and SmartFarm newsletter
+                                </label>
                             </div>
 
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" id="agreeTerms" required>
                                 <label class="form-check-label" for="agreeTerms">
-                                    I agree to the <a href="terms-of-service.html" target="_blank">Terms of Service</a> and <a href="privacy-policy.html" target="_blank">Privacy Policy</a>
+                                    I agree to the <a href="terms-of-service.html" target="_blank">Terms of Service</a> and <a href="privacy-policy.html" target="_blank">Privacy Policy</a> *
                                 </label>
                                 <div class="invalid-feedback">
                                     You must agree to the terms and conditions.
@@ -424,7 +677,7 @@
                             </div>
 
                             <button type="submit" class="btn btn-register">
-                                <span class="btn-text">Create Account</span>
+                                <span class="btn-text">Create SmartFarm Account</span>
                                 <span class="loading">
                                     <i class="fas fa-spinner fa-spin"></i> Creating account...
                                 </span>
@@ -459,13 +712,19 @@
             const username = document.getElementById('username');
             const password = document.getElementById('password');
             const confirmPassword = document.getElementById('confirmPassword');
+            const country = document.getElementById('country');
+            const region = document.getElementById('region');
+            const district = document.getElementById('district');
             const farmName = document.getElementById('farmName');
+            const farmSize = document.getElementById('farmSize');
+            const farmType = document.getElementById('farmType');
+            const experience = document.getElementById('experience');
             const agreeTerms = document.getElementById('agreeTerms');
             
             let isValid = true;
 
             // Reset validation states
-            [firstName, lastName, email, phone, username, password, confirmPassword, farmName].forEach(field => {
+            [firstName, lastName, email, phone, username, password, confirmPassword, country, region, district, farmName, farmSize, farmType, experience].forEach(field => {
                 field.classList.remove('is-invalid', 'is-valid');
             });
 
@@ -540,12 +799,60 @@
                 confirmPassword.classList.add('is-valid');
             }
 
+            // Country validation
+            if (!country.value.trim()) {
+                country.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                country.classList.add('is-valid');
+            }
+
+            // Region validation
+            if (!region.value.trim()) {
+                region.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                region.classList.add('is-valid');
+            }
+
+            // District validation
+            if (!district.value.trim()) {
+                district.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                district.classList.add('is-valid');
+            }
+
             // Farm name validation
             if (!farmName.value.trim()) {
                 farmName.classList.add('is-invalid');
                 isValid = false;
             } else {
                 farmName.classList.add('is-valid');
+            }
+
+            // Farm size validation
+            if (!farmSize.value.trim() || farmSize.value <= 0) {
+                farmSize.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                farmSize.classList.add('is-valid');
+            }
+
+            // Farm type validation
+            if (!farmType.value.trim()) {
+                farmType.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                farmType.classList.add('is-valid');
+            }
+
+            // Experience validation
+            if (!experience.value.trim()) {
+                experience.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                experience.classList.add('is-valid');
             }
 
             // Terms agreement validation
@@ -579,13 +886,40 @@
 
             // Collect form data
             const formData = {
+                // Personal Information
                 firstName: document.getElementById('firstName').value,
                 lastName: document.getElementById('lastName').value,
                 email: document.getElementById('email').value,
                 phone: document.getElementById('phone').value,
                 username: document.getElementById('username').value,
                 password: document.getElementById('password').value,
-                farmName: document.getElementById('farmName').value
+                
+                // Location Information
+                country: document.getElementById('country').value,
+                region: document.getElementById('region').value,
+                district: document.getElementById('district').value,
+                village: document.getElementById('village').value,
+                
+                // Farm Information
+                farmName: document.getElementById('farmName').value,
+                farmSize: parseFloat(document.getElementById('farmSize').value),
+                farmType: document.getElementById('farmType').value,
+                experience: document.getElementById('experience').value,
+                crops: document.getElementById('crops').value,
+                irrigation: document.getElementById('irrigation').value,
+                
+                // Additional Information
+                education: document.getElementById('education').value,
+                income: document.getElementById('income').value,
+                marketing: document.getElementById('marketing').value,
+                technology: document.getElementById('technology').value,
+                challenges: document.getElementById('challenges').value,
+                goals: document.getElementById('goals').value,
+                newsletter: document.getElementById('newsletter').checked,
+                
+                // Registration metadata
+                registrationDate: new Date().toISOString(),
+                userAgent: navigator.userAgent
             };
 
             // Simulate API call to backend
