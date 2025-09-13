@@ -1,0 +1,1 @@
+web: ./scripts/migrate.sh && npm start

@@ -1,0 +1,15 @@
+-- 999_views.sql
+
+-- Example: live inventory per (item, location) from movements (if you prefer view over balances table)
+-- DROP VIEW IF EXISTS v_inventory_balances;
+-- CREATE VIEW v_inventory_balances AS
+-- SELECT
+--   m.item_id,
+--   m.location_id,
+--   SUM(CASE
+--         WHEN m.movement_type = 'in' THEN m.quantity
+--         WHEN m.movement_type = 'out' THEN -m.quantity
+--         WHEN m.movement_type = 'adjustment' THEN m.quantity
+--       END) AS quantity
+-- FROM inventory_movements m
+-- GROUP BY m.item_id, m.location_id;

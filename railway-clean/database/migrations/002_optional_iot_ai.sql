@@ -1,0 +1,2 @@
+-- 002_optional_iot_ai.sql
+-- Reserved for future: device provisioning, ML outputs, alert rules, etc.
