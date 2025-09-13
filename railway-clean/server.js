@@ -23,7 +23,7 @@ const users = new Map();
 const emailVerificationTokens = new Map();
 
 // Email transporter setup
-const transporter = nodemailer.createTransporter({
+const transporter = nodemailer.createTransport({
   service: EMAIL_SERVICE,
   auth: {
     user: EMAIL_USER,
@@ -191,14 +191,19 @@ app.post('/api/auth/register', async (req, res) => {
       expiresAt: tokenExpiry
     });
 
-    // Send verification email
-    const emailSent = await sendVerificationEmail(email, verificationToken);
-
-    if (!emailSent) {
-      return res.status(500).json({
-        status: 'error',
-        message: 'Failed to send verification email. Please try again.'
-      });
+    // Send verification email (skip if no email credentials)
+    if (EMAIL_USER && EMAIL_PASS) {
+      const emailSent = await sendVerificationEmail(email, verificationToken);
+      if (!emailSent) {
+        return res.status(500).json({
+          status: 'error',
+          message: 'Failed to send verification email. Please try again.'
+        });
+      }
+    } else {
+      console.log(`⚠️ Email verification skipped - no email credentials configured`);
+      // For testing: mark email as verified
+      user.isEmailVerified = true;
     }
 
     res.status(201).json({

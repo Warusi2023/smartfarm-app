@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartFarm Auth Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #2c5530;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        h2 {
+            color: #4a6741;
+            border-bottom: 2px solid #4a6741;
+            padding-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        input[type="text"], input[type="email"], input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4a6741;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #2c5530;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌱 SmartFarm Authentication Test</h1>
+        
+        <h2>📝 User Registration</h2>
+        <form id="registerForm">
+            <div class="form-group">
+                <label for="regUsername">Username:</label>
+                <input type="text" id="regUsername" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="regEmail">Email:</label>
+                <input type="email" id="regEmail" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="regPassword">Password:</label>
+                <input type="password" id="regPassword" name="password" required>
+            </div>
+            <div class="form-group">
+                <label for="regFirstName">First Name:</label>
+                <input type="text" id="regFirstName" name="firstName">
+            </div>
+            <div class="form-group">
+                <label for="regLastName">Last Name:</label>
+                <input type="text" id="regLastName" name="lastName">
+            </div>
+            <button type="submit">Register User</button>
+        </form>
+        <div id="registerResult" class="result" style="display: none;"></div>
+    </div>
+
+    <div class="container">
+        <h2>🔐 User Login</h2>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="loginEmail">Email:</label>
+                <input type="email" id="loginEmail" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="loginPassword">Password:</label>
+                <input type="password" id="loginPassword" name="password" required>
+            </div>
+            <button type="submit">Login</button>
+        </form>
+        <div id="loginResult" class="result" style="display: none;"></div>
+    </div>
+
+    <div class="container">
+        <h2>👥 All Users</h2>
+        <button onclick="getAllUsers()">Get All Users</button>
+        <div id="usersResult" class="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000'; // Main server
+        const TEST_API_BASE = 'http://localhost:3001'; // Test server
+
+        // Registration form handler
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const userData = {
+                username: formData.get('username'),
+                email: formData.get('email'),
+                password: formData.get('password'),
+                firstName: formData.get('firstName'),
+                lastName: formData.get('lastName')
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/api/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(userData)
+                });
+
+                const result = await response.json();
+                showResult('registerResult', result, response.ok);
+            } catch (error) {
+                showResult('registerResult', { error: error.message }, false);
+            }
+        });
+
+        // Login form handler
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const loginData = {
+                email: formData.get('email'),
+                password: formData.get('password')
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(loginData)
+                });
+
+                const result = await response.json();
+                showResult('loginResult', result, response.ok);
+            } catch (error) {
+                showResult('loginResult', { error: error.message }, false);
+            }
+        });
+
+        // Get all users
+        async function getAllUsers() {
+            try {
+                const response = await fetch(`${TEST_API_BASE}/api/users`);
+                const result = await response.json();
+                showResult('usersResult', result, response.ok);
+            } catch (error) {
+                showResult('usersResult', { error: error.message }, false);
+            }
+        }
+
+        // Show result helper
+        function showResult(elementId, data, isSuccess) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.className = `result ${isSuccess ? 'success' : 'error'}`;
+            element.textContent = JSON.stringify(data, null, 2);
+        }
+
+        // Test server connection on load
+        window.addEventListener('load', async () => {
+            try {
+                const response = await fetch(`${API_BASE}/api/health`);
+                const result = await response.json();
+                console.log('Main server status:', result);
+            } catch (error) {
+                console.log('Main server not available:', error.message);
+            }
+
+            try {
+                const response = await fetch(`${TEST_API_BASE}/api/health`);
+                const result = await response.json();
+                console.log('Test server status:', result);
+            } catch (error) {
+                console.log('Test server not available:', error.message);
+            }
+        });
+    </script>
+</body>
+</html>
