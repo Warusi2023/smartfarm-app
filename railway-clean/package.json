@@ -8,16 +8,19 @@
     "seed": "node scripts/seed.mjs",
     "prestart": "node scripts/migrate.mjs && node scripts/seed.mjs",
     "start": "NODE_ENV=production node server.js",
+    "dev": "NODE_ENV=development node server.js",
     "build": "echo \"No build step required\"",
-    "test": "echo \"No tests specified\" && exit 0",
+    "test": "node test-email-flow.js",
+    "test:email": "node test-email-flow.js",
     "lint": "echo \"No linting configured\" && exit 0"
   },
   "dependencies": {
-    "express": "^4.18.2",
+    "axios": "^1.12.1",
     "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "glob": "^11.0.0",
     "nodemailer": "^6.9.7",
-    "pg": "^8.12.0",
-    "glob": "^11.0.0"
+    "pg": "^8.12.0"
   },
   "engines": {
     "node": ">=16.0.0",

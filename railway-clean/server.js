@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const crypto = require('crypto');
-const nodemailer = require('nodemailer');
+const EmailService = require('./email-config');
 
 const app = express();
 
@@ -15,20 +15,25 @@ const CORS_ORIGIN = process.env.CORS_ORIGIN || '*';
 const EMAIL_SERVICE = process.env.EMAIL_SERVICE || 'gmail';
 const EMAIL_USER = process.env.EMAIL_USER || '';
 const EMAIL_PASS = process.env.EMAIL_PASS || '';
-const EMAIL_FROM = process.env.EMAIL_FROM || 'noreply@smartfarm.com';
+const EMAIL_FROM = process.env.EMAIL_FROM || 'noreply@smartfarm-app.com';
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 // In-memory storage for demo (replace with database in production)
 const users = new Map();
 const emailVerificationTokens = new Map();
 
-// Email transporter setup
-const transporter = nodemailer.createTransport({
-  service: EMAIL_SERVICE,
-  auth: {
-    user: EMAIL_USER,
-    pass: EMAIL_PASS
+// Initialize email service
+const emailService = new EmailService();
+
+// Verify email service connection on startup
+emailService.verifyConnection().then(isConnected => {
+  if (isConnected) {
+    console.log('✅ Email service connection verified');
+  } else {
+    console.log('⚠️ Email service connection failed - check credentials');
   }
+}).catch(error => {
+  console.error('❌ Email service verification error:', error.message);
 });
 
 // Helper function to generate verification token
@@ -36,72 +41,10 @@ function generateVerificationToken() {
   return crypto.randomBytes(32).toString('hex');
 }
 
-// Helper function to send verification email
+// Helper function to send verification email using the email service
 async function sendVerificationEmail(email, token) {
-  const verificationUrl = `${process.env.FRONTEND_URL || 'https://dulcet-sawine-92d6a8.netlify.app'}/verify-email?token=${token}`;
-  
-  const mailOptions = {
-    from: EMAIL_FROM,
-    to: email,
-    subject: 'Verify Your SmartFarm Account',
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <div style="background: linear-gradient(135deg, #28a745, #20c997); padding: 30px; text-align: center;">
-          <h1 style="color: white; margin: 0; font-size: 28px;">🌱 SmartFarm</h1>
-          <p style="color: white; margin: 10px 0 0 0; font-size: 16px;">Intelligent Farm Management</p>
-        </div>
-        
-        <div style="padding: 30px; background: #f8f9fa;">
-          <h2 style="color: #28a745; margin-bottom: 20px;">Welcome to SmartFarm!</h2>
-          
-          <p style="color: #333; font-size: 16px; line-height: 1.6;">
-            Thank you for registering with SmartFarm! To complete your registration and start managing your farm with our advanced AI-powered platform, please verify your email address.
-          </p>
-          
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${verificationUrl}" 
-               style="background: #28a745; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; font-size: 16px;">
-              ✅ Verify My Email Address
-            </a>
-          </div>
-          
-          <p style="color: #666; font-size: 14px; line-height: 1.5;">
-            If the button doesn't work, you can copy and paste this link into your browser:<br>
-            <a href="${verificationUrl}" style="color: #28a745; word-break: break-all;">${verificationUrl}</a>
-          </p>
-          
-          <div style="margin-top: 30px; padding: 20px; background: #e9ecef; border-radius: 8px;">
-            <h3 style="color: #28a745; margin-top: 0;">🚀 What's Next?</h3>
-            <ul style="color: #333; line-height: 1.6;">
-              <li><strong>Real-time Analytics:</strong> Monitor your farm with live data</li>
-              <li><strong>AI Predictions:</strong> Get crop health and yield forecasts</li>
-              <li><strong>IoT Integration:</strong> Connect smart sensors and devices</li>
-              <li><strong>Blockchain Traceability:</strong> Track your products from farm to table</li>
-            </ul>
-          </div>
-          
-          <p style="color: #666; font-size: 12px; margin-top: 30px; text-align: center;">
-            This verification link will expire in 24 hours. If you didn't create a SmartFarm account, please ignore this email.
-          </p>
-        </div>
-        
-        <div style="background: #343a40; padding: 20px; text-align: center;">
-          <p style="color: #fff; margin: 0; font-size: 14px;">
-            © 2024 SmartFarm - Revolutionary Agricultural Technology
-          </p>
-        </div>
-      </div>
-    `
-  };
-
-  try {
-    await transporter.sendMail(mailOptions);
-    console.log(`✅ Verification email sent to: ${email}`);
-    return true;
-  } catch (error) {
-    console.error('❌ Failed to send verification email:', error);
-    return false;
-  }
+  const result = await emailService.sendVerificationEmail(email, token);
+  return result.success;
 }
 
 // Middleware
@@ -114,7 +57,9 @@ app.use(cors({
 }));
 
 // Health check endpoint
-app.get('/api/health', (req, res) => {
+app.get('/api/health', async (req, res) => {
+  const emailStatus = await emailService.verifyConnection();
+  
   res.json({
     status: 'success',
     message: `${API_NAME} is running`,
@@ -125,7 +70,13 @@ app.get('/api/health', (req, res) => {
     logLevel: LOG_LEVEL,
     database: 'In-Memory',
     corsOrigin: CORS_ORIGIN,
-    uptime: process.uptime()
+    uptime: process.uptime(),
+    email: {
+      configured: emailService.isConfigured,
+      connected: emailStatus,
+      from: EMAIL_FROM,
+      service: EMAIL_SERVICE
+    }
   });
 });
 
@@ -193,15 +144,19 @@ app.post('/api/auth/register', async (req, res) => {
 
     // Send verification email (skip if no email credentials)
     if (EMAIL_USER && EMAIL_PASS) {
+      console.log(`📧 Sending verification email to: ${email}`);
       const emailSent = await sendVerificationEmail(email, verificationToken);
       if (!emailSent) {
+        console.error(`❌ Failed to send verification email to: ${email}`);
         return res.status(500).json({
           status: 'error',
-          message: 'Failed to send verification email. Please try again.'
+          message: 'Failed to send verification email. Please try again or contact support.'
         });
       }
+      console.log(`✅ Verification email sent successfully to: ${email}`);
     } else {
       console.log(`⚠️ Email verification skipped - no email credentials configured`);
+      console.log(`   Set EMAIL_USER and EMAIL_PASS environment variables to enable email verification`);
       // For testing: mark email as verified
       user.isEmailVerified = true;
     }
@@ -272,6 +227,20 @@ app.post('/api/auth/verify-email', async (req, res) => {
     // Remove verification token
     emailVerificationTokens.delete(token);
 
+    // Send welcome email
+    try {
+      console.log(`📧 Sending welcome email to: ${user.email}`);
+      const welcomeResult = await emailService.sendWelcomeEmail(user.email, user.username);
+      if (welcomeResult.success) {
+        console.log(`✅ Welcome email sent successfully to: ${user.email}`);
+      } else {
+        console.error(`❌ Failed to send welcome email to: ${user.email}:`, welcomeResult.error);
+      }
+    } catch (error) {
+      console.error(`❌ Welcome email error for ${user.email}:`, error.message);
+      // Don't fail the verification if welcome email fails
+    }
+
     res.json({
       status: 'success',
       message: 'Email verified successfully! You can now log in to your account.',
@@ -333,14 +302,18 @@ app.post('/api/auth/resend-verification', async (req, res) => {
     });
 
     // Send verification email
+    console.log(`📧 Resending verification email to: ${email}`);
     const emailSent = await sendVerificationEmail(email, verificationToken);
 
     if (!emailSent) {
+      console.error(`❌ Failed to resend verification email to: ${email}`);
       return res.status(500).json({
         status: 'error',
-        message: 'Failed to send verification email. Please try again.'
+        message: 'Failed to send verification email. Please try again or contact support.'
       });
     }
+
+    console.log(`✅ Verification email resent successfully to: ${email}`);
 
     res.json({
       status: 'success',
@@ -496,6 +469,16 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`🧪 Test endpoint: http://localhost:${PORT}/api/test`);
   console.log(`📝 Log level: ${LOG_LEVEL}`);
   console.log(`🔗 CORS origin: ${CORS_ORIGIN}`);
+  console.log(`📧 Email service: ${emailService.isConfigured ? 'Configured' : 'Not configured'}`);
+  console.log(`📧 Email from: ${EMAIL_FROM}`);
+  console.log(`📧 Email service provider: ${EMAIL_SERVICE}`);
+  
+  if (!EMAIL_USER || !EMAIL_PASS) {
+    console.log(`⚠️ To enable email verification, set these environment variables:`);
+    console.log(`   EMAIL_USER=${EMAIL_FROM}`);
+    console.log(`   EMAIL_PASS=your-app-password`);
+    console.log(`   EMAIL_FROM=${EMAIL_FROM}`);
+  }
 });
 
 module.exports = app;
