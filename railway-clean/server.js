@@ -1,7 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const crypto = require('crypto');
-const EmailService = require('./email-config');
+// ✅ Use the instance exported from ./email-config (no "new" anywhere)
+const emailService = require('./email-config');
 
 const app = express();
 
@@ -22,11 +23,87 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 const users = new Map();
 const emailVerificationTokens = new Map();
 
-// Initialize email service
-const emailService = new EmailService();
+// ---- Email helpers/shims (so we work with different email-config shapes) ----
+const EMAIL_CONFIGURED = (emailService?.isConfigured ?? emailService?.enabled ?? false) === true;
+
+async function verifyEmailConnection() {
+  try {
+    if (typeof emailService?.verifyConnection === 'function') {
+      return await emailService.verifyConnection();
+    }
+    // Fallback if email-config only exposes transporter
+    if (!EMAIL_CONFIGURED || !emailService?.transporter) return false;
+    if (typeof emailService.transporter.verify === 'function') {
+      await emailService.transporter.verify();
+      return true;
+    }
+    // If transporter exists but no verify, assume configured
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// Build verification link (adjust APP_BASE_URL if you have a frontend)
+function buildVerificationLink(token) {
+  const base = process.env.APP_BASE_URL || `http://localhost:${PORT}`;
+  // You can point this to your frontend route that posts to /api/auth/verify-email
+  return `${base}/verify?token=${token}`;
+}
+
+// Helper to send verification email (uses emailService.sendVerificationEmail if present, else generic send)
+async function sendVerificationEmail(email, token) {
+  try {
+    if (typeof emailService?.sendVerificationEmail === 'function') {
+      const result = await emailService.sendVerificationEmail(email, token);
+      return !!result?.success;
+    }
+    if (!EMAIL_CONFIGURED || typeof emailService?.send !== 'function') return false;
+
+    const verifyUrl = buildVerificationLink(token);
+    await emailService.send({
+      to: email,
+      subject: 'Verify your SmartFarm account',
+      text: `Welcome to SmartFarm! Please verify your email by visiting: ${verifyUrl}`,
+      html: `
+        <p>Welcome to <strong>SmartFarm</strong>!</p>
+        <p>Please verify your email by clicking the link below:</p>
+        <p><a href="${verifyUrl}">${verifyUrl}</a></p>
+        <p>If you didn’t request this, you can ignore this email.</p>
+      `,
+    });
+    return true;
+  } catch (err) {
+    console.error('sendVerificationEmail error:', err.message);
+    return false;
+  }
+}
+
+// Helper to send welcome email
+async function sendWelcomeEmail(email, username) {
+  try {
+    if (typeof emailService?.sendWelcomeEmail === 'function') {
+      const result = await emailService.sendWelcomeEmail(email, username);
+      return !!result?.success;
+    }
+    if (!EMAIL_CONFIGURED || typeof emailService?.send !== 'function') return false;
+
+    await emailService.send({
+      to: email,
+      subject: 'Welcome to SmartFarm!',
+      text: `Hi ${username || ''}, welcome to SmartFarm!`,
+      html: `<p>Hi ${username || ''},</p><p>Welcome to <strong>SmartFarm</strong>! 🎉</p>`,
+    });
+    return true;
+  } catch (err) {
+    console.error('sendWelcomeEmail error:', err.message);
+    return false;
+  }
+}
+// ---------------------------------------------------------------------------
 
 // Verify email service connection on startup
-emailService.verifyConnection().then(isConnected => {
+verifyEmailConnection().then(isConnected => {
   if (isConnected) {
     console.log('✅ Email service connection verified');
   } else {
@@ -41,12 +118,6 @@ function generateVerificationToken() {
   return crypto.randomBytes(32).toString('hex');
 }
 
-// Helper function to send verification email using the email service
-async function sendVerificationEmail(email, token) {
-  const result = await emailService.sendVerificationEmail(email, token);
-  return result.success;
-}
-
 // Middleware
 app.use(express.json());
 app.use(cors({
@@ -58,7 +129,7 @@ app.use(cors({
 
 // Health check endpoint
 app.get('/api/health', async (req, res) => {
-  const emailStatus = await emailService.verifyConnection();
+  const emailStatus = await verifyEmailConnection();
   
   res.json({
     status: 'success',
@@ -72,7 +143,7 @@ app.get('/api/health', async (req, res) => {
     corsOrigin: CORS_ORIGIN,
     uptime: process.uptime(),
     email: {
-      configured: emailService.isConfigured,
+      configured: EMAIL_CONFIGURED,
       connected: emailStatus,
       from: EMAIL_FROM,
       service: EMAIL_SERVICE
@@ -227,18 +298,17 @@ app.post('/api/auth/verify-email', async (req, res) => {
     // Remove verification token
     emailVerificationTokens.delete(token);
 
-    // Send welcome email
+    // Send welcome email (non-blocking failure)
     try {
       console.log(`📧 Sending welcome email to: ${user.email}`);
-      const welcomeResult = await emailService.sendWelcomeEmail(user.email, user.username);
-      if (welcomeResult.success) {
+      const welcomeSent = await sendWelcomeEmail(user.email, user.username);
+      if (welcomeSent) {
         console.log(`✅ Welcome email sent successfully to: ${user.email}`);
       } else {
-        console.error(`❌ Failed to send welcome email to: ${user.email}:`, welcomeResult.error);
+        console.error(`❌ Failed to send welcome email to: ${user.email}`);
       }
     } catch (error) {
       console.error(`❌ Welcome email error for ${user.email}:`, error.message);
-      // Don't fail the verification if welcome email fails
     }
 
     res.json({
@@ -399,7 +469,7 @@ app.get('/api/user/profile/:userId', (req, res) => {
     
     // Find user by ID
     let user = null;
-    for (const [email, userData] of users.entries()) {
+    for (const [, userData] of users.entries()) {
       if (userData.id == userId) {
         user = userData;
         break;
@@ -469,7 +539,7 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`🧪 Test endpoint: http://localhost:${PORT}/api/test`);
   console.log(`📝 Log level: ${LOG_LEVEL}`);
   console.log(`🔗 CORS origin: ${CORS_ORIGIN}`);
-  console.log(`📧 Email service: ${emailService.isConfigured ? 'Configured' : 'Not configured'}`);
+  console.log(`📧 Email service: ${EMAIL_CONFIGURED ? 'Configured' : 'Not configured'}`);
   console.log(`📧 Email from: ${EMAIL_FROM}`);
   console.log(`📧 Email service provider: ${EMAIL_SERVICE}`);
   

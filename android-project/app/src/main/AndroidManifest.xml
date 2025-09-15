@@ -59,6 +59,13 @@
             android:theme="@style/Theme.SmartFarm"
             android:parentActivityName=".MainActivity" />
         
+        <activity
+            android:name=".auth.RegisterActivity"
+            android:exported="false"
+            android:label="@string/register"
+            android:theme="@style/Theme.SmartFarm"
+            android:parentActivityName=".auth.LoginActivity" />
+        
         <!-- WorkManager for notifications -->
         <provider
             android:name="androidx.startup.InitializationProvider"

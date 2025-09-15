@@ -76,8 +76,9 @@ class LoginActivity : AppCompatActivity() {
 
         // Sign Up
         findViewById<View>(R.id.tvSignUp).setOnClickListener {
-            // TODO: Navigate to registration screen
-            Toast.makeText(this, "Registration feature coming soon!", Toast.LENGTH_SHORT).show()
+            // Navigate to registration screen
+            val intent = Intent(this, RegisterActivity::class.java)
+            startActivity(intent)
         }
 
         // Social Login Buttons

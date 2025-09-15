@@ -186,20 +186,13 @@
         }
 
         function showLogin() {
-            const email = prompt('Enter your email:');
-            if (email) {
-                alert(`🔐 Login successful!\n\nWelcome back to SmartFarm!\n\nEmail: ${email}\n\nYou now have access to all farm management features.`);
-            }
+            // Redirect to login page
+            window.location.href = 'login.html';
         }
 
         function showRegister() {
-            const name = prompt('Enter your full name:');
-            if (name) {
-                const email = prompt('Enter your email:');
-                if (email) {
-                    alert(`✅ Account created successfully!\n\nWelcome to SmartFarm, ${name}!\n\nEmail: ${email}\n\nYou can now access all features of the farm management system.`);
-                }
-            }
+            // Redirect to comprehensive registration form
+            window.location.href = 'register.html';
         }
 
         // Initialize on load
