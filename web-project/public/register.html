@@ -924,8 +924,8 @@
 
             // Simulate API call to backend
             setTimeout(() => {
-                // Mock registration - replace with actual API call
-                const apiUrl = 'http://localhost:3000/api/auth/register';
+                // API call to Railway backend
+                const apiUrl = 'https://smartfarm-backend-production.up.railway.app/api/auth/register';
                 
                 fetch(apiUrl, {
                     method: 'POST',
