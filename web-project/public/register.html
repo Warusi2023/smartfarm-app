@@ -884,82 +884,51 @@
             btnText.style.display = 'none';
             loading.classList.add('show');
 
-            // Collect form data
+            // Collect form data - only send fields that Railway API expects
             const formData = {
-                // Personal Information
+                username: document.getElementById('username').value,
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value,
                 firstName: document.getElementById('firstName').value,
                 lastName: document.getElementById('lastName').value,
-                email: document.getElementById('email').value,
-                phone: document.getElementById('phone').value,
-                username: document.getElementById('username').value,
-                password: document.getElementById('password').value,
-                
-                // Location Information
-                country: document.getElementById('country').value,
-                region: document.getElementById('region').value,
-                district: document.getElementById('district').value,
-                village: document.getElementById('village').value,
-                
-                // Farm Information
-                farmName: document.getElementById('farmName').value,
-                farmSize: parseFloat(document.getElementById('farmSize').value),
-                farmType: document.getElementById('farmType').value,
-                experience: document.getElementById('experience').value,
-                crops: document.getElementById('crops').value,
-                irrigation: document.getElementById('irrigation').value,
-                
-                // Additional Information
-                education: document.getElementById('education').value,
-                income: document.getElementById('income').value,
-                marketing: document.getElementById('marketing').value,
-                technology: document.getElementById('technology').value,
-                challenges: document.getElementById('challenges').value,
-                goals: document.getElementById('goals').value,
-                newsletter: document.getElementById('newsletter').checked,
-                
-                // Registration metadata
-                registrationDate: new Date().toISOString(),
-                userAgent: navigator.userAgent
+                phone: document.getElementById('phone').value
             };
 
-            // Simulate API call to backend
-            setTimeout(() => {
-                // API call to Railway backend
-                const apiUrl = 'https://smartfarm-app-production.up.railway.app/api/auth/register';
-                
-                fetch(apiUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(formData)
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        showAlert('Registration successful! Please check your email to verify your account.', 'success');
-                        
-                        // Store user data
-                        localStorage.setItem('smartfarm_user', formData.email);
-                        localStorage.setItem('smartfarm_farm', formData.farmName);
-                        
-                        // Redirect to dashboard after delay
-                        setTimeout(() => {
-                            window.location.href = 'dashboard.html';
-                        }, 2000);
-                    } else {
-                        showAlert(data.message || 'Registration failed. Please try again.', 'danger');
-                        btnText.style.display = 'inline';
-                        loading.classList.remove('show');
-                    }
-                })
-                .catch(error => {
-                    console.error('Registration error:', error);
-                    showAlert('Registration failed. Please try again.', 'danger');
+            // API call to Railway backend
+            const apiUrl = 'https://smartfarm-app-production.up.railway.app/api/auth/register';
+            
+            fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showAlert('Registration successful! Please check your email to verify your account.', 'success');
+                    
+                    // Store user data
+                    localStorage.setItem('smartfarm_user', formData.email);
+                    localStorage.setItem('smartfarm_username', formData.username);
+                    
+                    // Redirect to dashboard after delay
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 2000);
+                } else {
+                    showAlert(data.message || 'Registration failed. Please try again.', 'danger');
                     btnText.style.display = 'inline';
                     loading.classList.remove('show');
-                });
-            }, 2000);
+                }
+            })
+            .catch(error => {
+                console.error('Registration error:', error);
+                showAlert('Registration failed. Please try again.', 'danger');
+                btnText.style.display = 'inline';
+                loading.classList.remove('show');
+            });
         }
 
         function showAlert(message, type) {
