@@ -120,8 +120,11 @@ function generateVerificationToken() {
 
 // Middleware
 app.use(express.json());
+// Parse CORS_ORIGIN from environment variable
+const corsOrigins = CORS_ORIGIN ? CORS_ORIGIN.split(',').map(origin => origin.trim()) : ['*'];
+
 app.use(cors({
-  origin: ['https://www.smartfarm-app.com', 'https://smartfarm-app.com', 'https://dulcet-sawine-92d6a8.netlify.app'],
+  origin: corsOrigins,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization']
