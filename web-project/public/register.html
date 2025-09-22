@@ -897,6 +897,8 @@
             // API call to Railway backend
             const apiUrl = 'https://smartfarm-app-production.up.railway.app/api/auth/register';
             
+            console.log('Sending registration data:', formData);
+            
             fetch(apiUrl, {
                 method: 'POST',
                 headers: {
@@ -904,8 +906,13 @@
                 },
                 body: JSON.stringify(formData)
             })
-            .then(response => response.json())
+            .then(response => {
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                return response.json();
+            })
             .then(data => {
+                console.log('Response data:', data);
                 if (data.status === 'success') {
                     showAlert('Registration successful! Please check your email to verify your account.', 'success');
                     
@@ -925,7 +932,8 @@
             })
             .catch(error => {
                 console.error('Registration error:', error);
-                showAlert('Registration failed. Please try again.', 'danger');
+                console.error('Error details:', error.message);
+                showAlert(`Registration failed: ${error.message}. Please try again.`, 'danger');
                 btnText.style.display = 'inline';
                 loading.classList.remove('show');
             });
