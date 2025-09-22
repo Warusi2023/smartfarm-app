@@ -12,7 +12,7 @@ const NODE_ENV = process.env.NODE_ENV || 'production';
 const API_VERSION = process.env.API_VERSION || '1.0.0';
 const API_NAME = process.env.API_NAME || 'SmartFarm API';
 const LOG_LEVEL = process.env.LOG_LEVEL || 'info';
-const CORS_ORIGIN = process.env.CORS_ORIGIN || '*';
+const CORS_ORIGIN = process.env.CORS_ORIGIN || 'https://www.smartfarm-app.com';
 const EMAIL_SERVICE = process.env.EMAIL_SERVICE || 'gmail';
 const EMAIL_USER = process.env.EMAIL_USER || '';
 const EMAIL_PASS = process.env.EMAIL_PASS || '';
@@ -121,7 +121,7 @@ function generateVerificationToken() {
 // Middleware
 app.use(express.json());
 app.use(cors({
-  origin: CORS_ORIGIN,
+  origin: ['https://www.smartfarm-app.com', 'https://smartfarm-app.com', 'https://dulcet-sawine-92d6a8.netlify.app'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization']
