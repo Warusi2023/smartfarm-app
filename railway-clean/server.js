@@ -542,6 +542,7 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`🧪 Test endpoint: http://localhost:${PORT}/api/test`);
   console.log(`📝 Log level: ${LOG_LEVEL}`);
   console.log(`🔗 CORS origin: ${CORS_ORIGIN}`);
+  console.log(`🔗 CORS origins array: ${JSON.stringify(corsOrigins)}`);
   console.log(`📧 Email service: ${EMAIL_CONFIGURED ? 'Configured' : 'Not configured'}`);
   console.log(`📧 Email from: ${EMAIL_FROM}`);
   console.log(`📧 Email service provider: ${EMAIL_SERVICE}`);
