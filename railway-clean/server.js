@@ -128,19 +128,19 @@ app.use(cors({
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
     
-    // Check if origin is in our allowed list
-    if (corsOrigins.includes('*') || corsOrigins.includes(origin)) {
+    // If CORS_ORIGIN is '*', allow all origins
+    if (CORS_ORIGIN === '*') return callback(null, true);
+    
+    // Check if origin exactly matches CORS_ORIGIN
+    if (origin === CORS_ORIGIN) return callback(null, true);
+    
+    // For www domains, also check without www
+    if (origin === CORS_ORIGIN.replace(/^www\./, '') || 
+        origin === `www.${CORS_ORIGIN.replace(/^www\./, '')}`) {
       return callback(null, true);
     }
     
-    // For specific domains, check both with and without www
-    const originWithoutWww = origin.replace(/^www\./, '');
-    const originWithWww = `www.${origin}`;
-    
-    if (corsOrigins.includes(originWithoutWww) || corsOrigins.includes(originWithWww)) {
-      return callback(null, true);
-    }
-    
+    console.log(`CORS: Rejecting origin ${origin}, allowed: ${CORS_ORIGIN}`);
     return callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
