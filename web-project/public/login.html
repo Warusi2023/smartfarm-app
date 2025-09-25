@@ -532,19 +532,33 @@
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
-                    showAlert('Login successful! Redirecting...', 'success');
+                    showAlert('Login successful! Redirecting to dashboard...', 'success');
                     
-                    // Store login state
+                    // Store login state and token
                     if (rememberMe) {
                         localStorage.setItem('smartfarm_remember', 'true');
                         localStorage.setItem('smartfarm_user', email);
+                        if (data.token) {
+                            localStorage.setItem('smartfarm_token', data.token);
+                        }
                     } else {
                         sessionStorage.setItem('smartfarm_user', email);
+                        if (data.token) {
+                            sessionStorage.setItem('smartfarm_token', data.token);
+                        }
                     }
 
                     // Store user data
                     if (data.data) {
                         localStorage.setItem('smartfarm_userData', JSON.stringify(data.data));
+                    }
+
+                    // Store login timestamp
+                    const loginTime = new Date().toISOString();
+                    if (rememberMe) {
+                        localStorage.setItem('smartfarm_loginTime', loginTime);
+                    } else {
+                        sessionStorage.setItem('smartfarm_loginTime', loginTime);
                     }
 
                     // Redirect to dashboard

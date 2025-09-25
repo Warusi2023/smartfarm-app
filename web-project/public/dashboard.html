@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Farm Dashboard - SmartFarm</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #2e7d32;
+            --secondary-color: #4caf50;
+            --accent-color: #8bc34a;
+            --danger-color: #f44336;
+            --warning-color: #ff9800;
+            --info-color: #2196f3;
+            --dark-color: #424242;
+            --light-color: #f5f5f5;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .sidebar {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            min-height: 100vh;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin: 5px 0;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .main-content {
+            padding: 20px;
+        }
+
+        .dashboard-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .btn-custom {
+            background: var(--accent-color);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-custom:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        .table-custom {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .table-custom th {
+            background: var(--light-color);
+            border: none;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .status-active { background: #d4edda; color: #155724; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-warning { background: #f8d7da; color: #721c24; }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 20px 0;
+        }
+
+        .navbar-custom {
+            background: white !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: -250px;
+                top: 0;
+                width: 250px;
+                z-index: 1000;
+                transition: left 0.3s ease;
+            }
+
+            .sidebar.show {
+                left: 0;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light navbar-custom">
+        <div class="container-fluid">
+            <button class="btn btn-outline-primary d-lg-none me-3" id="sidebarToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-leaf me-2"></i>SmartFarm Dashboard
+            </a>
+            <div class="navbar-nav ms-auto">
+                <div class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+                        <div class="user-avatar me-2" id="userAvatar">F</div>
+                        <span id="userName">Farmer</span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#" onclick="editProfile()"><i class="fas fa-user me-2"></i>Profile</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="showSettings()"><i class="fas fa-cog me-2"></i>Settings</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#" onclick="logout()"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-lg-2 col-md-3 sidebar" id="sidebar">
+                <div class="position-sticky pt-3">
+                    <div class="text-center mb-4">
+                        <h5>Farm Management</h5>
+                    </div>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#" onclick="showDashboard()">
+                                <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showFarmManagement()">
+                                <i class="fas fa-tractor me-2"></i>Farm Management
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="crop-management.html">
+                                <i class="fas fa-seedling me-2"></i>Crop Management
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="livestock-management.html">
+                                <i class="fas fa-cow me-2"></i>Livestock
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="inventory-management.html">
+                                <i class="fas fa-boxes me-2"></i>Inventory
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="analytics-dashboard.html">
+                                <i class="fas fa-chart-line me-2"></i>Analytics
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showTasks()">
+                                <i class="fas fa-tasks me-2"></i>Tasks
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showReports()">
+                                <i class="fas fa-file-alt me-2"></i>Reports
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="col-lg-10 col-md-9 main-content" id="mainContent">
+                <!-- Dashboard Overview -->
+                <div id="dashboardView">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2>Farm Dashboard</h2>
+                        <div>
+                            <span class="badge bg-success me-2">Online</span>
+                            <small class="text-muted">Last updated: <span id="lastUpdated"></span></small>
+                        </div>
+                    </div>
+
+                    <!-- Stats Cards -->
+                    <div class="row">
+                        <div class="col-lg-3 col-md-6">
+                            <div class="stat-card">
+                                <div class="stat-number" id="totalCrops">12</div>
+                                <div>Active Crops</div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="stat-card">
+                                <div class="stat-number" id="totalLivestock">45</div>
+                                <div>Livestock</div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="stat-card">
+                                <div class="stat-number" id="totalFields">8</div>
+                                <div>Fields</div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="stat-card">
+                                <div class="stat-number" id="monthlyYield">2.5</div>
+                                <div>Monthly Yield (tons)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Row -->
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <div class="dashboard-card">
+                                <h5 class="mb-3">Crop Yield Trend</h5>
+                                <div class="chart-container">
+                                    <canvas id="yieldChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="dashboard-card">
+                                <h5 class="mb-3">Field Status</h5>
+                                <div class="chart-container">
+                                    <canvas id="fieldStatusChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activities -->
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="dashboard-card">
+                                <h5 class="mb-3">Recent Activities</h5>
+                                <div class="activity-list" id="recentActivities">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="bg-success rounded-circle p-2 me-3">
+                                            <i class="fas fa-seedling text-white"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold">New crop planted</div>
+                                            <small class="text-muted">Tomatoes in Field A - 2 hours ago</small>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="bg-info rounded-circle p-2 me-3">
+                                            <i class="fas fa-tint text-white"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold">Irrigation completed</div>
+                                            <small class="text-muted">Field B irrigation - 4 hours ago</small>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="bg-warning rounded-circle p-2 me-3">
+                                            <i class="fas fa-exclamation-triangle text-white"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold">Soil moisture alert</div>
+                                            <small class="text-muted">Field C needs attention - 6 hours ago</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="dashboard-card">
+                                <h5 class="mb-3">Upcoming Tasks</h5>
+                                <div class="task-list" id="upcomingTasks">
+                                    <div class="d-flex justify-content-between align-items-center mb-3 p-3 border rounded">
+                                        <div>
+                                            <div class="fw-bold">Harvest Field A</div>
+                                            <small class="text-muted">Due: Tomorrow</small>
+                                        </div>
+                                        <span class="status-badge status-pending">Pending</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center mb-3 p-3 border rounded">
+                                        <div>
+                                            <div class="fw-bold">Fertilize Field B</div>
+                                            <small class="text-muted">Due: 3 days</small>
+                                        </div>
+                                        <span class="status-badge status-active">Scheduled</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center mb-3 p-3 border rounded">
+                                        <div>
+                                            <div class="fw-bold">Check irrigation system</div>
+                                            <small class="text-muted">Due: 5 days</small>
+                                        </div>
+                                        <span class="status-badge status-warning">Overdue</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Other Views (initially hidden) -->
+                <div id="farmManagementView" style="display: none;">
+                    <h2>Farm Management</h2>
+                    <div class="dashboard-card">
+                        <h5>Farm Information</h5>
+                        <form id="farmForm">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Farm Name</label>
+                                        <input type="text" class="form-control" id="farmName" value="Green Valley Farm">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Location</label>
+                                        <input type="text" class="form-control" id="farmLocation" value="Suva, Fiji">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Total Area (hectares)</label>
+                                        <input type="number" class="form-control" id="farmArea" value="25.5">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Farm Type</label>
+                                        <select class="form-select" id="farmType">
+                                            <option value="mixed">Mixed Farming</option>
+                                            <option value="crops">Crop Farming</option>
+                                            <option value="livestock">Livestock Farming</option>
+                                            <option value="dairy">Dairy Farming</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-custom" onclick="saveFarmData()">
+                                <i class="fas fa-save me-2"></i>Save Changes
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <div id="cropManagementView" style="display: none;">
+                    <h2>Crop Management</h2>
+                    <div class="dashboard-card">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5>Crops</h5>
+                            <button class="btn btn-custom" onclick="addNewCrop()">
+                                <i class="fas fa-plus me-2"></i>Add Crop
+                            </button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-custom">
+                                <thead>
+                                    <tr>
+                                        <th>Crop</th>
+                                        <th>Field</th>
+                                        <th>Planted Date</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cropsTable">
+                                    <tr>
+                                        <td>Tomatoes</td>
+                                        <td>Field A</td>
+                                        <td>2025-01-15</td>
+                                        <td><span class="status-badge status-active">Growing</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary me-1" onclick="editCrop(1)">Edit</button>
+                                            <button class="btn btn-sm btn-outline-danger" onclick="deleteCrop(1)">Delete</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Capsicum</td>
+                                        <td>Field B</td>
+                                        <td>2025-01-10</td>
+                                        <td><span class="status-badge status-active">Growing</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary me-1" onclick="editCrop(2)">Edit</button>
+                                            <button class="btn btn-sm btn-outline-danger" onclick="deleteCrop(2)">Delete</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="livestockManagementView" style="display: none;">
+                    <h2>Livestock Management</h2>
+                    <div class="dashboard-card">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5>Livestock</h5>
+                            <button class="btn btn-custom" onclick="addNewLivestock()">
+                                <i class="fas fa-plus me-2"></i>Add Livestock
+                            </button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-custom">
+                                <thead>
+                                    <tr>
+                                        <th>Species</th>
+                                        <th>Breed</th>
+                                        <th>Count</th>
+                                        <th>Location</th>
+                                        <th>Health Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="livestockTable">
+                                    <tr>
+                                        <td>Cattle</td>
+                                        <td>Holstein</td>
+                                        <td>25</td>
+                                        <td>Pasture 1</td>
+                                        <td><span class="status-badge status-active">Healthy</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary me-1" onclick="editLivestock(1)">Edit</button>
+                                            <button class="btn btn-sm btn-outline-danger" onclick="deleteLivestock(1)">Delete</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Pigs</td>
+                                        <td>Large White</td>
+                                        <td>15</td>
+                                        <td>Pen 2</td>
+                                        <td><span class="status-badge status-active">Healthy</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary me-1" onclick="editLivestock(2)">Edit</button>
+                                            <button class="btn btn-sm btn-outline-danger" onclick="deleteLivestock(2)">Delete</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="inventoryManagementView" style="display: none;">
+                    <h2>Inventory Management</h2>
+                    <div class="dashboard-card">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5>Inventory Items</h5>
+                            <button class="btn btn-custom" onclick="addInventoryItem()">
+                                <i class="fas fa-plus me-2"></i>Add Item
+                            </button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-custom">
+                                <thead>
+                                    <tr>
+                                        <th>Item</th>
+                                        <th>Category</th>
+                                        <th>Quantity</th>
+                                        <th>Unit</th>
+                                        <th>Last Updated</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="inventoryTable">
+                                    <tr>
+                                        <td>Fertilizer NPK</td>
+                                        <td>Chemicals</td>
+                                        <td>50</td>
+                                        <td>kg</td>
+                                        <td>2025-01-10</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary me-1" onclick="editInventory(1)">Edit</button>
+                                            <button class="btn btn-sm btn-outline-danger" onclick="deleteInventory(1)">Delete</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Seeds - Tomato</td>
+                                        <td>Seeds</td>
+                                        <td>100</td>
+                                        <td>packets</td>
+                                        <td>2025-01-08</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary me-1" onclick="editInventory(2)">Edit</button>
+                                            <button class="btn btn-sm btn-outline-danger" onclick="deleteInventory(2)">Delete</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="analyticsView" style="display: none;">
+                    <h2>Analytics & Reports</h2>
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="dashboard-card">
+                                <h5>Revenue Analysis</h5>
+                                <div class="chart-container">
+                                    <canvas id="revenueChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="dashboard-card">
+                                <h5>Cost Analysis</h5>
+                                <div class="chart-container">
+                                    <canvas id="costChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tasksView" style="display: none;">
+                    <h2>Task Management</h2>
+                    <div class="dashboard-card">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5>Tasks</h5>
+                            <button class="btn btn-custom" onclick="addNewTask()">
+                                <i class="fas fa-plus me-2"></i>Add Task
+                            </button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-custom">
+                                <thead>
+                                    <tr>
+                                        <th>Task</th>
+                                        <th>Priority</th>
+                                        <th>Due Date</th>
+                                        <th>Status</th>
+                                        <th>Assigned To</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tasksTable">
+                                    <tr>
+                                        <td>Harvest Field A</td>
+                                        <td><span class="badge bg-danger">High</span></td>
+                                        <td>2025-01-20</td>
+                                        <td><span class="status-badge status-pending">Pending</span></td>
+                                        <td>John Doe</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-success me-1" onclick="completeTask(1)">Complete</button>
+                                            <button class="btn btn-sm btn-outline-primary" onclick="editTask(1)">Edit</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="reportsView" style="display: none;">
+                    <h2>Reports</h2>
+                    <div class="dashboard-card">
+                        <h5>Generate Reports</h5>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-chart-bar fa-3x text-primary mb-3"></i>
+                                        <h6>Monthly Report</h6>
+                                        <button class="btn btn-outline-primary" onclick="generateReport('monthly')">Generate</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-calendar-alt fa-3x text-success mb-3"></i>
+                                        <h6>Annual Report</h6>
+                                        <button class="btn btn-outline-success" onclick="generateReport('annual')">Generate</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-file-excel fa-3x text-warning mb-3"></i>
+                                        <h6>Export Data</h6>
+                                        <button class="btn btn-outline-warning" onclick="exportData()">Export</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeDashboard();
+            updateLastUpdated();
+            setInterval(updateLastUpdated, 60000); // Update every minute
+        });
+
+        function initializeDashboard() {
+            // Initialize charts
+            initializeCharts();
+            
+            // Check authentication
+            checkAuthentication();
+            
+            // Load initial data
+            loadDashboardData();
+        }
+
+        function checkAuthentication() {
+            const user = localStorage.getItem('smartfarm_user') || sessionStorage.getItem('smartfarm_user');
+            const token = localStorage.getItem('smartfarm_token') || sessionStorage.getItem('smartfarm_token');
+            
+            if (!user) {
+                console.log('No user found, redirecting to login');
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // Check if session is still valid (for non-remember me users)
+            const rememberMe = localStorage.getItem('smartfarm_remember');
+            if (!rememberMe) {
+                const loginTime = sessionStorage.getItem('smartfarm_loginTime');
+                if (loginTime) {
+                    const sessionAge = Date.now() - new Date(loginTime).getTime();
+                    const maxSessionAge = 24 * 60 * 60 * 1000; // 24 hours
+                    if (sessionAge > maxSessionAge) {
+                        console.log('Session expired, redirecting to login');
+                        sessionStorage.clear();
+                        window.location.href = 'login.html';
+                        return;
+                    }
+                }
+            }
+            
+            // Update user info in navbar
+            const userName = user.split('@')[0];
+            const userNameElement = document.getElementById('userName');
+            const userAvatarElement = document.getElementById('userAvatar');
+            
+            if (userNameElement) {
+                userNameElement.textContent = userName;
+            }
+            if (userAvatarElement) {
+                userAvatarElement.textContent = userName.charAt(0).toUpperCase();
+            }
+            
+            console.log('User authenticated:', userName);
+        }
+
+        function updateLastUpdated() {
+            const now = new Date();
+            document.getElementById('lastUpdated').textContent = now.toLocaleTimeString();
+        }
+
+        function initializeCharts() {
+            // Yield Chart
+            const yieldCtx = document.getElementById('yieldChart').getContext('2d');
+            new Chart(yieldCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Yield (tons)',
+                        data: [2.1, 2.3, 2.8, 2.5, 2.9, 3.1],
+                        borderColor: '#4CAF50',
+                        backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+
+            // Field Status Chart
+            const fieldCtx = document.getElementById('fieldStatusChart').getContext('2d');
+            new Chart(fieldCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Active', 'Harvesting', 'Fallow'],
+                    datasets: [{
+                        data: [6, 2, 0],
+                        backgroundColor: ['#4CAF50', '#FF9800', '#9E9E9E']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        function loadDashboardData() {
+            // Load data from API or localStorage
+            // This would typically make API calls to your backend
+            console.log('Loading dashboard data...');
+        }
+
+        // Navigation functions
+        function showDashboard() {
+            showView('dashboardView');
+            setActiveNav('dashboard');
+        }
+
+        function showFarmManagement() {
+            showView('farmManagementView');
+            setActiveNav('farm');
+        }
+
+        function showCropManagement() {
+            showView('cropManagementView');
+            setActiveNav('crop');
+        }
+
+        function showLivestockManagement() {
+            showView('livestockManagementView');
+            setActiveNav('livestock');
+        }
+
+        function showInventoryManagement() {
+            showView('inventoryManagementView');
+            setActiveNav('inventory');
+        }
+
+        function showAnalytics() {
+            showView('analyticsView');
+            setActiveNav('analytics');
+        }
+
+        function showTasks() {
+            showView('tasksView');
+            setActiveNav('tasks');
+        }
+
+        function showReports() {
+            showView('reportsView');
+            setActiveNav('reports');
+        }
+
+        function showView(viewId) {
+            // Hide all views
+            const views = ['dashboardView', 'farmManagementView', 'cropManagementView', 
+                          'livestockManagementView', 'inventoryManagementView', 
+                          'analyticsView', 'tasksView', 'reportsView'];
+            views.forEach(id => {
+                document.getElementById(id).style.display = 'none';
+            });
+            
+            // Show selected view
+            document.getElementById(viewId).style.display = 'block';
+        }
+
+        function setActiveNav(navItem) {
+            // Remove active class from all nav links
+            document.querySelectorAll('.sidebar .nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Add active class to clicked nav link
+            event.target.classList.add('active');
+        }
+
+        // Data management functions
+        function saveFarmData() {
+            const farmData = {
+                name: document.getElementById('farmName').value,
+                location: document.getElementById('farmLocation').value,
+                area: document.getElementById('farmArea').value,
+                type: document.getElementById('farmType').value
+            };
+            
+            // Save to localStorage or API
+            localStorage.setItem('farmData', JSON.stringify(farmData));
+            
+            alert('Farm data saved successfully!');
+        }
+
+        function addNewCrop() {
+            alert('Add new crop functionality will be implemented');
+        }
+
+        function editCrop(id) {
+            alert(`Edit crop ${id} functionality will be implemented`);
+        }
+
+        function deleteCrop(id) {
+            if (confirm('Are you sure you want to delete this crop?')) {
+                alert(`Crop ${id} deleted`);
+            }
+        }
+
+        function addNewLivestock() {
+            alert('Add new livestock functionality will be implemented');
+        }
+
+        function editLivestock(id) {
+            alert(`Edit livestock ${id} functionality will be implemented`);
+        }
+
+        function deleteLivestock(id) {
+            if (confirm('Are you sure you want to delete this livestock record?')) {
+                alert(`Livestock ${id} deleted`);
+            }
+        }
+
+        function addInventoryItem() {
+            alert('Add inventory item functionality will be implemented');
+        }
+
+        function editInventory(id) {
+            alert(`Edit inventory ${id} functionality will be implemented`);
+        }
+
+        function deleteInventory(id) {
+            if (confirm('Are you sure you want to delete this inventory item?')) {
+                alert(`Inventory item ${id} deleted`);
+            }
+        }
+
+        function addNewTask() {
+            alert('Add new task functionality will be implemented');
+        }
+
+        function editTask(id) {
+            alert(`Edit task ${id} functionality will be implemented`);
+        }
+
+        function completeTask(id) {
+            alert(`Task ${id} marked as complete`);
+        }
+
+        function generateReport(type) {
+            alert(`Generating ${type} report...`);
+        }
+
+        function exportData() {
+            alert('Exporting data...');
+        }
+
+        // User functions
+        function editProfile() {
+            alert('Edit profile functionality will be implemented');
+        }
+
+        function showSettings() {
+            alert('Settings functionality will be implemented');
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('smartfarm_user');
+                sessionStorage.removeItem('smartfarm_user');
+                window.location.href = 'login.html';
+            }
+        }
+
+        // Mobile sidebar toggle
+        document.getElementById('sidebarToggle').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('show');
+        });
+    </script>
+</body>
+</html>
