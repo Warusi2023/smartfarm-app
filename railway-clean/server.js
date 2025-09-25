@@ -123,26 +123,13 @@ app.use(express.json());
 // Parse CORS_ORIGIN from environment variable
 const corsOrigins = CORS_ORIGIN ? CORS_ORIGIN.split(',').map(origin => origin.trim()) : ['*'];
 
+// Simplified CORS configuration
 app.use(cors({
-  origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    // If CORS_ORIGIN is '*', allow all origins
-    if (CORS_ORIGIN === '*') return callback(null, true);
-    
-    // Check if origin exactly matches CORS_ORIGIN
-    if (origin === CORS_ORIGIN) return callback(null, true);
-    
-    // For www domains, also check without www
-    if (origin === CORS_ORIGIN.replace(/^www\./, '') || 
-        origin === `www.${CORS_ORIGIN.replace(/^www\./, '')}`) {
-      return callback(null, true);
-    }
-    
-    console.log(`CORS: Rejecting origin ${origin}, allowed: ${CORS_ORIGIN}`);
-    return callback(new Error('Not allowed by CORS'));
-  },
+  origin: [
+    'https://www.smartfarm-app.com',
+    'https://smartfarm-app.com',
+    'https://dulcet-sawine-92d6a8.netlify.app'
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization']
