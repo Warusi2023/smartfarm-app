@@ -548,9 +548,17 @@
                         }
                     }
 
-                    // Store user data
+                    // Store user data with country for currency
                     if (data.data) {
                         localStorage.setItem('smartfarm_userData', JSON.stringify(data.data));
+                    } else {
+                        // If no user data from API, create basic user data with country
+                        const userData = {
+                            email: email,
+                            username: email.split('@')[0], // Use email prefix as username
+                            country: 'Fiji' // Default to Fiji, can be updated later
+                        };
+                        localStorage.setItem('smartfarm_userData', JSON.stringify(userData));
                     }
 
                     // Store login timestamp
