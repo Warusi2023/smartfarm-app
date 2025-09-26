@@ -665,6 +665,11 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
+        // Data arrays for crops, livestock, and inventory
+        let crops = [];
+        let livestock = [];
+        let inventory = [];
+
         // Initialize dashboard
         document.addEventListener('DOMContentLoaded', function() {
             initializeDashboard();
@@ -785,6 +790,11 @@
             
             // Load farm data from localStorage
             loadFarmData();
+            
+            // Load crops, livestock, and inventory data
+            loadCropsData();
+            loadLivestockData();
+            loadInventoryData();
         }
 
         function loadFarmData() {
@@ -813,6 +823,69 @@
             }
         }
 
+        function loadCropsData() {
+            const savedCrops = localStorage.getItem('cropsData');
+            if (savedCrops) {
+                try {
+                    crops = JSON.parse(savedCrops);
+                    console.log('Crops data loaded from localStorage:', crops);
+                } catch (e) {
+                    console.error('Error loading crops data:', e);
+                    crops = [];
+                }
+            } else {
+                // Initialize with default data
+                crops = [
+                    { id: 1, name: 'Tomatoes', variety: 'Cherry', area: '2.5', status: 'Growing', notes: 'Planted last month' },
+                    { id: 2, name: 'Lettuce', variety: 'Romaine', area: '1.0', status: 'Ready', notes: 'Harvest next week' }
+                ];
+                saveCropsData();
+            }
+            renderCropsTable();
+        }
+
+        function loadLivestockData() {
+            const savedLivestock = localStorage.getItem('livestockData');
+            if (savedLivestock) {
+                try {
+                    livestock = JSON.parse(savedLivestock);
+                    console.log('Livestock data loaded from localStorage:', livestock);
+                } catch (e) {
+                    console.error('Error loading livestock data:', e);
+                    livestock = [];
+                }
+            } else {
+                // Initialize with default data
+                livestock = [
+                    { id: 1, type: 'Cattle', breed: 'Holstein', quantity: 25, location: 'Field 1', status: 'Healthy', notes: 'Milking cows' },
+                    { id: 2, type: 'Pigs', breed: 'Large White', quantity: 15, location: 'Pen 2', status: 'Healthy', notes: 'Breeding stock' }
+                ];
+                saveLivestockData();
+            }
+            renderLivestockTable();
+        }
+
+        function loadInventoryData() {
+            const savedInventory = localStorage.getItem('inventoryData');
+            if (savedInventory) {
+                try {
+                    inventory = JSON.parse(savedInventory);
+                    console.log('Inventory data loaded from localStorage:', inventory);
+                } catch (e) {
+                    console.error('Error loading inventory data:', e);
+                    inventory = [];
+                }
+            } else {
+                // Initialize with default data
+                inventory = [
+                    { id: 1, name: 'Fertilizer', category: 'Supplies', quantity: 50, unit: 'bags', expiryDate: '2025-06-15', status: 'in-stock' },
+                    { id: 2, name: 'Seeds - Tomato', category: 'Seeds', quantity: 100, unit: 'packets', expiryDate: '2025-01-08', status: 'in-stock' }
+                ];
+                saveInventoryData();
+            }
+            renderInventoryTable();
+        }
+
         // Navigation functions
         function showDashboard() {
             showView('dashboardView');
@@ -829,16 +902,22 @@
         function showCropManagement() {
             showView('cropManagementView');
             setActiveNav('crop');
+            // Load fresh crop data when switching to this tab
+            loadCropsData();
         }
 
         function showLivestockManagement() {
             showView('livestockManagementView');
             setActiveNav('livestock');
+            // Load fresh livestock data when switching to this tab
+            loadLivestockData();
         }
 
         function showInventoryManagement() {
             showView('inventoryManagementView');
             setActiveNav('inventory');
+            // Load fresh inventory data when switching to this tab
+            loadInventoryData();
         }
 
         function showAnalytics() {
@@ -963,8 +1042,119 @@
             }, 3000);
         }
 
+        // Save functions for data persistence
+        function saveCropsData() {
+            localStorage.setItem('cropsData', JSON.stringify(crops));
+        }
+
+        function saveLivestockData() {
+            localStorage.setItem('livestockData', JSON.stringify(livestock));
+        }
+
+        function saveInventoryData() {
+            localStorage.setItem('inventoryData', JSON.stringify(inventory));
+        }
+
+        // Table rendering functions
+        function renderCropsTable() {
+            const tbody = document.querySelector('#cropsTable tbody');
+            if (!tbody) return;
+
+            tbody.innerHTML = '';
+            crops.forEach(crop => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${crop.name}</td>
+                    <td>${crop.variety}</td>
+                    <td>${crop.area} ha</td>
+                    <td><span class="status-badge status-${crop.status.toLowerCase()}">${crop.status}</span></td>
+                    <td>${crop.notes}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick="editCrop(${crop.id})">Edit</button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteCrop(${crop.id})">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function renderLivestockTable() {
+            const tbody = document.querySelector('#livestockTable tbody');
+            if (!tbody) return;
+
+            tbody.innerHTML = '';
+            livestock.forEach(animal => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${animal.type}</td>
+                    <td>${animal.breed}</td>
+                    <td>${animal.quantity}</td>
+                    <td>${animal.location}</td>
+                    <td><span class="status-badge status-${animal.status.toLowerCase()}">${animal.status}</span></td>
+                    <td>${animal.notes}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick="editLivestock(${animal.id})">Edit</button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteLivestock(${animal.id})">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function renderInventoryTable() {
+            const tbody = document.querySelector('#inventoryTable tbody');
+            if (!tbody) return;
+
+            tbody.innerHTML = '';
+            inventory.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.name}</td>
+                    <td>${item.category}</td>
+                    <td>${item.quantity}</td>
+                    <td>${item.unit}</td>
+                    <td>${item.expiryDate}</td>
+                    <td><span class="status-badge status-${item.status}">${item.status}</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick="editInventory(${item.id})">Edit</button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteInventory(${item.id})">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
         function addNewCrop() {
-            alert('Add new crop functionality will be implemented');
+            const name = prompt('Enter crop name:');
+            if (!name) return;
+            
+            const variety = prompt('Enter variety:');
+            if (!variety) return;
+            
+            const area = prompt('Enter area (hectares):');
+            if (!area || isNaN(area)) {
+                alert('Please enter a valid area.');
+                return;
+            }
+            
+            const status = prompt('Enter status (Growing/Ready/Harvested):', 'Growing');
+            if (!status) return;
+            
+            const notes = prompt('Enter notes (optional):', '');
+            
+            const newCrop = {
+                id: Date.now(), // Simple ID generation
+                name: name.trim(),
+                variety: variety.trim(),
+                area: parseFloat(area),
+                status: status.trim(),
+                notes: notes.trim()
+            };
+            
+            crops.push(newCrop);
+            saveCropsData();
+            renderCropsTable();
+            showSuccessMessage('Crop added successfully!');
         }
 
         function editCrop(id) {
@@ -973,12 +1163,48 @@
 
         function deleteCrop(id) {
             if (confirm('Are you sure you want to delete this crop?')) {
-                alert(`Crop ${id} deleted`);
+                crops = crops.filter(crop => crop.id !== id);
+                saveCropsData();
+                renderCropsTable();
+                showSuccessMessage('Crop deleted successfully!');
             }
         }
 
         function addNewLivestock() {
-            alert('Add new livestock functionality will be implemented');
+            const type = prompt('Enter livestock type (Cattle/Pigs/Chickens/Sheep):');
+            if (!type) return;
+            
+            const breed = prompt('Enter breed:');
+            if (!breed) return;
+            
+            const quantity = prompt('Enter quantity:');
+            if (!quantity || isNaN(quantity) || parseInt(quantity) <= 0) {
+                alert('Please enter a valid quantity.');
+                return;
+            }
+            
+            const location = prompt('Enter location:');
+            if (!location) return;
+            
+            const status = prompt('Enter status (Healthy/Sick/Quarantine):', 'Healthy');
+            if (!status) return;
+            
+            const notes = prompt('Enter notes (optional):', '');
+            
+            const newLivestock = {
+                id: Date.now(),
+                type: type.trim(),
+                breed: breed.trim(),
+                quantity: parseInt(quantity),
+                location: location.trim(),
+                status: status.trim(),
+                notes: notes.trim()
+            };
+            
+            livestock.push(newLivestock);
+            saveLivestockData();
+            renderLivestockTable();
+            showSuccessMessage('Livestock added successfully!');
         }
 
         function editLivestock(id) {
@@ -987,12 +1213,49 @@
 
         function deleteLivestock(id) {
             if (confirm('Are you sure you want to delete this livestock record?')) {
-                alert(`Livestock ${id} deleted`);
+                livestock = livestock.filter(animal => animal.id !== id);
+                saveLivestockData();
+                renderLivestockTable();
+                showSuccessMessage('Livestock deleted successfully!');
             }
         }
 
         function addInventoryItem() {
-            alert('Add inventory item functionality will be implemented');
+            const name = prompt('Enter item name:');
+            if (!name) return;
+            
+            const category = prompt('Enter category (Seeds/Supplies/Tools/Equipment):');
+            if (!category) return;
+            
+            const quantity = prompt('Enter quantity:');
+            if (!quantity || isNaN(quantity) || parseInt(quantity) <= 0) {
+                alert('Please enter a valid quantity.');
+                return;
+            }
+            
+            const unit = prompt('Enter unit (bags/packets/pieces/liters):');
+            if (!unit) return;
+            
+            const expiryDate = prompt('Enter expiry date (YYYY-MM-DD):');
+            if (!expiryDate) return;
+            
+            const status = prompt('Enter status (in-stock/low-stock/out-of-stock):', 'in-stock');
+            if (!status) return;
+            
+            const newItem = {
+                id: Date.now(),
+                name: name.trim(),
+                category: category.trim(),
+                quantity: parseInt(quantity),
+                unit: unit.trim(),
+                expiryDate: expiryDate.trim(),
+                status: status.trim()
+            };
+            
+            inventory.push(newItem);
+            saveInventoryData();
+            renderInventoryTable();
+            showSuccessMessage('Inventory item added successfully!');
         }
 
         function editInventory(id) {
@@ -1001,7 +1264,10 @@
 
         function deleteInventory(id) {
             if (confirm('Are you sure you want to delete this inventory item?')) {
-                alert(`Inventory item ${id} deleted`);
+                inventory = inventory.filter(item => item.id !== id);
+                saveInventoryData();
+                renderInventoryTable();
+                showSuccessMessage('Inventory item deleted successfully!');
             }
         }
 
