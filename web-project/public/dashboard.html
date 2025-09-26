@@ -782,6 +782,35 @@
             // Load data from API or localStorage
             // This would typically make API calls to your backend
             console.log('Loading dashboard data...');
+            
+            // Load farm data from localStorage
+            loadFarmData();
+        }
+
+        function loadFarmData() {
+            const savedFarmData = localStorage.getItem('farmData');
+            if (savedFarmData) {
+                try {
+                    const farmData = JSON.parse(savedFarmData);
+                    
+                    // Update form fields with saved data
+                    const farmNameField = document.getElementById('farmName');
+                    const farmLocationField = document.getElementById('farmLocation');
+                    const farmAreaField = document.getElementById('farmArea');
+                    const farmTypeField = document.getElementById('farmType');
+                    
+                    if (farmNameField) farmNameField.value = farmData.name || 'Green Valley Farm';
+                    if (farmLocationField) farmLocationField.value = farmData.location || 'Suva, Fiji';
+                    if (farmAreaField) farmAreaField.value = farmData.area || '25.5';
+                    if (farmTypeField) farmTypeField.value = farmData.type || 'Mixed Farming';
+                    
+                    console.log('Farm data loaded from localStorage:', farmData);
+                } catch (e) {
+                    console.error('Error loading farm data:', e);
+                }
+            } else {
+                console.log('No saved farm data found, using defaults');
+            }
         }
 
         // Navigation functions
@@ -793,6 +822,8 @@
         function showFarmManagement() {
             showView('farmManagementView');
             setActiveNav('farm');
+            // Load fresh farm data when switching to this tab
+            loadFarmData();
         }
 
         function showCropManagement() {
@@ -850,17 +881,86 @@
 
         // Data management functions
         function saveFarmData() {
+            // Get form values
+            const farmName = document.getElementById('farmName').value.trim();
+            const farmLocation = document.getElementById('farmLocation').value.trim();
+            const farmArea = document.getElementById('farmArea').value.trim();
+            const farmType = document.getElementById('farmType').value;
+
+            // Basic validation
+            if (!farmName) {
+                alert('Please enter a farm name.');
+                document.getElementById('farmName').focus();
+                return;
+            }
+
+            if (!farmLocation) {
+                alert('Please enter a farm location.');
+                document.getElementById('farmLocation').focus();
+                return;
+            }
+
+            if (!farmArea || isNaN(farmArea) || parseFloat(farmArea) <= 0) {
+                alert('Please enter a valid farm area (positive number).');
+                document.getElementById('farmArea').focus();
+                return;
+            }
+
+            if (!farmType) {
+                alert('Please select a farm type.');
+                document.getElementById('farmType').focus();
+                return;
+            }
+
+            // Create farm data object
             const farmData = {
-                name: document.getElementById('farmName').value,
-                location: document.getElementById('farmLocation').value,
-                area: document.getElementById('farmArea').value,
-                type: document.getElementById('farmType').value
+                name: farmName,
+                location: farmLocation,
+                area: parseFloat(farmArea),
+                type: farmType,
+                lastUpdated: new Date().toISOString()
             };
             
-            // Save to localStorage or API
-            localStorage.setItem('farmData', JSON.stringify(farmData));
+            try {
+                // Save to localStorage
+                localStorage.setItem('farmData', JSON.stringify(farmData));
+                
+                // Show success message
+                showSuccessMessage('Farm data saved successfully!');
+                
+                // Log the saved data
+                console.log('Farm data saved:', farmData);
+                
+                // Optional: Send to API if available
+                // saveFarmDataToAPI(farmData);
+                
+            } catch (error) {
+                console.error('Error saving farm data:', error);
+                alert('Error saving farm data. Please try again.');
+            }
+        }
+
+        function showSuccessMessage(message) {
+            // Create a more elegant success notification
+            const notification = document.createElement('div');
+            notification.className = 'alert alert-success alert-dismissible fade show';
+            notification.style.position = 'fixed';
+            notification.style.top = '20px';
+            notification.style.right = '20px';
+            notification.style.zIndex = '9999';
+            notification.innerHTML = `
+                <i class="fas fa-check-circle me-2"></i>${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
             
-            alert('Farm data saved successfully!');
+            document.body.appendChild(notification);
+            
+            // Auto-remove after 3 seconds
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 3000);
         }
 
         function addNewCrop() {
