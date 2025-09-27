@@ -2517,8 +2517,354 @@ INVENTORY SUMMARY:
                     actions: ['Temperature Check', 'Moderate Watering', 'Support Stems']
                 });
             }
+
+            // Weather-based weeding recommendations
+            const weedingSuggestions = generateWeedingRecommendations(crop, daysSincePlanted);
+            suggestions.push(...weedingSuggestions);
             
             return suggestions;
+        }
+
+        // Weeding recommendation functions
+        function generateWeedingRecommendations(crop, daysSincePlanted) {
+            const suggestions = [];
+            const currentSeason = getCurrentSeason();
+            const weatherConditions = getWeatherConditions();
+            const cropName = crop.name.toLowerCase();
+            
+            // Weather-based weeding urgency
+            let weedingUrgency = 'normal';
+            let weatherFactor = 1.0;
+            
+            if (weatherConditions.temperature > 25 && weatherConditions.humidity > 60) {
+                weedingUrgency = 'high';
+                weatherFactor = 1.5;
+            } else if (weatherConditions.temperature > 30) {
+                weedingUrgency = 'critical';
+                weatherFactor = 2.0;
+            } else if (weatherConditions.rainfall > 50) {
+                weedingUrgency = 'high';
+                weatherFactor = 1.3;
+            }
+            
+            // Growth stage-based weeding recommendations
+            if (daysSincePlanted < 14) {
+                suggestions.push({
+                    type: 'warning',
+                    title: 'Early Stage Weeding',
+                    description: `Crop is ${daysSincePlanted} days old. Weeds compete heavily with young plants for nutrients and water.`,
+                    actions: ['Light Hand Weeding', 'Mulch Application', 'Monitor Daily'],
+                    treatments: getEarlyStageWeedingTreatments(),
+                    urgency: weedingUrgency
+                });
+            } else if (daysSincePlanted < 45) {
+                suggestions.push({
+                    type: weedingUrgency === 'critical' ? 'critical' : 'warning',
+                    title: 'Active Growth Weeding',
+                    description: `Crop is ${daysSincePlanted} days old. Regular weeding is crucial during active growth phase. Weather conditions indicate ${weedingUrgency} weed pressure.`,
+                    actions: ['Regular Weeding', 'Mulch Maintenance', 'Hoe Cultivation'],
+                    treatments: getActiveGrowthWeedingTreatments(),
+                    urgency: weedingUrgency
+                });
+            } else {
+                suggestions.push({
+                    type: 'warning',
+                    title: 'Mature Stage Weeding',
+                    description: `Crop is ${daysSincePlanted} days old. Focus on maintaining clean rows and preventing weed seed production.`,
+                    actions: ['Row Maintenance', 'Seed Prevention', 'Final Cleanup'],
+                    treatments: getMatureStageWeedingTreatments(),
+                    urgency: weedingUrgency
+                });
+            }
+            
+            // Weather-specific weeding recommendations
+            if (weatherConditions.temperature > 25) {
+                suggestions.push({
+                    type: 'warning',
+                    title: 'Hot Weather Weeding Alert',
+                    description: `High temperatures (${weatherConditions.temperature}°C) accelerate weed growth. Increased weeding frequency recommended.`,
+                    actions: ['Morning Weeding', 'Extra Mulch', 'Shade Protection'],
+                    treatments: getHotWeatherWeedingTreatments(),
+                    urgency: 'high'
+                });
+            }
+            
+            if (weatherConditions.humidity > 70) {
+                suggestions.push({
+                    type: 'warning',
+                    title: 'High Humidity Weeding',
+                    description: `High humidity (${weatherConditions.humidity}%) promotes rapid weed germination and growth.`,
+                    actions: ['Preventive Weeding', 'Improve Air Circulation', 'Drip Irrigation'],
+                    treatments: getHighHumidityWeedingTreatments(),
+                    urgency: 'high'
+                });
+            }
+            
+            if (weatherConditions.rainfall > 30) {
+                suggestions.push({
+                    type: 'warning',
+                    title: 'Post-Rain Weeding',
+                    description: `Recent rainfall (${weatherConditions.rainfall}mm) creates ideal conditions for weed germination.`,
+                    actions: ['Post-Rain Weeding', 'Soil Cultivation', 'Mulch Replacement'],
+                    treatments: getPostRainWeedingTreatments(),
+                    urgency: 'high'
+                });
+            }
+            
+            // Crop-specific weeding recommendations
+            if (cropName.includes('corn') || cropName.includes('maize')) {
+                suggestions.push({
+                    type: 'warning',
+                    title: 'Corn Weeding Strategy',
+                    description: 'Corn is particularly susceptible to weed competition during early growth stages.',
+                    actions: ['Between-Row Cultivation', 'Hand Weeding Near Plants', 'Pre-Emergent Herbicide'],
+                    treatments: getCornWeedingTreatments(),
+                    urgency: 'high'
+                });
+            } else if (cropName.includes('tomato') || cropName.includes('pepper')) {
+                suggestions.push({
+                    type: 'warning',
+                    title: 'Vegetable Weeding Care',
+                    description: 'Vegetables need careful weeding to avoid damaging shallow root systems.',
+                    actions: ['Careful Hand Weeding', 'Mulch Heavily', 'Straw Mulch'],
+                    treatments: getVegetableWeedingTreatments(),
+                    urgency: 'normal'
+                });
+            }
+            
+            return suggestions;
+        }
+
+        function getCurrentSeason() {
+            const month = new Date().getMonth();
+            if (month >= 2 && month <= 4) return 'spring';
+            if (month >= 5 && month <= 7) return 'summer';
+            if (month >= 8 && month <= 10) return 'autumn';
+            return 'winter';
+        }
+
+        function getWeatherConditions() {
+            // Simulate weather conditions (in a real app, this would come from a weather API)
+            const currentHour = new Date().getHours();
+            const month = new Date().getMonth();
+            
+            // Simulate seasonal and daily variations
+            let baseTemp = 20 + (month * 2); // Seasonal variation
+            baseTemp += Math.sin(currentHour * 0.261) * 5; // Daily variation
+            
+            let humidity = 50 + Math.sin(currentHour * 0.261) * 20;
+            let rainfall = Math.random() * 100; // Random rainfall simulation
+            
+            return {
+                temperature: Math.round(baseTemp),
+                humidity: Math.round(humidity),
+                rainfall: Math.round(rainfall),
+                season: getCurrentSeason()
+            };
+        }
+
+        // Weeding treatment functions
+        function getEarlyStageWeedingTreatments() {
+            return [
+                {
+                    name: "Hand Weeding (Gentle)",
+                    ingredients: [
+                        "Small hand tools (hand hoe, weeder)",
+                        "Gloves",
+                        "Knee pad or small stool",
+                        "Bucket for weeds"
+                    ],
+                    instructions: [
+                        "Weed early in the morning when soil is moist",
+                        "Use gentle pulling motion to avoid disturbing crop roots",
+                        "Remove weeds when they are small (2-3 inches)",
+                        "Focus on weeds within 6 inches of crop plants",
+                        "Dispose of weeds away from field to prevent reseeding"
+                    ],
+                    targets: "Small annual weeds, grass seedlings"
+                },
+                {
+                    name: "Organic Mulch Application",
+                    ingredients: [
+                        "Straw or hay (2-3 inches thick)",
+                        "Newspaper or cardboard (optional base layer)",
+                        "Water for settling mulch"
+                    ],
+                    instructions: [
+                        "Lay newspaper/cardboard around plants first",
+                        "Apply 2-3 inches of straw mulch",
+                        "Keep mulch 2 inches away from plant stems",
+                        "Water mulch to settle it in place",
+                        "Replenish mulch as it decomposes"
+                    ],
+                    targets: "Weed seed germination, soil moisture retention"
+                }
+            ];
+        }
+
+        function getActiveGrowthWeedingTreatments() {
+            return [
+                {
+                    name: "Hoe Cultivation",
+                    ingredients: [
+                        "Sharp garden hoe",
+                        "Cultivator or stirrup hoe",
+                        "Gloves and protective clothing"
+                    ],
+                    instructions: [
+                        "Cultivate when soil is slightly moist, not wet",
+                        "Work between rows, 4-6 inches from crop plants",
+                        "Use shallow cultivation (1-2 inches deep)",
+                        "Cultivate in one direction to avoid soil compaction",
+                        "Repeat every 7-10 days during active growth"
+                    ],
+                    targets: "Established annual weeds, soil crust breaking"
+                },
+                {
+                    name: "Vinegar Weed Spray",
+                    ingredients: [
+                        "1 gallon white vinegar (5% acidity)",
+                        "1 cup salt",
+                        "1 tablespoon liquid dish soap",
+                        "Spray bottle or garden sprayer"
+                    ],
+                    instructions: [
+                        "Mix vinegar and salt until salt dissolves",
+                        "Add dish soap and mix well",
+                        "Apply on sunny day with no rain forecast",
+                        "Spray directly on weed leaves",
+                        "Avoid contact with crop plants",
+                        "Reapply in 3-5 days for stubborn weeds"
+                    ],
+                    targets: "Broadleaf weeds, young grass weeds"
+                }
+            ];
+        }
+
+        function getMatureStageWeedingTreatments() {
+            return [
+                {
+                    name: "Final Weeding and Mulching",
+                    ingredients: [
+                        "Heavy mulch (straw, wood chips)",
+                        "Hand tools for spot weeding",
+                        "Weed barrier fabric (optional)"
+                    ],
+                    instructions: [
+                        "Remove any remaining large weeds by hand",
+                        "Apply heavy mulch layer (4-6 inches)",
+                        "Install weed barrier fabric between rows if needed",
+                        "Focus on preventing weed seed production",
+                        "Maintain clean harvest paths"
+                    ],
+                    targets: "Mature weeds, weed seed prevention"
+                }
+            ];
+        }
+
+        function getHotWeatherWeedingTreatments() {
+            return [
+                {
+                    name: "Morning Weeding Schedule",
+                    ingredients: [
+                        "Early morning timing (6-8 AM)",
+                        "Extra mulch materials",
+                        "Shade cloth or row covers"
+                    ],
+                    instructions: [
+                        "Weed early morning to avoid heat stress",
+                        "Apply extra mulch to reduce soil temperature",
+                        "Use shade cloth over sensitive crops",
+                        "Increase watering frequency",
+                        "Consider drip irrigation to reduce humidity"
+                    ],
+                    targets: "Heat-stressed weeds, soil cooling"
+                }
+            ];
+        }
+
+        function getHighHumidityWeedingTreatments() {
+            return [
+                {
+                    name: "Humidity Control Weeding",
+                    ingredients: [
+                        "Air circulation fans (if in greenhouse)",
+                        "Drip irrigation system",
+                        "Extra mulch for moisture control"
+                    ],
+                    instructions: [
+                        "Improve air circulation around plants",
+                        "Switch to drip irrigation to reduce humidity",
+                        "Apply mulch to prevent soil moisture evaporation",
+                        "Weed more frequently during humid periods",
+                        "Consider spacing plants further apart"
+                    ],
+                    targets: "Humidity-promoted weed growth"
+                }
+            ];
+        }
+
+        function getPostRainWeedingTreatments() {
+            return [
+                {
+                    name: "Post-Rain Cultivation",
+                    ingredients: [
+                        "Cultivation tools",
+                        "Fresh mulch materials",
+                        "Soil amendments if needed"
+                    ],
+                    instructions: [
+                        "Wait until soil is workable (not too wet)",
+                        "Cultivate soil to disrupt weed germination",
+                        "Apply fresh mulch immediately after cultivation",
+                        "Check for soil compaction and aerate if needed",
+                        "Monitor for new weed growth in following days"
+                    ],
+                    targets: "Post-rain weed germination, soil aeration"
+                }
+            ];
+        }
+
+        function getCornWeedingTreatments() {
+            return [
+                {
+                    name: "Corn Row Cultivation",
+                    ingredients: [
+                        "Row crop cultivator or hoe",
+                        "Pre-emergent herbicide (optional)",
+                        "Hand tools for close weeding"
+                    ],
+                    instructions: [
+                        "Cultivate between rows when corn is 4-6 inches tall",
+                        "Use shields to protect corn plants from soil",
+                        "Apply pre-emergent herbicide if using",
+                        "Hand weed within 6 inches of corn plants",
+                        "Repeat cultivation every 10-14 days until corn is 3 feet tall"
+                    ],
+                    targets: "Annual weeds, grass competition in corn"
+                }
+            ];
+        }
+
+        function getVegetableWeedingTreatments() {
+            return [
+                {
+                    name: "Vegetable Care Weeding",
+                    ingredients: [
+                        "Small hand tools",
+                        "Straw mulch",
+                        "Organic weed control spray"
+                    ],
+                    instructions: [
+                        "Hand weed carefully to avoid damaging vegetable roots",
+                        "Apply thick straw mulch around plants",
+                        "Use organic sprays only as last resort",
+                        "Weed regularly to prevent competition",
+                        "Support plants with stakes or cages to improve access"
+                    ],
+                    targets: "Vegetable garden weeds, shallow root protection"
+                }
+            ];
         }
 
         // Treatment recipe functions
