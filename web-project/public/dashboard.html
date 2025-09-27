@@ -629,38 +629,153 @@
                 </div>
 
                 <div id="reportsView" style="display: none;">
-                    <h2>Reports</h2>
-                    <div class="dashboard-card">
-                        <h5>Generate Reports</h5>
+                    <h2>Reports & Data Export</h2>
+                    
+                    <!-- Quick Reports -->
+                    <div class="dashboard-card mb-4">
+                        <h5>Quick Reports</h5>
                         <div class="row">
-                            <div class="col-md-4">
-                                <div class="card">
+                            <div class="col-md-3">
+                                <div class="card h-100">
                                     <div class="card-body text-center">
                                         <i class="fas fa-chart-bar fa-3x text-primary mb-3"></i>
-                                        <h6>Monthly Report</h6>
-                                        <button class="btn btn-outline-primary" onclick="generateReport('monthly')">Generate</button>
+                                        <h6>Farm Summary</h6>
+                                        <p class="small text-muted">Overview of all farm data</p>
+                                        <button class="btn btn-outline-primary btn-sm" onclick="generateReport('summary')">Generate</button>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-4">
-                                <div class="card">
+                            <div class="col-md-3">
+                                <div class="card h-100">
                                     <div class="card-body text-center">
-                                        <i class="fas fa-calendar-alt fa-3x text-success mb-3"></i>
-                                        <h6>Annual Report</h6>
-                                        <button class="btn btn-outline-success" onclick="generateReport('annual')">Generate</button>
+                                        <i class="fas fa-seedling fa-3x text-success mb-3"></i>
+                                        <h6>Crop Report</h6>
+                                        <p class="small text-muted">Detailed crop analysis</p>
+                                        <button class="btn btn-outline-success btn-sm" onclick="generateReport('crops')">Generate</button>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-4">
-                                <div class="card">
+                            <div class="col-md-3">
+                                <div class="card h-100">
                                     <div class="card-body text-center">
-                                        <i class="fas fa-file-excel fa-3x text-warning mb-3"></i>
-                                        <h6>Export Data</h6>
-                                        <button class="btn btn-outline-warning" onclick="exportData()">Export</button>
+                                        <i class="fas fa-cow fa-3x text-info mb-3"></i>
+                                        <h6>Livestock Report</h6>
+                                        <p class="small text-muted">Livestock management data</p>
+                                        <button class="btn btn-outline-info btn-sm" onclick="generateReport('livestock')">Generate</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-boxes fa-3x text-warning mb-3"></i>
+                                        <h6>Inventory Report</h6>
+                                        <p class="small text-muted">Stock and supplies analysis</p>
+                                        <button class="btn btn-outline-warning btn-sm" onclick="generateReport('inventory')">Generate</button>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Data Export -->
+                    <div class="dashboard-card mb-4">
+                        <h5>Export Data</h5>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-file-csv fa-3x text-success mb-3"></i>
+                                        <h6>CSV Export</h6>
+                                        <p class="small text-muted">Excel-compatible format</p>
+                                        <div class="btn-group-vertical w-100">
+                                            <button class="btn btn-outline-success btn-sm" onclick="exportToCSV('all')">All Data</button>
+                                            <button class="btn btn-outline-success btn-sm" onclick="exportToCSV('crops')">Crops Only</button>
+                                            <button class="btn btn-outline-success btn-sm" onclick="exportToCSV('livestock')">Livestock Only</button>
+                                            <button class="btn btn-outline-success btn-sm" onclick="exportToCSV('inventory')">Inventory Only</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-file-pdf fa-3x text-danger mb-3"></i>
+                                        <h6>PDF Report</h6>
+                                        <p class="small text-muted">Professional formatted report</p>
+                                        <div class="btn-group-vertical w-100">
+                                            <button class="btn btn-outline-danger btn-sm" onclick="exportToPDF('summary')">Summary Report</button>
+                                            <button class="btn btn-outline-danger btn-sm" onclick="exportToPDF('detailed')">Detailed Report</button>
+                                            <button class="btn btn-outline-danger btn-sm" onclick="exportToPDF('financial')">Financial Report</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-file-code fa-3x text-info mb-3"></i>
+                                        <h6>JSON Export</h6>
+                                        <p class="small text-muted">Raw data for integration</p>
+                                        <div class="btn-group-vertical w-100">
+                                            <button class="btn btn-outline-info btn-sm" onclick="exportToJSON('all')">All Data</button>
+                                            <button class="btn btn-outline-info btn-sm" onclick="exportToJSON('backup')">Backup Data</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Custom Reports -->
+                    <div class="dashboard-card">
+                        <h5>Custom Report Builder</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Report Type</label>
+                                    <select class="form-select" id="customReportType">
+                                        <option value="summary">Farm Summary</option>
+                                        <option value="crops">Crop Analysis</option>
+                                        <option value="livestock">Livestock Management</option>
+                                        <option value="inventory">Inventory Status</option>
+                                        <option value="financial">Financial Overview</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Date Range</label>
+                                    <select class="form-select" id="customDateRange">
+                                        <option value="current">Current Month</option>
+                                        <option value="last3">Last 3 Months</option>
+                                        <option value="last6">Last 6 Months</option>
+                                        <option value="year">This Year</option>
+                                        <option value="all">All Time</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Include Charts</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="includeCharts" checked>
+                                        <label class="form-check-label" for="includeCharts">
+                                            Include visual charts
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Export Format</label>
+                                    <select class="form-select" id="exportFormat">
+                                        <option value="pdf">PDF Document</option>
+                                        <option value="csv">CSV Spreadsheet</option>
+                                        <option value="json">JSON Data</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" onclick="generateCustomReport()">
+                            <i class="fas fa-file-alt me-2"></i>Generate Custom Report
+                        </button>
                     </div>
                 </div>
             </main>
@@ -1391,11 +1506,300 @@
         }
 
         function generateReport(type) {
-            alert(`Generating ${type} report...`);
+            console.log('Generating report:', type);
+            
+            switch(type) {
+                case 'summary':
+                    generateSummaryReport();
+                    break;
+                case 'crops':
+                    generateCropReport();
+                    break;
+                case 'livestock':
+                    generateLivestockReport();
+                    break;
+                case 'inventory':
+                    generateInventoryReport();
+                    break;
+                default:
+                    alert('Report type not implemented yet');
+            }
+        }
+
+        function generateSummaryReport() {
+            const farmData = JSON.parse(localStorage.getItem('farmData') || '{}');
+            const cropCount = crops.length;
+            const livestockCount = livestock.reduce((total, animal) => total + animal.quantity, 0);
+            const inventoryCount = inventory.reduce((total, item) => total + item.quantity, 0);
+            
+            const report = `
+SMARTFARM SUMMARY REPORT
+Generated: ${new Date().toLocaleDateString()}
+
+FARM INFORMATION:
+- Farm Name: ${farmData.name || 'Not specified'}
+- Location: ${farmData.location || 'Not specified'}
+- Total Area: ${farmData.area || 'Not specified'} hectares
+- Farm Type: ${farmData.type || 'Not specified'}
+
+CROP SUMMARY:
+- Total Crop Types: ${cropCount}
+- Growing: ${crops.filter(c => c.status.toLowerCase() === 'growing').length}
+- Ready for Harvest: ${crops.filter(c => c.status.toLowerCase() === 'ready').length}
+- Harvested: ${crops.filter(c => c.status.toLowerCase() === 'harvested').length}
+
+LIVESTOCK SUMMARY:
+- Total Animals: ${livestockCount}
+- Cattle: ${livestock.filter(l => l.type.toLowerCase() === 'cattle').length}
+- Pigs: ${livestock.filter(l => l.type.toLowerCase() === 'pigs').length}
+- Other: ${livestock.filter(l => !['cattle', 'pigs'].includes(l.type.toLowerCase())).length}
+
+INVENTORY SUMMARY:
+- Total Items: ${inventoryCount}
+- Categories: ${[...new Set(inventory.map(i => i.category))].join(', ')}
+- Low Stock Items: ${inventory.filter(i => i.status === 'low-stock').length}
+            `;
+            
+            showReportModal('Farm Summary Report', report);
+        }
+
+        function generateCropReport() {
+            let report = `CROP DETAILED REPORT\nGenerated: ${new Date().toLocaleDateString()}\n\n`;
+            
+            crops.forEach((crop, index) => {
+                report += `${index + 1}. ${crop.name}\n`;
+                report += `   Field: ${crop.field}\n`;
+                report += `   Planted: ${crop.plantedDate}\n`;
+                report += `   Status: ${crop.status}\n\n`;
+            });
+            
+            showReportModal('Crop Report', report);
+        }
+
+        function generateLivestockReport() {
+            let report = `LIVESTOCK DETAILED REPORT\nGenerated: ${new Date().toLocaleDateString()}\n\n`;
+            
+            livestock.forEach((animal, index) => {
+                report += `${index + 1}. ${animal.type} - ${animal.breed}\n`;
+                report += `   Quantity: ${animal.quantity}\n`;
+                report += `   Location: ${animal.location}\n`;
+                report += `   Health Status: ${animal.status}\n\n`;
+            });
+            
+            showReportModal('Livestock Report', report);
+        }
+
+        function generateInventoryReport() {
+            let report = `INVENTORY DETAILED REPORT\nGenerated: ${new Date().toLocaleDateString()}\n\n`;
+            
+            inventory.forEach((item, index) => {
+                report += `${index + 1}. ${item.name}\n`;
+                report += `   Category: ${item.category}\n`;
+                report += `   Quantity: ${item.quantity} ${item.unit}\n`;
+                report += `   Last Updated: ${item.lastUpdated}\n\n`;
+            });
+            
+            showReportModal('Inventory Report', report);
         }
 
         function exportData() {
-            alert('Exporting data...');
+            exportToCSV('all');
+        }
+
+        function showReportModal(title, content) {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">${title}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <pre style="white-space: pre-wrap; font-family: monospace; max-height: 400px; overflow-y: auto;">${content}</pre>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-primary" onclick="exportReportAsText('${title}', \`${content}\`)">Export as Text</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        // CSV Export Functions
+        function exportToCSV(type) {
+            let csvContent = '';
+            let filename = '';
+            
+            switch(type) {
+                case 'all':
+                    csvContent = generateAllDataCSV();
+                    filename = 'smartfarm-all-data.csv';
+                    break;
+                case 'crops':
+                    csvContent = generateCropsCSV();
+                    filename = 'smartfarm-crops.csv';
+                    break;
+                case 'livestock':
+                    csvContent = generateLivestockCSV();
+                    filename = 'smartfarm-livestock.csv';
+                    break;
+                case 'inventory':
+                    csvContent = generateInventoryCSV();
+                    filename = 'smartfarm-inventory.csv';
+                    break;
+            }
+            
+            downloadCSV(csvContent, filename);
+        }
+
+        function generateAllDataCSV() {
+            let csv = 'Type,Name,Field/Breed,Area/Quantity,Status,Location/Unit,Date\n';
+            
+            // Add crops
+            crops.forEach(crop => {
+                csv += `Crop,${crop.name},${crop.field},${crop.area || ''},${crop.status},,${crop.plantedDate}\n`;
+            });
+            
+            // Add livestock
+            livestock.forEach(animal => {
+                csv += `Livestock,${animal.type},${animal.breed},${animal.quantity},${animal.status},${animal.location},\n`;
+            });
+            
+            // Add inventory
+            inventory.forEach(item => {
+                csv += `Inventory,${item.name},${item.category},${item.quantity},${item.status || 'in-stock'},${item.unit},${item.lastUpdated}\n`;
+            });
+            
+            return csv;
+        }
+
+        function generateCropsCSV() {
+            let csv = 'Crop Name,Field,Planted Date,Status\n';
+            crops.forEach(crop => {
+                csv += `${crop.name},${crop.field},${crop.plantedDate},${crop.status}\n`;
+            });
+            return csv;
+        }
+
+        function generateLivestockCSV() {
+            let csv = 'Type,Breed,Quantity,Location,Health Status\n';
+            livestock.forEach(animal => {
+                csv += `${animal.type},${animal.breed},${animal.quantity},${animal.location},${animal.status}\n`;
+            });
+            return csv;
+        }
+
+        function generateInventoryCSV() {
+            let csv = 'Item Name,Category,Quantity,Unit,Last Updated,Status\n';
+            inventory.forEach(item => {
+                csv += `${item.name},${item.category},${item.quantity},${item.unit},${item.lastUpdated},${item.status || 'in-stock'}\n`;
+            });
+            return csv;
+        }
+
+        function downloadCSV(csvContent, filename) {
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showSuccessMessage(`${filename} downloaded successfully!`);
+        }
+
+        // PDF Export Functions
+        function exportToPDF(type) {
+            showSuccessMessage('PDF export functionality requires a PDF library. CSV export is available for now.');
+            // For now, we'll export as CSV since PDF generation requires additional libraries
+            exportToCSV('all');
+        }
+
+        // JSON Export Functions
+        function exportToJSON(type) {
+            let data = {};
+            let filename = '';
+            
+            switch(type) {
+                case 'all':
+                    data = {
+                        farmData: JSON.parse(localStorage.getItem('farmData') || '{}'),
+                        crops: crops,
+                        livestock: livestock,
+                        inventory: inventory,
+                        exportDate: new Date().toISOString()
+                    };
+                    filename = 'smartfarm-complete-data.json';
+                    break;
+                case 'backup':
+                    data = {
+                        farmData: JSON.parse(localStorage.getItem('farmData') || '{}'),
+                        crops: crops,
+                        livestock: livestock,
+                        inventory: inventory,
+                        backupDate: new Date().toISOString(),
+                        version: '1.0'
+                    };
+                    filename = 'smartfarm-backup.json';
+                    break;
+            }
+            
+            const jsonContent = JSON.stringify(data, null, 2);
+            const blob = new Blob([jsonContent], { type: 'application/json' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showSuccessMessage(`${filename} downloaded successfully!`);
+        }
+
+        // Custom Report Builder
+        function generateCustomReport() {
+            const reportType = document.getElementById('customReportType').value;
+            const dateRange = document.getElementById('customDateRange').value;
+            const includeCharts = document.getElementById('includeCharts').checked;
+            const exportFormat = document.getElementById('exportFormat').value;
+            
+            showSuccessMessage(`Generating ${reportType} report for ${dateRange}...`);
+            
+            // For now, generate a summary report
+            setTimeout(() => {
+                generateReport(reportType);
+            }, 1000);
+        }
+
+        function exportReportAsText(title, content) {
+            const filename = `${title.replace(/\s+/g, '-').toLowerCase()}-${new Date().toISOString().split('T')[0]}.txt`;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showSuccessMessage(`${filename} downloaded successfully!`);
         }
 
         // User functions
