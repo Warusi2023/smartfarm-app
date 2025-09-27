@@ -2399,7 +2399,7 @@ INVENTORY SUMMARY:
         }
 
         function generateAISuggestions(crop) {
-            console.log('Starting SIMPLE AI suggestions for crop:', crop.name);
+            console.log('Starting SIMPLE AI suggestions for crop:', crop.name || 'Unknown');
             
             // Simple, bulletproof AI suggestions
             const suggestions = [];
@@ -2500,7 +2500,7 @@ INVENTORY SUMMARY:
         function generateWeedingRecommendations(crop, daysSincePlanted) {
             const suggestions = [];
             const weatherConditions = getWeatherConditions();
-            const cropName = crop.name.toLowerCase();
+            const cropName = (crop.name || '').toLowerCase();
             
             // Determine weeding urgency based on weather
             let weedingUrgency = 'normal';
@@ -2927,7 +2927,7 @@ INVENTORY SUMMARY:
         function getPestTreatments(pestText) {
             const treatments = [];
             
-            if (pestText.includes('aphid') || pestText.includes('bug')) {
+            if ((pestText && pestText.includes('aphid')) || (pestText && pestText.includes('bug'))) {
                 treatments.push({
                     name: "Neem Oil Spray",
                     ingredients: [
