@@ -2362,6 +2362,36 @@ INVENTORY SUMMARY:
                                                         </button>
                                                     `).join('')}
                                                 </div>
+                                                ${suggestion.treatments ? `
+                                                    <div class="treatment-recipes mt-3">
+                                                        <h6 class="text-primary mb-2">🧪 Treatment Recipes:</h6>
+                                                        ${suggestion.treatments.map(treatment => `
+                                                            <div class="treatment-card mb-3 p-3 bg-white border rounded">
+                                                                <h6 class="text-success mb-2">${treatment.name}</h6>
+                                                                <div class="ingredients mb-2">
+                                                                    <strong>Ingredients:</strong>
+                                                                    <ul class="mb-2">
+                                                                        ${treatment.ingredients.map(ingredient => `<li>${ingredient}</li>`).join('')}
+                                                                    </ul>
+                                                                </div>
+                                                                <div class="instructions">
+                                                                    <strong>Instructions:</strong>
+                                                                    <ol class="mb-2">
+                                                                        ${treatment.instructions.map(instruction => `<li>${instruction}</li>`).join('')}
+                                                                    </ol>
+                                                                </div>
+                                                                <div class="targets">
+                                                                    <small class="text-muted"><strong>Targets:</strong> ${treatment.targets}</small>
+                                                                </div>
+                                                                ${treatment.timing ? `
+                                                                    <div class="timing">
+                                                                        <small class="text-info"><strong>Timing:</strong> ${treatment.timing}</small>
+                                                                    </div>
+                                                                ` : ''}
+                                                            </div>
+                                                        `).join('')}
+                                                    </div>
+                                                ` : ''}
                                             </div>
                                         </div>
                                     </div>
@@ -2404,53 +2434,90 @@ INVENTORY SUMMARY:
             // Simple, bulletproof AI suggestions
             const suggestions = [];
             
-            // Basic pH suggestion
+            // Enhanced pH Analysis with Detailed Recommendations
             if (crop.phLevel) {
                 if (crop.phLevel < 6.0) {
                     suggestions.push({
-                        type: 'warning',
-                        title: 'Soil pH Too Low',
-                        description: `Your soil pH of ${crop.phLevel} is too low. Add lime to increase pH.`,
-                        actions: ['Add Lime', 'Test Again']
+                        type: 'critical',
+                        title: 'Soil pH Too Acidic',
+                        description: `Your soil pH of ${crop.phLevel} is too acidic. Most crops prefer pH 6.0-7.0. Immediate action needed.`,
+                        actions: ['Apply Lime', 'Test Again', 'Monitor Progress'],
+                        treatments: getSoilAcidityTreatments(crop.phLevel)
                     });
                 } else if (crop.phLevel > 7.5) {
                     suggestions.push({
-                        type: 'warning',
-                        title: 'Soil pH Too High',
-                        description: `Your soil pH of ${crop.phLevel} is too high. Add sulfur to lower pH.`,
-                        actions: ['Add Sulfur', 'Test Again']
+                        type: 'critical',
+                        title: 'Soil pH Too Alkaline',
+                        description: `Your soil pH of ${crop.phLevel} is too alkaline. Consider acidifying treatments.`,
+                        actions: ['Apply Sulfur', 'Test Again', 'Monitor Progress'],
+                        treatments: getSoilAlkalinityTreatments(crop.phLevel)
                     });
                 } else {
                     suggestions.push({
                         type: 'success',
-                        title: 'Good Soil pH',
-                        description: `Your soil pH of ${crop.phLevel} is in the good range.`,
-                        actions: ['Keep Monitoring']
+                        title: 'Optimal Soil pH',
+                        description: `Excellent! Your soil pH of ${crop.phLevel} is in the optimal range for most crops.`,
+                        actions: ['Continue Monitoring', 'Record in Log', 'Maintain Levels']
                     });
                 }
             } else {
                 suggestions.push({
                     type: 'warning',
-                    title: 'Test Soil pH',
-                    description: 'Please test your soil pH for optimal crop growth.',
-                    actions: ['Buy pH Tester', 'Test Soil']
+                    title: 'Soil pH Testing Required',
+                    description: 'Soil pH testing is crucial for optimal crop growth. Please test your soil pH levels.',
+                    actions: ['Buy pH Tester', 'Schedule Testing', 'Professional Test'],
+                    treatments: getSoilTestingRecommendations()
                 });
             }
             
-            // Basic pest suggestion
+            // Enhanced Pest Analysis with Treatment Recommendations
             if (crop.pestIssues && crop.pestIssues.trim() !== '') {
+                const pestText = crop.pestIssues.toLowerCase();
                 suggestions.push({
                     type: 'critical',
-                    title: 'Pest Issues Found',
-                    description: `Pest problems reported: ${crop.pestIssues}`,
-                    actions: ['Identify Pests', 'Apply Treatment']
+                    title: 'Pest Issues Detected',
+                    description: `Pest problems reported: "${crop.pestIssues}". Immediate action required to prevent crop damage.`,
+                    actions: ['Identify Pests', 'Apply Treatment', 'Monitor Results'],
+                    treatments: getDetailedPestTreatments(pestText)
                 });
+                
+                // Add specific pest recommendations based on pest type
+                if (pestText.includes('aphid') || pestText.includes('bug')) {
+                    suggestions.push({
+                        type: 'warning',
+                        title: 'Insect Pest Management',
+                        description: 'Insect pests detected. Apply these organic treatments for effective control.',
+                        actions: ['Neem Oil Spray', 'Insecticidal Soap', 'Beneficial Insects'],
+                        treatments: getInsectPestTreatments()
+                    });
+                }
+                
+                if (pestText.includes('fungus') || pestText.includes('mold') || pestText.includes('mildew')) {
+                    suggestions.push({
+                        type: 'warning',
+                        title: 'Fungal Disease Control',
+                        description: 'Fungal diseases detected. Apply fungicides and improve growing conditions.',
+                        actions: ['Apply Fungicide', 'Improve Drainage', 'Increase Air Circulation'],
+                        treatments: getFungalDiseaseTreatments()
+                    });
+                }
+                
+                if (pestText.includes('slug') || pestText.includes('snail')) {
+                    suggestions.push({
+                        type: 'warning',
+                        title: 'Slug & Snail Control',
+                        description: 'Slugs and snails detected. Use these effective control methods.',
+                        actions: ['Beer Traps', 'Diatomaceous Earth', 'Hand Picking'],
+                        treatments: getSlugSnailTreatments()
+                    });
+                }
             } else {
                 suggestions.push({
                     type: 'success',
-                    title: 'No Pest Issues',
-                    description: 'No pest problems reported for this crop.',
-                    actions: ['Keep Monitoring']
+                    title: 'No Pest Issues Reported',
+                    description: 'Excellent! No pest problems reported for this crop. Continue preventive measures.',
+                    actions: ['Continue Monitoring', 'Maintain Prevention', 'Record Status'],
+                    treatments: getPreventiveMeasures()
                 });
             }
             
@@ -2492,8 +2559,341 @@ INVENTORY SUMMARY:
                 });
             }
             
-            console.log('Generated', suggestions.length, 'simple suggestions');
+            console.log('Generated', suggestions.length, 'enhanced AI suggestions');
             return suggestions;
+        }
+
+        // Soil pH Treatment Functions
+        function getSoilAcidityTreatments(currentpH) {
+            const treatments = [];
+            const targetpH = 6.5;
+            const phDifference = targetpH - currentpH;
+            
+            treatments.push({
+                name: "Agricultural Lime Application",
+                ingredients: [
+                    "Agricultural lime (calcium carbonate or dolomitic lime)",
+                    "Soil testing kit",
+                    "Garden rake or tiller",
+                    "Water for irrigation"
+                ],
+                instructions: [
+                    `Apply ${Math.round(phDifference * 2)} lbs of lime per 100 sq ft`,
+                    "Work lime into top 6 inches of soil",
+                    "Water thoroughly after application",
+                    "Wait 2-3 weeks before retesting pH",
+                    "Reapply if needed based on test results"
+                ],
+                targets: "Acidic soil pH correction",
+                timing: "Best applied in fall or early spring"
+            });
+            
+            treatments.push({
+                name: "Organic pH Amendment",
+                ingredients: [
+                    "Wood ash (from hardwood only)",
+                    "Compost or well-rotted manure",
+                    "Eggshells (ground)",
+                    "Bone meal"
+                ],
+                instructions: [
+                    "Apply 1-2 inches of compost to soil surface",
+                    "Sprinkle wood ash at 1 lb per 100 sq ft",
+                    "Add ground eggshells around plant bases",
+                    "Work amendments into top 4 inches of soil",
+                    "Water thoroughly and monitor pH monthly"
+                ],
+                targets: "Gradual pH increase with organic methods",
+                timing: "Can be applied anytime during growing season"
+            });
+            
+            return treatments;
+        }
+
+        function getSoilAlkalinityTreatments(currentpH) {
+            const treatments = [];
+            const targetpH = 6.5;
+            const phDifference = currentpH - targetpH;
+            
+            treatments.push({
+                name: "Elemental Sulfur Application",
+                ingredients: [
+                    "Elemental sulfur (powdered or granular)",
+                    "Soil testing kit",
+                    "Garden rake",
+                    "Water for irrigation"
+                ],
+                instructions: [
+                    `Apply ${Math.round(phDifference * 1.5)} lbs sulfur per 100 sq ft`,
+                    "Work sulfur into top 6 inches of soil",
+                    "Water thoroughly after application",
+                    "Wait 4-6 weeks before retesting pH",
+                    "Reapply if needed based on test results"
+                ],
+                targets: "Alkaline soil pH correction",
+                timing: "Best applied in fall for spring planting"
+            });
+            
+            treatments.push({
+                name: "Organic Acidification",
+                ingredients: [
+                    "Peat moss (sphagnum peat)",
+                    "Composted pine needles",
+                    "Coffee grounds",
+                    "Vinegar solution (1 cup per gallon water)"
+                ],
+                instructions: [
+                    "Mix 2-3 inches of peat moss into soil",
+                    "Apply composted pine needles as mulch",
+                    "Add coffee grounds around plant bases",
+                    "Use vinegar solution for spot treatments",
+                    "Monitor pH monthly and adjust as needed"
+                ],
+                targets: "Gradual pH decrease with organic methods",
+                timing: "Apply throughout growing season"
+            });
+            
+            return treatments;
+        }
+
+        function getSoilTestingRecommendations() {
+            return [
+                {
+                    name: "Home Soil pH Testing",
+                    ingredients: [
+                        "Soil pH test kit (digital or chemical)",
+                        "Clean containers for soil samples",
+                        "Distilled water",
+                        "Clean spoon or trowel"
+                    ],
+                    instructions: [
+                        "Collect soil samples from 6 inches deep",
+                        "Mix samples from multiple locations",
+                        "Follow test kit instructions exactly",
+                        "Test at different times of year",
+                        "Record results and track changes over time"
+                    ],
+                    targets: "Regular soil pH monitoring",
+                    timing: "Test 2-3 times per year"
+                },
+                {
+                    name: "Professional Soil Analysis",
+                    ingredients: [
+                        "Soil sample bags from testing lab",
+                        "Clean shovel or soil probe",
+                        "Clean plastic bucket",
+                        "Labeling materials"
+                    ],
+                    instructions: [
+                        "Contact local agricultural extension office",
+                        "Collect samples following lab guidelines",
+                        "Send samples for comprehensive analysis",
+                        "Receive detailed pH and nutrient report",
+                        "Follow lab recommendations for amendments"
+                    ],
+                    targets: "Comprehensive soil analysis",
+                    timing: "Annual testing recommended"
+                }
+            ];
+        }
+
+        // Pest Treatment Functions
+        function getDetailedPestTreatments(pestText) {
+            const treatments = [];
+            
+            // General pest control recommendations
+            treatments.push({
+                name: "Integrated Pest Management (IPM)",
+                ingredients: [
+                    "Beneficial insects (ladybugs, lacewings)",
+                    "Physical barriers (row covers, sticky traps)",
+                    "Organic pesticides (neem oil, insecticidal soap)",
+                    "Monitoring tools (magnifying glass, notebook)"
+                ],
+                instructions: [
+                    "Identify the specific pest species first",
+                    "Use physical barriers to prevent pest access",
+                    "Introduce beneficial insects for natural control",
+                    "Apply organic pesticides as last resort",
+                    "Monitor pest populations regularly and adjust strategy"
+                ],
+                targets: "General pest management approach",
+                timing: "Apply throughout growing season as needed"
+            });
+            
+            return treatments;
+        }
+
+        function getInsectPestTreatments() {
+            return [
+                {
+                    name: "Neem Oil Spray",
+                    ingredients: [
+                        "2 teaspoons cold-pressed neem oil",
+                        "1 teaspoon liquid dish soap (unscented)",
+                        "1 gallon warm water",
+                        "Spray bottle or garden sprayer"
+                    ],
+                    instructions: [
+                        "Mix neem oil and dish soap in small container",
+                        "Add to 1 gallon of warm water and stir well",
+                        "Pour into spray bottle and shake before use",
+                        "Apply early morning or evening to avoid sunburn",
+                        "Spray both tops and bottoms of leaves",
+                        "Reapply every 7-10 days until pests are controlled"
+                    ],
+                    targets: "Aphids, whiteflies, spider mites, thrips",
+                    timing: "Apply when pests first appear"
+                },
+                {
+                    name: "Insecticidal Soap",
+                    ingredients: [
+                        "1 tablespoon liquid dish soap (unscented)",
+                        "1 gallon water",
+                        "Spray bottle",
+                        "Optional: 1 teaspoon vegetable oil"
+                    ],
+                    instructions: [
+                        "Mix soap with water in spray bottle",
+                        "Add vegetable oil for better adherence",
+                        "Test on small area first to check for plant sensitivity",
+                        "Spray directly on pests (soap must contact pest)",
+                        "Apply in early morning or evening",
+                        "Reapply every 5-7 days as needed"
+                    ],
+                    targets: "Soft-bodied insects (aphids, mealybugs, spider mites)",
+                    timing: "Apply when pests are actively feeding"
+                }
+            ];
+        }
+
+        function getFungalDiseaseTreatments() {
+            return [
+                {
+                    name: "Copper Fungicide Spray",
+                    ingredients: [
+                        "Copper fungicide (copper sulfate or copper hydroxide)",
+                        "Water",
+                        "Spray bottle or garden sprayer",
+                        "Protective equipment (gloves, goggles)"
+                    ],
+                    instructions: [
+                        "Follow product label for mixing instructions",
+                        "Wear protective equipment during application",
+                        "Apply to affected areas and surrounding healthy tissue",
+                        "Spray early morning when leaves are dry",
+                        "Reapply every 7-14 days as needed",
+                        "Stop using 2 weeks before harvest"
+                    ],
+                    targets: "Fungal diseases (powdery mildew, blight, rust)",
+                    timing: "Apply at first sign of fungal infection"
+                },
+                {
+                    name: "Baking Soda Fungicide",
+                    ingredients: [
+                        "1 tablespoon baking soda",
+                        "1 gallon water",
+                        "1 teaspoon liquid dish soap",
+                        "Spray bottle"
+                    ],
+                    instructions: [
+                        "Mix baking soda and soap in water",
+                        "Pour into spray bottle and shake well",
+                        "Apply to affected plant areas",
+                        "Spray every 7-10 days until symptoms disappear",
+                        "Test on small area first for plant sensitivity",
+                        "Apply early morning to avoid leaf burn"
+                    ],
+                    targets: "Powdery mildew, fungal leaf spots",
+                    timing: "Apply preventatively or at first signs"
+                }
+            ];
+        }
+
+        function getSlugSnailTreatments() {
+            return [
+                {
+                    name: "Beer Trap Method",
+                    ingredients: [
+                        "Shallow containers (yogurt cups, pie tins)",
+                        "Cheap beer (not expensive - slugs aren't picky)",
+                        "Small trowel or spoon",
+                        "Disposable gloves"
+                    ],
+                    instructions: [
+                        "Dig small holes around affected plants",
+                        "Place containers so rim is level with soil",
+                        "Fill containers 3/4 full with beer",
+                        "Check and empty traps daily",
+                        "Replace beer every 2-3 days",
+                        "Dispose of dead slugs away from garden"
+                    ],
+                    targets: "Slugs and snails",
+                    timing: "Set traps in evening, check in morning"
+                },
+                {
+                    name: "Diatomaceous Earth Barrier",
+                    ingredients: [
+                        "Food-grade diatomaceous earth",
+                        "Dust mask and gloves",
+                        "Hand duster or shaker",
+                        "Water spray bottle"
+                    ],
+                    instructions: [
+                        "Wear dust mask and gloves for safety",
+                        "Apply DE in dry conditions around plant bases",
+                        "Create 2-3 inch wide barrier around plants",
+                        "Reapply after rain or watering",
+                        "Avoid applying directly on flowers (harms beneficial insects)",
+                        "Keep DE dry for maximum effectiveness"
+                    ],
+                    targets: "Slugs, snails, and crawling insects",
+                    timing: "Apply when pests are active, reapply after rain"
+                }
+            ];
+        }
+
+        function getPreventiveMeasures() {
+            return [
+                {
+                    name: "Healthy Plant Maintenance",
+                    ingredients: [
+                        "Balanced fertilizer",
+                        "Proper watering equipment",
+                        "Pruning shears",
+                        "Mulch materials"
+                    ],
+                    instructions: [
+                        "Maintain proper soil fertility and pH",
+                        "Water at base of plants to keep foliage dry",
+                        "Prune to improve air circulation",
+                        "Apply mulch to suppress weeds and retain moisture",
+                        "Rotate crops annually to break pest cycles",
+                        "Monitor plants regularly for early pest detection"
+                    ],
+                    targets: "Prevention of pest and disease problems",
+                    timing: "Ongoing throughout growing season"
+                },
+                {
+                    name: "Beneficial Insect Habitat",
+                    ingredients: [
+                        "Native flowering plants",
+                        "Shallow water source",
+                        "Shelter areas (rocks, logs)",
+                        "Avoid broad-spectrum pesticides"
+                    ],
+                    instructions: [
+                        "Plant flowers that attract beneficial insects",
+                        "Provide shallow water sources for beneficial insects",
+                        "Create habitat with rocks and logs for shelter",
+                        "Avoid using pesticides that harm beneficial insects",
+                        "Plant diverse crop varieties",
+                        "Maintain healthy soil ecosystem"
+                    ],
+                    targets: "Natural pest control through beneficial insects",
+                    timing: "Establish habitat before pest season begins"
+                }
+            ];
         }
 
         // Weeding recommendation functions - Optimized for performance
