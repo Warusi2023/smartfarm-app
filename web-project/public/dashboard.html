@@ -2291,6 +2291,13 @@ INVENTORY SUMMARY:
         }
 
         function displayAISuggestionsModal(crop, suggestions) {
+            // Validate inputs
+            if (!crop) {
+                throw new Error('Crop data is missing');
+            }
+            if (!suggestions || !Array.isArray(suggestions)) {
+                throw new Error('Suggestions data is invalid');
+            }
             
             // Create AI suggestions modal
             const modal = document.createElement('div');
@@ -2336,7 +2343,7 @@ INVENTORY SUMMARY:
                                                 <p class="mb-2">${suggestion.description}</p>
                                                 <div class="actions mb-3">
                                                     ${suggestion.actions.map(action => `
-                                                        <button class="btn btn-sm btn-outline-primary me-2 mb-1" onclick="executeSuggestion('${action}', ${cropId})">
+                                                        <button class="btn btn-sm btn-outline-primary me-2 mb-1" onclick="executeSuggestion('${action}', ${crop.id})">
                                                             ${action}
                                                         </button>
                                                     `).join('')}
@@ -2395,7 +2402,7 @@ INVENTORY SUMMARY:
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            <button type="button" class="btn btn-info" onclick="updateCropFromSuggestions(${cropId})">
+                            <button type="button" class="btn btn-info" onclick="updateCropFromSuggestions(${crop.id})">
                                 <i class="fas fa-sync me-2"></i>Update Crop Data
                             </button>
                         </div>
@@ -2403,13 +2410,24 @@ INVENTORY SUMMARY:
                 </div>
             `;
             
-            document.body.appendChild(modal);
-            const bsModal = new bootstrap.Modal(modal);
-            bsModal.show();
-            
-            modal.addEventListener('hidden.bs.modal', () => {
-                document.body.removeChild(modal);
-            });
+            try {
+                document.body.appendChild(modal);
+                const bsModal = new bootstrap.Modal(modal);
+                bsModal.show();
+                
+                modal.addEventListener('hidden.bs.modal', () => {
+                    if (document.body.contains(modal)) {
+                        document.body.removeChild(modal);
+                    }
+                });
+            } catch (error) {
+                console.error('Error creating AI suggestions modal:', error);
+                // Clean up modal if it was partially created
+                if (document.body.contains(modal)) {
+                    document.body.removeChild(modal);
+                }
+                throw new Error('Failed to display AI suggestions modal: ' + error.message);
+            }
         }
 
         function generateAISuggestions(crop) {
