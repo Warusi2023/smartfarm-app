@@ -12,16 +12,28 @@ class QRTraceability {
 
     loadQRCodeLibrary() {
         if (typeof QRCode === 'undefined') {
+            console.log('Loading QR Code library...');
             const script = document.createElement('script');
             script.src = this.qrCodeLibrary;
             script.onload = () => {
                 console.log('QR Code library loaded successfully');
                 this.initializeQRSystem();
             };
+            script.onerror = () => {
+                console.error('Failed to load QR Code library');
+                this.initializeQRSystemWithFallback();
+            };
             document.head.appendChild(script);
         } else {
+            console.log('QR Code library already loaded');
             this.initializeQRSystem();
         }
+    }
+
+    initializeQRSystemWithFallback() {
+        console.log('Initializing QR system with fallback...');
+        this.createQRGeneratorInterface();
+        this.createTraceabilityViewer();
     }
 
     initializeQRSystem() {
@@ -234,7 +246,47 @@ class QRTraceability {
         
         // Generate QR code
         const qrContainer = document.getElementById('qrCodeDisplay');
+        if (!qrContainer) {
+            console.error('QR code display container not found');
+            return;
+        }
+        
         qrContainer.innerHTML = '<div class="spinner-border" role="status"></div><p>Generating QR Code...</p>';
+
+        // Check if QRCode library is available
+        if (typeof QRCode === 'undefined') {
+            console.error('QR Code library not loaded');
+            qrContainer.innerHTML = `
+                <div class="qr-code-result">
+                    <div class="qr-placeholder" style="width: 200px; height: 200px; background: #f8f9fa; border: 2px dashed #dee2e6; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                        <div class="text-center">
+                            <i class="fas fa-qrcode fa-3x text-muted mb-2"></i>
+                            <p class="text-muted">QR Code Placeholder</p>
+                        </div>
+                    </div>
+                    <h6>${product.name}</h6>
+                    <p class="text-muted small">Batch: ${product.batchNumber}</p>
+                    <div class="qr-actions">
+                        <button class="btn btn-sm btn-outline-primary me-2" onclick="qrTraceability.downloadQRCode('${productId}')">
+                            <i class="fas fa-download me-1"></i>Download
+                        </button>
+                        <button class="btn btn-sm btn-outline-success" onclick="qrTraceability.printQRCode('${productId}')">
+                            <i class="fas fa-print me-1"></i>Print
+                        </button>
+                    </div>
+                    <div class="mt-3">
+                        <small class="text-muted">Scan this QR code to view complete traceability information</small>
+                        <br>
+                        <small class="text-muted">URL: ${traceabilityURL}</small>
+                        <br>
+                        <button class="btn btn-sm btn-outline-info mt-2" onclick="window.open('${traceabilityURL}', '_blank')">
+                            <i class="fas fa-external-link-alt me-1"></i>View Traceability Page
+                        </button>
+                    </div>
+                </div>
+            `;
+            return;
+        }
 
         QRCode.toDataURL(traceabilityURL, {
             width: 200,
@@ -247,7 +299,23 @@ class QRTraceability {
         }, (err, qrCodeDataURL) => {
             if (err) {
                 console.error('QR Code generation error:', err);
-                qrContainer.innerHTML = '<p class="text-danger">Error generating QR code</p>';
+                qrContainer.innerHTML = `
+                    <div class="qr-code-result">
+                        <div class="qr-placeholder" style="width: 200px; height: 200px; background: #f8f9fa; border: 2px dashed #dee2e6; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                            <div class="text-center">
+                                <i class="fas fa-exclamation-triangle fa-2x text-warning mb-2"></i>
+                                <p class="text-muted">Error generating QR code</p>
+                            </div>
+                        </div>
+                        <h6>${product.name}</h6>
+                        <p class="text-muted small">Batch: ${product.batchNumber}</p>
+                        <div class="mt-3">
+                            <button class="btn btn-sm btn-outline-info" onclick="window.open('${traceabilityURL}', '_blank')">
+                                <i class="fas fa-external-link-alt me-1"></i>View Traceability Page
+                            </button>
+                        </div>
+                    </div>
+                `;
                 return;
             }
 

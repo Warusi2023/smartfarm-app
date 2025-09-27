@@ -2045,12 +2045,17 @@
 
         function setActiveNav(navItem) {
             // Remove active class from all nav links
-            document.querySelectorAll('.sidebar .nav-link').forEach(link => {
-                link.classList.remove('active');
-            });
+            const navLinks = document.querySelectorAll('.sidebar .nav-link');
+            if (navLinks && navLinks.length > 0) {
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                });
+            }
             
-            // Add active class to clicked nav link
-            event.target.classList.add('active');
+            // Add active class to clicked nav link if event exists
+            if (event && event.target) {
+                event.target.classList.add('active');
+            }
         }
 
         // Data management functions

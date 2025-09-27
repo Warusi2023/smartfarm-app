@@ -64,6 +64,12 @@ class SmartFarmCompetitive {
         // Create IoT dashboard if it doesn't exist
         let iotContainer = document.getElementById('iotDashboard');
         if (!iotContainer) {
+            const dashboardView = document.getElementById('dashboardView');
+            if (!dashboardView) {
+                console.warn('Dashboard view not found, skipping IoT display');
+                return;
+            }
+            
             iotContainer = document.createElement('div');
             iotContainer.id = 'iotDashboard';
             iotContainer.className = 'dashboard-card mt-4';
@@ -73,30 +79,37 @@ class SmartFarmCompetitive {
                     <!-- IoT sensor data will be populated here -->
                 </div>
             `;
-            document.getElementById('dashboardView').appendChild(iotContainer);
+            dashboardView.appendChild(iotContainer);
         }
 
         const container = document.getElementById('iotSensorsContainer');
+        if (!container) return;
+        
         container.innerHTML = '';
 
         Object.entries(this.iotSensors).forEach(([sensorName, data]) => {
+            if (!data || typeof data.value !== 'number') {
+                console.warn(`Invalid sensor data for ${sensorName}:`, data);
+                return;
+            }
+            
             const sensorCard = document.createElement('div');
             sensorCard.className = 'col-md-4 mb-3';
             sensorCard.innerHTML = `
                 <div class="iot-sensor-card">
                     <div class="sensor-header">
                         <h6 class="sensor-title">${this.getSensorDisplayName(sensorName)}</h6>
-                        <span class="sensor-status status-${data.status}">${data.status}</span>
+                        <span class="sensor-status status-${data.status || 'unknown'}">${data.status || 'unknown'}</span>
                     </div>
                     <div class="sensor-value">
                         <span class="value">${data.value.toFixed(1)}</span>
-                        <span class="unit">${data.unit}</span>
+                        <span class="unit">${data.unit || ''}</span>
                     </div>
                     <div class="sensor-location">
-                        <i class="fas fa-map-marker-alt"></i> ${data.location}
+                        <i class="fas fa-map-marker-alt"></i> ${data.location || 'Unknown'}
                     </div>
                     <div class="sensor-timestamp">
-                        <small class="text-muted">${new Date(data.timestamp).toLocaleTimeString()}</small>
+                        <small class="text-muted">${data.timestamp ? new Date(data.timestamp).toLocaleTimeString() : 'Unknown'}</small>
                     </div>
                 </div>
             `;
