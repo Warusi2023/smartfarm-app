@@ -740,10 +740,16 @@
             document.getElementById('lastUpdated').textContent = now.toLocaleTimeString();
         }
 
+        // Global chart instances
+        let yieldChart = null;
+        let fieldStatusChart = null;
+        let revenueChart = null;
+        let costChart = null;
+
         function initializeCharts() {
             // Yield Chart
             const yieldCtx = document.getElementById('yieldChart').getContext('2d');
-            new Chart(yieldCtx, {
+            yieldChart = new Chart(yieldCtx, {
                 type: 'line',
                 data: {
                     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
@@ -768,7 +774,7 @@
 
             // Field Status Chart
             const fieldCtx = document.getElementById('fieldStatusChart').getContext('2d');
-            new Chart(fieldCtx, {
+            fieldStatusChart = new Chart(fieldCtx, {
                 type: 'doughnut',
                 data: {
                     labels: ['Active', 'Harvesting', 'Fallow'],
@@ -787,6 +793,62 @@
                     }
                 }
             });
+        }
+
+        function initializeAnalyticsCharts() {
+            // Revenue Chart
+            const revenueCtx = document.getElementById('revenueChart');
+            if (revenueCtx) {
+                revenueChart = new Chart(revenueCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Crops', 'Livestock', 'Total'],
+                        datasets: [{
+                            label: 'Revenue (' + (window.currencyManager ? window.currencyManager.getSymbol() : '$') + ')',
+                            data: [0, 0, 0],
+                            backgroundColor: ['#4CAF50', '#2196F3', '#FF9800']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Cost Chart
+            const costCtx = document.getElementById('costChart');
+            if (costCtx) {
+                costChart = new Chart(costCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Seeds/Feed', 'Equipment', 'Labor', 'Other'],
+                        datasets: [{
+                            data: [25, 30, 35, 10],
+                            backgroundColor: ['#FF5722', '#9C27B0', '#3F51B5', '#607D8B']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
         }
 
         function loadDashboardData() {
@@ -935,6 +997,12 @@
         function showAnalytics() {
             showView('analyticsView');
             setActiveNav('analytics');
+            // Initialize analytics charts if not already initialized
+            if (!revenueChart || !costChart) {
+                initializeAnalyticsCharts();
+            }
+            // Update charts with current data
+            updateAnalyticsCharts();
         }
 
         function showTasks() {
@@ -1054,6 +1122,48 @@
             }, 3000);
         }
 
+        function updateAnalyticsCharts() {
+            // Calculate revenue from crops and livestock
+            let cropRevenue = 0;
+            let livestockRevenue = 0;
+            
+            // Simple revenue calculation based on data
+            cropRevenue = crops.length * 250; // $250 per crop type
+            livestockRevenue = livestock.reduce((total, animal) => total + (animal.quantity * 50), 0); // $50 per animal
+            
+            const totalRevenue = cropRevenue + livestockRevenue;
+            
+            // Update revenue chart
+            if (revenueChart) {
+                revenueChart.data.datasets[0].data = [cropRevenue, livestockRevenue, totalRevenue];
+                revenueChart.update();
+            }
+            
+            // Update field status chart based on crops
+            if (fieldStatusChart) {
+                const activeCrops = crops.filter(crop => crop.status.toLowerCase() === 'growing').length;
+                const readyCrops = crops.filter(crop => crop.status.toLowerCase() === 'ready').length;
+                const harvestedCrops = crops.filter(crop => crop.status.toLowerCase() === 'harvested').length;
+                
+                fieldStatusChart.data.datasets[0].data = [activeCrops, readyCrops, harvestedCrops];
+                fieldStatusChart.data.labels = ['Growing', 'Ready', 'Harvested'];
+                fieldStatusChart.update();
+            }
+            
+            // Update yield chart with crop data
+            if (yieldChart) {
+                // Generate yield data based on crops
+                const yieldData = [];
+                for (let i = 0; i < 6; i++) {
+                    yieldData.push(2.0 + (crops.length * 0.1) + (Math.random() * 0.5));
+                }
+                yieldChart.data.datasets[0].data = yieldData;
+                yieldChart.update();
+            }
+            
+            console.log('Analytics charts updated:', { cropRevenue, livestockRevenue, totalRevenue });
+        }
+
         // Save functions for data persistence
         function saveCropsData() {
             localStorage.setItem('cropsData', JSON.stringify(crops));
@@ -1159,6 +1269,7 @@
             console.log('All crops after adding:', crops);
             saveCropsData();
             renderCropsTable();
+            updateAnalyticsCharts(); // Update charts with new data
             showSuccessMessage('Crop added successfully!');
         }
 
@@ -1206,6 +1317,7 @@
             livestock.push(newLivestock);
             saveLivestockData();
             renderLivestockTable();
+            updateAnalyticsCharts(); // Update charts with new data
             showSuccessMessage('Livestock added successfully!');
         }
 
