@@ -223,6 +223,211 @@ class PesticideManagement {
                         exportTolerance: 'Varies by country'
                     }
                 }
+            },
+            {
+                name: 'Neem Oil',
+                category: 'Insecticide',
+                type: 'Organic',
+                effectiveness: 75,
+                safetyLevel: 'High',
+                applicationRate: '2-4 L/ha',
+                costPerLiter: 15.00,
+                environmentalImpact: 'Very Low',
+                description: 'Natural organic insecticide from neem tree',
+                preHarvestInterval: 0,
+                weatherRestrictions: ['Apply in morning or evening', 'Avoid direct sunlight'],
+                knapsackMixtures: {
+                    '16L': {
+                        concentration: '0.5%',
+                        chemicalAmount: 80,
+                        waterAmount: 15920,
+                        coverageArea: 0.08,
+                        sprayTime: 30,
+                        instructions: [
+                            'Fill sprayer with 15.92L clean water',
+                            'Add 80ml Neem Oil',
+                            'Mix gently for 1 minute',
+                            'Apply at 200L/ha rate',
+                            'Cover 0.08 hectares per tank'
+                        ]
+                    },
+                    '20L': {
+                        concentration: '0.5%',
+                        chemicalAmount: 100,
+                        waterAmount: 19900,
+                        coverageArea: 0.1,
+                        sprayTime: 35,
+                        instructions: [
+                            'Fill sprayer with 19.9L clean water',
+                            'Add 100ml Neem Oil',
+                            'Mix gently for 1 minute',
+                            'Apply at 200L/ha rate',
+                            'Cover 0.1 hectares per tank'
+                        ]
+                    }
+                },
+                safetyGuidelines: [
+                    'Minimal protective equipment needed',
+                    'Wear basic gloves and eye protection',
+                    'Safe for beneficial insects',
+                    'No pre-harvest interval',
+                    'Environmentally friendly'
+                ],
+                chemicalDetails: {
+                    chemicalName: 'Azadirachtin (neem oil extract)',
+                    molecularFormula: 'C35H44O16',
+                    molecularWeight: '720.71 g/mol',
+                    casNumber: '11141-17-6',
+                    physicalState: 'Liquid',
+                    color: 'Yellow to brown',
+                    odor: 'Garlic-like odor',
+                    solubility: 'Insoluble in water',
+                    phLevel: '6.0-7.0',
+                    density: '0.92 g/cm³',
+                    boilingPoint: '200°C',
+                    meltingPoint: '-10°C',
+                    vaporPressure: 'Negligible',
+                    halfLife: 'Soil: 1-2 days, Water: 1-2 days',
+                    modeOfAction: 'Insect growth regulator and feeding deterrent',
+                    targetPests: [
+                        'Aphids',
+                        'Whiteflies',
+                        'Spider mites',
+                        'Thrips',
+                        'Scale insects'
+                    ],
+                    resistantPests: [
+                        'No resistance development expected'
+                    ],
+                    applicationTiming: [
+                        'Early morning application',
+                        'Evening application',
+                        'When pests first appear',
+                        'Preventive application'
+                    ],
+                    toxicity: {
+                        acuteOral: 'LD50 > 5000 mg/kg (practically non-toxic)',
+                        acuteDermal: 'LD50 > 2000 mg/kg (slightly toxic)',
+                        acuteInhalation: 'LC50 > 200 mg/m³ (slightly toxic)',
+                        eyeIrritation: 'Mild irritant',
+                        skinIrritation: 'Mild irritant'
+                    },
+                    ecotoxicity: {
+                        fish: 'LC50 > 100 mg/L (practically non-toxic)',
+                        birds: 'LD50 > 2000 mg/kg (practically non-toxic)',
+                        bees: 'LD50 > 100 μg/bee (practically non-toxic)',
+                        earthworms: 'LC50 > 1000 mg/kg (practically non-toxic)'
+                    },
+                    regulatoryStatus: {
+                        epaRegistration: 'Exempt from registration',
+                        reEntryInterval: '0 hours',
+                        workerProtectionStandard: 'Category IV (Caution)',
+                        restrictedUse: 'No',
+                        exportTolerance: 'Generally recognized as safe'
+                    }
+                }
+            },
+            {
+                name: 'Insecticidal Soap',
+                category: 'Insecticide',
+                type: 'Organic',
+                effectiveness: 70,
+                safetyLevel: 'Very High',
+                applicationRate: '2-3 L/ha',
+                costPerLiter: 8.00,
+                environmentalImpact: 'Very Low',
+                description: 'Potassium salts of fatty acids for soft-bodied insects',
+                preHarvestInterval: 0,
+                weatherRestrictions: ['Apply in morning or evening', 'Avoid hot, dry conditions'],
+                knapsackMixtures: {
+                    '16L': {
+                        concentration: '1.0%',
+                        chemicalAmount: 160,
+                        waterAmount: 15840,
+                        coverageArea: 0.08,
+                        sprayTime: 25,
+                        instructions: [
+                            'Fill sprayer with 15.84L clean water',
+                            'Add 160ml Insecticidal Soap',
+                            'Mix gently for 1 minute',
+                            'Apply at 200L/ha rate',
+                            'Cover 0.08 hectares per tank'
+                        ]
+                    },
+                    '20L': {
+                        concentration: '1.0%',
+                        chemicalAmount: 200,
+                        waterAmount: 19800,
+                        coverageArea: 0.1,
+                        sprayTime: 30,
+                        instructions: [
+                            'Fill sprayer with 19.8L clean water',
+                            'Add 200ml Insecticidal Soap',
+                            'Mix gently for 1 minute',
+                            'Apply at 200L/ha rate',
+                            'Cover 0.1 hectares per tank'
+                        ]
+                    }
+                },
+                safetyGuidelines: [
+                    'Minimal protective equipment needed',
+                    'Safe for beneficial insects',
+                    'No pre-harvest interval',
+                    'Environmentally friendly',
+                    'Safe for organic farming'
+                ],
+                chemicalDetails: {
+                    chemicalName: 'Potassium salts of fatty acids',
+                    molecularFormula: 'Variable (C12-C18 fatty acids)',
+                    molecularWeight: 'Variable',
+                    casNumber: '67701-08-0',
+                    physicalState: 'Liquid',
+                    color: 'Colorless to light yellow',
+                    odor: 'Soap-like odor',
+                    solubility: 'Soluble in water',
+                    phLevel: '9.0-10.0 (alkaline)',
+                    density: '1.0 g/cm³',
+                    boilingPoint: '100°C',
+                    meltingPoint: 'Variable',
+                    vaporPressure: 'Negligible',
+                    halfLife: 'Soil: <1 day, Water: <1 day',
+                    modeOfAction: 'Contact insecticide (disrupts cell membranes)',
+                    targetPests: [
+                        'Aphids',
+                        'Whiteflies',
+                        'Spider mites',
+                        'Mealybugs',
+                        'Scale insects'
+                    ],
+                    resistantPests: [
+                        'No resistance development expected'
+                    ],
+                    applicationTiming: [
+                        'Direct contact application',
+                        'Early morning or evening',
+                        'When pests are actively feeding'
+                    ],
+                    toxicity: {
+                        acuteOral: 'LD50 > 5000 mg/kg (practically non-toxic)',
+                        acuteDermal: 'LD50 > 2000 mg/kg (slightly toxic)',
+                        acuteInhalation: 'LC50 > 200 mg/m³ (slightly toxic)',
+                        eyeIrritation: 'Mild irritant',
+                        skinIrritation: 'Mild irritant'
+                    },
+                    ecotoxicity: {
+                        fish: 'LC50 > 100 mg/L (practically non-toxic)',
+                        birds: 'LD50 > 2000 mg/kg (practically non-toxic)',
+                        bees: 'LD50 > 100 μg/bee (practically non-toxic)',
+                        earthworms: 'LC50 > 1000 mg/kg (practically non-toxic)'
+                    },
+                    regulatoryStatus: {
+                        epaRegistration: 'Exempt from registration',
+                        reEntryInterval: '0 hours',
+                        workerProtectionStandard: 'Category IV (Caution)',
+                        restrictedUse: 'No',
+                        exportTolerance: 'Generally recognized as safe'
+                    }
+                }
             }
         ];
     }
@@ -230,11 +435,13 @@ class PesticideManagement {
     initializePestPesticideMatching() {
         return {
             'Aphids': ['Malathion', 'Deltamethrin', 'Neem Oil', 'Insecticidal Soap'],
-            'Whiteflies': ['Malathion', 'Deltamethrin', 'Neem Oil'],
+            'Whiteflies': ['Malathion', 'Deltamethrin', 'Neem Oil', 'Insecticidal Soap'],
             'Spider Mites': ['Malathion', 'Neem Oil', 'Insecticidal Soap'],
-            'Thrips': ['Malathion', 'Deltamethrin'],
-            'Caterpillars': ['Deltamethrin', 'Bacillus thuringiensis'],
-            'Beetles': ['Deltamethrin'],
+            'Thrips': ['Malathion', 'Deltamethrin', 'Neem Oil'],
+            'Caterpillars': ['Deltamethrin', 'Neem Oil'],
+            'Beetles': ['Deltamethrin', 'Neem Oil'],
+            'Scale Insects': ['Neem Oil', 'Insecticidal Soap'],
+            'Mealybugs': ['Neem Oil', 'Insecticidal Soap'],
             'Fungal Diseases': ['Copper Fungicide', 'Baking Soda Fungicide'],
             'Bacterial Diseases': ['Copper Compounds', 'Streptomycin'],
             'Powdery Mildew': ['Baking Soda Fungicide', 'Copper Fungicide'],
@@ -258,6 +465,20 @@ class PesticideManagement {
                 'Avoid contact with beneficial insects',
                 'Do not apply in windy conditions',
                 'Clean equipment thoroughly'
+            ],
+            'Neem Oil': [
+                'Minimal protective equipment needed',
+                'Wear basic gloves and eye protection',
+                'Safe for beneficial insects',
+                'No pre-harvest interval',
+                'Environmentally friendly'
+            ],
+            'Insecticidal Soap': [
+                'Minimal protective equipment needed',
+                'Safe for beneficial insects',
+                'No pre-harvest interval',
+                'Environmentally friendly',
+                'Safe for organic farming'
             ]
         };
     }

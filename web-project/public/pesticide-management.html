@@ -494,7 +494,27 @@
             if (typeof pesticideManagement !== 'undefined') {
                 pesticideManagement.showPesticideDetails(pesticideName);
             } else {
-                alert(`🔬 Pesticide Details for ${pesticideName}\n\nThis would display comprehensive pesticide information including:\n\n• Chemical properties and molecular data\n• Toxicity and ecotoxicity information\n• Target pests and resistance data\n• Application instructions and timing\n• Safety guidelines and protective equipment\n• Regulatory compliance information\n\nDetailed pesticide database integration required.`);
+                // Fallback with basic pesticide information
+                let basicInfo = '';
+                
+                switch(pesticideName) {
+                    case 'Malathion':
+                        basicInfo = `🔬 MALATHION DETAILS\n\nType: Organophosphate Insecticide\nEffectiveness: 85%\nSafety Level: Moderate\nCost: $35.00/L\n\nTarget Pests:\n• Aphids\n• Whiteflies\n• Thrips\n• Spider Mites\n\nSafety Guidelines:\n• Wear protective clothing\n• Use respirator\n• Avoid skin contact\n• 12-hour re-entry interval\n\nPre-Harvest Interval: 3 days`;
+                        break;
+                    case 'Deltamethrin':
+                        basicInfo = `🔬 DELTAMETHRIN DETAILS\n\nType: Pyrethroid Insecticide\nEffectiveness: 95%\nSafety Level: Moderate\nCost: $45.00/L\n\nTarget Pests:\n• Caterpillars\n• Beetles\n• Thrips\n• Aphids\n\nSafety Guidelines:\n• Wear protective clothing\n• Use chemical-resistant gloves\n• Avoid beneficial insects\n• 12-hour re-entry interval\n\nPre-Harvest Interval: 1 day`;
+                        break;
+                    case 'Neem Oil':
+                        basicInfo = `🔬 NEEM OIL DETAILS\n\nType: Organic Insecticide\nEffectiveness: 75%\nSafety Level: High\nCost: $15.00/L\n\nTarget Pests:\n• Aphids\n• Whiteflies\n• Spider Mites\n• Scale Insects\n\nSafety Guidelines:\n• Minimal protection needed\n• Safe for beneficial insects\n• No pre-harvest interval\n• Environmentally friendly\n\nPre-Harvest Interval: 0 days`;
+                        break;
+                    case 'Insecticidal Soap':
+                        basicInfo = `🔬 INSECTICIDAL SOAP DETAILS\n\nType: Organic Insecticide\nEffectiveness: 70%\nSafety Level: Very High\nCost: $8.00/L\n\nTarget Pests:\n• Aphids\n• Whiteflies\n• Spider Mites\n• Mealybugs\n\nSafety Guidelines:\n• Minimal protection needed\n• Safe for beneficial insects\n• No pre-harvest interval\n• Safe for organic farming\n\nPre-Harvest Interval: 0 days`;
+                        break;
+                    default:
+                        basicInfo = `🔬 ${pesticideName} DETAILS\n\nThis would display comprehensive pesticide information including:\n\n• Chemical properties and molecular data\n• Toxicity and ecotoxicity information\n• Target pests and resistance data\n• Application instructions and timing\n• Safety guidelines and protective equipment\n• Regulatory compliance information\n\nDetailed pesticide database integration required.`;
+                }
+                
+                alert(basicInfo);
             }
         }
     </script>
