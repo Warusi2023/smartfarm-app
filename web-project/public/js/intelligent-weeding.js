@@ -114,7 +114,102 @@ class IntelligentWeedingSystem {
                     'Do not eat, drink or smoke during application',
                     'Wash hands thoroughly after use',
                     'Keep away from children and animals'
-                ]
+                ],
+                chemicalDetails: {
+                    chemicalName: 'N-(phosphonomethyl)glycine',
+                    molecularFormula: 'C3H8NO5P',
+                    molecularWeight: '169.07 g/mol',
+                    casNumber: '1071-83-6',
+                    physicalState: 'Solid (powder)',
+                    color: 'White to off-white',
+                    odor: 'Odorless',
+                    solubility: 'Soluble in water (12 g/L at 20°C)',
+                    phLevel: '2.5-3.5 (acidic)',
+                    density: '1.7 g/cm³',
+                    boilingPoint: 'Decomposes before boiling',
+                    meltingPoint: '184-189°C',
+                    vaporPressure: 'Negligible at 20°C',
+                    halfLife: 'Soil: 3-174 days, Water: 7-14 days',
+                    modeOfAction: 'Inhibits EPSP synthase enzyme',
+                    targetWeeds: [
+                        'Broadleaf weeds',
+                        'Grass weeds',
+                        'Perennial weeds',
+                        'Annual weeds',
+                        'Biennial weeds'
+                    ],
+                    resistantWeeds: [
+                        'Glyphosate-resistant ryegrass',
+                        'Glyphosate-resistant pigweed',
+                        'Glyphosate-resistant horseweed'
+                    ],
+                    applicationTiming: [
+                        'Pre-planting application',
+                        'Post-emergence application',
+                        'Pre-harvest application',
+                        'Spot treatment'
+                    ],
+                    soilFactors: {
+                        phOptimal: '6.0-7.0',
+                        organicMatter: 'Less effective in high organic matter',
+                        clayContent: 'Better adsorption in clay soils',
+                        moisture: 'Requires moist conditions for activation'
+                    },
+                    environmentalFate: {
+                        soilBinding: 'Strongly bound to soil particles',
+                        leaching: 'Low leaching potential',
+                        runoff: 'Low runoff potential',
+                        volatilization: 'Negligible volatilization'
+                    },
+                    toxicity: {
+                        acuteOral: 'LD50 > 5000 mg/kg (slightly toxic)',
+                        acuteDermal: 'LD50 > 2000 mg/kg (slightly toxic)',
+                        acuteInhalation: 'LC50 > 5.1 mg/L (slightly toxic)',
+                        eyeIrritation: 'Mild irritant',
+                        skinIrritation: 'Mild irritant'
+                    },
+                    ecotoxicity: {
+                        fish: 'LC50 > 100 mg/L (practically non-toxic)',
+                        birds: 'LD50 > 2250 mg/kg (practically non-toxic)',
+                        bees: 'LD50 > 100 μg/bee (practically non-toxic)',
+                        earthworms: 'LC50 > 1000 mg/kg (practically non-toxic)'
+                    },
+                    storageRequirements: [
+                        'Store in cool, dry place',
+                        'Keep container tightly closed',
+                        'Store away from food and feed',
+                        'Protect from direct sunlight',
+                        'Store above freezing point'
+                    ],
+                    compatibility: {
+                        compatible: [
+                            'Most herbicides',
+                            'Fertilizers',
+                            'Insecticides (check labels)',
+                            'Fungicides (check labels)'
+                        ],
+                        incompatible: [
+                            'Strong oxidizing agents',
+                            'Strong bases',
+                            'Metal salts',
+                            'Hard water (high calcium/magnesium)'
+                        ]
+                    },
+                    resistanceManagement: [
+                        'Rotate with different herbicide modes of action',
+                        'Use tank mixes with other herbicides',
+                        'Apply at recommended rates',
+                        'Use integrated weed management',
+                        'Monitor for resistance development'
+                    ],
+                    regulatoryStatus: {
+                        epaRegistration: 'Approved for agricultural use',
+                        reEntryInterval: '12 hours',
+                        workerProtectionStandard: 'Category III (Caution)',
+                        restrictedUse: 'No',
+                        exportTolerance: 'Varies by country'
+                    }
+                }
             },
             {
                 name: '2,4-D',
@@ -163,7 +258,101 @@ class IntelligentWeedingSystem {
                     'Avoid contact with skin',
                     'Do not apply in windy conditions',
                     'Clean equipment thoroughly after use'
-                ]
+                ],
+                chemicalDetails: {
+                    chemicalName: '2,4-dichlorophenoxyacetic acid',
+                    molecularFormula: 'C8H6Cl2O3',
+                    molecularWeight: '221.04 g/mol',
+                    casNumber: '94-75-7',
+                    physicalState: 'Solid (crystalline)',
+                    color: 'White to light tan',
+                    odor: 'Slight phenolic odor',
+                    solubility: 'Slightly soluble in water (0.9 g/L at 20°C)',
+                    phLevel: '2.5-4.0 (acidic)',
+                    density: '1.4 g/cm³',
+                    boilingPoint: '160°C (decomposes)',
+                    meltingPoint: '140-142°C',
+                    vaporPressure: '1.4 × 10⁻⁵ mmHg at 25°C',
+                    halfLife: 'Soil: 7-28 days, Water: 10-20 days',
+                    modeOfAction: 'Synthetic auxin (plant growth regulator)',
+                    targetWeeds: [
+                        'Broadleaf weeds',
+                        'Annual weeds',
+                        'Biennial weeds',
+                        'Perennial weeds (with repeated applications)'
+                    ],
+                    resistantWeeds: [
+                        '2,4-D resistant wild mustard',
+                        '2,4-D resistant kochia',
+                        '2,4-D resistant waterhemp'
+                    ],
+                    applicationTiming: [
+                        'Pre-emergence application',
+                        'Post-emergence application',
+                        'Fall application for perennials',
+                        'Spot treatment'
+                    ],
+                    soilFactors: {
+                        phOptimal: '6.0-7.5',
+                        organicMatter: 'Moderately adsorbed to organic matter',
+                        clayContent: 'Well adsorbed in clay soils',
+                        moisture: 'Works best in moist conditions'
+                    },
+                    environmentalFate: {
+                        soilBinding: 'Moderately bound to soil particles',
+                        leaching: 'Moderate leaching potential',
+                        runoff: 'Moderate runoff potential',
+                        volatilization: 'Low volatilization potential'
+                    },
+                    toxicity: {
+                        acuteOral: 'LD50 300-800 mg/kg (moderately toxic)',
+                        acuteDermal: 'LD50 > 2000 mg/kg (slightly toxic)',
+                        acuteInhalation: 'LC50 > 200 mg/m³ (slightly toxic)',
+                        eyeIrritation: 'Moderate irritant',
+                        skinIrritation: 'Mild irritant'
+                    },
+                    ecotoxicity: {
+                        fish: 'LC50 100-1000 mg/L (moderately toxic)',
+                        birds: 'LD50 100-1000 mg/kg (moderately toxic)',
+                        bees: 'LD50 > 100 μg/bee (practically non-toxic)',
+                        earthworms: 'LC50 > 1000 mg/kg (practically non-toxic)'
+                    },
+                    storageRequirements: [
+                        'Store in cool, dry place',
+                        'Keep container tightly closed',
+                        'Store away from food and feed',
+                        'Protect from direct sunlight',
+                        'Avoid storage near heat sources'
+                    ],
+                    compatibility: {
+                        compatible: [
+                            'Most herbicides',
+                            'Fertilizers',
+                            'Insecticides',
+                            'Fungicides'
+                        ],
+                        incompatible: [
+                            'Strong oxidizing agents',
+                            'Strong bases',
+                            'Metal salts',
+                            'Hard water'
+                        ]
+                    },
+                    resistanceManagement: [
+                        'Rotate with different herbicide modes of action',
+                        'Use tank mixes with other herbicides',
+                        'Apply at recommended rates',
+                        'Use integrated weed management',
+                        'Monitor for resistance development'
+                    ],
+                    regulatoryStatus: {
+                        epaRegistration: 'Approved for agricultural use',
+                        reEntryInterval: '12-24 hours',
+                        workerProtectionStandard: 'Category II (Warning)',
+                        restrictedUse: 'No',
+                        exportTolerance: 'Varies by country'
+                    }
+                }
             },
             {
                 name: 'Atrazine',
@@ -215,7 +404,100 @@ class IntelligentWeedingSystem {
                     'Do not apply near water sources',
                     'Avoid soil contamination',
                     'Long pre-harvest interval required'
-                ]
+                ],
+                chemicalDetails: {
+                    chemicalName: '6-chloro-N-ethyl-N\'-(1-methylethyl)-1,3,5-triazine-2,4-diamine',
+                    molecularFormula: 'C8H14ClN5',
+                    molecularWeight: '215.68 g/mol',
+                    casNumber: '1912-24-9',
+                    physicalState: 'Solid (crystalline)',
+                    color: 'White to off-white',
+                    odor: 'Odorless',
+                    solubility: 'Slightly soluble in water (33 mg/L at 20°C)',
+                    phLevel: '5.0-6.0 (slightly acidic)',
+                    density: '1.2 g/cm³',
+                    boilingPoint: '200°C (decomposes)',
+                    meltingPoint: '173-175°C',
+                    vaporPressure: '3.0 × 10⁻⁶ mmHg at 20°C',
+                    halfLife: 'Soil: 60-120 days, Water: 30-60 days',
+                    modeOfAction: 'Photosystem II inhibitor (blocks electron transport)',
+                    targetWeeds: [
+                        'Broadleaf weeds',
+                        'Grass weeds',
+                        'Annual weeds',
+                        'Some perennial weeds'
+                    ],
+                    resistantWeeds: [
+                        'Atrazine-resistant pigweed',
+                        'Atrazine-resistant waterhemp',
+                        'Atrazine-resistant kochia'
+                    ],
+                    applicationTiming: [
+                        'Pre-emergence application',
+                        'Early post-emergence application',
+                        'Fall application for perennials'
+                    ],
+                    soilFactors: {
+                        phOptimal: '6.0-7.5',
+                        organicMatter: 'Strongly adsorbed to organic matter',
+                        clayContent: 'Well adsorbed in clay soils',
+                        moisture: 'Requires moisture for activation'
+                    },
+                    environmentalFate: {
+                        soilBinding: 'Strongly bound to soil particles',
+                        leaching: 'High leaching potential in sandy soils',
+                        runoff: 'Moderate runoff potential',
+                        volatilization: 'Low volatilization potential'
+                    },
+                    toxicity: {
+                        acuteOral: 'LD50 2000-3000 mg/kg (slightly toxic)',
+                        acuteDermal: 'LD50 > 2000 mg/kg (slightly toxic)',
+                        acuteInhalation: 'LC50 > 5.8 mg/L (slightly toxic)',
+                        eyeIrritation: 'Mild irritant',
+                        skinIrritation: 'Mild irritant'
+                    },
+                    ecotoxicity: {
+                        fish: 'LC50 4-100 mg/L (moderately toxic)',
+                        birds: 'LD50 > 2000 mg/kg (practically non-toxic)',
+                        bees: 'LD50 > 100 μg/bee (practically non-toxic)',
+                        earthworms: 'LC50 > 1000 mg/kg (practically non-toxic)'
+                    },
+                    storageRequirements: [
+                        'Store in cool, dry place',
+                        'Keep container tightly closed',
+                        'Store away from food and feed',
+                        'Protect from direct sunlight',
+                        'Store above freezing point'
+                    ],
+                    compatibility: {
+                        compatible: [
+                            'Most herbicides',
+                            'Fertilizers',
+                            'Insecticides',
+                            'Fungicides'
+                        ],
+                        incompatible: [
+                            'Strong oxidizing agents',
+                            'Strong bases',
+                            'Metal salts',
+                            'Hard water'
+                        ]
+                    },
+                    resistanceManagement: [
+                        'Rotate with different herbicide modes of action',
+                        'Use tank mixes with other herbicides',
+                        'Apply at recommended rates',
+                        'Use integrated weed management',
+                        'Monitor for resistance development'
+                    ],
+                    regulatoryStatus: {
+                        epaRegistration: 'Approved for agricultural use',
+                        reEntryInterval: '12-24 hours',
+                        workerProtectionStandard: 'Category III (Caution)',
+                        restrictedUse: 'No',
+                        exportTolerance: 'Varies by country'
+                    }
+                }
             },
             {
                 name: 'Organic Vinegar Solution',
@@ -267,7 +549,102 @@ class IntelligentWeedingSystem {
                     'No pre-harvest interval',
                     'Environmentally friendly',
                     'Can be applied near water sources'
-                ]
+                ],
+                chemicalDetails: {
+                    chemicalName: 'Acetic acid (vinegar)',
+                    molecularFormula: 'C2H4O2',
+                    molecularWeight: '60.05 g/mol',
+                    casNumber: '64-19-7',
+                    physicalState: 'Liquid',
+                    color: 'Colorless to light yellow',
+                    odor: 'Characteristic vinegar odor',
+                    solubility: 'Miscible with water',
+                    phLevel: '2.4-3.4 (acidic)',
+                    density: '1.05 g/cm³',
+                    boilingPoint: '118°C',
+                    meltingPoint: '16.6°C',
+                    vaporPressure: '11.4 mmHg at 20°C',
+                    halfLife: 'Soil: 1-7 days, Water: 1-3 days',
+                    modeOfAction: 'Contact herbicide (desiccant)',
+                    targetWeeds: [
+                        'Young broadleaf weeds',
+                        'Annual weeds',
+                        'Grass weeds (young)',
+                        'Seedling weeds'
+                    ],
+                    resistantWeeds: [
+                        'Mature perennial weeds',
+                        'Established weeds',
+                        'Deep-rooted weeds',
+                        'Waxy-leaved weeds'
+                    ],
+                    applicationTiming: [
+                        'Post-emergence application',
+                        'Spot treatment',
+                        'Pre-planting application',
+                        'Inter-row application'
+                    ],
+                    soilFactors: {
+                        phOptimal: '6.0-8.0',
+                        organicMatter: 'No effect on organic matter',
+                        clayContent: 'No soil binding',
+                        moisture: 'Works best in dry conditions'
+                    },
+                    environmentalFate: {
+                        soilBinding: 'No soil binding',
+                        leaching: 'High leaching potential',
+                        runoff: 'High runoff potential',
+                        volatilization: 'Moderate volatilization potential'
+                    },
+                    toxicity: {
+                        acuteOral: 'LD50 3310 mg/kg (slightly toxic)',
+                        acuteDermal: 'LD50 > 2000 mg/kg (slightly toxic)',
+                        acuteInhalation: 'LC50 > 200 mg/m³ (slightly toxic)',
+                        eyeIrritation: 'Severe irritant',
+                        skinIrritation: 'Moderate irritant'
+                    },
+                    ecotoxicity: {
+                        fish: 'LC50 50-100 mg/L (moderately toxic)',
+                        birds: 'LD50 > 2000 mg/kg (practically non-toxic)',
+                        bees: 'LD50 > 100 μg/bee (practically non-toxic)',
+                        earthworms: 'LC50 > 1000 mg/kg (practically non-toxic)'
+                    },
+                    storageRequirements: [
+                        'Store in cool, dry place',
+                        'Keep container tightly closed',
+                        'Store away from food and feed',
+                        'Protect from direct sunlight',
+                        'Store at room temperature'
+                    ],
+                    compatibility: {
+                        compatible: [
+                            'Most organic products',
+                            'Fertilizers',
+                            'Insecticides',
+                            'Fungicides'
+                        ],
+                        incompatible: [
+                            'Strong oxidizing agents',
+                            'Strong bases',
+                            'Metal salts',
+                            'Hard water'
+                        ]
+                    },
+                    resistanceManagement: [
+                        'No resistance development expected',
+                        'Use for spot treatment',
+                        'Apply to young weeds',
+                        'Use integrated weed management',
+                        'Monitor effectiveness'
+                    ],
+                    regulatoryStatus: {
+                        epaRegistration: 'Exempt from registration',
+                        reEntryInterval: '0 hours',
+                        workerProtectionStandard: 'Category III (Caution)',
+                        restrictedUse: 'No',
+                        exportTolerance: 'Generally recognized as safe'
+                    }
+                }
             },
             {
                 name: 'Manual Weeding',
@@ -1200,6 +1577,253 @@ class IntelligentWeedingSystem {
         if (!chemical) return;
 
         alert(`🚀 Starting Chemical Application\n\nChemical: ${chemical.name}\nType: ${chemical.type}\n\nApplication Guidelines:\n• Ensure weather conditions are suitable\n• Wear appropriate protective equipment\n• Follow mixture instructions exactly\n• Apply at recommended rates\n• Monitor for any adverse effects\n\nPre-Harvest Interval: ${chemical.preHarvestInterval} days\n\nApplication started and logged in the system!`);
+    }
+
+    showChemicalDetails(chemicalName) {
+        const chemical = this.chemicalSuppressionOptions.find(c => c.name === chemicalName);
+        if (!chemical || !chemical.chemicalDetails) return;
+
+        this.displayChemicalDetailsModal(chemical);
+    }
+
+    displayChemicalDetailsModal(chemical) {
+        const modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.innerHTML = `
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header bg-info text-white">
+                        <h5 class="modal-title">
+                            <i class="fas fa-flask me-2"></i>Chemical Details - ${chemical.name}
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card mb-3">
+                                    <div class="card-header bg-primary text-white">
+                                        <h6 class="mb-0">Basic Information</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <table class="table table-sm">
+                                            <tr><td><strong>Chemical Name:</strong></td><td>${chemical.chemicalDetails.chemicalName}</td></tr>
+                                            <tr><td><strong>Molecular Formula:</strong></td><td>${chemical.chemicalDetails.molecularFormula}</td></tr>
+                                            <tr><td><strong>Molecular Weight:</strong></td><td>${chemical.chemicalDetails.molecularWeight}</td></tr>
+                                            <tr><td><strong>CAS Number:</strong></td><td>${chemical.chemicalDetails.casNumber}</td></tr>
+                                            <tr><td><strong>Physical State:</strong></td><td>${chemical.chemicalDetails.physicalState}</td></tr>
+                                            <tr><td><strong>Color:</strong></td><td>${chemical.chemicalDetails.color}</td></tr>
+                                            <tr><td><strong>Odor:</strong></td><td>${chemical.chemicalDetails.odor}</td></tr>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <div class="card mb-3">
+                                    <div class="card-header bg-success text-white">
+                                        <h6 class="mb-0">Physical Properties</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <table class="table table-sm">
+                                            <tr><td><strong>Solubility:</strong></td><td>${chemical.chemicalDetails.solubility}</td></tr>
+                                            <tr><td><strong>pH Level:</strong></td><td>${chemical.chemicalDetails.phLevel}</td></tr>
+                                            <tr><td><strong>Density:</strong></td><td>${chemical.chemicalDetails.density}</td></tr>
+                                            <tr><td><strong>Boiling Point:</strong></td><td>${chemical.chemicalDetails.boilingPoint}</td></tr>
+                                            <tr><td><strong>Melting Point:</strong></td><td>${chemical.chemicalDetails.meltingPoint}</td></tr>
+                                            <tr><td><strong>Vapor Pressure:</strong></td><td>${chemical.chemicalDetails.vaporPressure}</td></tr>
+                                            <tr><td><strong>Half-Life:</strong></td><td>${chemical.chemicalDetails.halfLife}</td></tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="card mb-3">
+                                    <div class="card-header bg-warning text-dark">
+                                        <h6 class="mb-0">Mode of Action & Target</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p><strong>Mode of Action:</strong> ${chemical.chemicalDetails.modeOfAction}</p>
+                                        
+                                        <h6>Target Weeds:</h6>
+                                        <ul class="list-unstyled">
+                                            ${chemical.chemicalDetails.targetWeeds.map(weed => `<li>• ${weed}</li>`).join('')}
+                                        </ul>
+
+                                        <h6>Resistant Weeds:</h6>
+                                        <ul class="list-unstyled">
+                                            ${chemical.chemicalDetails.resistantWeeds.map(weed => `<li>• ${weed}</li>`).join('')}
+                                        </ul>
+
+                                        <h6>Application Timing:</h6>
+                                        <ul class="list-unstyled">
+                                            ${chemical.chemicalDetails.applicationTiming.map(timing => `<li>• ${timing}</li>`).join('')}
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <div class="card mb-3">
+                                    <div class="card-header bg-danger text-white">
+                                        <h6 class="mb-0">Toxicity Information</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <table class="table table-sm">
+                                            <tr><td><strong>Acute Oral:</strong></td><td>${chemical.chemicalDetails.toxicity.acuteOral}</td></tr>
+                                            <tr><td><strong>Acute Dermal:</strong></td><td>${chemical.chemicalDetails.toxicity.acuteDermal}</td></tr>
+                                            <tr><td><strong>Acute Inhalation:</strong></td><td>${chemical.chemicalDetails.toxicity.acuteInhalation}</td></tr>
+                                            <tr><td><strong>Eye Irritation:</strong></td><td>${chemical.chemicalDetails.toxicity.eyeIrritation}</td></tr>
+                                            <tr><td><strong>Skin Irritation:</strong></td><td>${chemical.chemicalDetails.toxicity.skinIrritation}</td></tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card mb-3">
+                                    <div class="card-header bg-secondary text-white">
+                                        <h6 class="mb-0">Soil Factors</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <table class="table table-sm">
+                                            <tr><td><strong>pH Optimal:</strong></td><td>${chemical.chemicalDetails.soilFactors.phOptimal}</td></tr>
+                                            <tr><td><strong>Organic Matter:</strong></td><td>${chemical.chemicalDetails.soilFactors.organicMatter}</td></tr>
+                                            <tr><td><strong>Clay Content:</strong></td><td>${chemical.chemicalDetails.soilFactors.clayContent}</td></tr>
+                                            <tr><td><strong>Moisture:</strong></td><td>${chemical.chemicalDetails.soilFactors.moisture}</td></tr>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <div class="card mb-3">
+                                    <div class="card-header bg-dark text-white">
+                                        <h6 class="mb-0">Environmental Fate</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <table class="table table-sm">
+                                            <tr><td><strong>Soil Binding:</strong></td><td>${chemical.chemicalDetails.environmentalFate.soilBinding}</td></tr>
+                                            <tr><td><strong>Leaching:</strong></td><td>${chemical.chemicalDetails.environmentalFate.leaching}</td></tr>
+                                            <tr><td><strong>Runoff:</strong></td><td>${chemical.chemicalDetails.environmentalFate.runoff}</td></tr>
+                                            <tr><td><strong>Volatilization:</strong></td><td>${chemical.chemicalDetails.environmentalFate.volatilization}</td></tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="card mb-3">
+                                    <div class="card-header bg-info text-white">
+                                        <h6 class="mb-0">Ecotoxicity</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <table class="table table-sm">
+                                            <tr><td><strong>Fish:</strong></td><td>${chemical.chemicalDetails.ecotoxicity.fish}</td></tr>
+                                            <tr><td><strong>Birds:</strong></td><td>${chemical.chemicalDetails.ecotoxicity.birds}</td></tr>
+                                            <tr><td><strong>Bees:</strong></td><td>${chemical.chemicalDetails.ecotoxicity.bees}</td></tr>
+                                            <tr><td><strong>Earthworms:</strong></td><td>${chemical.chemicalDetails.ecotoxicity.earthworms}</td></tr>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <div class="card mb-3">
+                                    <div class="card-header bg-primary text-white">
+                                        <h6 class="mb-0">Regulatory Status</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <table class="table table-sm">
+                                            <tr><td><strong>EPA Registration:</strong></td><td>${chemical.chemicalDetails.regulatoryStatus.epaRegistration}</td></tr>
+                                            <tr><td><strong>Re-Entry Interval:</strong></td><td>${chemical.chemicalDetails.regulatoryStatus.reEntryInterval}</td></tr>
+                                            <tr><td><strong>Worker Protection:</strong></td><td>${chemical.chemicalDetails.regulatoryStatus.workerProtectionStandard}</td></tr>
+                                            <tr><td><strong>Restricted Use:</strong></td><td>${chemical.chemicalDetails.regulatoryStatus.restrictedUse}</td></tr>
+                                            <tr><td><strong>Export Tolerance:</strong></td><td>${chemical.chemicalDetails.regulatoryStatus.exportTolerance}</td></tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card mb-3">
+                                    <div class="card-header bg-warning text-dark">
+                                        <h6 class="mb-0">Storage Requirements</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <ul class="mb-0">
+                                            ${chemical.chemicalDetails.storageRequirements.map(req => `<li>${req}</li>`).join('')}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="card mb-3">
+                                    <div class="card-header bg-success text-white">
+                                        <h6 class="mb-0">Resistance Management</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <ul class="mb-0">
+                                            ${chemical.chemicalDetails.resistanceManagement.map(strategy => `<li>${strategy}</li>`).join('')}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card mb-3">
+                                    <div class="card-header bg-success text-white">
+                                        <h6 class="mb-0">Compatible Products</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <ul class="mb-0">
+                                            ${chemical.chemicalDetails.compatibility.compatible.map(product => `<li>• ${product}</li>`).join('')}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="card mb-3">
+                                    <div class="card-header bg-danger text-white">
+                                        <h6 class="mb-0">Incompatible Products</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <ul class="mb-0">
+                                            ${chemical.chemicalDetails.compatibility.incompatible.map(product => `<li>• ${product}</li>`).join('')}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-info" onclick="intelligentWeeding.printChemicalDetails('${chemical.name}')">
+                            <i class="fas fa-print me-2"></i>Print Details
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="intelligentWeeding.showChemicalMixtureModal(intelligentWeeding.chemicalSuppressionOptions.find(c => c.name === '${chemical.name}'))">
+                            <i class="fas fa-flask me-2"></i>View Mixture Instructions
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        const bsModal = new bootstrap.Modal(modal);
+        bsModal.show();
+        
+        modal.addEventListener('hidden.bs.modal', () => {
+            document.body.removeChild(modal);
+        });
+    }
+
+    printChemicalDetails(chemicalName) {
+        const chemical = this.chemicalSuppressionOptions.find(c => c.name === chemicalName);
+        if (!chemical || !chemical.chemicalDetails) return;
+
+        alert(`🖨️ Print Chemical Details for ${chemicalName}\n\nComprehensive chemical information would be printed including:\n\n• Molecular formula and properties\n• Physical and chemical characteristics\n• Toxicity and ecotoxicity data\n• Environmental fate information\n• Regulatory status and compliance\n• Storage and handling requirements\n• Resistance management strategies\n\nThis would generate a professional PDF for reference and compliance.`);
     }
 
     showWeedingAnalytics() {

@@ -378,7 +378,10 @@
                     </div>
                     <small class="text-muted">95% Effectiveness</small>
                     <button class="btn btn-sm btn-outline-primary w-100 mt-2" onclick="selectChemical('Glyphosate')">
-                        Select Chemical
+                        <i class="fas fa-flask me-1"></i>Select Chemical
+                    </button>
+                    <button class="btn btn-sm btn-outline-info w-100 mt-2" onclick="showChemicalDetails('Glyphosate')">
+                        <i class="fas fa-info-circle me-1"></i>View Details
                     </button>
                 </div>
 
@@ -394,7 +397,10 @@
                     </div>
                     <small class="text-muted">85% Effectiveness</small>
                     <button class="btn btn-sm btn-outline-primary w-100 mt-2" onclick="selectChemical('2,4-D')">
-                        Select Chemical
+                        <i class="fas fa-flask me-1"></i>Select Chemical
+                    </button>
+                    <button class="btn btn-sm btn-outline-info w-100 mt-2" onclick="showChemicalDetails('2,4-D')">
+                        <i class="fas fa-info-circle me-1"></i>View Details
                     </button>
                 </div>
 
@@ -410,7 +416,10 @@
                     </div>
                     <small class="text-muted">70% Effectiveness</small>
                     <button class="btn btn-sm btn-outline-success w-100 mt-2" onclick="selectChemical('Organic Vinegar')">
-                        Select Chemical
+                        <i class="fas fa-flask me-1"></i>Select Chemical
+                    </button>
+                    <button class="btn btn-sm btn-outline-info w-100 mt-2" onclick="showChemicalDetails('Organic Vinegar')">
+                        <i class="fas fa-info-circle me-1"></i>View Details
                     </button>
                 </div>
 
@@ -634,6 +643,14 @@
 
         function selectChemical(chemicalName) {
             alert(`🧪 Selected: ${chemicalName}\n\nChemical details:\n• Type and effectiveness\n• Application rate and cost\n• Safety considerations\n• Weather restrictions\n• Environmental impact\n• Pre-harvest interval\n\nThis chemical has been selected for application.`);
+        }
+
+        function showChemicalDetails(chemicalName) {
+            if (typeof intelligentWeeding !== 'undefined') {
+                intelligentWeeding.showChemicalDetails(chemicalName);
+            } else {
+                alert(`🔬 Chemical Details for ${chemicalName}\n\nThis would display comprehensive chemical information including:\n\n• Molecular formula and properties\n• Physical and chemical characteristics\n• Toxicity and ecotoxicity data\n• Environmental fate information\n• Regulatory status and compliance\n• Storage and handling requirements\n• Resistance management strategies\n\nDetailed chemical database integration required.`);
+            }
         }
 
         function refreshWeedingTasks() {
