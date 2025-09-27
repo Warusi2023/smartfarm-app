@@ -798,6 +798,9 @@
             initializeDashboard();
             updateLastUpdated();
             setInterval(updateLastUpdated, 60000); // Update every minute
+            
+            // Initialize URL routing
+            initializeURLRouting();
         });
 
         function initializeDashboard() {
@@ -1075,11 +1078,13 @@
         function showDashboard() {
             showView('dashboardView');
             setActiveNav('dashboard');
+            updateURL('dashboardView');
         }
 
         function showFarmManagement() {
             showView('farmManagementView');
             setActiveNav('farm');
+            updateURL('farmManagementView');
             // Load fresh farm data when switching to this tab
             loadFarmData();
         }
@@ -1088,6 +1093,7 @@
             console.log('Switching to Crop Management...');
             showView('cropManagementView');
             setActiveNav('crop');
+            updateURL('cropManagementView');
             // Load fresh crop data when switching to this tab
             loadCropsData();
             console.log('Crops data after loading:', crops);
@@ -1097,6 +1103,7 @@
             console.log('Switching to Livestock Management...');
             showView('livestockManagementView');
             setActiveNav('livestock');
+            updateURL('livestockManagementView');
             // Load fresh livestock data when switching to this tab
             loadLivestockData();
             console.log('Livestock data after loading:', livestock);
@@ -1106,6 +1113,7 @@
             console.log('Switching to Inventory Management...');
             showView('inventoryManagementView');
             setActiveNav('inventory');
+            updateURL('inventoryManagementView');
             // Load fresh inventory data when switching to this tab
             loadInventoryData();
             console.log('Inventory data after loading:', inventory);
@@ -1114,6 +1122,7 @@
         function showAnalytics() {
             showView('analyticsView');
             setActiveNav('analytics');
+            updateURL('analyticsView');
             // Initialize analytics charts if not already initialized
             if (!revenueChart || !costChart) {
                 initializeAnalyticsCharts();
@@ -1125,11 +1134,13 @@
         function showTasks() {
             showView('tasksView');
             setActiveNav('tasks');
+            updateURL('tasksView');
         }
 
         function showReports() {
             showView('reportsView');
             setActiveNav('reports');
+            updateURL('reportsView');
         }
 
         function showView(viewId) {
@@ -2819,6 +2830,73 @@ INVENTORY SUMMARY:
                 renderCropsTable();
                 showSuccessMessage('Crop data updated with AI suggestions!');
             }
+        }
+
+        // ===== URL ROUTING AND STATE PERSISTENCE =====
+
+        function initializeURLRouting() {
+            // Check if there's a hash in the URL
+            const hash = window.location.hash.substring(1);
+            
+            if (hash) {
+                // Navigate to the specified view
+                navigateToView(hash);
+            } else {
+                // Check localStorage for last viewed page
+                const lastView = localStorage.getItem('smartfarm_lastView');
+                if (lastView && lastView !== 'dashboardView') {
+                    navigateToView(lastView);
+                } else {
+                    // Default to dashboard
+                    showDashboard();
+                }
+            }
+            
+            // Listen for hash changes
+            window.addEventListener('hashchange', function() {
+                const newHash = window.location.hash.substring(1);
+                navigateToView(newHash);
+            });
+        }
+
+        function navigateToView(viewName) {
+            // Update URL hash
+            window.location.hash = viewName;
+            
+            // Save current view to localStorage
+            localStorage.setItem('smartfarm_lastView', viewName);
+            
+            // Navigate to the appropriate view
+            switch(viewName) {
+                case 'farmManagementView':
+                    showFarmManagement();
+                    break;
+                case 'cropManagementView':
+                    showCropManagement();
+                    break;
+                case 'livestockManagementView':
+                    showLivestockManagement();
+                    break;
+                case 'inventoryManagementView':
+                    showInventoryManagement();
+                    break;
+                case 'analyticsView':
+                    showAnalytics();
+                    break;
+                case 'reportsView':
+                    showReports();
+                    break;
+                case 'tasksView':
+                    showTasks();
+                    break;
+                default:
+                    showDashboard();
+            }
+        }
+
+        function updateURL(viewName) {
+            window.location.hash = viewName;
+            localStorage.setItem('smartfarm_lastView', viewName);
         }
 
         // User functions
