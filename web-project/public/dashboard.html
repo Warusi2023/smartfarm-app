@@ -2265,7 +2265,32 @@ INVENTORY SUMMARY:
                 return;
             }
 
-            const suggestions = generateAISuggestions(crop);
+            // Show loading state
+            const brainIcon = document.querySelector(`button[onclick="showAISuggestions(${cropId})"]`);
+            if (brainIcon) {
+                brainIcon.disabled = true;
+                brainIcon.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            }
+
+            // Use setTimeout to prevent UI freezing
+            setTimeout(() => {
+                try {
+                    const suggestions = generateAISuggestions(crop);
+                    displayAISuggestionsModal(crop, suggestions);
+                } catch (error) {
+                    console.error('Error generating AI suggestions:', error);
+                    alert('Error generating AI suggestions. Please try again.');
+                } finally {
+                    // Restore brain icon
+                    if (brainIcon) {
+                        brainIcon.disabled = false;
+                        brainIcon.innerHTML = '🧠';
+                    }
+                }
+            }, 100);
+        }
+
+        function displayAISuggestionsModal(crop, suggestions) {
             
             // Create AI suggestions modal
             const modal = document.createElement('div');
@@ -2546,112 +2571,68 @@ INVENTORY SUMMARY:
             return suggestions;
         }
 
-        // Weeding recommendation functions
+        // Weeding recommendation functions - Optimized for performance
         function generateWeedingRecommendations(crop, daysSincePlanted) {
             const suggestions = [];
-            const currentSeason = getCurrentSeason();
             const weatherConditions = getWeatherConditions();
             const cropName = crop.name.toLowerCase();
             
-            // Weather-based weeding urgency
+            // Determine weeding urgency based on weather
             let weedingUrgency = 'normal';
-            let weatherFactor = 1.0;
-            
-            if (weatherConditions.temperature > 25 && weatherConditions.humidity > 60) {
+            if (weatherConditions.temperature > 30 || (weatherConditions.temperature > 25 && weatherConditions.humidity > 60)) {
                 weedingUrgency = 'high';
-                weatherFactor = 1.5;
-            } else if (weatherConditions.temperature > 30) {
-                weedingUrgency = 'critical';
-                weatherFactor = 2.0;
             } else if (weatherConditions.rainfall > 50) {
                 weedingUrgency = 'high';
-                weatherFactor = 1.3;
             }
             
-            // Growth stage-based weeding recommendations
+            // Single comprehensive weeding suggestion based on growth stage and weather
+            let title, description, actions, treatments;
+            
             if (daysSincePlanted < 14) {
-                suggestions.push({
-                    type: 'warning',
-                    title: 'Early Stage Weeding',
-                    description: `Crop is ${daysSincePlanted} days old. Weeds compete heavily with young plants for nutrients and water.`,
-                    actions: ['Light Hand Weeding', 'Mulch Application', 'Monitor Daily'],
-                    treatments: getEarlyStageWeedingTreatments(),
-                    urgency: weedingUrgency
-                });
+                title = 'Early Stage Weeding';
+                description = `Crop is ${daysSincePlanted} days old. Weeds compete heavily with young plants. Weather: ${weatherConditions.temperature}°C, ${weatherConditions.humidity}% humidity.`;
+                actions = ['Light Hand Weeding', 'Mulch Application', 'Monitor Daily'];
+                treatments = getEarlyStageWeedingTreatments();
             } else if (daysSincePlanted < 45) {
-                suggestions.push({
-                    type: weedingUrgency === 'critical' ? 'critical' : 'warning',
-                    title: 'Active Growth Weeding',
-                    description: `Crop is ${daysSincePlanted} days old. Regular weeding is crucial during active growth phase. Weather conditions indicate ${weedingUrgency} weed pressure.`,
-                    actions: ['Regular Weeding', 'Mulch Maintenance', 'Hoe Cultivation'],
-                    treatments: getActiveGrowthWeedingTreatments(),
-                    urgency: weedingUrgency
-                });
+                title = 'Active Growth Weeding';
+                description = `Crop is ${daysSincePlanted} days old. Regular weeding crucial. ${weedingUrgency === 'high' ? 'High weed pressure due to weather conditions.' : 'Normal weeding schedule recommended.'}`;
+                actions = ['Regular Weeding', 'Mulch Maintenance', 'Hoe Cultivation'];
+                treatments = getActiveGrowthWeedingTreatments();
             } else {
-                suggestions.push({
-                    type: 'warning',
-                    title: 'Mature Stage Weeding',
-                    description: `Crop is ${daysSincePlanted} days old. Focus on maintaining clean rows and preventing weed seed production.`,
-                    actions: ['Row Maintenance', 'Seed Prevention', 'Final Cleanup'],
-                    treatments: getMatureStageWeedingTreatments(),
-                    urgency: weedingUrgency
-                });
+                title = 'Mature Stage Weeding';
+                description = `Crop is ${daysSincePlanted} days old. Focus on maintaining clean rows and preventing weed seed production.`;
+                actions = ['Row Maintenance', 'Seed Prevention', 'Final Cleanup'];
+                treatments = getMatureStageWeedingTreatments();
             }
             
-            // Weather-specific weeding recommendations
+            // Add weather-specific actions if needed
             if (weatherConditions.temperature > 25) {
-                suggestions.push({
-                    type: 'warning',
-                    title: 'Hot Weather Weeding Alert',
-                    description: `High temperatures (${weatherConditions.temperature}°C) accelerate weed growth. Increased weeding frequency recommended.`,
-                    actions: ['Morning Weeding', 'Extra Mulch', 'Shade Protection'],
-                    treatments: getHotWeatherWeedingTreatments(),
-                    urgency: 'high'
-                });
+                actions.push('Morning Weeding', 'Extra Mulch');
             }
-            
             if (weatherConditions.humidity > 70) {
-                suggestions.push({
-                    type: 'warning',
-                    title: 'High Humidity Weeding',
-                    description: `High humidity (${weatherConditions.humidity}%) promotes rapid weed germination and growth.`,
-                    actions: ['Preventive Weeding', 'Improve Air Circulation', 'Drip Irrigation'],
-                    treatments: getHighHumidityWeedingTreatments(),
-                    urgency: 'high'
-                });
+                actions.push('Improve Air Circulation');
             }
-            
             if (weatherConditions.rainfall > 30) {
-                suggestions.push({
-                    type: 'warning',
-                    title: 'Post-Rain Weeding',
-                    description: `Recent rainfall (${weatherConditions.rainfall}mm) creates ideal conditions for weed germination.`,
-                    actions: ['Post-Rain Weeding', 'Soil Cultivation', 'Mulch Replacement'],
-                    treatments: getPostRainWeedingTreatments(),
-                    urgency: 'high'
-                });
+                actions.push('Post-Rain Cultivation');
             }
             
-            // Crop-specific weeding recommendations
+            // Add crop-specific treatment if applicable
             if (cropName.includes('corn') || cropName.includes('maize')) {
-                suggestions.push({
-                    type: 'warning',
-                    title: 'Corn Weeding Strategy',
-                    description: 'Corn is particularly susceptible to weed competition during early growth stages.',
-                    actions: ['Between-Row Cultivation', 'Hand Weeding Near Plants', 'Pre-Emergent Herbicide'],
-                    treatments: getCornWeedingTreatments(),
-                    urgency: 'high'
-                });
+                treatments = treatments.concat(getCornWeedingTreatments());
+                actions.push('Between-Row Cultivation');
             } else if (cropName.includes('tomato') || cropName.includes('pepper')) {
-                suggestions.push({
-                    type: 'warning',
-                    title: 'Vegetable Weeding Care',
-                    description: 'Vegetables need careful weeding to avoid damaging shallow root systems.',
-                    actions: ['Careful Hand Weeding', 'Mulch Heavily', 'Straw Mulch'],
-                    treatments: getVegetableWeedingTreatments(),
-                    urgency: 'normal'
-                });
+                treatments = treatments.concat(getVegetableWeedingTreatments());
+                actions.push('Careful Hand Weeding');
             }
+            
+            suggestions.push({
+                type: weedingUrgency === 'high' ? 'warning' : 'success',
+                title: title,
+                description: description,
+                actions: actions.slice(0, 5), // Limit to 5 actions to prevent UI overload
+                treatments: treatments.slice(0, 3), // Limit to 3 treatments to prevent UI overload
+                urgency: weedingUrgency
+            });
             
             return suggestions;
         }
@@ -2664,7 +2645,17 @@ INVENTORY SUMMARY:
             return 'winter';
         }
 
+        // Cache weather conditions to prevent repeated calculations
+        let weatherCache = null;
+        let weatherCacheTime = 0;
+        
         function getWeatherConditions() {
+            const now = Date.now();
+            // Cache weather for 5 minutes to prevent repeated calculations
+            if (weatherCache && (now - weatherCacheTime) < 300000) {
+                return weatherCache;
+            }
+            
             // Simulate weather conditions (in a real app, this would come from a weather API)
             const currentHour = new Date().getHours();
             const month = new Date().getMonth();
@@ -2674,14 +2665,18 @@ INVENTORY SUMMARY:
             baseTemp += Math.sin(currentHour * 0.261) * 5; // Daily variation
             
             let humidity = 50 + Math.sin(currentHour * 0.261) * 20;
-            let rainfall = Math.random() * 100; // Random rainfall simulation
+            // Use deterministic "random" based on date to avoid UI freezing
+            let rainfall = ((currentHour * 17 + month * 31) % 100);
             
-            return {
+            weatherCache = {
                 temperature: Math.round(baseTemp),
                 humidity: Math.round(humidity),
                 rainfall: Math.round(rainfall),
                 season: getCurrentSeason()
             };
+            weatherCacheTime = now;
+            
+            return weatherCache;
         }
 
         // Weeding treatment functions
