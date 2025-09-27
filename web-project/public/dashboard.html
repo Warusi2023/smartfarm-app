@@ -2275,11 +2275,25 @@ INVENTORY SUMMARY:
             // Use setTimeout to prevent UI freezing
             setTimeout(() => {
                 try {
+                    // Debug: Log crop data
+                    console.log('Crop data:', crop);
+                    
+                    // Validate crop has required properties
+                    if (!crop.name) {
+                        throw new Error('Crop name is missing');
+                    }
+                    if (!crop.plantedDate) {
+                        throw new Error('Crop planted date is missing');
+                    }
+                    
                     const suggestions = generateAISuggestions(crop);
+                    console.log('Generated suggestions:', suggestions);
+                    
                     displayAISuggestionsModal(crop, suggestions);
                 } catch (error) {
                     console.error('Error generating AI suggestions:', error);
-                    alert('Error generating AI suggestions. Please try again.');
+                    console.error('Error stack:', error.stack);
+                    alert('Error generating AI suggestions: ' + error.message);
                 } finally {
                     // Restore brain icon
                     if (brainIcon) {
@@ -2431,10 +2445,12 @@ INVENTORY SUMMARY:
         }
 
         function generateAISuggestions(crop) {
+            console.log('Starting generateAISuggestions for crop:', crop.name);
             const suggestions = [];
             
-            // pH Level Analysis
-            if (crop.phLevel) {
+            try {
+                // pH Level Analysis
+                if (crop.phLevel) {
                 if (crop.phLevel < 5.5) {
                     suggestions.push({
                         type: 'critical',
@@ -2582,11 +2598,18 @@ INVENTORY SUMMARY:
                 });
             }
 
-            // Weather-based weeding recommendations
-            const weedingSuggestions = generateWeedingRecommendations(crop, daysSincePlanted);
-            suggestions.push(...weedingSuggestions);
-            
-            return suggestions;
+                // Weather-based weeding recommendations
+                console.log('Generating weeding recommendations...');
+                const weedingSuggestions = generateWeedingRecommendations(crop, daysSincePlanted);
+                suggestions.push(...weedingSuggestions);
+                
+                console.log('Final suggestions count:', suggestions.length);
+                return suggestions;
+            } catch (error) {
+                console.error('Error in generateAISuggestions:', error);
+                console.error('Error stack:', error.stack);
+                throw new Error('Failed to generate AI suggestions: ' + error.message);
+            }
         }
 
         // Weeding recommendation functions - Optimized for performance
