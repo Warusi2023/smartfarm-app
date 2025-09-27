@@ -9,6 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="js/currency-config.js"></script>
     <script src="js/currency-selector.js"></script>
+    <script src="js/competitive-features.js"></script>
     <style>
         :root {
             --primary-color: #2e7d32;
@@ -128,6 +129,195 @@
             position: relative;
             height: 300px;
             margin: 20px 0;
+        }
+
+        /* Competitive Features Styles */
+        .weather-current {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .weather-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .weather-temp {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .weather-desc {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .weather-details {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .weather-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .weather-item i {
+            color: #007bff;
+            width: 16px;
+        }
+
+        .weather-alerts {
+            margin-top: 10px;
+        }
+
+        .weather-alert {
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .financial-metrics {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        .metric-value {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #212529;
+        }
+
+        .metric-value.profit {
+            color: #28a745;
+        }
+
+        .metric-value.profit.negative {
+            color: #dc3545;
+        }
+
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .analytics-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+        }
+
+        .analytics-icon {
+            font-size: 2rem;
+            width: 50px;
+            text-align: center;
+        }
+
+        .analytics-content {
+            flex: 1;
+        }
+
+        .analytics-label {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-bottom: 5px;
+        }
+
+        .analytics-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #212529;
+            margin-bottom: 3px;
+        }
+
+        .analytics-trend {
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .trend-up {
+            color: #28a745;
+        }
+
+        .trend-down {
+            color: #dc3545;
+        }
+
+        .trend-stable {
+            color: #6c757d;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-item i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .activity-item span {
+            flex: 1;
+            font-size: 0.9rem;
+        }
+
+        .activity-item small {
+            color: #6c757d;
         }
 
         .navbar-custom {
@@ -287,8 +477,156 @@
                         </div>
                     </div>
 
-                    <!-- Charts Row -->
+                    <!-- Competitive Features Row -->
                     <div class="row">
+                        <div class="col-lg-4">
+                            <div class="dashboard-card">
+                                <h5 class="mb-3">🌤️ Weather & Alerts</h5>
+                                <div id="weatherWidget">
+                                    <div class="weather-current">
+                                        <div class="weather-icon">🌤️</div>
+                                        <div class="weather-temp">Loading...</div>
+                                        <div class="weather-desc">Fetching weather data...</div>
+                                    </div>
+                                    <div class="weather-details">
+                                        <div class="weather-item">
+                                            <i class="fas fa-tint"></i>
+                                            <span>Humidity: <span id="humidity">--</span>%</span>
+                                        </div>
+                                        <div class="weather-item">
+                                            <i class="fas fa-wind"></i>
+                                            <span>Wind: <span id="windSpeed">--</span> km/h</span>
+                                        </div>
+                                        <div class="weather-item">
+                                            <i class="fas fa-cloud-rain"></i>
+                                            <span>Rain: <span id="rainfall">--</span>mm</span>
+                                        </div>
+                                    </div>
+                                    <div class="weather-alerts" id="weatherAlerts">
+                                        <!-- Weather alerts will be populated here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="dashboard-card">
+                                <h5 class="mb-3">💰 Financial Overview</h5>
+                                <div class="financial-metrics">
+                                    <div class="metric-row">
+                                        <div class="metric-label">Monthly Revenue</div>
+                                        <div class="metric-value" id="monthlyRevenue">$0</div>
+                                    </div>
+                                    <div class="metric-row">
+                                        <div class="metric-label">Monthly Costs</div>
+                                        <div class="metric-value" id="monthlyCosts">$0</div>
+                                    </div>
+                                    <div class="metric-row">
+                                        <div class="metric-label">Net Profit</div>
+                                        <div class="metric-value profit" id="netProfit">$0</div>
+                                    </div>
+                                    <div class="metric-row">
+                                        <div class="metric-label">ROI This Month</div>
+                                        <div class="metric-value" id="monthlyROI">0%</div>
+                                    </div>
+                                </div>
+                                <button class="btn btn-sm btn-outline-primary mt-2" onclick="showFinancialDetails()">
+                                    <i class="fas fa-chart-line me-1"></i>View Details
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="dashboard-card">
+                                <h5 class="mb-3">🚀 Quick Actions</h5>
+                                <div class="d-grid gap-2">
+                                    <button class="btn btn-custom" onclick="showFarmManagement()">
+                                        <i class="fas fa-tractor me-2"></i>Farm Management
+                                    </button>
+                                    <button class="btn btn-custom" onclick="showCropManagement()">
+                                        <i class="fas fa-seedling me-2"></i>Crop Management
+                                    </button>
+                                    <button class="btn btn-custom" onclick="showLivestockManagement()">
+                                        <i class="fas fa-cow me-2"></i>Livestock Management
+                                    </button>
+                                    <button class="btn btn-custom" onclick="showMarketplace()">
+                                        <i class="fas fa-store me-2"></i>Marketplace
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Performance Analytics Row -->
+                    <div class="row mt-4">
+                        <div class="col-lg-6">
+                            <div class="dashboard-card">
+                                <h5 class="mb-3">📊 Performance Analytics</h5>
+                                <div class="analytics-grid">
+                                    <div class="analytics-item">
+                                        <div class="analytics-icon">🌱</div>
+                                        <div class="analytics-content">
+                                            <div class="analytics-label">Crop Yield Efficiency</div>
+                                            <div class="analytics-value" id="cropEfficiency">0%</div>
+                                            <div class="analytics-trend" id="cropTrend">--</div>
+                                        </div>
+                                    </div>
+                                    <div class="analytics-item">
+                                        <div class="analytics-icon">🐄</div>
+                                        <div class="analytics-content">
+                                            <div class="analytics-label">Livestock Health Score</div>
+                                            <div class="analytics-value" id="livestockHealth">0%</div>
+                                            <div class="analytics-trend" id="livestockTrend">--</div>
+                                        </div>
+                                    </div>
+                                    <div class="analytics-item">
+                                        <div class="analytics-icon">🌍</div>
+                                        <div class="analytics-content">
+                                            <div class="analytics-label">Sustainability Score</div>
+                                            <div class="analytics-value" id="sustainabilityScore">0%</div>
+                                            <div class="analytics-trend" id="sustainabilityTrend">--</div>
+                                        </div>
+                                    </div>
+                                    <div class="analytics-item">
+                                        <div class="analytics-icon">💰</div>
+                                        <div class="analytics-content">
+                                            <div class="analytics-label">Cost Efficiency</div>
+                                            <div class="analytics-value" id="costEfficiency">0%</div>
+                                            <div class="analytics-trend" id="costTrend">--</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="dashboard-card">
+                                <h5 class="mb-3">📈 Recent Activity</h5>
+                                <div class="activity-list">
+                                    <div class="activity-item">
+                                        <i class="fas fa-plus-circle text-success"></i>
+                                        <span>Added new crop: Tomatoes</span>
+                                        <small class="text-muted">2 hours ago</small>
+                                    </div>
+                                    <div class="activity-item">
+                                        <i class="fas fa-edit text-primary"></i>
+                                        <span>Updated livestock records</span>
+                                        <small class="text-muted">1 day ago</small>
+                                    </div>
+                                    <div class="activity-item">
+                                        <i class="fas fa-chart-line text-info"></i>
+                                        <span>Generated monthly report</span>
+                                        <small class="text-muted">3 days ago</small>
+                                    </div>
+                                    <div class="activity-item">
+                                        <i class="fas fa-cloud-rain text-warning"></i>
+                                        <span>Weather alert: Heavy rain expected</span>
+                                        <small class="text-muted">4 hours ago</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Row -->
+                    <div class="row mt-4">
                         <div class="col-lg-8">
                             <div class="dashboard-card">
                                 <h5 class="mb-3">Crop Yield Trend</h5>
@@ -972,12 +1310,355 @@
             initializeURLRouting();
         });
 
+        // Competitive Features Implementation
+        let weatherData = null;
+        let financialData = {
+            monthlyRevenue: 0,
+            monthlyCosts: 0,
+            netProfit: 0,
+            monthlyROI: 0
+        };
+
+        // Weather Integration
+        async function fetchWeatherData() {
+            try {
+                // Simulate weather API call (replace with real API)
+                const weather = {
+                    temperature: 25 + Math.random() * 10,
+                    humidity: 60 + Math.random() * 30,
+                    windSpeed: 5 + Math.random() * 15,
+                    rainfall: Math.random() * 20,
+                    condition: ['Sunny', 'Cloudy', 'Rainy', 'Partly Cloudy'][Math.floor(Math.random() * 4)],
+                    icon: ['☀️', '⛅', '🌧️', '🌤️'][Math.floor(Math.random() * 4)]
+                };
+                
+                weatherData = weather;
+                updateWeatherDisplay();
+                generateWeatherAlerts();
+                return weather;
+            } catch (error) {
+                console.error('Weather fetch error:', error);
+                return null;
+            }
+        }
+
+        function updateWeatherDisplay() {
+            if (!weatherData) return;
+            
+            document.querySelector('.weather-temp').textContent = `${Math.round(weatherData.temperature)}°C`;
+            document.querySelector('.weather-desc').textContent = weatherData.condition;
+            document.querySelector('.weather-icon').textContent = weatherData.icon;
+            document.getElementById('humidity').textContent = Math.round(weatherData.humidity);
+            document.getElementById('windSpeed').textContent = Math.round(weatherData.windSpeed);
+            document.getElementById('rainfall').textContent = weatherData.rainfall.toFixed(1);
+        }
+
+        function generateWeatherAlerts() {
+            if (!weatherData) return;
+            
+            const alertsContainer = document.getElementById('weatherAlerts');
+            alertsContainer.innerHTML = '';
+            
+            if (weatherData.rainfall > 15) {
+                alertsContainer.innerHTML += `
+                    <div class="weather-alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Heavy rain expected - Consider protecting crops
+                    </div>
+                `;
+            }
+            
+            if (weatherData.temperature > 35) {
+                alertsContainer.innerHTML += `
+                    <div class="weather-alert alert-warning">
+                        <i class="fas fa-thermometer-full me-2"></i>
+                        High temperature - Ensure adequate water supply
+                    </div>
+                `;
+            }
+            
+            if (weatherData.windSpeed > 20) {
+                alertsContainer.innerHTML += `
+                    <div class="weather-alert alert-info">
+                        <i class="fas fa-wind me-2"></i>
+                        Strong winds - Secure equipment and structures
+                    </div>
+                `;
+            }
+        }
+
+        // Financial Analytics
+        function calculateFinancialMetrics() {
+            const currentDate = new Date();
+            const currentMonth = currentDate.getMonth();
+            const currentYear = currentDate.getFullYear();
+            
+            // Calculate revenue from crops and livestock
+            let monthlyRevenue = 0;
+            let monthlyCosts = 0;
+            
+            // Simulate revenue from crops (harvested crops)
+            crops.forEach(crop => {
+                if (crop.status === 'Harvested') {
+                    // Simulate yield and price
+                    const yield = Math.random() * 1000; // kg
+                    const price = 2 + Math.random() * 5; // per kg
+                    monthlyRevenue += yield * price;
+                }
+            });
+            
+            // Simulate revenue from livestock
+            livestock.forEach(animal => {
+                if (animal.status === 'Healthy') {
+                    // Simulate production value
+                    monthlyRevenue += animal.quantity * (50 + Math.random() * 200);
+                }
+            });
+            
+            // Simulate costs (feed, fertilizer, equipment, etc.)
+            monthlyCosts = (crops.length * 100) + (livestock.length * 50) + (Math.random() * 1000);
+            
+            const netProfit = monthlyRevenue - monthlyCosts;
+            const monthlyROI = monthlyCosts > 0 ? (netProfit / monthlyCosts * 100) : 0;
+            
+            financialData = {
+                monthlyRevenue,
+                monthlyCosts,
+                netProfit,
+                monthlyROI
+            };
+            
+            updateFinancialDisplay();
+        }
+
+        function updateFinancialDisplay() {
+            const symbol = window.currencyManager ? window.currencyManager.getSymbol() : '$';
+            
+            document.getElementById('monthlyRevenue').textContent = 
+                `${symbol}${financialData.monthlyRevenue.toFixed(0)}`;
+            document.getElementById('monthlyCosts').textContent = 
+                `${symbol}${financialData.monthlyCosts.toFixed(0)}`;
+            
+            const profitElement = document.getElementById('netProfit');
+            const profitValue = financialData.netProfit.toFixed(0);
+            profitElement.textContent = `${symbol}${profitValue}`;
+            profitElement.className = `metric-value profit ${financialData.netProfit < 0 ? 'negative' : ''}`;
+            
+            document.getElementById('monthlyROI').textContent = 
+                `${financialData.monthlyROI.toFixed(1)}%`;
+        }
+
+        function showFinancialDetails() {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-chart-line me-2"></i>Financial Details
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>Revenue Breakdown</h6>
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between">
+                                            <span>Crop Sales:</span>
+                                            <span>${window.currencyManager ? window.currencyManager.getSymbol() : '$'}${(financialData.monthlyRevenue * 0.6).toFixed(0)}</span>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between">
+                                            <span>Livestock Sales:</span>
+                                            <span>${window.currencyManager ? window.currencyManager.getSymbol() : '$'}${(financialData.monthlyRevenue * 0.4).toFixed(0)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>Cost Breakdown</h6>
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between">
+                                            <span>Feed & Fertilizer:</span>
+                                            <span>${window.currencyManager ? window.currencyManager.getSymbol() : '$'}${(financialData.monthlyCosts * 0.5).toFixed(0)}</span>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between">
+                                            <span>Equipment & Maintenance:</span>
+                                            <span>${window.currencyManager ? window.currencyManager.getSymbol() : '$'}${(financialData.monthlyCosts * 0.3).toFixed(0)}</span>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between">
+                                            <span>Other Costs:</span>
+                                            <span>${window.currencyManager ? window.currencyManager.getSymbol() : '$'}${(financialData.monthlyCosts * 0.2).toFixed(0)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        // Performance Analytics
+        function calculatePerformanceMetrics() {
+            // Crop Yield Efficiency
+            const totalCrops = crops.length;
+            const harvestedCrops = crops.filter(c => c.status === 'Harvested').length;
+            const cropEfficiency = totalCrops > 0 ? (harvestedCrops / totalCrops * 100) : 0;
+            
+            // Livestock Health Score
+            const totalLivestock = livestock.length;
+            const healthyLivestock = livestock.filter(l => l.status === 'Healthy').length;
+            const livestockHealth = totalLivestock > 0 ? (healthyLivestock / totalLivestock * 100) : 0;
+            
+            // Sustainability Score (simulated based on practices)
+            const sustainabilityScore = 75 + Math.random() * 20; // 75-95%
+            
+            // Cost Efficiency
+            const costEfficiency = financialData.monthlyCosts > 0 ? 
+                (financialData.monthlyRevenue / financialData.monthlyCosts * 100) : 0;
+            
+            updatePerformanceDisplay({
+                cropEfficiency,
+                livestockHealth,
+                sustainabilityScore,
+                costEfficiency
+            });
+        }
+
+        function updatePerformanceDisplay(metrics) {
+            document.getElementById('cropEfficiency').textContent = `${metrics.cropEfficiency.toFixed(0)}%`;
+            document.getElementById('livestockHealth').textContent = `${metrics.livestockHealth.toFixed(0)}%`;
+            document.getElementById('sustainabilityScore').textContent = `${metrics.sustainabilityScore.toFixed(0)}%`;
+            document.getElementById('costEfficiency').textContent = `${metrics.costEfficiency.toFixed(0)}%`;
+            
+            // Add trend indicators
+            document.getElementById('cropTrend').textContent = '↗️ +5%';
+            document.getElementById('cropTrend').className = 'analytics-trend trend-up';
+            
+            document.getElementById('livestockTrend').textContent = '↗️ +3%';
+            document.getElementById('livestockTrend').className = 'analytics-trend trend-up';
+            
+            document.getElementById('sustainabilityTrend').textContent = '→ 0%';
+            document.getElementById('sustainabilityTrend').className = 'analytics-trend trend-stable';
+            
+            document.getElementById('costTrend').textContent = '↘️ -2%';
+            document.getElementById('costTrend').className = 'analytics-trend trend-down';
+        }
+
+        // Marketplace Feature
+        function showMarketplace() {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content">
+                        <div class="modal-header bg-success text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-store me-2"></i>SmartFarm Marketplace
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>🌾 Sell Your Products</h6>
+                                    <div class="marketplace-section">
+                                        <div class="sell-item">
+                                            <h6>Fresh Tomatoes</h6>
+                                            <p>Current Market Price: $3.50/kg</p>
+                                            <button class="btn btn-success btn-sm">List for Sale</button>
+                                        </div>
+                                        <div class="sell-item">
+                                            <h6>Organic Lettuce</h6>
+                                            <p>Current Market Price: $2.80/kg</p>
+                                            <button class="btn btn-success btn-sm">List for Sale</button>
+                                        </div>
+                                        <div class="sell-item">
+                                            <h6>Free-Range Eggs</h6>
+                                            <p>Current Market Price: $4.20/dozen</p>
+                                            <button class="btn btn-success btn-sm">List for Sale</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>🛒 Buy Farm Supplies</h6>
+                                    <div class="marketplace-section">
+                                        <div class="buy-item">
+                                            <h6>Organic Fertilizer</h6>
+                                            <p>Price: $25/bag</p>
+                                            <button class="btn btn-primary btn-sm">Add to Cart</button>
+                                        </div>
+                                        <div class="buy-item">
+                                            <h6>Livestock Feed</h6>
+                                            <p>Price: $45/bag</p>
+                                            <button class="btn btn-primary btn-sm">Add to Cart</button>
+                                        </div>
+                                        <div class="buy-item">
+                                            <h6>Seed Packets</h6>
+                                            <p>Price: $12/packet</p>
+                                            <button class="btn btn-primary btn-sm">Add to Cart</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        // Initialize Competitive Features
+        function initializeCompetitiveFeatures() {
+            fetchWeatherData();
+            calculateFinancialMetrics();
+            calculatePerformanceMetrics();
+            
+            // Update every 5 minutes
+            setInterval(() => {
+                fetchWeatherData();
+                calculateFinancialMetrics();
+                calculatePerformanceMetrics();
+            }, 300000);
+        }
+
         function initializeDashboard() {
             // Initialize charts
             initializeCharts();
             
             // Check authentication
             checkAuthentication();
+            
+            // Initialize competitive features
+            initializeCompetitiveFeatures();
             
             // Load initial data
             loadDashboardData();

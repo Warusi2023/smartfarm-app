@@ -1,0 +1,893 @@
+// SmartFarm Competitive Features
+// Advanced IoT, Sustainability, and Analytics Integration
+
+class SmartFarmCompetitive {
+    constructor() {
+        this.iotSensors = {};
+        this.sustainabilityMetrics = {};
+        this.blockchainData = [];
+        this.marketData = {};
+        this.predictionModels = {};
+        
+        this.initializeFeatures();
+    }
+
+    // IoT Sensor Integration
+    initializeIoT() {
+        console.log('🔧 Initializing IoT sensors...');
+        
+        // Simulate IoT sensor data
+        this.iotSensors = {
+            soilMoisture: {
+                value: 65 + Math.random() * 20,
+                unit: '%',
+                location: 'Field A',
+                timestamp: new Date(),
+                status: 'active'
+            },
+            temperature: {
+                value: 25 + Math.random() * 10,
+                unit: '°C',
+                location: 'Greenhouse 1',
+                timestamp: new Date(),
+                status: 'active'
+            },
+            humidity: {
+                value: 60 + Math.random() * 30,
+                unit: '%',
+                location: 'Greenhouse 1',
+                timestamp: new Date(),
+                status: 'active'
+            },
+            livestockHealth: {
+                heartRate: 70 + Math.random() * 20,
+                temperature: 38 + Math.random() * 2,
+                activity: 'normal',
+                location: 'Barn A',
+                timestamp: new Date(),
+                status: 'monitoring'
+            },
+            feedLevel: {
+                value: 80 + Math.random() * 15,
+                unit: '%',
+                location: 'Feed Storage',
+                timestamp: new Date(),
+                status: 'good'
+            }
+        };
+
+        this.displayIoTData();
+        this.setupIoTAlerts();
+    }
+
+    displayIoTData() {
+        // Create IoT dashboard if it doesn't exist
+        let iotContainer = document.getElementById('iotDashboard');
+        if (!iotContainer) {
+            iotContainer = document.createElement('div');
+            iotContainer.id = 'iotDashboard';
+            iotContainer.className = 'dashboard-card mt-4';
+            iotContainer.innerHTML = `
+                <h5 class="mb-3">🔧 IoT Sensor Network</h5>
+                <div class="row" id="iotSensorsContainer">
+                    <!-- IoT sensor data will be populated here -->
+                </div>
+            `;
+            document.getElementById('dashboardView').appendChild(iotContainer);
+        }
+
+        const container = document.getElementById('iotSensorsContainer');
+        container.innerHTML = '';
+
+        Object.entries(this.iotSensors).forEach(([sensorName, data]) => {
+            const sensorCard = document.createElement('div');
+            sensorCard.className = 'col-md-4 mb-3';
+            sensorCard.innerHTML = `
+                <div class="iot-sensor-card">
+                    <div class="sensor-header">
+                        <h6 class="sensor-title">${this.getSensorDisplayName(sensorName)}</h6>
+                        <span class="sensor-status status-${data.status}">${data.status}</span>
+                    </div>
+                    <div class="sensor-value">
+                        <span class="value">${data.value.toFixed(1)}</span>
+                        <span class="unit">${data.unit}</span>
+                    </div>
+                    <div class="sensor-location">
+                        <i class="fas fa-map-marker-alt"></i> ${data.location}
+                    </div>
+                    <div class="sensor-timestamp">
+                        <small class="text-muted">${new Date(data.timestamp).toLocaleTimeString()}</small>
+                    </div>
+                </div>
+            `;
+            container.appendChild(sensorCard);
+        });
+    }
+
+    getSensorDisplayName(sensorName) {
+        const names = {
+            soilMoisture: 'Soil Moisture',
+            temperature: 'Temperature',
+            humidity: 'Humidity',
+            livestockHealth: 'Livestock Health',
+            feedLevel: 'Feed Level'
+        };
+        return names[sensorName] || sensorName;
+    }
+
+    setupIoTAlerts() {
+        // Check for critical sensor readings
+        if (this.iotSensors.soilMoisture && this.iotSensors.soilMoisture.value < 30) {
+            this.showAlert('Low soil moisture detected! Irrigation needed.', 'warning');
+        }
+        
+        if (this.iotSensors.temperature && this.iotSensors.temperature.value > 35) {
+            this.showAlert('High temperature alert! Check ventilation.', 'danger');
+        }
+        
+        if (this.iotSensors.feedLevel && this.iotSensors.feedLevel.value < 20) {
+            this.showAlert('Feed levels low! Refill needed.', 'warning');
+        }
+    }
+
+    // Sustainability Tracking
+    initializeSustainability() {
+        console.log('🌍 Initializing sustainability tracking...');
+        
+        this.sustainabilityMetrics = {
+            carbonFootprint: {
+                current: 2.5 + Math.random() * 1.5,
+                target: 2.0,
+                unit: 'tons CO2/year'
+            },
+            waterUsage: {
+                current: 15000 + Math.random() * 5000,
+                target: 12000,
+                unit: 'liters/month'
+            },
+            energyConsumption: {
+                current: 800 + Math.random() * 200,
+                target: 600,
+                unit: 'kWh/month'
+            },
+            wasteReduction: {
+                current: 85 + Math.random() * 10,
+                target: 90,
+                unit: '% recycled'
+            },
+            biodiversity: {
+                current: 75 + Math.random() * 20,
+                target: 80,
+                unit: 'species count'
+            }
+        };
+
+        this.displaySustainabilityMetrics();
+        this.generateSustainabilityReport();
+    }
+
+    displaySustainabilityMetrics() {
+        let sustainabilityContainer = document.getElementById('sustainabilityDashboard');
+        if (!sustainabilityContainer) {
+            sustainabilityContainer = document.createElement('div');
+            sustainabilityContainer.id = 'sustainabilityDashboard';
+            sustainabilityContainer.className = 'dashboard-card mt-4';
+            sustainabilityContainer.innerHTML = `
+                <h5 class="mb-3">🌍 Sustainability Metrics</h5>
+                <div class="sustainability-grid" id="sustainabilityMetricsContainer">
+                    <!-- Sustainability metrics will be populated here -->
+                </div>
+            `;
+            document.getElementById('dashboardView').appendChild(sustainabilityContainer);
+        }
+
+        const container = document.getElementById('sustainabilityMetricsContainer');
+        container.innerHTML = '';
+
+        Object.entries(this.sustainabilityMetrics).forEach(([metricName, data]) => {
+            const progress = (data.current / data.target) * 100;
+            const status = progress <= 100 ? 'success' : 'warning';
+            
+            const metricCard = document.createElement('div');
+            metricCard.className = 'sustainability-metric';
+            metricCard.innerHTML = `
+                <div class="metric-header">
+                    <h6>${this.getMetricDisplayName(metricName)}</h6>
+                    <span class="metric-status status-${status}">
+                        ${progress <= 100 ? '✓' : '⚠'}
+                    </span>
+                </div>
+                <div class="metric-values">
+                    <div class="current-value">${data.current.toFixed(1)} ${data.unit}</div>
+                    <div class="target-value">Target: ${data.target} ${data.unit}</div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${Math.min(progress, 100)}%; background-color: ${progress <= 100 ? '#28a745' : '#ffc107'}"></div>
+                </div>
+            `;
+            container.appendChild(metricCard);
+        });
+    }
+
+    getMetricDisplayName(metricName) {
+        const names = {
+            carbonFootprint: 'Carbon Footprint',
+            waterUsage: 'Water Usage',
+            energyConsumption: 'Energy Consumption',
+            wasteReduction: 'Waste Reduction',
+            biodiversity: 'Biodiversity Score'
+        };
+        return names[metricName] || metricName;
+    }
+
+    // Blockchain Traceability
+    initializeBlockchain() {
+        console.log('⛓️ Initializing blockchain traceability...');
+        
+        // Simulate blockchain data for farm products
+        this.blockchainData = [
+            {
+                productId: 'PROD001',
+                productName: 'Organic Tomatoes',
+                batchNumber: 'BATCH2024001',
+                harvestDate: new Date('2024-01-15'),
+                location: 'Field A',
+                certifications: ['Organic', 'Non-GMO'],
+                blockchainHash: '0x1a2b3c4d5e6f7g8h9i0j',
+                status: 'verified'
+            },
+            {
+                productId: 'PROD002',
+                productName: 'Free-Range Eggs',
+                batchNumber: 'BATCH2024002',
+                harvestDate: new Date('2024-01-16'),
+                location: 'Barn A',
+                certifications: ['Free-Range', 'Organic'],
+                blockchainHash: '0x2b3c4d5e6f7g8h9i0j1k',
+                status: 'verified'
+            }
+        ];
+
+        this.displayBlockchainData();
+    }
+
+    displayBlockchainData() {
+        let blockchainContainer = document.getElementById('blockchainDashboard');
+        if (!blockchainContainer) {
+            blockchainContainer = document.createElement('div');
+            blockchainContainer.id = 'blockchainDashboard';
+            blockchainContainer.className = 'dashboard-card mt-4';
+            blockchainContainer.innerHTML = `
+                <h5 class="mb-3">⛓️ Product Traceability (Blockchain)</h5>
+                <div class="traceability-grid" id="blockchainContainer">
+                    <!-- Blockchain data will be populated here -->
+                </div>
+            `;
+            document.getElementById('dashboardView').appendChild(blockchainContainer);
+        }
+
+        const container = document.getElementById('blockchainContainer');
+        container.innerHTML = '';
+
+        this.blockchainData.forEach(product => {
+            const productCard = document.createElement('div');
+            productCard.className = 'traceability-card';
+            productCard.innerHTML = `
+                <div class="product-header">
+                    <h6>${product.productName}</h6>
+                    <span class="verification-badge verified">✓ Verified</span>
+                </div>
+                <div class="product-details">
+                    <div class="detail-row">
+                        <strong>Batch:</strong> ${product.batchNumber}
+                    </div>
+                    <div class="detail-row">
+                        <strong>Harvest Date:</strong> ${product.harvestDate.toLocaleDateString()}
+                    </div>
+                    <div class="detail-row">
+                        <strong>Location:</strong> ${product.location}
+                    </div>
+                    <div class="detail-row">
+                        <strong>Certifications:</strong> ${product.certifications.join(', ')}
+                    </div>
+                    <div class="detail-row">
+                        <strong>Blockchain Hash:</strong> 
+                        <code class="hash-code">${product.blockchainHash.substring(0, 10)}...</code>
+                    </div>
+                </div>
+                <div class="product-actions">
+                    <button class="btn btn-sm btn-outline-primary" onclick="smartFarm.viewFullTraceability('${product.productId}')">
+                        View Full Traceability
+                    </button>
+                </div>
+            `;
+            container.appendChild(productCard);
+        });
+    }
+
+    viewFullTraceability(productId) {
+        const product = this.blockchainData.find(p => p.productId === productId);
+        if (!product) return;
+
+        const modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.innerHTML = `
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-info text-white">
+                        <h5 class="modal-title">
+                            <i class="fas fa-search me-2"></i>Full Product Traceability
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="traceability-timeline">
+                            <h6>${product.productName} - Complete Journey</h6>
+                            <div class="timeline-item">
+                                <div class="timeline-marker"></div>
+                                <div class="timeline-content">
+                                    <h6>Seed Planting</h6>
+                                    <p>Date: ${new Date(product.harvestDate.getTime() - 90 * 24 * 60 * 60 * 1000).toLocaleDateString()}</p>
+                                    <p>Location: ${product.location}</p>
+                                    <p>Hash: ${product.blockchainHash}</p>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-marker"></div>
+                                <div class="timeline-content">
+                                    <h6>Growth Monitoring</h6>
+                                    <p>pH Level: 6.8</p>
+                                    <p>Soil Moisture: 65%</p>
+                                    <p>Fertilizer Applied: Organic Compost</p>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-marker"></div>
+                                <div class="timeline-content">
+                                    <h6>Harvest</h6>
+                                    <p>Date: ${product.harvestDate.toLocaleDateString()}</p>
+                                    <p>Quantity: 500kg</p>
+                                    <p>Quality Grade: A</p>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-marker"></div>
+                                <div class="timeline-content">
+                                    <h6>Certification</h6>
+                                    <p>Certifications: ${product.certifications.join(', ')}</p>
+                                    <p>Inspector: John Smith</p>
+                                    <p>Certificate: CERT-${product.productId}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" onclick="smartFarm.generateQRCode('${product.productId}')">
+                            Generate QR Code
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        const bsModal = new bootstrap.Modal(modal);
+        bsModal.show();
+        
+        modal.addEventListener('hidden.bs.modal', () => {
+            document.body.removeChild(modal);
+        });
+    }
+
+    generateQRCode(productId) {
+        // Simulate QR code generation
+        alert(`QR Code generated for product ${productId}\nScan to view full traceability information!`);
+    }
+
+    // Market Intelligence
+    initializeMarketIntelligence() {
+        console.log('📈 Initializing market intelligence...');
+        
+        this.marketData = {
+            currentPrices: {
+                tomatoes: 3.50 + Math.random() * 1.0,
+                lettuce: 2.80 + Math.random() * 0.5,
+                eggs: 4.20 + Math.random() * 0.8,
+                milk: 2.10 + Math.random() * 0.3
+            },
+            trends: {
+                tomatoes: 'rising',
+                lettuce: 'stable',
+                eggs: 'falling',
+                milk: 'rising'
+            },
+            demandForecast: {
+                tomatoes: 'high',
+                lettuce: 'medium',
+                eggs: 'medium',
+                milk: 'high'
+            }
+        };
+
+        this.displayMarketData();
+    }
+
+    displayMarketData() {
+        let marketContainer = document.getElementById('marketIntelligence');
+        if (!marketContainer) {
+            marketContainer = document.createElement('div');
+            marketContainer.id = 'marketIntelligence';
+            marketContainer.className = 'dashboard-card mt-4';
+            marketContainer.innerHTML = `
+                <h5 class="mb-3">📈 Market Intelligence</h5>
+                <div class="market-grid" id="marketDataContainer">
+                    <!-- Market data will be populated here -->
+                </div>
+            `;
+            document.getElementById('dashboardView').appendChild(marketContainer);
+        }
+
+        const container = document.getElementById('marketDataContainer');
+        container.innerHTML = '';
+
+        Object.entries(this.marketData.currentPrices).forEach(([product, price]) => {
+            const trend = this.marketData.trends[product];
+            const demand = this.marketData.demandForecast[product];
+            
+            const trendIcon = trend === 'rising' ? '↗️' : trend === 'falling' ? '↘️' : '→';
+            const trendColor = trend === 'rising' ? 'success' : trend === 'falling' ? 'danger' : 'secondary';
+            
+            const marketCard = document.createElement('div');
+            marketCard.className = 'market-card';
+            marketCard.innerHTML = `
+                <div class="market-header">
+                    <h6>${product.charAt(0).toUpperCase() + product.slice(1)}</h6>
+                    <span class="trend-indicator trend-${trendColor}">${trendIcon}</span>
+                </div>
+                <div class="market-price">$${price.toFixed(2)}/kg</div>
+                <div class="market-details">
+                    <div class="demand-forecast">
+                        <strong>Demand:</strong> 
+                        <span class="demand-${demand}">${demand}</span>
+                    </div>
+                    <div class="recommendation">
+                        ${this.getMarketRecommendation(product, trend, demand)}
+                    </div>
+                </div>
+            `;
+            container.appendChild(marketCard);
+        });
+    }
+
+    getMarketRecommendation(product, trend, demand) {
+        if (trend === 'rising' && demand === 'high') {
+            return '<span class="recommendation-buy">💡 Consider increasing production</span>';
+        } else if (trend === 'falling') {
+            return '<span class="recommendation-sell">⚠️ Consider selling soon</span>';
+        } else {
+            return '<span class="recommendation-hold">📊 Monitor market closely</span>';
+        }
+    }
+
+    // Predictive Analytics
+    initializePredictiveAnalytics() {
+        console.log('🔮 Initializing predictive analytics...');
+        
+        // Simulate ML model predictions
+        this.predictionModels = {
+            yieldPrediction: {
+                nextMonth: 1200 + Math.random() * 300,
+                confidence: 85 + Math.random() * 10,
+                factors: ['weather', 'soil_quality', 'pest_control']
+            },
+            diseaseRisk: {
+                probability: 15 + Math.random() * 20,
+                recommendedAction: 'Apply preventive fungicide',
+                urgency: 'medium'
+            },
+            marketTiming: {
+                bestSellDate: new Date(Date.now() + Math.random() * 30 * 24 * 60 * 60 * 1000),
+                expectedPrice: 3.80 + Math.random() * 0.5,
+                confidence: 75 + Math.random() * 15
+            }
+        };
+
+        this.displayPredictions();
+    }
+
+    displayPredictions() {
+        let predictionsContainer = document.getElementById('predictiveAnalytics');
+        if (!predictionsContainer) {
+            predictionsContainer = document.createElement('div');
+            predictionsContainer.id = 'predictiveAnalytics';
+            predictionsContainer.className = 'dashboard-card mt-4';
+            predictionsContainer.innerHTML = `
+                <h5 class="mb-3">🔮 AI Predictions</h5>
+                <div class="predictions-grid" id="predictionsContainer">
+                    <!-- Predictions will be populated here -->
+                </div>
+            `;
+            document.getElementById('dashboardView').appendChild(predictionsContainer);
+        }
+
+        const container = document.getElementById('predictionsContainer');
+        container.innerHTML = '';
+
+        // Yield Prediction
+        const yieldCard = document.createElement('div');
+        yieldCard.className = 'prediction-card';
+        yieldCard.innerHTML = `
+            <div class="prediction-header">
+                <h6>🌾 Yield Prediction</h6>
+                <span class="confidence-badge">${this.predictionModels.yieldPrediction.confidence.toFixed(0)}% confidence</span>
+            </div>
+            <div class="prediction-value">
+                ${this.predictionModels.yieldPrediction.nextMonth.toFixed(0)} kg
+            </div>
+            <div class="prediction-factors">
+                <strong>Based on:</strong> ${this.predictionModels.yieldPrediction.factors.join(', ')}
+            </div>
+        `;
+        container.appendChild(yieldCard);
+
+        // Disease Risk
+        const diseaseCard = document.createElement('div');
+        diseaseCard.className = 'prediction-card';
+        diseaseCard.innerHTML = `
+            <div class="prediction-header">
+                <h6>🦠 Disease Risk Assessment</h6>
+                <span class="risk-badge risk-${this.predictionModels.diseaseRisk.urgency}">${this.predictionModels.diseaseRisk.urgency}</span>
+            </div>
+            <div class="prediction-value">
+                ${this.predictionModels.diseaseRisk.probability.toFixed(0)}% risk
+            </div>
+            <div class="prediction-action">
+                <strong>Recommended:</strong> ${this.predictionModels.diseaseRisk.recommendedAction}
+            </div>
+        `;
+        container.appendChild(diseaseCard);
+
+        // Market Timing
+        const marketCard = document.createElement('div');
+        marketCard.className = 'prediction-card';
+        marketCard.innerHTML = `
+            <div class="prediction-header">
+                <h6>📈 Optimal Market Timing</h6>
+                <span class="confidence-badge">${this.predictionModels.marketTiming.confidence.toFixed(0)}% confidence</span>
+            </div>
+            <div class="prediction-value">
+                $${this.predictionModels.marketTiming.expectedPrice.toFixed(2)}/kg
+            </div>
+            <div class="prediction-timing">
+                <strong>Best sell date:</strong> ${this.predictionModels.marketTiming.bestSellDate.toLocaleDateString()}
+            </div>
+        `;
+        container.appendChild(marketCard);
+    }
+
+    // Utility Functions
+    showAlert(message, type) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        const container = document.getElementById('dashboardView');
+        container.insertBefore(alertDiv, container.firstChild);
+        
+        // Auto-dismiss after 5 seconds
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.remove();
+            }
+        }, 5000);
+    }
+
+    generateSustainabilityReport() {
+        console.log('📊 Generating sustainability report...');
+        // This would generate a comprehensive sustainability report
+    }
+
+    // Initialize all competitive features
+    initializeFeatures() {
+        console.log('🚀 Initializing SmartFarm competitive features...');
+        
+        setTimeout(() => {
+            this.initializeIoT();
+        }, 1000);
+        
+        setTimeout(() => {
+            this.initializeSustainability();
+        }, 2000);
+        
+        setTimeout(() => {
+            this.initializeBlockchain();
+        }, 3000);
+        
+        setTimeout(() => {
+            this.initializeMarketIntelligence();
+        }, 4000);
+        
+        setTimeout(() => {
+            this.initializePredictiveAnalytics();
+        }, 5000);
+    }
+}
+
+// Add CSS styles for competitive features
+const competitiveStyles = `
+    <style>
+        .iot-sensor-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .sensor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .sensor-title {
+            margin: 0;
+            font-size: 0.9rem;
+            color: #495057;
+        }
+
+        .sensor-status {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+
+        .status-active { background: #d4edda; color: #155724; }
+        .status-monitoring { background: #d1ecf1; color: #0c5460; }
+        .status-good { background: #d4edda; color: #155724; }
+
+        .sensor-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 5px;
+        }
+
+        .sensor-value .unit {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .sustainability-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .sustainability-metric {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .metric-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .metric-status {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+
+        .status-success { background: #d4edda; color: #155724; }
+        .status-warning { background: #fff3cd; color: #856404; }
+
+        .current-value {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .target-value {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .traceability-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+        }
+
+        .traceability-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .product-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .verification-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .detail-row {
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .hash-code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.8rem;
+        }
+
+        .market-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .market-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .market-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .trend-indicator {
+            font-size: 1.2rem;
+        }
+
+        .market-price {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #28a745;
+            margin-bottom: 10px;
+        }
+
+        .demand-high { color: #dc3545; font-weight: bold; }
+        .demand-medium { color: #ffc107; font-weight: bold; }
+        .demand-low { color: #6c757d; }
+
+        .recommendation-buy { color: #28a745; }
+        .recommendation-sell { color: #dc3545; }
+        .recommendation-hold { color: #6c757d; }
+
+        .predictions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .prediction-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .prediction-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .confidence-badge, .risk-badge {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+
+        .confidence-badge { background: #d1ecf1; color: #0c5460; }
+        .risk-high { background: #f8d7da; color: #721c24; }
+        .risk-medium { background: #fff3cd; color: #856404; }
+        .risk-low { background: #d4edda; color: #155724; }
+
+        .prediction-value {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+
+        .traceability-timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .timeline-marker {
+            position: absolute;
+            left: -25px;
+            top: 5px;
+            width: 10px;
+            height: 10px;
+            background: #007bff;
+            border-radius: 50%;
+        }
+
+        .timeline-item:not(:last-child) .timeline-marker::after {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 4px;
+            width: 2px;
+            height: 30px;
+            background: #dee2e6;
+        }
+
+        .timeline-content {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+        }
+
+        .timeline-content h6 {
+            margin-bottom: 10px;
+            color: #007bff;
+        }
+
+        .timeline-content p {
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+    </style>
+`;
+
+// Inject styles into the page
+document.head.insertAdjacentHTML('beforeend', competitiveStyles);
+
+// Initialize SmartFarm competitive features
+const smartFarm = new SmartFarmCompetitive();
