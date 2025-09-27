@@ -428,30 +428,666 @@ class PesticideManagement {
                         exportTolerance: 'Generally recognized as safe'
                     }
                 }
+            },
+            // ADDITIONAL INSECTICIDES
+            {
+                name: 'Imidacloprid',
+                category: 'Insecticide',
+                type: 'Neonicotinoid',
+                effectiveness: 90,
+                safetyLevel: 'Moderate',
+                applicationRate: '0.5-1 L/ha',
+                costPerLiter: 55.00,
+                environmentalImpact: 'High',
+                description: 'Systemic neonicotinoid with long-lasting residual activity',
+                preHarvestInterval: 21,
+                weatherRestrictions: ['No rain for 6 hours', 'Temperature below 30°C'],
+                knapsackMixtures: {
+                    '16L': {
+                        concentration: '0.05%',
+                        chemicalAmount: 8,
+                        waterAmount: 15992,
+                        coverageArea: 0.15,
+                        sprayTime: 40,
+                        instructions: [
+                            'Fill sprayer with 15.992L clean water',
+                            'Add 8ml Imidacloprid concentrate',
+                            'Mix gently for 1 minute',
+                            'Apply at 110L/ha rate',
+                            'Cover 0.15 hectares per tank'
+                        ]
+                    },
+                    '20L': {
+                        concentration: '0.05%',
+                        chemicalAmount: 10,
+                        waterAmount: 19990,
+                        coverageArea: 0.18,
+                        sprayTime: 45,
+                        instructions: [
+                            'Fill sprayer with 19.99L clean water',
+                            'Add 10ml Imidacloprid concentrate',
+                            'Mix gently for 1 minute',
+                            'Apply at 110L/ha rate',
+                            'Cover 0.18 hectares per tank'
+                        ]
+                    }
+                },
+                safetyGuidelines: [
+                    'Wear protective clothing',
+                    'Use chemical-resistant gloves',
+                    'Avoid contact with beneficial insects',
+                    'Do not apply near flowering crops',
+                    'Clean equipment thoroughly'
+                ],
+                chemicalDetails: {
+                    chemicalName: 'N-{1-[(6-chloro-3-pyridyl)methyl]-4,5-dihydroimidazol-2-yl}nitramide',
+                    molecularFormula: 'C9H10ClN5O2',
+                    molecularWeight: '255.66 g/mol',
+                    casNumber: '138261-41-3',
+                    physicalState: 'Solid (crystalline)',
+                    color: 'White to off-white',
+                    odor: 'Odorless',
+                    solubility: 'Slightly soluble in water (0.51 g/L at 20°C)',
+                    phLevel: '6.0-8.0',
+                    density: '1.5 g/cm³',
+                    boilingPoint: 'Decomposes before boiling',
+                    meltingPoint: '144°C',
+                    vaporPressure: '1.3 × 10⁻⁹ mmHg at 25°C',
+                    halfLife: 'Soil: 40-200 days, Water: 30-60 days',
+                    modeOfAction: 'Nicotinic acetylcholine receptor agonist',
+                    targetPests: [
+                        'Aphids',
+                        'Whiteflies',
+                        'Thrips',
+                        'Leafhoppers',
+                        'Beetles'
+                    ],
+                    resistantPests: [
+                        'Imidacloprid-resistant aphids',
+                        'Imidacloprid-resistant whiteflies'
+                    ],
+                    applicationTiming: [
+                        'Early morning application',
+                        'Evening application',
+                        'Systemic application',
+                        'Preventive treatment'
+                    ],
+                    toxicity: {
+                        acuteOral: 'LD50 450 mg/kg (moderately toxic)',
+                        acuteDermal: 'LD50 > 2000 mg/kg (slightly toxic)',
+                        acuteInhalation: 'LC50 > 0.69 mg/L (moderately toxic)',
+                        eyeIrritation: 'Mild irritant',
+                        skinIrritation: 'Mild irritant'
+                    },
+                    ecotoxicity: {
+                        fish: 'LC50 0.1-10 mg/L (highly toxic)',
+                        birds: 'LD50 10-100 mg/kg (highly toxic)',
+                        bees: 'LD50 0.003-0.1 μg/bee (highly toxic)',
+                        earthworms: 'LC50 1-10 mg/kg (highly toxic)'
+                    },
+                    regulatoryStatus: {
+                        epaRegistration: 'Approved for agricultural use',
+                        reEntryInterval: '12-24 hours',
+                        workerProtectionStandard: 'Category II (Warning)',
+                        restrictedUse: 'No',
+                        exportTolerance: 'Varies by country'
+                    }
+                }
+            },
+            {
+                name: 'Spinosad',
+                category: 'Insecticide',
+                type: 'Natural',
+                effectiveness: 85,
+                safetyLevel: 'High',
+                applicationRate: '0.5-1 L/ha',
+                costPerLiter: 40.00,
+                environmentalImpact: 'Low',
+                description: 'Natural insecticide derived from soil bacterium',
+                preHarvestInterval: 1,
+                weatherRestrictions: ['No rain for 4 hours', 'Low wind conditions'],
+                knapsackMixtures: {
+                    '16L': {
+                        concentration: '0.1%',
+                        chemicalAmount: 16,
+                        waterAmount: 15984,
+                        coverageArea: 0.12,
+                        sprayTime: 35,
+                        instructions: [
+                            'Fill sprayer with 15.984L clean water',
+                            'Add 16ml Spinosad concentrate',
+                            'Mix gently for 1 minute',
+                            'Apply at 130L/ha rate',
+                            'Cover 0.12 hectares per tank'
+                        ]
+                    },
+                    '20L': {
+                        concentration: '0.1%',
+                        chemicalAmount: 20,
+                        waterAmount: 19980,
+                        coverageArea: 0.15,
+                        sprayTime: 40,
+                        instructions: [
+                            'Fill sprayer with 19.98L clean water',
+                            'Add 20ml Spinosad concentrate',
+                            'Mix gently for 1 minute',
+                            'Apply at 130L/ha rate',
+                            'Cover 0.15 hectares per tank'
+                        ]
+                    }
+                },
+                safetyGuidelines: [
+                    'Wear protective clothing',
+                    'Use chemical-resistant gloves',
+                    'Safe for beneficial insects',
+                    'Do not apply in windy conditions',
+                    'Clean equipment thoroughly'
+                ],
+                chemicalDetails: {
+                    chemicalName: 'Mixture of Spinosyn A and Spinosyn D',
+                    molecularFormula: 'C41H65NO10 (Spinosyn A), C42H67NO10 (Spinosyn D)',
+                    molecularWeight: '731.97 g/mol (Spinosyn A), 746.00 g/mol (Spinosyn D)',
+                    casNumber: '131929-60-7',
+                    physicalState: 'Solid (powder)',
+                    color: 'White to light tan',
+                    odor: 'Odorless',
+                    solubility: 'Slightly soluble in water (235 mg/L at 20°C)',
+                    phLevel: '7.0-8.0',
+                    density: '1.2 g/cm³',
+                    boilingPoint: 'Decomposes before boiling',
+                    meltingPoint: '84-99°C',
+                    vaporPressure: '1.3 × 10⁻¹³ mmHg at 25°C',
+                    halfLife: 'Soil: 9-17 days, Water: 30-60 days',
+                    modeOfAction: 'Nicotinic acetylcholine receptor agonist',
+                    targetPests: [
+                        'Caterpillars',
+                        'Thrips',
+                        'Leafminers',
+                        'Beetles',
+                        'Fruit flies'
+                    ],
+                    resistantPests: [
+                        'Spinosad-resistant thrips'
+                    ],
+                    applicationTiming: [
+                        'Early morning application',
+                        'Evening application',
+                        'When pests first appear',
+                        'Preventive application'
+                    ],
+                    toxicity: {
+                        acuteOral: 'LD50 > 5000 mg/kg (practically non-toxic)',
+                        acuteDermal: 'LD50 > 2000 mg/kg (slightly toxic)',
+                        acuteInhalation: 'LC50 > 5.1 mg/L (slightly toxic)',
+                        eyeIrritation: 'Mild irritant',
+                        skinIrritation: 'Mild irritant'
+                    },
+                    ecotoxicity: {
+                        fish: 'LC50 10-100 mg/L (moderately toxic)',
+                        birds: 'LD50 > 2000 mg/kg (practically non-toxic)',
+                        bees: 'LD50 0.002-0.1 μg/bee (highly toxic)',
+                        earthworms: 'LC50 > 1000 mg/kg (practically non-toxic)'
+                    },
+                    regulatoryStatus: {
+                        epaRegistration: 'Approved for agricultural use',
+                        reEntryInterval: '4 hours',
+                        workerProtectionStandard: 'Category III (Caution)',
+                        restrictedUse: 'No',
+                        exportTolerance: 'Varies by country'
+                    }
+                }
+            },
+            {
+                name: 'Bacillus thuringiensis',
+                category: 'Insecticide',
+                type: 'Biological',
+                effectiveness: 80,
+                safetyLevel: 'Very High',
+                applicationRate: '1-2 L/ha',
+                costPerLiter: 25.00,
+                environmentalImpact: 'Very Low',
+                description: 'Biological insecticide containing beneficial bacteria',
+                preHarvestInterval: 0,
+                weatherRestrictions: ['Apply in morning or evening', 'Avoid direct sunlight'],
+                knapsackMixtures: {
+                    '16L': {
+                        concentration: '2.0%',
+                        chemicalAmount: 320,
+                        waterAmount: 15680,
+                        coverageArea: 0.08,
+                        sprayTime: 30,
+                        instructions: [
+                            'Fill sprayer with 15.68L clean water',
+                            'Add 320ml Bt concentrate',
+                            'Mix gently for 1 minute',
+                            'Apply at 200L/ha rate',
+                            'Cover 0.08 hectares per tank'
+                        ]
+                    },
+                    '20L': {
+                        concentration: '2.0%',
+                        chemicalAmount: 400,
+                        waterAmount: 19600,
+                        coverageArea: 0.1,
+                        sprayTime: 35,
+                        instructions: [
+                            'Fill sprayer with 19.6L clean water',
+                            'Add 400ml Bt concentrate',
+                            'Mix gently for 1 minute',
+                            'Apply at 200L/ha rate',
+                            'Cover 0.1 hectares per tank'
+                        ]
+                    }
+                },
+                safetyGuidelines: [
+                    'Minimal protective equipment needed',
+                    'Safe for beneficial insects',
+                    'No pre-harvest interval',
+                    'Environmentally friendly',
+                    'Safe for organic farming'
+                ],
+                chemicalDetails: {
+                    chemicalName: 'Bacillus thuringiensis var. kurstaki',
+                    molecularFormula: 'Not applicable (biological organism)',
+                    molecularWeight: 'Not applicable',
+                    casNumber: '68038-71-1',
+                    physicalState: 'Liquid or powder',
+                    color: 'Light brown to tan',
+                    odor: 'Slight fermentation odor',
+                    solubility: 'Suspends in water',
+                    phLevel: '6.5-7.5',
+                    density: '1.0 g/cm³',
+                    boilingPoint: 'Not applicable',
+                    meltingPoint: 'Not applicable',
+                    vaporPressure: 'Negligible',
+                    halfLife: 'Soil: 7-14 days, Water: 1-7 days',
+                    modeOfAction: 'Bacterial toxin (Cry proteins)',
+                    targetPests: [
+                        'Caterpillars',
+                        'Larvae',
+                        'Moth larvae',
+                        'Butterfly larvae'
+                    ],
+                    resistantPests: [
+                        'Bt-resistant caterpillars (some populations)'
+                    ],
+                    applicationTiming: [
+                        'Early morning application',
+                        'Evening application',
+                        'When larvae are young',
+                        'Preventive application'
+                    ],
+                    toxicity: {
+                        acuteOral: 'LD50 > 5000 mg/kg (practically non-toxic)',
+                        acuteDermal: 'LD50 > 2000 mg/kg (slightly toxic)',
+                        acuteInhalation: 'LC50 > 200 mg/m³ (slightly toxic)',
+                        eyeIrritation: 'Mild irritant',
+                        skinIrritation: 'Mild irritant'
+                    },
+                    ecotoxicity: {
+                        fish: 'LC50 > 100 mg/L (practically non-toxic)',
+                        birds: 'LD50 > 2000 mg/kg (practically non-toxic)',
+                        bees: 'LD50 > 100 μg/bee (practically non-toxic)',
+                        earthworms: 'LC50 > 1000 mg/kg (practically non-toxic)'
+                    },
+                    regulatoryStatus: {
+                        epaRegistration: 'Exempt from registration',
+                        reEntryInterval: '0 hours',
+                        workerProtectionStandard: 'Category IV (Caution)',
+                        restrictedUse: 'No',
+                        exportTolerance: 'Generally recognized as safe'
+                    }
+                }
+            },
+            // FUNGICIDES
+            {
+                name: 'Mancozeb',
+                category: 'Fungicide',
+                type: 'Dithiocarbamate',
+                effectiveness: 85,
+                safetyLevel: 'Moderate',
+                applicationRate: '2-4 L/ha',
+                costPerLiter: 30.00,
+                environmentalImpact: 'Medium',
+                description: 'Protectant fungicide for broad-spectrum disease control',
+                preHarvestInterval: 14,
+                weatherRestrictions: ['No rain for 6 hours', 'Temperature below 32°C'],
+                knapsackMixtures: {
+                    '16L': {
+                        concentration: '0.2%',
+                        chemicalAmount: 32,
+                        waterAmount: 15968,
+                        coverageArea: 0.08,
+                        sprayTime: 30,
+                        instructions: [
+                            'Fill sprayer with 15.968L clean water',
+                            'Add 32ml Mancozeb concentrate',
+                            'Mix thoroughly for 2 minutes',
+                            'Apply at 200L/ha rate',
+                            'Cover 0.08 hectares per tank'
+                        ]
+                    },
+                    '20L': {
+                        concentration: '0.2%',
+                        chemicalAmount: 40,
+                        waterAmount: 19960,
+                        coverageArea: 0.1,
+                        sprayTime: 35,
+                        instructions: [
+                            'Fill sprayer with 19.96L clean water',
+                            'Add 40ml Mancozeb concentrate',
+                            'Mix thoroughly for 2 minutes',
+                            'Apply at 200L/ha rate',
+                            'Cover 0.1 hectares per tank'
+                        ]
+                    }
+                },
+                safetyGuidelines: [
+                    'Wear protective clothing',
+                    'Use chemical-resistant gloves',
+                    'Avoid skin and eye contact',
+                    'Do not eat, drink or smoke during application',
+                    'Wash hands thoroughly after use'
+                ],
+                chemicalDetails: {
+                    chemicalName: 'Manganese ethylenebis(dithiocarbamate) (polymeric) complex with zinc salt',
+                    molecularFormula: '[C4H6MnN2S4]x[C4H6ZnN2S4]y',
+                    molecularWeight: 'Variable (polymer)',
+                    casNumber: '8018-01-7',
+                    physicalState: 'Solid (powder)',
+                    color: 'Yellow to orange',
+                    odor: 'Slight sulfur odor',
+                    solubility: 'Slightly soluble in water (6-10 mg/L at 20°C)',
+                    phLevel: '6.0-8.0',
+                    density: '1.8 g/cm³',
+                    boilingPoint: 'Decomposes before boiling',
+                    meltingPoint: 'Decomposes at 150°C',
+                    vaporPressure: 'Negligible',
+                    halfLife: 'Soil: 1-7 days, Water: 1-3 days',
+                    modeOfAction: 'Multi-site inhibitor (disrupts multiple enzyme systems)',
+                    targetPests: [
+                        'Powdery mildew',
+                        'Downy mildew',
+                        'Leaf spot',
+                        'Rust',
+                        'Blight'
+                    ],
+                    resistantPests: [
+                        'Some resistant fungal strains'
+                    ],
+                    applicationTiming: [
+                        'Preventive application',
+                        'Early disease stage',
+                        'Weather-based timing',
+                        'Regular intervals'
+                    ],
+                    toxicity: {
+                        acuteOral: 'LD50 > 5000 mg/kg (practically non-toxic)',
+                        acuteDermal: 'LD50 > 2000 mg/kg (slightly toxic)',
+                        acuteInhalation: 'LC50 > 5.1 mg/L (slightly toxic)',
+                        eyeIrritation: 'Mild irritant',
+                        skinIrritation: 'Mild irritant'
+                    },
+                    ecotoxicity: {
+                        fish: 'LC50 1-10 mg/L (highly toxic)',
+                        birds: 'LD50 > 2000 mg/kg (practically non-toxic)',
+                        bees: 'LD50 > 100 μg/bee (practically non-toxic)',
+                        earthworms: 'LC50 > 1000 mg/kg (practically non-toxic)'
+                    },
+                    regulatoryStatus: {
+                        epaRegistration: 'Approved for agricultural use',
+                        reEntryInterval: '24 hours',
+                        workerProtectionStandard: 'Category III (Caution)',
+                        restrictedUse: 'No',
+                        exportTolerance: 'Varies by country'
+                    }
+                }
+            },
+            {
+                name: 'Propiconazole',
+                category: 'Fungicide',
+                type: 'Triazole',
+                effectiveness: 90,
+                safetyLevel: 'Moderate',
+                applicationRate: '0.5-1 L/ha',
+                costPerLiter: 50.00,
+                environmentalImpact: 'Medium',
+                description: 'Systemic fungicide for curative and protective control',
+                preHarvestInterval: 21,
+                weatherRestrictions: ['No rain for 4 hours', 'Temperature below 30°C'],
+                knapsackMixtures: {
+                    '16L': {
+                        concentration: '0.1%',
+                        chemicalAmount: 16,
+                        waterAmount: 15984,
+                        coverageArea: 0.15,
+                        sprayTime: 40,
+                        instructions: [
+                            'Fill sprayer with 15.984L clean water',
+                            'Add 16ml Propiconazole concentrate',
+                            'Mix thoroughly for 2 minutes',
+                            'Apply at 110L/ha rate',
+                            'Cover 0.15 hectares per tank'
+                        ]
+                    },
+                    '20L': {
+                        concentration: '0.1%',
+                        chemicalAmount: 20,
+                        waterAmount: 19980,
+                        coverageArea: 0.18,
+                        sprayTime: 45,
+                        instructions: [
+                            'Fill sprayer with 19.98L clean water',
+                            'Add 20ml Propiconazole concentrate',
+                            'Mix thoroughly for 2 minutes',
+                            'Apply at 110L/ha rate',
+                            'Cover 0.18 hectares per tank'
+                        ]
+                    }
+                },
+                safetyGuidelines: [
+                    'Wear protective clothing',
+                    'Use chemical-resistant gloves',
+                    'Avoid skin and eye contact',
+                    'Do not apply near water sources',
+                    'Clean equipment thoroughly'
+                ],
+                chemicalDetails: {
+                    chemicalName: '1-[[2-(2,4-dichlorophenyl)-4-propyl-1,3-dioxolan-2-yl]methyl]-1H-1,2,4-triazole',
+                    molecularFormula: 'C15H17Cl2N3O2',
+                    molecularWeight: '342.22 g/mol',
+                    casNumber: '60207-90-1',
+                    physicalState: 'Liquid',
+                    color: 'Light yellow to brown',
+                    odor: 'Slight characteristic odor',
+                    solubility: 'Slightly soluble in water (100 mg/L at 20°C)',
+                    phLevel: '6.0-8.0',
+                    density: '1.27 g/cm³',
+                    boilingPoint: '180°C',
+                    meltingPoint: 'Below -20°C',
+                    vaporPressure: '1.0 × 10⁻⁶ mmHg at 25°C',
+                    halfLife: 'Soil: 30-180 days, Water: 30-60 days',
+                    modeOfAction: 'Sterol biosynthesis inhibitor (C14-demethylase)',
+                    targetPests: [
+                        'Powdery mildew',
+                        'Rust',
+                        'Leaf spot',
+                        'Anthracnose',
+                        'Fruit rot'
+                    ],
+                    resistantPests: [
+                        'Propiconazole-resistant fungal strains'
+                    ],
+                    applicationTiming: [
+                        'Preventive application',
+                        'Early disease stage',
+                        'Systemic treatment',
+                        'Regular intervals'
+                    ],
+                    toxicity: {
+                        acuteOral: 'LD50 1517 mg/kg (slightly toxic)',
+                        acuteDermal: 'LD50 > 2000 mg/kg (slightly toxic)',
+                        acuteInhalation: 'LC50 > 5.1 mg/L (slightly toxic)',
+                        eyeIrritation: 'Mild irritant',
+                        skinIrritation: 'Mild irritant'
+                    },
+                    ecotoxicity: {
+                        fish: 'LC50 1-10 mg/L (highly toxic)',
+                        birds: 'LD50 > 2000 mg/kg (practically non-toxic)',
+                        bees: 'LD50 > 100 μg/bee (practically non-toxic)',
+                        earthworms: 'LC50 > 1000 mg/kg (practically non-toxic)'
+                    },
+                    regulatoryStatus: {
+                        epaRegistration: 'Approved for agricultural use',
+                        reEntryInterval: '12-24 hours',
+                        workerProtectionStandard: 'Category III (Caution)',
+                        restrictedUse: 'No',
+                        exportTolerance: 'Varies by country'
+                    }
+                }
+            },
+            {
+                name: 'Chlorothalonil',
+                category: 'Fungicide',
+                type: 'Chloronitrile',
+                effectiveness: 80,
+                safetyLevel: 'Moderate',
+                applicationRate: '1-2 L/ha',
+                costPerLiter: 35.00,
+                environmentalImpact: 'High',
+                description: 'Protectant fungicide with broad-spectrum activity',
+                preHarvestInterval: 7,
+                weatherRestrictions: ['No rain for 6 hours', 'Temperature below 32°C'],
+                knapsackMixtures: {
+                    '16L': {
+                        concentration: '0.15%',
+                        chemicalAmount: 24,
+                        waterAmount: 15976,
+                        coverageArea: 0.1,
+                        sprayTime: 35,
+                        instructions: [
+                            'Fill sprayer with 15.976L clean water',
+                            'Add 24ml Chlorothalonil concentrate',
+                            'Mix thoroughly for 2 minutes',
+                            'Apply at 160L/ha rate',
+                            'Cover 0.1 hectares per tank'
+                        ]
+                    },
+                    '20L': {
+                        concentration: '0.15%',
+                        chemicalAmount: 30,
+                        waterAmount: 19970,
+                        coverageArea: 0.125,
+                        sprayTime: 40,
+                        instructions: [
+                            'Fill sprayer with 19.97L clean water',
+                            'Add 30ml Chlorothalonil concentrate',
+                            'Mix thoroughly for 2 minutes',
+                            'Apply at 160L/ha rate',
+                            'Cover 0.125 hectares per tank'
+                        ]
+                    }
+                },
+                safetyGuidelines: [
+                    'Wear protective clothing',
+                    'Use chemical-resistant gloves',
+                    'Avoid skin and eye contact',
+                    'Do not apply near water sources',
+                    'Clean equipment thoroughly'
+                ],
+                chemicalDetails: {
+                    chemicalName: '2,4,5,6-tetrachloro-1,3-benzenedicarbonitrile',
+                    molecularFormula: 'C8Cl4N2',
+                    molecularWeight: '265.91 g/mol',
+                    casNumber: '1897-45-6',
+                    physicalState: 'Solid (powder)',
+                    color: 'White to gray',
+                    odor: 'Odorless',
+                    solubility: 'Slightly soluble in water (0.6 mg/L at 20°C)',
+                    phLevel: '6.0-8.0',
+                    density: '2.0 g/cm³',
+                    boilingPoint: '350°C',
+                    meltingPoint: '250-251°C',
+                    vaporPressure: '1.3 × 10⁻⁸ mmHg at 25°C',
+                    halfLife: 'Soil: 30-60 days, Water: 30-60 days',
+                    modeOfAction: 'Multi-site inhibitor (disrupts multiple enzyme systems)',
+                    targetPests: [
+                        'Leaf spot',
+                        'Blight',
+                        'Anthracnose',
+                        'Downy mildew',
+                        'Rust'
+                    ],
+                    resistantPests: [
+                        'Some resistant fungal strains'
+                    ],
+                    applicationTiming: [
+                        'Preventive application',
+                        'Early disease stage',
+                        'Weather-based timing',
+                        'Regular intervals'
+                    ],
+                    toxicity: {
+                        acuteOral: 'LD50 > 5000 mg/kg (practically non-toxic)',
+                        acuteDermal: 'LD50 > 2000 mg/kg (slightly toxic)',
+                        acuteInhalation: 'LC50 > 5.1 mg/L (slightly toxic)',
+                        eyeIrritation: 'Moderate irritant',
+                        skinIrritation: 'Mild irritant'
+                    },
+                    ecotoxicity: {
+                        fish: 'LC50 0.1-1 mg/L (highly toxic)',
+                        birds: 'LD50 > 2000 mg/kg (practically non-toxic)',
+                        bees: 'LD50 > 100 μg/bee (practically non-toxic)',
+                        earthworms: 'LC50 > 1000 mg/kg (practically non-toxic)'
+                    },
+                    regulatoryStatus: {
+                        epaRegistration: 'Approved for agricultural use',
+                        reEntryInterval: '12 hours',
+                        workerProtectionStandard: 'Category III (Caution)',
+                        restrictedUse: 'No',
+                        exportTolerance: 'Varies by country'
+                    }
+                }
             }
         ];
     }
 
     initializePestPesticideMatching() {
         return {
-            'Aphids': ['Malathion', 'Deltamethrin', 'Neem Oil', 'Insecticidal Soap'],
-            'Whiteflies': ['Malathion', 'Deltamethrin', 'Neem Oil', 'Insecticidal Soap'],
+            // INSECT PESTS
+            'Aphids': ['Malathion', 'Deltamethrin', 'Imidacloprid', 'Neem Oil', 'Insecticidal Soap'],
+            'Whiteflies': ['Malathion', 'Deltamethrin', 'Imidacloprid', 'Neem Oil', 'Insecticidal Soap'],
             'Spider Mites': ['Malathion', 'Neem Oil', 'Insecticidal Soap'],
-            'Thrips': ['Malathion', 'Deltamethrin', 'Neem Oil'],
-            'Caterpillars': ['Deltamethrin', 'Neem Oil'],
-            'Beetles': ['Deltamethrin', 'Neem Oil'],
+            'Thrips': ['Malathion', 'Deltamethrin', 'Imidacloprid', 'Spinosad', 'Neem Oil'],
+            'Caterpillars': ['Deltamethrin', 'Spinosad', 'Bacillus thuringiensis', 'Neem Oil'],
+            'Beetles': ['Deltamethrin', 'Imidacloprid', 'Spinosad', 'Neem Oil'],
             'Scale Insects': ['Neem Oil', 'Insecticidal Soap'],
             'Mealybugs': ['Neem Oil', 'Insecticidal Soap'],
-            'Fungal Diseases': ['Copper Fungicide', 'Baking Soda Fungicide'],
+            'Leafhoppers': ['Imidacloprid', 'Deltamethrin'],
+            'Leafminers': ['Spinosad'],
+            'Fruit Flies': ['Spinosad'],
+            'Moth Larvae': ['Bacillus thuringiensis', 'Spinosad'],
+            'Butterfly Larvae': ['Bacillus thuringiensis'],
+            
+            // FUNGAL DISEASES
+            'Powdery Mildew': ['Mancozeb', 'Propiconazole', 'Chlorothalonil'],
+            'Downy Mildew': ['Mancozeb', 'Chlorothalonil'],
+            'Leaf Spot': ['Mancozeb', 'Propiconazole', 'Chlorothalonil'],
+            'Rust': ['Mancozeb', 'Propiconazole', 'Chlorothalonil'],
+            'Blight': ['Mancozeb', 'Chlorothalonil'],
+            'Anthracnose': ['Propiconazole', 'Chlorothalonil'],
+            'Fruit Rot': ['Propiconazole'],
+            
+            // BACTERIAL DISEASES (Placeholder for future expansion)
             'Bacterial Diseases': ['Copper Compounds', 'Streptomycin'],
-            'Powdery Mildew': ['Baking Soda Fungicide', 'Copper Fungicide'],
-            'Leaf Spot': ['Copper Fungicide'],
-            'Rust': ['Copper Fungicide']
+            'Fire Blight': ['Copper Compounds'],
+            'Bacterial Spot': ['Copper Compounds']
         };
     }
 
     initializeSafetyGuidelines() {
         return {
+            // INSECTICIDES
             'Malathion': [
                 'Full protective suit required',
                 'Use chemical-resistant gloves and boots',
@@ -466,6 +1102,27 @@ class PesticideManagement {
                 'Do not apply in windy conditions',
                 'Clean equipment thoroughly'
             ],
+            'Imidacloprid': [
+                'Wear protective clothing',
+                'Use chemical-resistant gloves',
+                'Avoid contact with beneficial insects',
+                'Do not apply near flowering crops',
+                'Clean equipment thoroughly'
+            ],
+            'Spinosad': [
+                'Wear protective clothing',
+                'Use chemical-resistant gloves',
+                'Safe for beneficial insects',
+                'Do not apply in windy conditions',
+                'Clean equipment thoroughly'
+            ],
+            'Bacillus thuringiensis': [
+                'Minimal protective equipment needed',
+                'Safe for beneficial insects',
+                'No pre-harvest interval',
+                'Environmentally friendly',
+                'Safe for organic farming'
+            ],
             'Neem Oil': [
                 'Minimal protective equipment needed',
                 'Wear basic gloves and eye protection',
@@ -479,6 +1136,29 @@ class PesticideManagement {
                 'No pre-harvest interval',
                 'Environmentally friendly',
                 'Safe for organic farming'
+            ],
+            
+            // FUNGICIDES
+            'Mancozeb': [
+                'Wear protective clothing',
+                'Use chemical-resistant gloves',
+                'Avoid skin and eye contact',
+                'Do not eat, drink or smoke during application',
+                'Wash hands thoroughly after use'
+            ],
+            'Propiconazole': [
+                'Wear protective clothing',
+                'Use chemical-resistant gloves',
+                'Avoid skin and eye contact',
+                'Do not apply near water sources',
+                'Clean equipment thoroughly'
+            ],
+            'Chlorothalonil': [
+                'Wear protective clothing',
+                'Use chemical-resistant gloves',
+                'Avoid skin and eye contact',
+                'Do not apply near water sources',
+                'Clean equipment thoroughly'
             ]
         };
     }
