@@ -306,6 +306,45 @@
             border-bottom: 1px solid #f0f0f0;
         }
 
+        .pesticide-stats {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .stat-icon {
+            font-size: 1.5rem;
+            width: 40px;
+            text-align: center;
+        }
+
+        .stat-content {
+            flex: 1;
+        }
+
+        .stat-number {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 2px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+            font-weight: 500;
+        }
+
         .activity-item:last-child {
             border-bottom: none;
         }
@@ -560,21 +599,33 @@
                         </div>
                         <div class="col-lg-4">
                             <div class="dashboard-card">
-                                <h5 class="mb-3">🚀 Quick Actions</h5>
-                                <div class="d-grid gap-2">
-                                    <button class="btn btn-custom" onclick="showFarmManagement()">
-                                        <i class="fas fa-tractor me-2"></i>Farm Management
-                                    </button>
-                                    <button class="btn btn-custom" onclick="showCropManagement()">
-                                        <i class="fas fa-seedling me-2"></i>Crop Management
-                                    </button>
-                                    <button class="btn btn-custom" onclick="showLivestockManagement()">
-                                        <i class="fas fa-cow me-2"></i>Livestock Management
-                                    </button>
-                                    <button class="btn btn-custom" onclick="showMarketplace()">
-                                        <i class="fas fa-store me-2"></i>Marketplace
-                                    </button>
+                                <h5 class="mb-3">🧪 Pesticide Database</h5>
+                                <div class="pesticide-stats">
+                                    <div class="stat-item">
+                                        <div class="stat-icon">🧪</div>
+                                        <div class="stat-content">
+                                            <div class="stat-number" id="totalPesticides">13</div>
+                                            <div class="stat-label">Available Pesticides</div>
+                                        </div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <div class="stat-icon">🐛</div>
+                                        <div class="stat-content">
+                                            <div class="stat-number" id="totalPests">80+</div>
+                                            <div class="stat-label">Pest Categories</div>
+                                        </div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <div class="stat-icon">🛡️</div>
+                                        <div class="stat-content">
+                                            <div class="stat-number">100%</div>
+                                            <div class="stat-label">Coverage</div>
+                                        </div>
+                                    </div>
                                 </div>
+                                <button class="btn btn-custom mt-3" onclick="window.location.href='pesticide-management.html'">
+                                    <i class="fas fa-bug me-2"></i>Manage Pesticides
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -1857,6 +1908,23 @@
             loadCropsData();
             loadLivestockData();
             loadInventoryData();
+            
+            // Update pesticide statistics
+            updatePesticideStatistics();
+        }
+
+        function updatePesticideStatistics() {
+            // Update pesticide count
+            document.getElementById('totalPesticides').textContent = '13';
+            document.getElementById('totalPests').textContent = '80+';
+            
+            // You can also dynamically load from the pesticide management system
+            // if (typeof pesticideManagement !== 'undefined') {
+            //     const pesticideCount = pesticideManagement.pesticideDatabase.length;
+            //     const pestCount = Object.keys(pesticideManagement.pestPesticideMatching).length;
+            //     document.getElementById('totalPesticides').textContent = pesticideCount;
+            //     document.getElementById('totalPests').textContent = pestCount + '+';
+            // }
         }
 
         function loadFarmData() {
