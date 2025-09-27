@@ -412,27 +412,39 @@
     <script>
         // Check authentication
         function checkAuthentication() {
+            const user = localStorage.getItem('smartfarm_user') || sessionStorage.getItem('smartfarm_user');
             const token = localStorage.getItem('smartfarm_token') || sessionStorage.getItem('smartfarm_token');
+            
+            if (!user) {
+                console.log('No user found, redirecting to login');
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // Check if session is still valid (for non-remember me users)
             const loginTime = localStorage.getItem('smartfarm_login_time') || sessionStorage.getItem('smartfarm_login_time');
+            const rememberMe = localStorage.getItem('smartfarm_remember_me') === 'true';
             
-            if (!token || !loginTime) {
-                window.location.href = 'login.html';
-                return;
+            if (!rememberMe && loginTime) {
+                const now = new Date().getTime();
+                const login = new Date(loginTime).getTime();
+                const hoursDiff = (now - login) / (1000 * 60 * 60);
+                
+                // Session expires after 24 hours for non-remember me users
+                if (hoursDiff > 24) {
+                    console.log('Session expired, redirecting to login');
+                    localStorage.removeItem('smartfarm_user');
+                    localStorage.removeItem('smartfarm_token');
+                    localStorage.removeItem('smartfarm_login_time');
+                    sessionStorage.removeItem('smartfarm_user');
+                    sessionStorage.removeItem('smartfarm_token');
+                    sessionStorage.removeItem('smartfarm_login_time');
+                    window.location.href = 'login.html';
+                    return;
+                }
             }
             
-            // Check if session is expired (24 hours)
-            const now = new Date().getTime();
-            const login = new Date(loginTime).getTime();
-            const hoursDiff = (now - login) / (1000 * 60 * 60);
-            
-            if (hoursDiff > 24) {
-                localStorage.removeItem('smartfarm_token');
-                localStorage.removeItem('smartfarm_login_time');
-                sessionStorage.removeItem('smartfarm_token');
-                sessionStorage.removeItem('smartfarm_login_time');
-                window.location.href = 'login.html';
-                return;
-            }
+            console.log('Authentication successful for:', user);
         }
 
         // Initialize on page load

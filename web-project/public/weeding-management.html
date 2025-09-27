@@ -468,10 +468,48 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/intelligent-weeding.js"></script>
     <script>
+        // Check authentication
+        function checkAuthentication() {
+            const user = localStorage.getItem('smartfarm_user') || sessionStorage.getItem('smartfarm_user');
+            const token = localStorage.getItem('smartfarm_token') || sessionStorage.getItem('smartfarm_token');
+            
+            if (!user) {
+                console.log('No user found, redirecting to login');
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // Check if session is still valid (for non-remember me users)
+            const loginTime = localStorage.getItem('smartfarm_login_time') || sessionStorage.getItem('smartfarm_login_time');
+            const rememberMe = localStorage.getItem('smartfarm_remember_me') === 'true';
+            
+            if (!rememberMe && loginTime) {
+                const now = new Date().getTime();
+                const login = new Date(loginTime).getTime();
+                const hoursDiff = (now - login) / (1000 * 60 * 60);
+                
+                // Session expires after 24 hours for non-remember me users
+                if (hoursDiff > 24) {
+                    console.log('Session expired, redirecting to login');
+                    localStorage.removeItem('smartfarm_user');
+                    localStorage.removeItem('smartfarm_token');
+                    localStorage.removeItem('smartfarm_login_time');
+                    sessionStorage.removeItem('smartfarm_user');
+                    sessionStorage.removeItem('smartfarm_token');
+                    sessionStorage.removeItem('smartfarm_login_time');
+                    window.location.href = 'login.html';
+                    return;
+                }
+            }
+            
+            console.log('Authentication successful for:', user);
+        }
+
         // Weeding Management Page Functions
         let weedGrowthChart;
 
         document.addEventListener('DOMContentLoaded', function() {
+            checkAuthentication();
             initializeWeedGrowthChart();
             populateWeedingTasks();
         });
