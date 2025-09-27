@@ -1796,11 +1796,186 @@ class IntelligentWeedingSystem {
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Additional Detailed Breakdown Sections -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card mb-3">
+                                    <div class="card-header bg-info text-white">
+                                        <h6 class="mb-0">Application Guidelines</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <h6>Weather Conditions:</h6>
+                                        <ul class="mb-3">
+                                            ${chemical.weatherRestrictions.map(restriction => `<li>• ${restriction}</li>`).join('')}
+                                        </ul>
+                                        
+                                        <h6>Application Rate:</h6>
+                                        <p class="mb-2"><strong>Standard Rate:</strong> ${chemical.applicationRate}</p>
+                                        <p class="mb-2"><strong>Cost per Liter:</strong> $${chemical.costPerLiter}</p>
+                                        <p class="mb-2"><strong>Environmental Impact:</strong> ${chemical.environmentalImpact}</p>
+                                        
+                                        <h6>Pre-Harvest Interval:</h6>
+                                        <p class="mb-0"><strong>Days:</strong> ${chemical.preHarvestInterval} days</p>
+                                    </div>
+                                </div>
+
+                                <div class="card mb-3">
+                                    <div class="card-header bg-warning text-dark">
+                                        <h6 class="mb-0">Safety Equipment Required</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <h6>Personal Protective Equipment:</h6>
+                                        <ul class="mb-3">
+                                            ${chemical.safetyGuidelines.map(guideline => `<li>• ${guideline}</li>`).join('')}
+                                        </ul>
+                                        
+                                        <h6>Emergency Procedures:</h6>
+                                        <ul class="mb-0">
+                                            <li>• Eye Contact: Flush with water for 15 minutes</li>
+                                            <li>• Skin Contact: Wash with soap and water</li>
+                                            <li>• Inhalation: Move to fresh air immediately</li>
+                                            <li>• Ingestion: Do not induce vomiting, seek medical help</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="card mb-3">
+                                    <div class="card-header bg-primary text-white">
+                                        <h6 class="mb-0">Knapsack Sprayer Mixtures</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <h6>16L Sprayer:</h6>
+                                                <ul class="small">
+                                                    <li><strong>Concentration:</strong> ${chemical.knapsackMixtures['16L'].concentration}</li>
+                                                    <li><strong>Chemical Amount:</strong> ${chemical.knapsackMixtures['16L'].chemicalAmount}ml</li>
+                                                    <li><strong>Water Amount:</strong> ${chemical.knapsackMixtures['16L'].waterAmount}ml</li>
+                                                    <li><strong>Coverage:</strong> ${chemical.knapsackMixtures['16L'].coverageArea}ha</li>
+                                                    <li><strong>Spray Time:</strong> ${chemical.knapsackMixtures['16L'].sprayTime} minutes</li>
+                                                </ul>
+                                            </div>
+                                            <div class="col-6">
+                                                <h6>20L Sprayer:</h6>
+                                                <ul class="small">
+                                                    <li><strong>Concentration:</strong> ${chemical.knapsackMixtures['20L'].concentration}</li>
+                                                    <li><strong>Chemical Amount:</strong> ${chemical.knapsackMixtures['20L'].chemicalAmount}ml</li>
+                                                    <li><strong>Water Amount:</strong> ${chemical.knapsackMixtures['20L'].waterAmount}ml</li>
+                                                    <li><strong>Coverage:</strong> ${chemical.knapsackMixtures['20L'].coverageArea}ha</li>
+                                                    <li><strong>Spray Time:</strong> ${chemical.knapsackMixtures['20L'].sprayTime} minutes</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="card mb-3">
+                                    <div class="card-header bg-secondary text-white">
+                                        <h6 class="mb-0">Cost Analysis</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <table class="table table-sm">
+                                            <tr><td><strong>Chemical Cost per Liter:</strong></td><td>$${chemical.costPerLiter}</td></tr>
+                                            <tr><td><strong>Application Rate:</strong></td><td>${chemical.applicationRate}</td></tr>
+                                            <tr><td><strong>Cost per Hectare:</strong></td><td>$${(chemical.costPerLiter * parseFloat(chemical.applicationRate.split('-')[1])).toFixed(2)}</td></tr>
+                                            <tr><td><strong>Effectiveness:</strong></td><td>${chemical.effectiveness}%</td></tr>
+                                            <tr><td><strong>Safety Level:</strong></td><td>${chemical.safetyLevel}</td></tr>
+                                        </table>
+                                        
+                                        <h6>Cost-Benefit Analysis:</h6>
+                                        <ul class="small mb-0">
+                                            <li>• High effectiveness (${chemical.effectiveness}%)</li>
+                                            <li>• ${chemical.safetyLevel} safety level</li>
+                                            <li>• ${chemical.environmentalImpact} environmental impact</li>
+                                            <li>• ${chemical.preHarvestInterval}-day pre-harvest interval</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card mb-3">
+                                    <div class="card-header bg-dark text-white">
+                                        <h6 class="mb-0">Step-by-Step Application Instructions</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <h6>16L Sprayer Instructions:</h6>
+                                                <ol class="small">
+                                                    ${chemical.knapsackMixtures['16L'].instructions.map(instruction => `<li>${instruction}</li>`).join('')}
+                                                </ol>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <h6>20L Sprayer Instructions:</h6>
+                                                <ol class="small">
+                                                    ${chemical.knapsackMixtures['20L'].instructions.map(instruction => `<li>${instruction}</li>`).join('')}
+                                                </ol>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card mb-3">
+                                    <div class="card-header bg-success text-white">
+                                        <h6 class="mb-0">Best Practices & Tips</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <h6>Application Tips:</h6>
+                                                <ul class="small">
+                                                    <li>• Apply during early morning or evening</li>
+                                                    <li>• Avoid application in windy conditions</li>
+                                                    <li>• Ensure even coverage for maximum effectiveness</li>
+                                                    <li>• Monitor weather conditions before application</li>
+                                                </ul>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <h6>Storage Tips:</h6>
+                                                <ul class="small">
+                                                    <li>• Store in original container</li>
+                                                    <li>• Keep away from heat and direct sunlight</li>
+                                                    <li>• Ensure proper ventilation</li>
+                                                    <li>• Keep out of reach of children and animals</li>
+                                                </ul>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <h6>Safety Tips:</h6>
+                                                <ul class="small">
+                                                    <li>• Always wear appropriate PPE</li>
+                                                    <li>• Have emergency contact information available</li>
+                                                    <li>• Clean equipment thoroughly after use</li>
+                                                    <li>• Dispose of containers properly</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-2"></i>Close
+                        </button>
                         <button type="button" class="btn btn-info" onclick="intelligentWeeding.printChemicalDetails('${chemical.name}')">
                             <i class="fas fa-print me-2"></i>Print Details
+                        </button>
+                        <button type="button" class="btn btn-warning" onclick="intelligentWeeding.downloadChemicalData('${chemical.name}')">
+                            <i class="fas fa-download me-2"></i>Download Data
+                        </button>
+                        <button type="button" class="btn btn-success" onclick="intelligentWeeding.selectChemical('${chemical.name}')">
+                            <i class="fas fa-check me-2"></i>Select This Chemical
                         </button>
                         <button type="button" class="btn btn-primary" onclick="intelligentWeeding.showChemicalMixtureModal(intelligentWeeding.chemicalSuppressionOptions.find(c => c.name === '${chemical.name}'))">
                             <i class="fas fa-flask me-2"></i>View Mixture Instructions
@@ -1824,6 +1999,40 @@ class IntelligentWeedingSystem {
         if (!chemical || !chemical.chemicalDetails) return;
 
         alert(`🖨️ Print Chemical Details for ${chemicalName}\n\nComprehensive chemical information would be printed including:\n\n• Molecular formula and properties\n• Physical and chemical characteristics\n• Toxicity and ecotoxicity data\n• Environmental fate information\n• Regulatory status and compliance\n• Storage and handling requirements\n• Resistance management strategies\n\nThis would generate a professional PDF for reference and compliance.`);
+    }
+
+    downloadChemicalData(chemicalName) {
+        const chemical = this.chemicalSuppressionOptions.find(c => c.name === chemicalName);
+        if (!chemical) return;
+
+        const data = {
+            name: chemical.name,
+            type: chemical.type,
+            effectiveness: chemical.effectiveness,
+            costPerLiter: chemical.costPerLiter,
+            applicationRate: chemical.applicationRate,
+            preHarvestInterval: chemical.preHarvestInterval,
+            environmentalImpact: chemical.environmentalImpact,
+            safetyLevel: chemical.safetyLevel,
+            weatherRestrictions: chemical.weatherRestrictions,
+            safetyGuidelines: chemical.safetyGuidelines,
+            knapsackMixtures: chemical.knapsackMixtures,
+            chemicalDetails: chemical.chemicalDetails
+        };
+
+        const dataStr = JSON.stringify(data, null, 2);
+        const dataBlob = new Blob([dataStr], {type: 'application/json'});
+        const url = URL.createObjectURL(dataBlob);
+        
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${chemicalName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_chemical_data.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        alert(`📥 Downloaded chemical data for ${chemicalName}\n\nFile: ${link.download}\n\nContains comprehensive chemical information in JSON format for offline reference.`);
     }
 
     showWeedingAnalytics() {
