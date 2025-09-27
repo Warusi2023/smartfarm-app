@@ -485,7 +485,10 @@
                                         <th>Species</th>
                                         <th>Breed</th>
                                         <th>Count</th>
+                                        <th>Ear Tags</th>
                                         <th>Location</th>
+                                        <th>GPS</th>
+                                        <th>Last Weight</th>
                                         <th>Health Status</th>
                                         <th>Actions</th>
                                     </tr>
@@ -1045,8 +1048,44 @@
             } else {
                 // Initialize with default data
                 livestock = [
-                    { id: 1, type: 'Cattle', breed: 'Holstein', quantity: 25, location: 'Pasture 1', status: 'Healthy' },
-                    { id: 2, type: 'Pigs', breed: 'Large White', quantity: 15, location: 'Pen 2', status: 'Healthy' }
+                    { 
+                        id: 1, 
+                        type: 'Cattle', 
+                        breed: 'Holstein', 
+                        quantity: 25, 
+                        location: 'Pasture 1', 
+                        status: 'Healthy',
+                        earTags: ['ET001', 'ET002', 'ET003'],
+                        gpsLocation: { lat: -18.1416, lng: 178.4419, lastUpdate: '2025-01-15T10:30:00Z' },
+                        weightRecords: [
+                            { date: '2025-01-01', avgWeight: 450, notes: 'Initial weigh-in' },
+                            { date: '2025-01-15', avgWeight: 475, notes: 'Monthly check' }
+                        ],
+                        immunizations: [
+                            { date: '2024-12-01', vaccine: 'FMD', nextDue: '2025-06-01', vet: 'Dr. Smith' },
+                            { date: '2024-11-15', vaccine: 'Anthrax', nextDue: '2025-11-15', vet: 'Dr. Smith' }
+                        ],
+                        healthNotes: 'All cattle in good health, regular grazing rotation'
+                    },
+                    { 
+                        id: 2, 
+                        type: 'Pigs', 
+                        breed: 'Large White', 
+                        quantity: 15, 
+                        location: 'Pen 2', 
+                        status: 'Healthy',
+                        earTags: ['ET101', 'ET102'],
+                        gpsLocation: { lat: -18.1420, lng: 178.4425, lastUpdate: '2025-01-15T09:15:00Z' },
+                        weightRecords: [
+                            { date: '2025-01-01', avgWeight: 120, notes: 'Initial weigh-in' },
+                            { date: '2025-01-15', avgWeight: 135, notes: 'Weekly check' }
+                        ],
+                        immunizations: [
+                            { date: '2024-12-15', vaccine: 'PRRS', nextDue: '2025-03-15', vet: 'Dr. Johnson' },
+                            { date: '2024-11-30', vaccine: 'Swine Flu', nextDue: '2025-05-30', vet: 'Dr. Johnson' }
+                        ],
+                        healthNotes: 'Pigs showing good growth rate, no health issues'
+                    }
                 ];
                 saveLivestockData();
             }
@@ -1343,15 +1382,49 @@
             tbody.innerHTML = '';
             livestock.forEach(animal => {
                 const row = document.createElement('tr');
+                
+                // Get last weight record
+                const lastWeight = animal.weightRecords && animal.weightRecords.length > 0 
+                    ? animal.weightRecords[animal.weightRecords.length - 1].avgWeight 
+                    : 'N/A';
+                
+                // Get ear tags display
+                const earTagsDisplay = animal.earTags && animal.earTags.length > 0 
+                    ? animal.earTags.slice(0, 2).join(', ') + (animal.earTags.length > 2 ? ` (+${animal.earTags.length - 2})` : '')
+                    : 'None';
+                
+                // GPS location display
+                const gpsDisplay = animal.gpsLocation 
+                    ? `<button class="btn btn-sm btn-outline-info" onclick="showGPSLocation(${animal.id})" title="View GPS Location">
+                         <i class="fas fa-map-marker-alt"></i>
+                       </button>`
+                    : 'N/A';
+                
                 row.innerHTML = `
                     <td>${animal.type}</td>
                     <td>${animal.breed}</td>
                     <td>${animal.quantity}</td>
+                    <td><small>${earTagsDisplay}</small></td>
                     <td>${animal.location}</td>
+                    <td>${gpsDisplay}</td>
+                    <td>${lastWeight} kg</td>
                     <td><span class="status-badge status-${animal.status.toLowerCase()}">${animal.status}</span></td>
                     <td>
-                        <button class="btn btn-sm btn-outline-primary me-1" onclick="editLivestock(${animal.id})">Edit</button>
-                        <button class="btn btn-sm btn-outline-danger" onclick="deleteLivestock(${animal.id})">Delete</button>
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick="editLivestock(${animal.id})" title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-info me-1" onclick="viewLivestockDetails(${animal.id})" title="View Details">
+                            <i class="fas fa-info-circle"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-success me-1" onclick="addWeightRecord(${animal.id})" title="Add Weight">
+                            <i class="fas fa-weight"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-warning me-1" onclick="addImmunization(${animal.id})" title="Add Immunization">
+                            <i class="fas fa-syringe"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteLivestock(${animal.id})" title="Delete">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -1630,37 +1703,153 @@
         }
 
         function addNewLivestock() {
-            const type = prompt('Enter livestock type (Cattle/Pigs/Chickens/Sheep):');
-            if (!type) return;
+            // Create comprehensive add livestock modal
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header bg-success text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-plus me-2"></i>Add New Livestock
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="addLivestockForm">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="livestockType" class="form-label">Type</label>
+                                            <select class="form-select" id="livestockType" required>
+                                                <option value="">Select Type</option>
+                                                <option value="Cattle">Cattle</option>
+                                                <option value="Pigs">Pigs</option>
+                                                <option value="Chickens">Chickens</option>
+                                                <option value="Sheep">Sheep</option>
+                                                <option value="Goats">Goats</option>
+                                                <option value="Horses">Horses</option>
+                                                <option value="Other">Other</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="livestockBreed" class="form-label">Breed</label>
+                                            <input type="text" class="form-control" id="livestockBreed" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="livestockQuantity" class="form-label">Quantity</label>
+                                            <input type="number" class="form-control" id="livestockQuantity" min="1" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="livestockLocation" class="form-label">Location</label>
+                                            <input type="text" class="form-control" id="livestockLocation" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="livestockStatus" class="form-label">Health Status</label>
+                                            <select class="form-select" id="livestockStatus" required>
+                                                <option value="Healthy">Healthy</option>
+                                                <option value="Sick">Sick</option>
+                                                <option value="Quarantine">Quarantine</option>
+                                                <option value="Recovering">Recovering</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="earTags" class="form-label">Ear Tags (comma-separated)</label>
+                                            <input type="text" class="form-control" id="earTags" placeholder="ET001, ET002, ET003">
+                                            <small class="form-text text-muted">Enter ear tag numbers separated by commas</small>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="gpsLat" class="form-label">GPS Latitude</label>
+                                            <input type="number" class="form-control" id="gpsLat" step="any" placeholder="-18.1416">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="gpsLng" class="form-label">GPS Longitude</label>
+                                            <input type="number" class="form-control" id="gpsLng" step="any" placeholder="178.4419">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="healthNotes" class="form-label">Health Notes</label>
+                                    <textarea class="form-control" id="healthNotes" rows="3" placeholder="Any initial health observations or notes..."></textarea>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-success" onclick="saveNewLivestock()">
+                                <i class="fas fa-save me-2"></i>Add Livestock
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
             
-            const breed = prompt('Enter breed:');
-            if (!breed) return;
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
             
-            const quantity = prompt('Enter quantity:');
-            if (!quantity || isNaN(quantity) || parseInt(quantity) <= 0) {
-                alert('Please enter a valid quantity.');
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        function saveNewLivestock() {
+            const type = document.getElementById('livestockType').value;
+            const breed = document.getElementById('livestockBreed').value;
+            const quantity = parseInt(document.getElementById('livestockQuantity').value);
+            const location = document.getElementById('livestockLocation').value;
+            const status = document.getElementById('livestockStatus').value;
+            const earTagsText = document.getElementById('earTags').value;
+            const gpsLat = parseFloat(document.getElementById('gpsLat').value);
+            const gpsLng = parseFloat(document.getElementById('gpsLng').value);
+            const healthNotes = document.getElementById('healthNotes').value;
+
+            if (!type || !breed || !quantity || !location || !status) {
+                alert('Please fill in all required fields');
                 return;
             }
-            
-            const location = prompt('Enter location:');
-            if (!location) return;
-            
-            const status = prompt('Enter health status (Healthy/Sick/Quarantine):', 'Healthy');
-            if (!status) return;
-            
+
+            // Process ear tags
+            const earTags = earTagsText ? earTagsText.split(',').map(tag => tag.trim()).filter(tag => tag) : [];
+
+            // Create GPS location if coordinates provided
+            let gpsLocation = null;
+            if (gpsLat && gpsLng) {
+                gpsLocation = {
+                    lat: gpsLat,
+                    lng: gpsLng,
+                    lastUpdate: new Date().toISOString()
+                };
+            }
+
             const newLivestock = {
                 id: Date.now(),
-                type: type.trim(),
-                breed: breed.trim(),
-                quantity: parseInt(quantity),
-                location: location.trim(),
-                status: status.trim()
+                type: type,
+                breed: breed,
+                quantity: quantity,
+                location: location,
+                status: status,
+                earTags: earTags,
+                gpsLocation: gpsLocation,
+                weightRecords: [],
+                immunizations: [],
+                healthNotes: healthNotes || 'No notes'
             };
             
             livestock.push(newLivestock);
             saveLivestockData();
             renderLivestockTable();
             updateAnalyticsCharts(); // Update charts with new data
+            
+            // Close modal
+            const modal = document.querySelector('.modal');
+            if (modal) {
+                const bsModal = bootstrap.Modal.getInstance(modal);
+                bsModal.hide();
+            }
+            
             showSuccessMessage('Livestock added successfully!');
         }
 
@@ -1742,6 +1931,10 @@
             const quantity = parseInt(document.getElementById('editLivestockQuantity').value);
             const location = document.getElementById('editLivestockLocation').value.trim();
             const status = document.getElementById('editLivestockStatus').value.trim();
+            const earTagsText = document.getElementById('editEarTags').value;
+            const gpsLat = parseFloat(document.getElementById('editGpsLat').value);
+            const gpsLng = parseFloat(document.getElementById('editGpsLng').value);
+            const healthNotes = document.getElementById('editHealthNotes').value;
 
             if (!type || !breed || !quantity || !location || !status) {
                 alert('Please fill in all required fields');
@@ -1753,6 +1946,19 @@
                 return;
             }
 
+            // Process ear tags
+            const earTags = earTagsText ? earTagsText.split(',').map(tag => tag.trim()).filter(tag => tag) : [];
+
+            // Create GPS location if coordinates provided
+            let gpsLocation = null;
+            if (gpsLat && gpsLng) {
+                gpsLocation = {
+                    lat: gpsLat,
+                    lng: gpsLng,
+                    lastUpdate: new Date().toISOString()
+                };
+            }
+
             // Find and update the livestock
             const livestockIndex = livestock.findIndex(l => l.id === id);
             if (livestockIndex !== -1) {
@@ -1762,7 +1968,10 @@
                     breed: breed,
                     quantity: quantity,
                     location: location,
-                    status: status
+                    status: status,
+                    earTags: earTags,
+                    gpsLocation: gpsLocation,
+                    healthNotes: healthNotes || livestock[livestockIndex].healthNotes || 'No notes'
                 };
 
                 saveLivestockData();
@@ -1786,6 +1995,410 @@
                 renderLivestockTable();
                 showSuccessMessage('Livestock deleted successfully!');
             }
+        }
+
+        // Enhanced Livestock Management Functions
+        function viewLivestockDetails(id) {
+            const animal = livestock.find(l => l.id === id);
+            if (!animal) {
+                alert('Livestock record not found');
+                return;
+            }
+
+            // Create detailed view modal
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-info-circle me-2"></i>Livestock Details - ${animal.type} ${animal.breed}
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6 class="text-primary">Basic Information</h6>
+                                    <ul class="list-unstyled">
+                                        <li><strong>Type:</strong> ${animal.type}</li>
+                                        <li><strong>Breed:</strong> ${animal.breed}</li>
+                                        <li><strong>Quantity:</strong> ${animal.quantity}</li>
+                                        <li><strong>Location:</strong> ${animal.location}</li>
+                                        <li><strong>Status:</strong> <span class="badge bg-${animal.status.toLowerCase() === 'healthy' ? 'success' : 'warning'}">${animal.status}</span></li>
+                                    </ul>
+                                    
+                                    <h6 class="text-primary mt-3">Ear Tags</h6>
+                                    <div class="mb-3">
+                                        ${animal.earTags && animal.earTags.length > 0 
+                                            ? animal.earTags.map(tag => `<span class="badge bg-secondary me-1">${tag}</span>`).join('')
+                                            : '<span class="text-muted">No ear tags recorded</span>'
+                                        }
+                                    </div>
+                                    
+                                    <h6 class="text-primary mt-3">GPS Location</h6>
+                                    ${animal.gpsLocation 
+                                        ? `<p><strong>Coordinates:</strong> ${animal.gpsLocation.lat.toFixed(4)}, ${animal.gpsLocation.lng.toFixed(4)}<br>
+                                           <strong>Last Update:</strong> ${new Date(animal.gpsLocation.lastUpdate).toLocaleString()}</p>`
+                                        : '<p class="text-muted">No GPS data available</p>'
+                                    }
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <h6 class="text-primary">Weight Records</h6>
+                                    <div class="mb-3" style="max-height: 200px; overflow-y: auto;">
+                                        ${animal.weightRecords && animal.weightRecords.length > 0 
+                                            ? animal.weightRecords.map(record => `
+                                                <div class="card mb-2">
+                                                    <div class="card-body p-2">
+                                                        <div class="d-flex justify-content-between">
+                                                            <strong>${record.avgWeight} kg</strong>
+                                                            <small>${new Date(record.date).toLocaleDateString()}</small>
+                                                        </div>
+                                                        <small class="text-muted">${record.notes}</small>
+                                                    </div>
+                                                </div>
+                                            `).join('')
+                                            : '<p class="text-muted">No weight records available</p>'
+                                        }
+                                    </div>
+                                    
+                                    <h6 class="text-primary mt-3">Immunization Records</h6>
+                                    <div class="mb-3" style="max-height: 200px; overflow-y: auto;">
+                                        ${animal.immunizations && animal.immunizations.length > 0 
+                                            ? animal.immunizations.map(immunization => `
+                                                <div class="card mb-2">
+                                                    <div class="card-body p-2">
+                                                        <div class="d-flex justify-content-between">
+                                                            <strong>${immunization.vaccine}</strong>
+                                                            <small>${new Date(immunization.date).toLocaleDateString()}</small>
+                                                        </div>
+                                                        <div><small>Next Due: ${new Date(immunization.nextDue).toLocaleDateString()}</small></div>
+                                                        <div><small>Vet: ${immunization.vet}</small></div>
+                                                    </div>
+                                                </div>
+                                            `).join('')
+                                            : '<p class="text-muted">No immunization records available</p>'
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            ${animal.healthNotes ? `
+                                <div class="mt-3">
+                                    <h6 class="text-primary">Health Notes</h6>
+                                    <p class="bg-light p-3 rounded">${animal.healthNotes}</p>
+                                </div>
+                            ` : ''}
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-primary" onclick="editLivestock(${animal.id}); bootstrap.Modal.getInstance(this.closest('.modal')).hide();">
+                                <i class="fas fa-edit me-2"></i>Edit Record
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        function showGPSLocation(id) {
+            const animal = livestock.find(l => l.id === id);
+            if (!animal || !animal.gpsLocation) {
+                alert('No GPS location data available for this livestock');
+                return;
+            }
+
+            const { lat, lng, lastUpdate } = animal.gpsLocation;
+            
+            // Create GPS modal
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header bg-info text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-map-marker-alt me-2"></i>GPS Location - ${animal.type} ${animal.breed}
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <h6>Current Location</h6>
+                                <p><strong>Latitude:</strong> ${lat.toFixed(6)}</p>
+                                <p><strong>Longitude:</strong> ${lng.toFixed(6)}</p>
+                                <p><strong>Last Updated:</strong> ${new Date(lastUpdate).toLocaleString()}</p>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <h6>Quick Actions</h6>
+                                <button class="btn btn-outline-primary me-2" onclick="updateGPSLocation(${id})">
+                                    <i class="fas fa-sync me-1"></i>Update Location
+                                </button>
+                                <button class="btn btn-outline-info" onclick="openInMaps(${lat}, ${lng})">
+                                    <i class="fas fa-external-link-alt me-1"></i>Open in Maps
+                                </button>
+                            </div>
+                            
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Note:</strong> GPS tracking helps monitor livestock movement, 
+                                grazing patterns, and ensures animal safety through location monitoring.
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        function updateGPSLocation(id) {
+            const animal = livestock.find(l => l.id === id);
+            if (!animal) return;
+
+            // Simulate GPS update (in real app, this would get actual GPS coordinates)
+            const newLat = animal.gpsLocation.lat + (Math.random() - 0.5) * 0.001; // Small random movement
+            const newLng = animal.gpsLocation.lng + (Math.random() - 0.5) * 0.001;
+            
+            animal.gpsLocation = {
+                lat: newLat,
+                lng: newLng,
+                lastUpdate: new Date().toISOString()
+            };
+            
+            saveLivestockData();
+            renderLivestockTable();
+            showSuccessMessage('GPS location updated successfully!');
+        }
+
+        function openInMaps(lat, lng) {
+            const mapsUrl = `https://www.google.com/maps?q=${lat},${lng}`;
+            window.open(mapsUrl, '_blank');
+        }
+
+        function addWeightRecord(id) {
+            const animal = livestock.find(l => l.id === id);
+            if (!animal) return;
+
+            // Create weight record modal
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header bg-success text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-weight me-2"></i>Add Weight Record - ${animal.type} ${animal.breed}
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="weightRecordForm">
+                                <div class="mb-3">
+                                    <label for="weightDate" class="form-label">Date</label>
+                                    <input type="date" class="form-control" id="weightDate" value="${new Date().toISOString().split('T')[0]}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="weightValue" class="form-label">Average Weight (kg)</label>
+                                    <input type="number" class="form-control" id="weightValue" step="0.1" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="weightNotes" class="form-label">Notes</label>
+                                    <textarea class="form-control" id="weightNotes" rows="3" placeholder="e.g., Monthly weigh-in, pre-breeding check, etc."></textarea>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-success" onclick="saveWeightRecord(${id})">
+                                <i class="fas fa-save me-2"></i>Save Weight Record
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        function saveWeightRecord(id) {
+            const animal = livestock.find(l => l.id === id);
+            if (!animal) return;
+
+            const date = document.getElementById('weightDate').value;
+            const weight = parseFloat(document.getElementById('weightValue').value);
+            const notes = document.getElementById('weightNotes').value;
+
+            if (!date || !weight || weight <= 0) {
+                alert('Please fill in all required fields with valid data');
+                return;
+            }
+
+            // Initialize weightRecords if it doesn't exist
+            if (!animal.weightRecords) {
+                animal.weightRecords = [];
+            }
+
+            // Add new weight record
+            animal.weightRecords.push({
+                date: date,
+                avgWeight: weight,
+                notes: notes || 'No notes'
+            });
+
+            // Sort by date (newest first)
+            animal.weightRecords.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            saveLivestockData();
+            renderLivestockTable();
+            
+            // Close modal
+            const modal = document.querySelector('.modal');
+            if (modal) {
+                const bsModal = bootstrap.Modal.getInstance(modal);
+                bsModal.hide();
+            }
+            
+            showSuccessMessage('Weight record added successfully!');
+        }
+
+        function addImmunization(id) {
+            const animal = livestock.find(l => l.id === id);
+            if (!animal) return;
+
+            // Create immunization modal
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header bg-warning text-dark">
+                            <h5 class="modal-title">
+                                <i class="fas fa-syringe me-2"></i>Add Immunization Record - ${animal.type} ${animal.breed}
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="immunizationForm">
+                                <div class="mb-3">
+                                    <label for="immunizationDate" class="form-label">Date</label>
+                                    <input type="date" class="form-control" id="immunizationDate" value="${new Date().toISOString().split('T')[0]}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="vaccineName" class="form-label">Vaccine Name</label>
+                                    <select class="form-select" id="vaccineName" required>
+                                        <option value="">Select Vaccine</option>
+                                        <option value="FMD">Foot and Mouth Disease (FMD)</option>
+                                        <option value="Anthrax">Anthrax</option>
+                                        <option value="Brucellosis">Brucellosis</option>
+                                        <option value="PRRS">Porcine Reproductive and Respiratory Syndrome (PRRS)</option>
+                                        <option value="Swine Flu">Swine Flu</option>
+                                        <option value="Pneumonia">Pneumonia</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="nextDueDate" class="form-label">Next Due Date</label>
+                                    <input type="date" class="form-control" id="nextDueDate" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="vetName" class="form-label">Veterinarian</label>
+                                    <input type="text" class="form-control" id="vetName" placeholder="Dr. Smith" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="immunizationNotes" class="form-label">Notes</label>
+                                    <textarea class="form-control" id="immunizationNotes" rows="3" placeholder="Any additional notes about the vaccination..."></textarea>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-warning" onclick="saveImmunization(${id})">
+                                <i class="fas fa-save me-2"></i>Save Immunization Record
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        function saveImmunization(id) {
+            const animal = livestock.find(l => l.id === id);
+            if (!animal) return;
+
+            const date = document.getElementById('immunizationDate').value;
+            const vaccine = document.getElementById('vaccineName').value;
+            const nextDue = document.getElementById('nextDueDate').value;
+            const vet = document.getElementById('vetName').value;
+            const notes = document.getElementById('immunizationNotes').value;
+
+            if (!date || !vaccine || !nextDue || !vet) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            // Initialize immunizations if it doesn't exist
+            if (!animal.immunizations) {
+                animal.immunizations = [];
+            }
+
+            // Add new immunization record
+            animal.immunizations.push({
+                date: date,
+                vaccine: vaccine,
+                nextDue: nextDue,
+                vet: vet,
+                notes: notes || 'No notes'
+            });
+
+            // Sort by date (newest first)
+            animal.immunizations.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            saveLivestockData();
+            renderLivestockTable();
+            
+            // Close modal
+            const modal = document.querySelector('.modal');
+            if (modal) {
+                const bsModal = bootstrap.Modal.getInstance(modal);
+                bsModal.hide();
+            }
+            
+            showSuccessMessage('Immunization record added successfully!');
         }
 
         function addInventoryItem() {
