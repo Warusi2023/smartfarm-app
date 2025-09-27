@@ -76,7 +76,45 @@ class IntelligentWeedingSystem {
                 environmentalImpact: 'Medium',
                 description: 'Effective against most weed types, requires careful application',
                 preHarvestInterval: 7, // days
-                weatherRestrictions: ['No rain for 6 hours', 'Temperature below 32°C']
+                weatherRestrictions: ['No rain for 6 hours', 'Temperature below 32°C'],
+                knapsackMixtures: {
+                    '16L': {
+                        concentration: '1.5%', // 1.5% solution
+                        chemicalAmount: 240, // ml of chemical
+                        waterAmount: 15760, // ml of water
+                        coverageArea: 0.08, // hectares per tank
+                        sprayTime: 25, // minutes per tank
+                        instructions: [
+                            'Fill sprayer with 15.76L clean water',
+                            'Add 240ml Glyphosate concentrate',
+                            'Mix thoroughly for 2 minutes',
+                            'Apply at 200L/ha rate',
+                            'Cover 0.08 hectares per tank'
+                        ]
+                    },
+                    '20L': {
+                        concentration: '1.5%',
+                        chemicalAmount: 300, // ml of chemical
+                        waterAmount: 19700, // ml of water
+                        coverageArea: 0.1, // hectares per tank
+                        sprayTime: 30, // minutes per tank
+                        instructions: [
+                            'Fill sprayer with 19.7L clean water',
+                            'Add 300ml Glyphosate concentrate',
+                            'Mix thoroughly for 2 minutes',
+                            'Apply at 200L/ha rate',
+                            'Cover 0.1 hectares per tank'
+                        ]
+                    }
+                },
+                safetyGuidelines: [
+                    'Wear protective clothing (overalls, gloves, boots)',
+                    'Use respirator or face mask',
+                    'Avoid skin and eye contact',
+                    'Do not eat, drink or smoke during application',
+                    'Wash hands thoroughly after use',
+                    'Keep away from children and animals'
+                ]
             },
             {
                 name: '2,4-D',
@@ -88,7 +126,44 @@ class IntelligentWeedingSystem {
                 environmentalImpact: 'Low',
                 description: 'Selective herbicide, safe for most crops',
                 preHarvestInterval: 14,
-                weatherRestrictions: ['No rain for 4 hours', 'Low wind conditions']
+                weatherRestrictions: ['No rain for 4 hours', 'Low wind conditions'],
+                knapsackMixtures: {
+                    '16L': {
+                        concentration: '0.8%',
+                        chemicalAmount: 128, // ml of chemical
+                        waterAmount: 15872, // ml of water
+                        coverageArea: 0.1, // hectares per tank
+                        sprayTime: 30, // minutes per tank
+                        instructions: [
+                            'Fill sprayer with 15.87L clean water',
+                            'Add 128ml 2,4-D concentrate',
+                            'Mix gently for 1 minute',
+                            'Apply at 160L/ha rate',
+                            'Cover 0.1 hectares per tank'
+                        ]
+                    },
+                    '20L': {
+                        concentration: '0.8%',
+                        chemicalAmount: 160, // ml of chemical
+                        waterAmount: 19840, // ml of water
+                        coverageArea: 0.125, // hectares per tank
+                        sprayTime: 35, // minutes per tank
+                        instructions: [
+                            'Fill sprayer with 19.84L clean water',
+                            'Add 160ml 2,4-D concentrate',
+                            'Mix gently for 1 minute',
+                            'Apply at 160L/ha rate',
+                            'Cover 0.125 hectares per tank'
+                        ]
+                    }
+                },
+                safetyGuidelines: [
+                    'Wear long sleeves and pants',
+                    'Use chemical-resistant gloves',
+                    'Avoid contact with skin',
+                    'Do not apply in windy conditions',
+                    'Clean equipment thoroughly after use'
+                ]
             },
             {
                 name: 'Atrazine',
@@ -100,7 +175,47 @@ class IntelligentWeedingSystem {
                 environmentalImpact: 'High',
                 description: 'Pre-emergence application, long-lasting effect',
                 preHarvestInterval: 21,
-                weatherRestrictions: ['Applied before crop emergence', 'Moist soil conditions']
+                weatherRestrictions: ['Applied before crop emergence', 'Moist soil conditions'],
+                knapsackMixtures: {
+                    '16L': {
+                        concentration: '2.0%',
+                        chemicalAmount: 320, // ml of chemical
+                        waterAmount: 15680, // ml of water
+                        coverageArea: 0.07, // hectares per tank
+                        sprayTime: 20, // minutes per tank
+                        instructions: [
+                            'Fill sprayer with 15.68L clean water',
+                            'Add 320ml Atrazine concentrate',
+                            'Mix thoroughly for 3 minutes',
+                            'Apply at 230L/ha rate',
+                            'Cover 0.07 hectares per tank',
+                            'Apply to soil surface only'
+                        ]
+                    },
+                    '20L': {
+                        concentration: '2.0%',
+                        chemicalAmount: 400, // ml of chemical
+                        waterAmount: 19600, // ml of water
+                        coverageArea: 0.087, // hectares per tank
+                        sprayTime: 25, // minutes per tank
+                        instructions: [
+                            'Fill sprayer with 19.6L clean water',
+                            'Add 400ml Atrazine concentrate',
+                            'Mix thoroughly for 3 minutes',
+                            'Apply at 230L/ha rate',
+                            'Cover 0.087 hectares per tank',
+                            'Apply to soil surface only'
+                        ]
+                    }
+                },
+                safetyGuidelines: [
+                    'Full protective suit required',
+                    'Use chemical-resistant gloves and boots',
+                    'Respirator with organic vapor cartridge',
+                    'Do not apply near water sources',
+                    'Avoid soil contamination',
+                    'Long pre-harvest interval required'
+                ]
             },
             {
                 name: 'Organic Vinegar Solution',
@@ -112,7 +227,47 @@ class IntelligentWeedingSystem {
                 environmentalImpact: 'Very Low',
                 description: 'Eco-friendly option, requires frequent application',
                 preHarvestInterval: 0,
-                weatherRestrictions: ['Direct sunlight application', 'No rain for 2 hours']
+                weatherRestrictions: ['Direct sunlight application', 'No rain for 2 hours'],
+                knapsackMixtures: {
+                    '16L': {
+                        concentration: '10%',
+                        chemicalAmount: 1600, // ml of vinegar
+                        waterAmount: 14400, // ml of water
+                        coverageArea: 0.13, // hectares per tank
+                        sprayTime: 40, // minutes per tank
+                        instructions: [
+                            'Fill sprayer with 14.4L clean water',
+                            'Add 1.6L organic vinegar (10% acidity)',
+                            'Mix gently for 1 minute',
+                            'Apply at 120L/ha rate',
+                            'Cover 0.13 hectares per tank',
+                            'Apply in direct sunlight for best effect'
+                        ]
+                    },
+                    '20L': {
+                        concentration: '10%',
+                        chemicalAmount: 2000, // ml of vinegar
+                        waterAmount: 18000, // ml of water
+                        coverageArea: 0.16, // hectares per tank
+                        sprayTime: 50, // minutes per tank
+                        instructions: [
+                            'Fill sprayer with 18L clean water',
+                            'Add 2L organic vinegar (10% acidity)',
+                            'Mix gently for 1 minute',
+                            'Apply at 120L/ha rate',
+                            'Cover 0.16 hectares per tank',
+                            'Apply in direct sunlight for best effect'
+                        ]
+                    }
+                },
+                safetyGuidelines: [
+                    'Minimal protective equipment needed',
+                    'Wear basic gloves and eye protection',
+                    'Safe for organic farming',
+                    'No pre-harvest interval',
+                    'Environmentally friendly',
+                    'Can be applied near water sources'
+                ]
             },
             {
                 name: 'Manual Weeding',
@@ -906,7 +1061,145 @@ class IntelligentWeedingSystem {
         const chemical = this.chemicalSuppressionOptions.find(c => c.name === chemicalName);
         if (!chemical) return;
 
-        alert(`🧪 Selected: ${chemical.name}\n\nType: ${chemical.type}\nEffectiveness: ${chemical.effectiveness}%\nSafety Level: ${chemical.safetyLevel}\nApplication Rate: ${chemical.applicationRate}\nCost: $${chemical.costPerLiter}/L\nEnvironmental Impact: ${chemical.environmentalImpact}\n\nWeather Restrictions:\n${chemical.weatherRestrictions.join('\n')}\n\nPre-Harvest Interval: ${chemical.preHarvestInterval} days`);
+        this.showChemicalMixtureModal(chemical);
+    }
+
+    showChemicalMixtureModal(chemical) {
+        const modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.innerHTML = `
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-warning text-white">
+                        <h5 class="modal-title">
+                            <i class="fas fa-flask me-2"></i>${chemical.name} - Knapsack Sprayer Mixture
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <h6>Chemical Information</h6>
+                                <ul class="list-unstyled">
+                                    <li><strong>Type:</strong> ${chemical.type}</li>
+                                    <li><strong>Effectiveness:</strong> ${chemical.effectiveness}%</li>
+                                    <li><strong>Safety Level:</strong> ${chemical.safetyLevel}</li>
+                                    <li><strong>Cost:</strong> $${chemical.costPerLiter}/L</li>
+                                    <li><strong>Environmental Impact:</strong> ${chemical.environmentalImpact}</li>
+                                    <li><strong>Pre-Harvest Interval:</strong> ${chemical.preHarvestInterval} days</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Weather Restrictions</h6>
+                                <ul>
+                                    ${chemical.weatherRestrictions.map(restriction => `<li>${restriction}</li>`).join('')}
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="knapsack-mixtures">
+                            <h6 class="mb-3">Knapsack Sprayer Mixture Instructions</h6>
+                            <div class="row">
+                                ${Object.entries(chemical.knapsackMixtures || {}).map(([size, mixture]) => `
+                                    <div class="col-md-6 mb-4">
+                                        <div class="card">
+                                            <div class="card-header bg-primary text-white">
+                                                <h6 class="mb-0">
+                                                    <i class="fas fa-spray-can me-2"></i>${size} Knapsack Sprayer
+                                                </h6>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="mixture-details mb-3">
+                                                    <div class="row text-center">
+                                                        <div class="col-6">
+                                                            <div class="mixture-value">${mixture.chemicalAmount}ml</div>
+                                                            <div class="mixture-label">Chemical</div>
+                                                        </div>
+                                                        <div class="col-6">
+                                                            <div class="mixture-value">${(mixture.waterAmount/1000).toFixed(1)}L</div>
+                                                            <div class="mixture-label">Water</div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="text-center mt-2">
+                                                        <span class="badge bg-info">${mixture.concentration} Solution</span>
+                                                    </div>
+                                                </div>
+                                                
+                                                <h6 class="mt-3">Step-by-Step Instructions:</h6>
+                                                <ol class="mixture-instructions">
+                                                    ${mixture.instructions.map(instruction => `<li>${instruction}</li>`).join('')}
+                                                </ol>
+                                                
+                                                <div class="application-details mt-3">
+                                                    <div class="row text-center">
+                                                        <div class="col-4">
+                                                            <div class="detail-value">${mixture.coverageArea}ha</div>
+                                                            <div class="detail-label">Coverage</div>
+                                                        </div>
+                                                        <div class="col-4">
+                                                            <div class="detail-value">${mixture.sprayTime}min</div>
+                                                            <div class="detail-label">Spray Time</div>
+                                                        </div>
+                                                        <div class="col-4">
+                                                            <div class="detail-value">$${(chemical.costPerLiter * mixture.chemicalAmount / 1000).toFixed(2)}</div>
+                                                            <div class="detail-label">Cost/Tank</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        
+                        ${chemical.safetyGuidelines ? `
+                            <div class="safety-guidelines mt-4">
+                                <h6 class="text-danger">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>Safety Guidelines
+                                </h6>
+                                <div class="alert alert-warning">
+                                    <ul class="mb-0">
+                                        ${chemical.safetyGuidelines.map(guideline => `<li>${guideline}</li>`).join('')}
+                                    </ul>
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-warning" onclick="intelligentWeeding.printMixtureInstructions('${chemical.name}')">
+                            <i class="fas fa-print me-2"></i>Print Instructions
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="intelligentWeeding.startChemicalApplication('${chemical.name}')">
+                            <i class="fas fa-play me-2"></i>Start Application
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        const bsModal = new bootstrap.Modal(modal);
+        bsModal.show();
+        
+        modal.addEventListener('hidden.bs.modal', () => {
+            document.body.removeChild(modal);
+        });
+    }
+
+    printMixtureInstructions(chemicalName) {
+        const chemical = this.chemicalSuppressionOptions.find(c => c.name === chemicalName);
+        if (!chemical) return;
+
+        alert(`🖨️ Print Instructions for ${chemicalName}\n\nDetailed mixture instructions would be printed including:\n\n• Chemical and water quantities for each sprayer size\n• Step-by-step mixing instructions\n• Application rates and coverage areas\n• Safety guidelines\n• Cost calculations per tank\n\nThis would generate a professional PDF for field use.`);
+    }
+
+    startChemicalApplication(chemicalName) {
+        const chemical = this.chemicalSuppressionOptions.find(c => c.name === chemicalName);
+        if (!chemical) return;
+
+        alert(`🚀 Starting Chemical Application\n\nChemical: ${chemical.name}\nType: ${chemical.type}\n\nApplication Guidelines:\n• Ensure weather conditions are suitable\n• Wear appropriate protective equipment\n• Follow mixture instructions exactly\n• Apply at recommended rates\n• Monitor for any adverse effects\n\nPre-Harvest Interval: ${chemical.preHarvestInterval} days\n\nApplication started and logged in the system!`);
     }
 
     showWeedingAnalytics() {
@@ -968,6 +1261,44 @@ const intelligentWeedingStyles = `
         
         .task-actions .btn {
             font-size: 0.8rem;
+        }
+        
+        .mixture-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #007bff;
+        }
+        
+        .mixture-label {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+        
+        .detail-value {
+            font-size: 1rem;
+            font-weight: bold;
+            color: #495057;
+        }
+        
+        .detail-label {
+            font-size: 0.7rem;
+            color: #6c757d;
+        }
+        
+        .mixture-instructions {
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+        
+        .mixture-instructions li {
+            margin-bottom: 5px;
+        }
+        
+        .application-details {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #e9ecef;
         }
     </style>
 `;
