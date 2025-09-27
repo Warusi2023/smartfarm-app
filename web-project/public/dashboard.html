@@ -437,6 +437,8 @@
                                         <th>Field</th>
                                         <th>Planted Date</th>
                                         <th>Status</th>
+                                        <th>pH Level</th>
+                                        <th>Pest Status</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -1305,9 +1307,18 @@
                     <td>${crop.field || 'Field A'}</td>
                     <td>${crop.plantedDate || new Date().toISOString().split('T')[0]}</td>
                     <td><span class="status-badge status-${crop.status.toLowerCase()}">${crop.status}</span></td>
+                    <td>${crop.phLevel ? crop.phLevel : '-'}</td>
+                    <td>${crop.pestIssues ? '<span class="text-danger">⚠️ Issues</span>' : '<span class="text-success">✅ Clear</span>'}</td>
                     <td>
-                        <button class="btn btn-sm btn-outline-primary me-1" onclick="editCrop(${crop.id})">Edit</button>
-                        <button class="btn btn-sm btn-outline-danger" onclick="deleteCrop(${crop.id})">Delete</button>
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick="editCrop(${crop.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-info me-1" onclick="showAISuggestions(${crop.id})">
+                            <i class="fas fa-brain"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteCrop(${crop.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -1359,33 +1370,122 @@
         }
 
         function addNewCrop() {
-            const name = prompt('Enter crop name:');
-            if (!name) return;
+            // Create add crop modal with enhanced fields
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Add New Crop</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="addCropForm">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="newCropName" class="form-label">Crop Name *</label>
+                                            <input type="text" class="form-control" id="newCropName" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="newCropField" class="form-label">Field Name *</label>
+                                            <input type="text" class="form-control" id="newCropField" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="newCropArea" class="form-label">Area (hectares)</label>
+                                            <input type="number" class="form-control" id="newCropArea" step="0.1">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="newCropPlantedDate" class="form-label">Planted Date *</label>
+                                            <input type="date" class="form-control" id="newCropPlantedDate" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="newCropStatus" class="form-label">Status *</label>
+                                            <select class="form-select" id="newCropStatus" required>
+                                                <option value="planted">Planted</option>
+                                                <option value="growing">Growing</option>
+                                                <option value="ready">Ready for Harvest</option>
+                                                <option value="harvested">Harvested</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="newCropPH" class="form-label">Soil pH Level</label>
+                                            <input type="number" class="form-control" id="newCropPH" min="0" max="14" step="0.1" placeholder="6.5">
+                                            <small class="form-text text-muted">Optimal range: 6.0-7.0 for most crops</small>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="newCropPestIssues" class="form-label">Pest Issues</label>
+                                            <textarea class="form-control" id="newCropPestIssues" rows="3" placeholder="Describe any pest problems observed..."></textarea>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="newCropNotes" class="form-label">Additional Notes</label>
+                                            <textarea class="form-control" id="newCropNotes" rows="2" placeholder="Any additional observations..."></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-primary" onclick="saveNewCrop()">Add Crop</button>
+                        </div>
+                    </div>
+                </div>
+            `;
             
-            const field = prompt('Enter field location:', 'Field A');
-            if (!field) return;
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
             
-            const plantedDate = prompt('Enter planted date (YYYY-MM-DD):', new Date().toISOString().split('T')[0]);
-            if (!plantedDate) return;
-            
-            const status = prompt('Enter status (Growing/Ready/Harvested):', 'Growing');
-            if (!status) return;
-            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        function saveNewCrop() {
+            const name = document.getElementById('newCropName').value.trim();
+            const field = document.getElementById('newCropField').value.trim();
+            const area = document.getElementById('newCropArea').value.trim();
+            const plantedDate = document.getElementById('newCropPlantedDate').value.trim();
+            const status = document.getElementById('newCropStatus').value.trim();
+            const phLevel = document.getElementById('newCropPH').value.trim();
+            const pestIssues = document.getElementById('newCropPestIssues').value.trim();
+            const notes = document.getElementById('newCropNotes').value.trim();
+
+            if (!name || !field || !plantedDate || !status) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
             const newCrop = {
-                id: Date.now(), // Simple ID generation
-                name: name.trim(),
-                field: field.trim(),
-                plantedDate: plantedDate.trim(),
-                status: status.trim()
+                id: Date.now(),
+                name: name,
+                field: field,
+                area: area ? parseFloat(area) : null,
+                plantedDate: plantedDate,
+                status: status,
+                phLevel: phLevel ? parseFloat(phLevel) : null,
+                pestIssues: pestIssues || null,
+                notes: notes || null,
+                lastUpdated: new Date().toLocaleDateString()
             };
-            
+
             crops.push(newCrop);
             console.log('Adding new crop:', newCrop);
-            console.log('All crops after adding:', crops);
             saveCropsData();
             renderCropsTable();
-            updateAnalyticsCharts(); // Update charts with new data
+            updateAnalyticsCharts();
             showSuccessMessage('Crop added successfully!');
+
+            // Close modal
+            const modal = document.querySelector('.modal');
+            if (modal) {
+                const bsModal = bootstrap.Modal.getInstance(modal);
+                bsModal.hide();
+            }
         }
 
         function editCrop(id) {
@@ -1432,6 +1532,19 @@
                                         <option value="planted" ${crop.status.toLowerCase() === 'planted' ? 'selected' : ''}>Planted</option>
                                     </select>
                                 </div>
+                                <div class="mb-3">
+                                    <label for="editCropPH" class="form-label">Soil pH Level</label>
+                                    <input type="number" class="form-control" id="editCropPH" min="0" max="14" step="0.1" value="${crop.phLevel || ''}" placeholder="6.5">
+                                    <small class="form-text text-muted">Optimal range: 6.0-7.0 for most crops</small>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="editCropPestIssues" class="form-label">Pest Issues</label>
+                                    <textarea class="form-control" id="editCropPestIssues" rows="3" placeholder="Describe any pest problems observed...">${crop.pestIssues || ''}</textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="editCropNotes" class="form-label">Additional Notes</label>
+                                    <textarea class="form-control" id="editCropNotes" rows="2" placeholder="Any additional observations...">${crop.notes || ''}</textarea>
+                                </div>
                             </form>
                         </div>
                         <div class="modal-footer">
@@ -1457,6 +1570,9 @@
             const area = document.getElementById('editCropArea').value.trim();
             const plantedDate = document.getElementById('editCropPlantedDate').value.trim();
             const status = document.getElementById('editCropStatus').value.trim();
+            const phLevel = document.getElementById('editCropPH').value.trim();
+            const pestIssues = document.getElementById('editCropPestIssues').value.trim();
+            const notes = document.getElementById('editCropNotes').value.trim();
 
             if (!name || !field || !plantedDate || !status) {
                 alert('Please fill in all required fields');
@@ -1472,7 +1588,11 @@
                     field: field,
                     area: area || null,
                     plantedDate: plantedDate,
-                    status: status
+                    status: status,
+                    phLevel: phLevel ? parseFloat(phLevel) : null,
+                    pestIssues: pestIssues || null,
+                    notes: notes || null,
+                    lastUpdated: new Date().toLocaleDateString()
                 };
 
                 saveCropsData();
@@ -2123,6 +2243,245 @@ INVENTORY SUMMARY:
             document.body.removeChild(link);
             
             showSuccessMessage(`${filename} downloaded successfully!`);
+        }
+
+        // ===== AI SUGGESTIONS FUNCTIONALITY =====
+
+        function showAISuggestions(cropId) {
+            const crop = crops.find(c => c.id === cropId);
+            if (!crop) {
+                alert('Crop not found');
+                return;
+            }
+
+            const suggestions = generateAISuggestions(crop);
+            
+            // Create AI suggestions modal
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header bg-info text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-brain me-2"></i>AI Suggestions for ${crop.name}
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6 class="text-primary">🌱 Crop Information</h6>
+                                    <ul class="list-unstyled">
+                                        <li><strong>Crop:</strong> ${crop.name}</li>
+                                        <li><strong>Field:</strong> ${crop.field}</li>
+                                        <li><strong>Status:</strong> ${crop.status}</li>
+                                        <li><strong>pH Level:</strong> ${crop.phLevel || 'Not measured'}</li>
+                                        <li><strong>Planted:</strong> ${crop.plantedDate}</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="text-warning">🐛 Pest Issues</h6>
+                                    <p>${crop.pestIssues || 'No pest issues reported'}</p>
+                                </div>
+                            </div>
+                            
+                            <hr>
+                            
+                            <div class="ai-suggestions">
+                                ${suggestions.map(suggestion => `
+                                    <div class="suggestion-card mb-3 p-3 border-start border-4 ${suggestion.type === 'critical' ? 'border-danger bg-light' : suggestion.type === 'warning' ? 'border-warning bg-light' : 'border-success bg-light'}">
+                                        <div class="d-flex align-items-start">
+                                            <div class="me-3">
+                                                ${suggestion.type === 'critical' ? '🚨' : suggestion.type === 'warning' ? '⚠️' : '✅'}
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-2">${suggestion.title}</h6>
+                                                <p class="mb-2">${suggestion.description}</p>
+                                                <div class="actions">
+                                                    ${suggestion.actions.map(action => `
+                                                        <button class="btn btn-sm btn-outline-primary me-2 mb-1" onclick="executeSuggestion('${action}', ${cropId})">
+                                                            ${action}
+                                                        </button>
+                                                    `).join('')}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-info" onclick="updateCropFromSuggestions(${cropId})">
+                                <i class="fas fa-sync me-2"></i>Update Crop Data
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        function generateAISuggestions(crop) {
+            const suggestions = [];
+            
+            // pH Level Analysis
+            if (crop.phLevel) {
+                if (crop.phLevel < 5.5) {
+                    suggestions.push({
+                        type: 'critical',
+                        title: 'Soil pH Too Acidic',
+                        description: `Your soil pH of ${crop.phLevel} is too acidic for optimal crop growth. Most crops prefer pH 6.0-7.0.`,
+                        actions: ['Add Lime', 'Test Soil Again', 'Check Crop Compatibility']
+                    });
+                } else if (crop.phLevel > 7.5) {
+                    suggestions.push({
+                        type: 'critical',
+                        title: 'Soil pH Too Alkaline',
+                        description: `Your soil pH of ${crop.phLevel} is too alkaline. Consider acidifying treatments.`,
+                        actions: ['Add Sulfur', 'Use Acidic Fertilizer', 'Test Soil Again']
+                    });
+                } else {
+                    suggestions.push({
+                        type: 'success',
+                        title: 'Optimal Soil pH',
+                        description: `Great! Your soil pH of ${crop.phLevel} is in the optimal range for most crops.`,
+                        actions: ['Monitor Regularly', 'Record in Log']
+                    });
+                }
+            } else {
+                suggestions.push({
+                    type: 'warning',
+                    title: 'Soil pH Not Measured',
+                    description: 'Soil pH testing is crucial for optimal crop growth. Please test your soil pH levels.',
+                    actions: ['Test Soil pH', 'Schedule Testing', 'Buy pH Tester']
+                });
+            }
+            
+            // Pest Analysis
+            if (crop.pestIssues) {
+                const pestText = crop.pestIssues.toLowerCase();
+                suggestions.push({
+                    type: 'critical',
+                    title: 'Pest Issues Detected',
+                    description: `Pest problems have been reported: "${crop.pestIssues}". Immediate action may be required.`,
+                    actions: ['Identify Pests', 'Apply Treatment', 'Consult Expert']
+                });
+                
+                // Specific pest suggestions
+                if (pestText.includes('aphid') || pestText.includes('bug')) {
+                    suggestions.push({
+                        type: 'warning',
+                        title: 'Insect Pest Management',
+                        description: 'Insect pests detected. Consider organic or chemical treatments based on severity.',
+                        actions: ['Neem Oil Treatment', 'Insecticidal Soap', 'Beneficial Insects']
+                    });
+                }
+                
+                if (pestText.includes('fungus') || pestText.includes('mold')) {
+                    suggestions.push({
+                        type: 'warning',
+                        title: 'Fungal Disease Management',
+                        description: 'Fungal issues detected. Improve air circulation and consider fungicide treatment.',
+                        actions: ['Improve Drainage', 'Apply Fungicide', 'Prune Affected Areas']
+                    });
+                }
+            } else {
+                suggestions.push({
+                    type: 'success',
+                    title: 'No Pest Issues',
+                    description: 'No pest problems reported. Continue regular monitoring and preventive measures.',
+                    actions: ['Continue Monitoring', 'Maintain Prevention', 'Record Status']
+                });
+            }
+            
+            // Growth Stage Analysis
+            const plantedDate = new Date(crop.plantedDate);
+            const daysSincePlanted = Math.floor((Date.now() - plantedDate.getTime()) / (1000 * 60 * 60 * 24));
+            
+            if (daysSincePlanted < 7) {
+                suggestions.push({
+                    type: 'warning',
+                    title: 'Early Growth Stage',
+                    description: `Crop planted ${daysSincePlanted} days ago. Focus on soil moisture and protection.`,
+                    actions: ['Check Moisture', 'Protect from Weather', 'Monitor Germination']
+                });
+            } else if (daysSincePlanted < 30) {
+                suggestions.push({
+                    type: 'success',
+                    title: 'Active Growth Phase',
+                    description: `Crop is ${daysSincePlanted} days old. Monitor growth and apply nutrients as needed.`,
+                    actions: ['Fertilize', 'Weed Control', 'Monitor Growth']
+                });
+            } else {
+                suggestions.push({
+                    type: 'warning',
+                    title: 'Mature Growth Stage',
+                    description: `Crop is ${daysSincePlanted} days old. Prepare for harvest or continued care.`,
+                    actions: ['Harvest Check', 'Final Fertilizer', 'Harvest Planning']
+                });
+            }
+            
+            // Crop-specific suggestions
+            const cropName = crop.name.toLowerCase();
+            if (cropName.includes('tomato')) {
+                suggestions.push({
+                    type: 'warning',
+                    title: 'Tomato Care Tips',
+                    description: 'Tomatoes need consistent watering and support. Watch for blossom end rot.',
+                    actions: ['Stake Plants', 'Consistent Watering', 'Calcium Supplement']
+                });
+            } else if (cropName.includes('pepper') || cropName.includes('capsicum')) {
+                suggestions.push({
+                    type: 'warning',
+                    title: 'Pepper Care Tips',
+                    description: 'Peppers prefer warm temperatures and consistent moisture. Avoid overwatering.',
+                    actions: ['Temperature Check', 'Moderate Watering', 'Support Stems']
+                });
+            }
+            
+            return suggestions;
+        }
+
+        function executeSuggestion(action, cropId) {
+            showSuccessMessage(`Executing: ${action}`);
+            
+            // Here you could implement specific actions
+            switch(action) {
+                case 'Test Soil pH':
+                    showSuccessMessage('Soil pH testing kit recommended. Test multiple locations in the field.');
+                    break;
+                case 'Add Lime':
+                    showSuccessMessage('Apply 50-100 lbs of lime per 1000 sq ft for acidic soil correction.');
+                    break;
+                case 'Apply Treatment':
+                    showSuccessMessage('Consult with agricultural expert for appropriate treatment recommendations.');
+                    break;
+                case 'Monitor Regularly':
+                    showSuccessMessage('Set up regular monitoring schedule for optimal crop health.');
+                    break;
+                default:
+                    showSuccessMessage(`Action "${action}" logged for implementation.`);
+            }
+        }
+
+        function updateCropFromSuggestions(cropId) {
+            const crop = crops.find(c => c.id === cropId);
+            if (crop) {
+                // Update last updated timestamp
+                crop.lastUpdated = new Date().toLocaleDateString();
+                saveCropsData();
+                renderCropsTable();
+                showSuccessMessage('Crop data updated with AI suggestions!');
+            }
         }
 
         // User functions
