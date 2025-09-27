@@ -1048,6 +1048,212 @@ class PesticideManagement {
                         exportTolerance: 'Varies by country'
                     }
                 }
+            },
+            // ADDITIONAL PESTICIDES FOR COMPREHENSIVE COVERAGE
+            {
+                name: 'Copper Compounds',
+                category: 'Bactericide',
+                type: 'Inorganic',
+                effectiveness: 75,
+                safetyLevel: 'Moderate',
+                applicationRate: '2-4 L/ha',
+                costPerLiter: 20.00,
+                environmentalImpact: 'Low',
+                description: 'Broad-spectrum bactericide and fungicide',
+                preHarvestInterval: 0,
+                weatherRestrictions: ['Avoid high humidity', 'Temperature below 30°C'],
+                knapsackMixtures: {
+                    '16L': {
+                        concentration: '0.5%',
+                        chemicalAmount: 80,
+                        waterAmount: 15920,
+                        coverageArea: 0.08,
+                        sprayTime: 30,
+                        instructions: [
+                            'Fill sprayer with 15.92L clean water',
+                            'Add 80ml Copper compound',
+                            'Mix gently for 1 minute',
+                            'Apply at 200L/ha rate',
+                            'Cover 0.08 hectares per tank'
+                        ]
+                    },
+                    '20L': {
+                        concentration: '0.5%',
+                        chemicalAmount: 100,
+                        waterAmount: 19900,
+                        coverageArea: 0.1,
+                        sprayTime: 35,
+                        instructions: [
+                            'Fill sprayer with 19.9L clean water',
+                            'Add 100ml Copper compound',
+                            'Mix gently for 1 minute',
+                            'Apply at 200L/ha rate',
+                            'Cover 0.1 hectares per tank'
+                        ]
+                    }
+                },
+                safetyGuidelines: [
+                    'Wear protective clothing',
+                    'Use chemical-resistant gloves',
+                    'Avoid skin and eye contact',
+                    'Safe for organic farming',
+                    'No pre-harvest interval'
+                ],
+                chemicalDetails: {
+                    chemicalName: 'Copper hydroxide, copper oxychloride',
+                    molecularFormula: 'Cu(OH)2, Cu2Cl(OH)3',
+                    molecularWeight: '97.56 g/mol, 213.57 g/mol',
+                    casNumber: '20427-59-2, 1332-65-6',
+                    physicalState: 'Solid (powder)',
+                    color: 'Blue to green',
+                    odor: 'Odorless',
+                    solubility: 'Slightly soluble in water',
+                    phLevel: '6.0-8.0',
+                    density: '3.4 g/cm³',
+                    boilingPoint: 'Decomposes before boiling',
+                    meltingPoint: 'Decomposes at 200°C',
+                    vaporPressure: 'Negligible',
+                    halfLife: 'Soil: 30-60 days, Water: 30-60 days',
+                    modeOfAction: 'Multi-site inhibitor (copper ions)',
+                    targetPests: [
+                        'Bacterial diseases',
+                        'Fungal diseases',
+                        'Fire blight',
+                        'Bacterial spot',
+                        'Powdery mildew'
+                    ],
+                    resistantPests: [
+                        'Copper-resistant bacterial strains'
+                    ],
+                    applicationTiming: [
+                        'Preventive application',
+                        'Early disease stage',
+                        'Weather-based timing',
+                        'Regular intervals'
+                    ],
+                    toxicity: {
+                        acuteOral: 'LD50 > 5000 mg/kg (practically non-toxic)',
+                        acuteDermal: 'LD50 > 2000 mg/kg (slightly toxic)',
+                        acuteInhalation: 'LC50 > 5.1 mg/L (slightly toxic)',
+                        eyeIrritation: 'Mild irritant',
+                        skinIrritation: 'Mild irritant'
+                    },
+                    ecotoxicity: {
+                        fish: 'LC50 1-10 mg/L (highly toxic)',
+                        birds: 'LD50 > 2000 mg/kg (practically non-toxic)',
+                        bees: 'LD50 > 100 μg/bee (practically non-toxic)',
+                        earthworms: 'LC50 > 1000 mg/kg (practically non-toxic)'
+                    },
+                    regulatoryStatus: {
+                        epaRegistration: 'Approved for agricultural use',
+                        reEntryInterval: '0 hours',
+                        workerProtectionStandard: 'Category III (Caution)',
+                        restrictedUse: 'No',
+                        exportTolerance: 'Generally recognized as safe'
+                    }
+                }
+            },
+            {
+                name: 'Streptomycin',
+                category: 'Bactericide',
+                type: 'Antibiotic',
+                effectiveness: 85,
+                safetyLevel: 'High',
+                applicationRate: '0.5-1 L/ha',
+                costPerLiter: 60.00,
+                environmentalImpact: 'Low',
+                description: 'Antibiotic bactericide for specific bacterial diseases',
+                preHarvestInterval: 7,
+                weatherRestrictions: ['No rain for 4 hours', 'Temperature below 30°C'],
+                knapsackMixtures: {
+                    '16L': {
+                        concentration: '0.1%',
+                        chemicalAmount: 16,
+                        waterAmount: 15984,
+                        coverageArea: 0.15,
+                        sprayTime: 40,
+                        instructions: [
+                            'Fill sprayer with 15.984L clean water',
+                            'Add 16ml Streptomycin concentrate',
+                            'Mix gently for 1 minute',
+                            'Apply at 110L/ha rate',
+                            'Cover 0.15 hectares per tank'
+                        ]
+                    },
+                    '20L': {
+                        concentration: '0.1%',
+                        chemicalAmount: 20,
+                        waterAmount: 19980,
+                        coverageArea: 0.18,
+                        sprayTime: 45,
+                        instructions: [
+                            'Fill sprayer with 19.98L clean water',
+                            'Add 20ml Streptomycin concentrate',
+                            'Mix gently for 1 minute',
+                            'Apply at 110L/ha rate',
+                            'Cover 0.18 hectares per tank'
+                        ]
+                    }
+                },
+                safetyGuidelines: [
+                    'Wear protective clothing',
+                    'Use chemical-resistant gloves',
+                    'Avoid skin and eye contact',
+                    'Do not apply near water sources',
+                    'Clean equipment thoroughly'
+                ],
+                chemicalDetails: {
+                    chemicalName: 'Streptomycin sulfate',
+                    molecularFormula: 'C21H39N7O12·1.5H2SO4',
+                    molecularWeight: '728.69 g/mol',
+                    casNumber: '3810-74-0',
+                    physicalState: 'Solid (powder)',
+                    color: 'White to off-white',
+                    odor: 'Odorless',
+                    solubility: 'Soluble in water (1 g/mL at 20°C)',
+                    phLevel: '4.5-7.0',
+                    density: '1.8 g/cm³',
+                    boilingPoint: 'Decomposes before boiling',
+                    meltingPoint: 'Decomposes at 200°C',
+                    vaporPressure: 'Negligible',
+                    halfLife: 'Soil: 7-14 days, Water: 7-14 days',
+                    modeOfAction: 'Protein synthesis inhibitor (30S ribosome)',
+                    targetPests: [
+                        'Fire blight',
+                        'Bacterial spot',
+                        'Bacterial canker',
+                        'Bacterial wilt'
+                    ],
+                    resistantPests: [
+                        'Streptomycin-resistant bacterial strains'
+                    ],
+                    applicationTiming: [
+                        'Early disease stage',
+                        'Preventive application',
+                        'Systemic treatment',
+                        'Regular intervals'
+                    ],
+                    toxicity: {
+                        acuteOral: 'LD50 > 5000 mg/kg (practically non-toxic)',
+                        acuteDermal: 'LD50 > 2000 mg/kg (slightly toxic)',
+                        acuteInhalation: 'LC50 > 5.1 mg/L (slightly toxic)',
+                        eyeIrritation: 'Mild irritant',
+                        skinIrritation: 'Mild irritant'
+                    },
+                    ecotoxicity: {
+                        fish: 'LC50 > 100 mg/L (practically non-toxic)',
+                        birds: 'LD50 > 2000 mg/kg (practically non-toxic)',
+                        bees: 'LD50 > 100 μg/bee (practically non-toxic)',
+                        earthworms: 'LC50 > 1000 mg/kg (practically non-toxic)'
+                    },
+                    regulatoryStatus: {
+                        epaRegistration: 'Approved for agricultural use',
+                        reEntryInterval: '12 hours',
+                        workerProtectionStandard: 'Category III (Caution)',
+                        restrictedUse: 'No',
+                        exportTolerance: 'Varies by country'
+                    }
+                }
             }
         ];
     }
@@ -1068,6 +1274,25 @@ class PesticideManagement {
             'Fruit Flies': ['Spinosad'],
             'Moth Larvae': ['Bacillus thuringiensis', 'Spinosad'],
             'Butterfly Larvae': ['Bacillus thuringiensis'],
+            'Grasshoppers': ['Deltamethrin', 'Malathion'],
+            'Locusts': ['Deltamethrin', 'Malathion'],
+            'Wireworms': ['Imidacloprid'],
+            'Cutworms': ['Deltamethrin', 'Bacillus thuringiensis'],
+            'Armyworms': ['Deltamethrin', 'Spinosad', 'Bacillus thuringiensis'],
+            'Corn Earworms': ['Deltamethrin', 'Spinosad'],
+            'Tomato Hornworms': ['Bacillus thuringiensis', 'Spinosad'],
+            'Cabbage Worms': ['Bacillus thuringiensis', 'Spinosad'],
+            'Colorado Potato Beetles': ['Deltamethrin', 'Spinosad'],
+            'Japanese Beetles': ['Deltamethrin', 'Imidacloprid'],
+            'Flea Beetles': ['Deltamethrin', 'Imidacloprid'],
+            'Cucumber Beetles': ['Deltamethrin', 'Imidacloprid'],
+            'Squash Bugs': ['Deltamethrin', 'Neem Oil'],
+            'Stink Bugs': ['Deltamethrin', 'Spinosad'],
+            'Leaf-footed Bugs': ['Deltamethrin', 'Spinosad'],
+            'Weevils': ['Imidacloprid', 'Deltamethrin'],
+            'Borers': ['Imidacloprid', 'Deltamethrin'],
+            'Mites': ['Malathion', 'Neem Oil', 'Insecticidal Soap'],
+            'Nematodes': ['Imidacloprid'],
             
             // FUNGAL DISEASES
             'Powdery Mildew': ['Mancozeb', 'Propiconazole', 'Chlorothalonil'],
@@ -1077,11 +1302,60 @@ class PesticideManagement {
             'Blight': ['Mancozeb', 'Chlorothalonil'],
             'Anthracnose': ['Propiconazole', 'Chlorothalonil'],
             'Fruit Rot': ['Propiconazole'],
+            'Early Blight': ['Mancozeb', 'Chlorothalonil'],
+            'Late Blight': ['Mancozeb', 'Chlorothalonil'],
+            'Septoria Leaf Spot': ['Mancozeb', 'Propiconazole'],
+            'Alternaria': ['Mancozeb', 'Propiconazole'],
+            'Botrytis (Gray Mold)': ['Propiconazole', 'Chlorothalonil'],
+            'Fusarium Wilt': ['Propiconazole'],
+            'Verticillium Wilt': ['Propiconazole'],
+            'Root Rot': ['Propiconazole', 'Chlorothalonil'],
+            'Crown Rot': ['Propiconazole', 'Chlorothalonil'],
+            'Scab': ['Mancozeb', 'Propiconazole'],
+            'Sooty Mold': ['Neem Oil', 'Insecticidal Soap'],
             
-            // BACTERIAL DISEASES (Placeholder for future expansion)
+            // BACTERIAL DISEASES
             'Bacterial Diseases': ['Copper Compounds', 'Streptomycin'],
-            'Fire Blight': ['Copper Compounds'],
-            'Bacterial Spot': ['Copper Compounds']
+            'Fire Blight': ['Copper Compounds', 'Streptomycin'],
+            'Bacterial Spot': ['Copper Compounds', 'Streptomycin'],
+            'Bacterial Wilt': ['Copper Compounds'],
+            'Bacterial Canker': ['Copper Compounds', 'Streptomycin'],
+            'Bacterial Leaf Blight': ['Copper Compounds'],
+            'Soft Rot': ['Copper Compounds'],
+            'Black Rot': ['Copper Compounds'],
+            'Halo Blight': ['Copper Compounds'],
+            'Angular Leaf Spot': ['Copper Compounds'],
+            
+            // VIRAL DISEASES
+            'Mosaic Virus': ['Insect Control (Vector Management)'],
+            'Yellowing Virus': ['Insect Control (Vector Management)'],
+            'Curly Top Virus': ['Insect Control (Vector Management)'],
+            'Tomato Spotted Wilt': ['Insect Control (Vector Management)'],
+            'Cucumber Mosaic': ['Insect Control (Vector Management)'],
+            'Potato Virus Y': ['Insect Control (Vector Management)'],
+            
+            // SOIL-BORNE PESTS
+            'Root-knot Nematodes': ['Nematicides'],
+            'Cyst Nematodes': ['Nematicides'],
+            'Lesion Nematodes': ['Nematicides'],
+            'Stem Nematodes': ['Nematicides'],
+            'Bulb Nematodes': ['Nematicides'],
+            
+            // STORAGE PESTS
+            'Grain Weevils': ['Fumigants', 'Malathion'],
+            'Rice Weevils': ['Fumigants', 'Malathion'],
+            'Maize Weevils': ['Fumigants', 'Malathion'],
+            'Flour Beetles': ['Fumigants', 'Malathion'],
+            'Grain Moths': ['Fumigants', 'Malathion'],
+            'Indian Meal Moths': ['Fumigants', 'Malathion'],
+            'Mediterranean Flour Moths': ['Fumigants', 'Malathion'],
+            
+            // WEED CATEGORIES
+            'Broadleaf Weeds': ['Herbicides'],
+            'Grassy Weeds': ['Herbicides'],
+            'Annual Weeds': ['Herbicides'],
+            'Perennial Weeds': ['Herbicides'],
+            'Sedge Weeds': ['Herbicides']
         };
     }
 
@@ -1154,6 +1428,22 @@ class PesticideManagement {
                 'Clean equipment thoroughly'
             ],
             'Chlorothalonil': [
+                'Wear protective clothing',
+                'Use chemical-resistant gloves',
+                'Avoid skin and eye contact',
+                'Do not apply near water sources',
+                'Clean equipment thoroughly'
+            ],
+            
+            // BACTERICIDES
+            'Copper Compounds': [
+                'Wear protective clothing',
+                'Use chemical-resistant gloves',
+                'Avoid skin and eye contact',
+                'Safe for organic farming',
+                'No pre-harvest interval'
+            ],
+            'Streptomycin': [
                 'Wear protective clothing',
                 'Use chemical-resistant gloves',
                 'Avoid skin and eye contact',

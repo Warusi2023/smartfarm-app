@@ -436,6 +436,48 @@
                             <i class="fas fa-info-circle me-1"></i>View Details
                         </button>
                     </div>
+
+                    <!-- Copper Compounds -->
+                    <div class="pesticide-card">
+                        <div class="pesticide-name">Copper Compounds</div>
+                        <div class="pesticide-details">
+                            <strong>Type:</strong> Inorganic Bactericide<br>
+                            <strong>Target:</strong> Bacterial & Fungal Diseases<br>
+                            <strong>Cost:</strong> $20.00/L<br>
+                            <strong>Safety:</strong> Moderate
+                        </div>
+                        <div class="effectiveness-bar">
+                            <div class="effectiveness-fill" style="width: 75%"></div>
+                        </div>
+                        <small class="text-muted">75% Effectiveness</small>
+                        <button class="btn btn-sm btn-outline-primary w-100 mt-2" onclick="selectPesticide('Copper Compounds')">
+                            <i class="fas fa-bacteria me-1"></i>Select Bactericide
+                        </button>
+                        <button class="btn btn-sm btn-outline-info w-100 mt-2" onclick="showPesticideDetails('Copper Compounds')">
+                            <i class="fas fa-info-circle me-1"></i>View Details
+                        </button>
+                    </div>
+
+                    <!-- Streptomycin -->
+                    <div class="pesticide-card">
+                        <div class="pesticide-name">Streptomycin</div>
+                        <div class="pesticide-details">
+                            <strong>Type:</strong> Antibiotic Bactericide<br>
+                            <strong>Target:</strong> Fire Blight, Bacterial Spot<br>
+                            <strong>Cost:</strong> $60.00/L<br>
+                            <strong>Safety:</strong> High
+                        </div>
+                        <div class="effectiveness-bar">
+                            <div class="effectiveness-fill" style="width: 85%"></div>
+                        </div>
+                        <small class="text-muted">85% Effectiveness</small>
+                        <button class="btn btn-sm btn-outline-primary w-100 mt-2" onclick="selectPesticide('Streptomycin')">
+                            <i class="fas fa-pills me-1"></i>Select Antibiotic
+                        </button>
+                        <button class="btn btn-sm btn-outline-info w-100 mt-2" onclick="showPesticideDetails('Streptomycin')">
+                            <i class="fas fa-info-circle me-1"></i>View Details
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -710,6 +752,12 @@
                         break;
                     case 'Chlorothalonil':
                         basicInfo = `🔬 CHLOROTHALONIL DETAILS\n\nType: Chloronitrile Protectant Fungicide\nEffectiveness: 80%\nSafety Level: Moderate\nCost: $35.00/L\n\nTarget Diseases:\n• Leaf spot\n• Blight\n• Anthracnose\n• Downy mildew\n• Rust\n\nSafety Guidelines:\n• Wear protective clothing\n• Use chemical-resistant gloves\n• Avoid skin and eye contact\n• Do not apply near water sources\n• 7-day pre-harvest interval\n\nPre-Harvest Interval: 7 days`;
+                        break;
+                    case 'Copper Compounds':
+                        basicInfo = `🔬 COPPER COMPOUNDS DETAILS\n\nType: Inorganic Bactericide & Fungicide\nEffectiveness: 75%\nSafety Level: Moderate\nCost: $20.00/L\n\nTarget Diseases:\n• Bacterial diseases\n• Fire blight\n• Bacterial spot\n• Powdery mildew\n• Downy mildew\n\nSafety Guidelines:\n• Wear protective clothing\n• Use chemical-resistant gloves\n• Avoid skin and eye contact\n• Safe for organic farming\n• No pre-harvest interval\n\nPre-Harvest Interval: 0 days`;
+                        break;
+                    case 'Streptomycin':
+                        basicInfo = `🔬 STREPTOMYCIN DETAILS\n\nType: Antibiotic Bactericide\nEffectiveness: 85%\nSafety Level: High\nCost: $60.00/L\n\nTarget Diseases:\n• Fire blight\n• Bacterial spot\n• Bacterial canker\n• Bacterial wilt\n• Halo blight\n\nSafety Guidelines:\n• Wear protective clothing\n• Use chemical-resistant gloves\n• Avoid skin and eye contact\n• Do not apply near water sources\n• 7-day pre-harvest interval\n\nPre-Harvest Interval: 7 days`;
                         break;
                     default:
                         basicInfo = `🔬 ${pesticideName} DETAILS\n\nThis would display comprehensive pesticide information including:\n\n• Chemical properties and molecular data\n• Toxicity and ecotoxicity information\n• Target pests and resistance data\n• Application instructions and timing\n• Safety guidelines and protective equipment\n• Regulatory compliance information\n\nDetailed pesticide database integration required.`;
