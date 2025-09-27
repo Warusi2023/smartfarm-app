@@ -258,7 +258,17 @@ class SmartFarmCompetitive {
             blockchainContainer.id = 'blockchainDashboard';
             blockchainContainer.className = 'dashboard-card mt-4';
             blockchainContainer.innerHTML = `
-                <h5 class="mb-3">⛓️ Product Traceability (Blockchain)</h5>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5>⛓️ Product Traceability (Blockchain)</h5>
+                    <div>
+                        <button class="btn btn-sm btn-outline-success me-2" onclick="smartFarm.scanQRCode()">
+                            <i class="fas fa-qrcode me-1"></i>Scan QR Code
+                        </button>
+                        <button class="btn btn-sm btn-outline-primary" onclick="smartFarm.generateAllQRCodes()">
+                            <i class="fas fa-print me-1"></i>Generate All QR Codes
+                        </button>
+                    </div>
+                </div>
                 <div class="traceability-grid" id="blockchainContainer">
                     <!-- Blockchain data will be populated here -->
                 </div>
@@ -363,8 +373,11 @@ class SmartFarmCompetitive {
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary" onclick="smartFarm.generateQRCode('${product.productId}')">
-                            Generate QR Code
+                        <button type="button" class="btn btn-success" onclick="smartFarm.generateQRCode('${product.productId}')">
+                            <i class="fas fa-qrcode me-2"></i>Generate QR Code
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="smartFarm.viewTraceabilityPage('${product.productId}')">
+                            <i class="fas fa-external-link-alt me-2"></i>View Full Page
                         </button>
                     </div>
                 </div>
@@ -381,8 +394,160 @@ class SmartFarmCompetitive {
     }
 
     generateQRCode(productId) {
-        // Simulate QR code generation
-        alert(`QR Code generated for product ${productId}\nScan to view full traceability information!`);
+        // Use the QR traceability system
+        if (typeof qrTraceability !== 'undefined') {
+            // Select the product in the QR generator
+            const productSelect = document.getElementById('productSelect');
+            if (productSelect) {
+                productSelect.value = productId;
+                qrTraceability.generateQRCode();
+            } else {
+                alert(`QR Code generated for product ${productId}\nScan to view full traceability information!`);
+            }
+        } else {
+            alert(`QR Code generated for product ${productId}\nScan to view full traceability information!`);
+        }
+    }
+
+    viewTraceabilityPage(productId) {
+        // Open the full traceability page
+        const traceabilityURL = `traceability.html?id=${productId}`;
+        window.open(traceabilityURL, '_blank');
+    }
+
+    scanQRCode() {
+        // QR Code Scanner functionality
+        const modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.innerHTML = `
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-success text-white">
+                        <h5 class="modal-title">
+                            <i class="fas fa-qrcode me-2"></i>QR Code Scanner
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <div class="scanner-placeholder" style="height: 300px; background: #f8f9fa; border: 2px dashed #dee2e6; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                            <i class="fas fa-camera fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">QR Code Scanner</h5>
+                            <p class="text-muted">Point your camera at a QR code to scan</p>
+                            <button class="btn btn-primary" onclick="smartFarm.startCameraScan()">
+                                <i class="fas fa-camera me-2"></i>Start Camera
+                            </button>
+                        </div>
+                        <div class="scanner-results mt-3" style="display: none;">
+                            <div class="alert alert-success">
+                                <i class="fas fa-check-circle me-2"></i>
+                                QR Code scanned successfully!
+                            </div>
+                            <button class="btn btn-success" onclick="smartFarm.viewScannedProduct()">
+                                <i class="fas fa-eye me-2"></i>View Product Traceability
+                            </button>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        const bsModal = new bootstrap.Modal(modal);
+        bsModal.show();
+        
+        modal.addEventListener('hidden.bs.modal', () => {
+            document.body.removeChild(modal);
+        });
+    }
+
+    startCameraScan() {
+        // Simulate camera scanning
+        setTimeout(() => {
+            document.querySelector('.scanner-placeholder').style.display = 'none';
+            document.querySelector('.scanner-results').style.display = 'block';
+        }, 2000);
+    }
+
+    viewScannedProduct() {
+        // Simulate viewing scanned product
+        const productId = 'PROD001'; // Simulated scanned product
+        this.viewTraceabilityPage(productId);
+    }
+
+    generateAllQRCodes() {
+        // Generate QR codes for all products
+        const modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.innerHTML = `
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title">
+                            <i class="fas fa-qrcode me-2"></i>Generate All QR Codes
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row" id="allQRCodesContainer">
+                            <!-- QR codes will be populated here -->
+                        </div>
+                        <div class="text-center mt-3">
+                            <button class="btn btn-success" onclick="smartFarm.downloadAllQRCodes()">
+                                <i class="fas fa-download me-2"></i>Download All QR Codes
+                            </button>
+                            <button class="btn btn-primary ms-2" onclick="smartFarm.printAllQRCodes()">
+                                <i class="fas fa-print me-2"></i>Print All QR Codes
+                            </button>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        const bsModal = new bootstrap.Modal(modal);
+        bsModal.show();
+        
+        // Generate QR codes for all products
+        this.generateQRCodesForAllProducts();
+        
+        modal.addEventListener('hidden.bs.modal', () => {
+            document.body.removeChild(modal);
+        });
+    }
+
+    generateQRCodesForAllProducts() {
+        const container = document.getElementById('allQRCodesContainer');
+        container.innerHTML = '';
+        
+        this.blockchainData.forEach(product => {
+            const qrCard = document.createElement('div');
+            qrCard.className = 'col-md-4 mb-3';
+            qrCard.innerHTML = `
+                <div class="qr-product-card text-center p-3 border rounded">
+                    <h6>${product.productName}</h6>
+                    <div class="qr-placeholder mb-2" style="height: 100px; background: #f8f9fa; border: 1px dashed #dee2e6; display: flex; align-items: center; justify-content: center;">
+                        <span class="text-muted">QR Code</span>
+                    </div>
+                    <small class="text-muted">Batch: ${product.batchNumber}</small>
+                </div>
+            `;
+            container.appendChild(qrCard);
+        });
+    }
+
+    downloadAllQRCodes() {
+        alert('📦 Downloading all QR codes as ZIP file...\n\nThis will include:\n• QR codes for all products\n• Product labels\n• Batch information\n• Traceability URLs');
+    }
+
+    printAllQRCodes() {
+        alert('🖨️ Printing all QR codes...\n\nThis will print:\n• QR codes for all products\n• Product information\n• Batch details\n• Instructions for consumers');
     }
 
     // Market Intelligence
