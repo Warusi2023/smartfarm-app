@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weeding Management - SmartFarm</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #2e7d32;
+            --secondary-color: #4caf50;
+            --accent-color: #8bc34a;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .navbar-custom {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+
+        .main-container {
+            margin-top: 80px;
+            padding: 20px;
+        }
+
+        .dashboard-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .weeding-header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .weeding-header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .alert-card {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .alert-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            transform: translate(30px, -30px);
+        }
+
+        .task-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .task-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-left: 4px solid #28a745;
+            transition: transform 0.2s ease;
+        }
+
+        .task-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+
+        .task-card.urgent {
+            border-left-color: #dc3545;
+        }
+
+        .task-card.critical {
+            border-left-color: #fd7e14;
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .task-title {
+            font-weight: bold;
+            color: #495057;
+            font-size: 1.1rem;
+        }
+
+        .task-urgency {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .urgency-critical {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .urgency-urgent {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .urgency-medium {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .task-details {
+            margin-bottom: 15px;
+        }
+
+        .task-details p {
+            margin-bottom: 8px;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-weeding {
+            background: linear-gradient(135deg, #4caf50, #8bc34a);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-weeding:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+            color: white;
+        }
+
+        .weather-widget {
+            background: linear-gradient(135deg, #17a2b8, #138496);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .weather-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .weather-metric {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .metric-label {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 20px 0;
+        }
+
+        .chemical-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .chemical-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-left: 4px solid #17a2b8;
+        }
+
+        .chemical-name {
+            font-weight: bold;
+            color: #495057;
+            margin-bottom: 10px;
+        }
+
+        .chemical-details {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-bottom: 10px;
+        }
+
+        .effectiveness-bar {
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .effectiveness-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #20c997);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light navbar-custom fixed-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="dashboard.html">
+                <i class="fas fa-leaf text-success me-2"></i>SmartFarm
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="dashboard.html">
+                            <i class="fas fa-home me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="weeding-management.html">
+                            <i class="fas fa-seedling me-1"></i>Weeding
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="ai-predictions.html">
+                            <i class="fas fa-brain me-1"></i>AI Predictions
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="supply-chain.html">
+                            <i class="fas fa-truck me-1"></i>Supply Chain
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="logout()">
+                            <i class="fas fa-sign-out-alt me-1"></i>Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <!-- Header -->
+        <div class="weeding-header">
+            <h1>🌱 Intelligent Weeding Management</h1>
+            <p>Smart weed control based on weather effects and crop conditions</p>
+        </div>
+
+        <!-- Urgent Alerts -->
+        <div class="alert-card">
+            <h5 class="mb-3">
+                <i class="fas fa-exclamation-triangle me-2"></i>Urgent Weeding Alerts
+            </h5>
+            <div class="alert-content">
+                <p class="mb-2">🚨 <strong>2 Critical Tasks</strong> require immediate attention:</p>
+                <ul class="mb-3">
+                    <li>Tomatoes - Field A (High weed growth rate: 1.3x)</li>
+                    <li>Peppers - Field B (18 days since last weeding)</li>
+                </ul>
+                <button class="btn btn-light" onclick="viewUrgentTasks()">
+                    <i class="fas fa-eye me-2"></i>View Urgent Tasks
+                </button>
+            </div>
+        </div>
+
+        <!-- Current Weather Widget -->
+        <div class="weather-widget">
+            <h5 class="mb-3">
+                <i class="fas fa-cloud-sun me-2"></i>Current Weather Conditions
+            </h5>
+            <div class="weather-metrics">
+                <div class="weather-metric">
+                    <div class="metric-value" id="currentTemp">28°C</div>
+                    <div class="metric-label">Temperature</div>
+                </div>
+                <div class="weather-metric">
+                    <div class="metric-value" id="currentHumidity">75%</div>
+                    <div class="metric-label">Humidity</div>
+                </div>
+                <div class="weather-metric">
+                    <div class="metric-value" id="currentRainfall">85mm</div>
+                    <div class="metric-label">Monthly Rainfall</div>
+                </div>
+                <div class="weather-metric">
+                    <div class="metric-value" id="currentWind">12 km/h</div>
+                    <div class="metric-label">Wind Speed</div>
+                </div>
+            </div>
+            <div class="mt-3">
+                <div class="alert alert-info mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Weather Impact:</strong> High humidity and moderate rainfall create optimal conditions for weed growth. 
+                    Consider chemical application during dry periods.
+                </div>
+            </div>
+        </div>
+
+        <!-- Weeding Tasks -->
+        <div class="dashboard-card">
+            <h5 class="mb-3">
+                <i class="fas fa-tasks me-2"></i>Active Weeding Tasks
+            </h5>
+            <div class="task-grid" id="weedingTasksContainer">
+                <!-- Weeding tasks will be populated here -->
+            </div>
+        </div>
+
+        <!-- Chemical Options -->
+        <div class="dashboard-card">
+            <h5 class="mb-3">
+                <i class="fas fa-flask me-2"></i>Chemical Suppression Options
+            </h5>
+            <div class="chemical-grid">
+                <div class="chemical-card">
+                    <div class="chemical-name">Glyphosate</div>
+                    <div class="chemical-details">
+                        <strong>Type:</strong> Non-selective herbicide<br>
+                        <strong>Cost:</strong> $25.00/L<br>
+                        <strong>Rate:</strong> 2-4 L/ha
+                    </div>
+                    <div class="effectiveness-bar">
+                        <div class="effectiveness-fill" style="width: 95%"></div>
+                    </div>
+                    <small class="text-muted">95% Effectiveness</small>
+                    <button class="btn btn-sm btn-outline-primary w-100 mt-2" onclick="selectChemical('Glyphosate')">
+                        Select Chemical
+                    </button>
+                </div>
+
+                <div class="chemical-card">
+                    <div class="chemical-name">2,4-D</div>
+                    <div class="chemical-details">
+                        <strong>Type:</strong> Selective herbicide<br>
+                        <strong>Cost:</strong> $18.00/L<br>
+                        <strong>Rate:</strong> 1-2 L/ha
+                    </div>
+                    <div class="effectiveness-bar">
+                        <div class="effectiveness-fill" style="width: 85%"></div>
+                    </div>
+                    <small class="text-muted">85% Effectiveness</small>
+                    <button class="btn btn-sm btn-outline-primary w-100 mt-2" onclick="selectChemical('2,4-D')">
+                        Select Chemical
+                    </button>
+                </div>
+
+                <div class="chemical-card">
+                    <div class="chemical-name">Organic Vinegar</div>
+                    <div class="chemical-details">
+                        <strong>Type:</strong> Organic herbicide<br>
+                        <strong>Cost:</strong> $8.00/L<br>
+                        <strong>Rate:</strong> 10-15 L/ha
+                    </div>
+                    <div class="effectiveness-bar">
+                        <div class="effectiveness-fill" style="width: 70%"></div>
+                    </div>
+                    <small class="text-muted">70% Effectiveness</small>
+                    <button class="btn btn-sm btn-outline-success w-100 mt-2" onclick="selectChemical('Organic Vinegar')">
+                        Select Chemical
+                    </button>
+                </div>
+
+                <div class="chemical-card">
+                    <div class="chemical-name">Manual Weeding</div>
+                    <div class="chemical-details">
+                        <strong>Type:</strong> Physical removal<br>
+                        <strong>Cost:</strong> $15.00/hour<br>
+                        <strong>Labor:</strong> Intensive
+                    </div>
+                    <div class="effectiveness-bar">
+                        <div class="effectiveness-fill" style="width: 100%"></div>
+                    </div>
+                    <small class="text-muted">100% Effectiveness</small>
+                    <button class="btn btn-sm btn-outline-info w-100 mt-2" onclick="selectChemical('Manual Weeding')">
+                        Select Method
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Weed Growth Chart -->
+        <div class="dashboard-card">
+            <h5 class="mb-3">
+                <i class="fas fa-chart-line me-2"></i>Weed Growth Trends
+            </h5>
+            <div class="chart-container">
+                <canvas id="weedGrowthChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="text-center">
+            <button class="btn btn-weeding me-3" onclick="refreshWeedingTasks()">
+                <i class="fas fa-sync me-2"></i>Refresh Tasks
+            </button>
+            <button class="btn btn-weeding me-3" onclick="scheduleWeeding()">
+                <i class="fas fa-calendar-plus me-2"></i>Schedule Weeding
+            </button>
+            <button class="btn btn-weeding" onclick="generateWeedingReport()">
+                <i class="fas fa-file-pdf me-2"></i>Generate Report
+            </button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/intelligent-weeding.js"></script>
+    <script>
+        // Weeding Management Page Functions
+        let weedGrowthChart;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeWeedGrowthChart();
+            populateWeedingTasks();
+        });
+
+        function initializeWeedGrowthChart() {
+            const ctx = document.getElementById('weedGrowthChart').getContext('2d');
+            weedGrowthChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6', 'Week 7', 'Week 8'],
+                    datasets: [
+                        {
+                            label: 'Tomatoes Field A',
+                            data: [0.3, 0.5, 0.7, 0.9, 1.1, 1.3, 1.2, 1.0],
+                            borderColor: '#e74c3c',
+                            backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Peppers Field B',
+                            data: [0.2, 0.4, 0.6, 0.8, 1.0, 1.1, 1.3, 1.2],
+                            borderColor: '#f39c12',
+                            backgroundColor: 'rgba(243, 156, 18, 0.1)',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Lettuce Field C',
+                            data: [0.4, 0.6, 0.8, 0.7, 0.9, 1.0, 0.8, 0.6],
+                            borderColor: '#27ae60',
+                            backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Weed Growth Rate Over Time (Multiplier)'
+                        },
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 1.5,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + 'x';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function populateWeedingTasks() {
+            const container = document.getElementById('weedingTasksContainer');
+            if (!container) return;
+
+            // Sample weeding tasks
+            const tasks = [
+                {
+                    id: 'task1',
+                    cropName: 'Tomatoes',
+                    location: 'Field A',
+                    urgency: 'critical',
+                    weedGrowthRate: 1.3,
+                    daysSinceLastWeeding: 20,
+                    recommendedAction: 'Immediate chemical application required',
+                    estimatedCost: 125.00,
+                    weatherSuitability: 'Weather OK',
+                    scheduledDate: 'Today'
+                },
+                {
+                    id: 'task2',
+                    cropName: 'Peppers',
+                    location: 'Field B',
+                    urgency: 'urgent',
+                    weedGrowthRate: 1.1,
+                    daysSinceLastWeeding: 18,
+                    recommendedAction: 'Chemical application recommended within 24 hours',
+                    estimatedCost: 95.00,
+                    weatherSuitability: 'Weather OK',
+                    scheduledDate: 'Tomorrow'
+                },
+                {
+                    id: 'task3',
+                    cropName: 'Lettuce',
+                    location: 'Field C',
+                    urgency: 'medium',
+                    weedGrowthRate: 0.9,
+                    daysSinceLastWeeding: 14,
+                    recommendedAction: 'Manual weeding or light chemical treatment',
+                    estimatedCost: 60.00,
+                    weatherSuitability: 'Weather Issue - Wait for dry conditions',
+                    scheduledDate: 'Day after tomorrow'
+                },
+                {
+                    id: 'task4',
+                    cropName: 'Carrots',
+                    location: 'Field D',
+                    urgency: 'low',
+                    weedGrowthRate: 0.6,
+                    daysSinceLastWeeding: 10,
+                    recommendedAction: 'Manual weeding when weather permits',
+                    estimatedCost: 45.00,
+                    weatherSuitability: 'Weather OK',
+                    scheduledDate: 'Next week'
+                }
+            ];
+
+            container.innerHTML = '';
+            tasks.forEach(task => {
+                const taskCard = document.createElement('div');
+                taskCard.className = `task-card ${task.urgency}`;
+                taskCard.innerHTML = `
+                    <div class="task-header">
+                        <div class="task-title">${task.cropName} - ${task.location}</div>
+                        <div class="task-urgency urgency-${task.urgency}">${task.urgency.toUpperCase()}</div>
+                    </div>
+                    <div class="task-details">
+                        <p><i class="fas fa-chart-line me-2"></i><strong>Weed Growth:</strong> ${task.weedGrowthRate}x</p>
+                        <p><i class="fas fa-calendar-alt me-2"></i><strong>Days Since:</strong> ${task.daysSinceLastWeeding} days</p>
+                        <p><i class="fas fa-dollar-sign me-2"></i><strong>Est. Cost:</strong> $${task.estimatedCost}</p>
+                        <p><i class="fas fa-cloud me-2"></i><strong>Weather:</strong> ${task.weatherSuitability}</p>
+                        <p><i class="fas fa-calendar me-2"></i><strong>Schedule:</strong> ${task.scheduledDate}</p>
+                        <p><i class="fas fa-info-circle me-2"></i><strong>Action:</strong> ${task.recommendedAction}</p>
+                    </div>
+                    <div class="task-actions">
+                        <button class="btn btn-weeding btn-sm" onclick="executeTask('${task.id}')">
+                            <i class="fas fa-play me-1"></i>Execute
+                        </button>
+                        <button class="btn btn-outline-primary btn-sm" onclick="viewTaskDetails('${task.id}')">
+                            <i class="fas fa-info-circle me-1"></i>Details
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm" onclick="rescheduleTask('${task.id}')">
+                            <i class="fas fa-clock me-1"></i>Reschedule
+                        </button>
+                    </div>
+                `;
+                container.appendChild(taskCard);
+            });
+        }
+
+        function executeTask(taskId) {
+            alert(`🚀 Executing Weeding Task\n\nTask ID: ${taskId}\n\nThis will:\n• Mark the task as in progress\n• Show execution options (manual/chemical)\n• Track costs and time\n• Update crop data\n• Generate completion report\n\nProceed with execution?`);
+        }
+
+        function viewTaskDetails(taskId) {
+            alert(`📋 Task Details\n\nTask ID: ${taskId}\n\nDetailed information including:\n• Complete weed analysis\n• Weather impact assessment\n• Cost breakdown\n• Safety considerations\n• Environmental impact\n• Recommended timing\n\nThis would show comprehensive task information.`);
+        }
+
+        function rescheduleTask(taskId) {
+            const newDate = prompt('Enter new date for weeding task (MM/DD/YYYY):');
+            if (newDate && new Date(newDate) > new Date()) {
+                alert(`✅ Task rescheduled successfully!\n\nTask ID: ${taskId}\nNew Date: ${newDate}\n\nTask has been updated in the system.`);
+            }
+        }
+
+        function viewUrgentTasks() {
+            alert(`🚨 URGENT WEEDING TASKS\n\n1. Tomatoes - Field A\n   • Urgency: CRITICAL\n   • Weed Growth: 1.3x\n   • Days Since: 20 days\n   • Action: Immediate chemical application\n   • Cost: $125.00\n\n2. Peppers - Field B\n   • Urgency: URGENT\n   • Weed Growth: 1.1x\n   • Days Since: 18 days\n   • Action: Chemical application within 24h\n   • Cost: $95.00\n\nThese tasks require immediate attention to prevent crop damage!`);
+        }
+
+        function selectChemical(chemicalName) {
+            alert(`🧪 Selected: ${chemicalName}\n\nChemical details:\n• Type and effectiveness\n• Application rate and cost\n• Safety considerations\n• Weather restrictions\n• Environmental impact\n• Pre-harvest interval\n\nThis chemical has been selected for application.`);
+        }
+
+        function refreshWeedingTasks() {
+            alert('🔄 Refreshing Weeding Tasks...\n\nUpdating:\n• Weather conditions\n• Weed growth rates\n• Task priorities\n• Cost estimates\n• Schedule optimization\n\nTasks have been refreshed with latest data!');
+            populateWeedingTasks();
+        }
+
+        function scheduleWeeding() {
+            alert('📅 Schedule Weeding\n\nScheduling options:\n\n1. Immediate (Today)\n   • Best for critical tasks\n   • Weather permitting\n\n2. Tomorrow\n   • Good for urgent tasks\n   • Better weather forecast\n\n3. This Week\n   • Planned approach\n   • Cost optimization\n\n4. Custom Date\n   • Flexible scheduling\n   • Weather-dependent\n\nSelect your preferred scheduling option?');
+        }
+
+        function generateWeedingReport() {
+            alert('📄 Generating Weeding Report...\n\nReport includes:\n• Task completion summary\n• Cost analysis\n• Weather impact assessment\n• Effectiveness metrics\n• Environmental impact\n• Recommendations for future\n\nReport is ready for download!');
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('smartfarm_user');
+                localStorage.removeItem('smartfarm_token');
+                sessionStorage.removeItem('smartfarm_user');
+                sessionStorage.removeItem('smartfarm_token');
+                window.location.href = 'login.html';
+            }
+        }
+    </script>
+</body>
+</html>
