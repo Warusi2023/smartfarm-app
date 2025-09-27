@@ -2362,52 +2362,6 @@ INVENTORY SUMMARY:
                                                         </button>
                                                     `).join('')}
                                                 </div>
-                    ${suggestion.treatments ? `
-                        <div class="treatment-recipes">
-                            <h6 class="text-primary mb-2">🧪 Treatment Recipes:</h6>
-                            ${suggestion.treatments.map(treatment => `
-                                <div class="treatment-card mb-3 p-3 bg-white border rounded">
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <h6 class="text-success mb-0">${treatment.name}</h6>
-                                        ${treatment.safety ? `<span class="badge ${treatment.safety === 'CRITICAL' ? 'bg-danger' : treatment.safety === 'HIGH' ? 'bg-warning text-dark' : 'bg-info'}">${treatment.safety}</span>` : ''}
-                                    </div>
-                                    ${treatment.safety && treatment.safety.includes('HIGH') || treatment.safety.includes('CRITICAL') ? `
-                                        <div class="alert alert-warning mb-2">
-                                            <strong>⚠️ Safety Warning:</strong> ${treatment.safety}
-                                            <br><small>Always read and follow herbicide labels exactly. Wear protective equipment.</small>
-                                        </div>
-                                    ` : ''}
-                                    <div class="ingredients mb-2">
-                                        <strong>Ingredients:</strong>
-                                        <ul class="mb-2">
-                                            ${treatment.ingredients.map(ingredient => `<li>${ingredient}</li>`).join('')}
-                                        </ul>
-                                    </div>
-                                    <div class="instructions">
-                                        <strong>Instructions:</strong>
-                                        <ol class="mb-2">
-                                            ${treatment.instructions.map(instruction => `<li>${instruction}</li>`).join('')}
-                                        </ol>
-                                    </div>
-                                    <div class="targets">
-                                        <small class="text-muted"><strong>Targets:</strong> ${treatment.targets}</small>
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
-                        <div class="alert alert-info mt-3">
-                            <h6 class="mb-2">📋 Chemical Application Guidelines:</h6>
-                            <ul class="mb-0 small">
-                                <li><strong>Always read the herbicide label</strong> before purchase and application</li>
-                                <li><strong>Wear protective equipment:</strong> coveralls, gloves, goggles, respirator</li>
-                                <li><strong>Calibrate spray equipment</strong> for accurate application rates</li>
-                                <li><strong>Apply during optimal weather:</strong> calm winds, no rain forecast for 24-48 hours</li>
-                                <li><strong>Follow pre-harvest intervals (PHI)</strong> for food safety</li>
-                                <li><strong>Store chemicals safely</strong> away from children and livestock</li>
-                                <li><strong>Dispose of containers properly</strong> according to local regulations</li>
-                            </ul>
-                        </div>
-                    ` : ''}
                                             </div>
                                         </div>
                                     </div>
@@ -2445,171 +2399,101 @@ INVENTORY SUMMARY:
         }
 
         function generateAISuggestions(crop) {
-            console.log('Starting generateAISuggestions for crop:', crop.name);
+            console.log('Starting SIMPLE AI suggestions for crop:', crop.name);
+            
+            // Simple, bulletproof AI suggestions
             const suggestions = [];
             
-            try {
-                // pH Level Analysis
-                if (crop.phLevel) {
-                if (crop.phLevel < 5.5) {
+            // Basic pH suggestion
+            if (crop.phLevel) {
+                if (crop.phLevel < 6.0) {
                     suggestions.push({
-                        type: 'critical',
-                        title: 'Soil pH Too Acidic',
-                        description: `Your soil pH of ${crop.phLevel} is too acidic for optimal crop growth. Most crops prefer pH 6.0-7.0.`,
-                        actions: ['Add Lime', 'Test Soil Again', 'Check Crop Compatibility']
+                        type: 'warning',
+                        title: 'Soil pH Too Low',
+                        description: `Your soil pH of ${crop.phLevel} is too low. Add lime to increase pH.`,
+                        actions: ['Add Lime', 'Test Again']
                     });
                 } else if (crop.phLevel > 7.5) {
                     suggestions.push({
-                        type: 'critical',
-                        title: 'Soil pH Too Alkaline',
-                        description: `Your soil pH of ${crop.phLevel} is too alkaline. Consider acidifying treatments.`,
-                        actions: ['Add Sulfur', 'Use Acidic Fertilizer', 'Test Soil Again']
+                        type: 'warning',
+                        title: 'Soil pH Too High',
+                        description: `Your soil pH of ${crop.phLevel} is too high. Add sulfur to lower pH.`,
+                        actions: ['Add Sulfur', 'Test Again']
                     });
                 } else {
                     suggestions.push({
                         type: 'success',
-                        title: 'Optimal Soil pH',
-                        description: `Great! Your soil pH of ${crop.phLevel} is in the optimal range for most crops.`,
-                        actions: ['Monitor Regularly', 'Record in Log']
+                        title: 'Good Soil pH',
+                        description: `Your soil pH of ${crop.phLevel} is in the good range.`,
+                        actions: ['Keep Monitoring']
                     });
                 }
             } else {
                 suggestions.push({
                     type: 'warning',
-                    title: 'Soil pH Not Measured',
-                    description: 'Soil pH testing is crucial for optimal crop growth. Please test your soil pH levels.',
-                    actions: ['Test Soil pH', 'Schedule Testing', 'Buy pH Tester']
+                    title: 'Test Soil pH',
+                    description: 'Please test your soil pH for optimal crop growth.',
+                    actions: ['Buy pH Tester', 'Test Soil']
                 });
             }
             
-            // Pest Analysis
-            if (crop.pestIssues) {
-                const pestText = crop.pestIssues.toLowerCase();
+            // Basic pest suggestion
+            if (crop.pestIssues && crop.pestIssues.trim() !== '') {
                 suggestions.push({
                     type: 'critical',
-                    title: 'Pest Issues Detected',
-                    description: `Pest problems have been reported: "${crop.pestIssues}". Immediate action may be required.`,
-                    actions: ['Identify Pests', 'Apply Treatment', 'Consult Expert'],
-                    treatments: getPestTreatments(pestText)
+                    title: 'Pest Issues Found',
+                    description: `Pest problems reported: ${crop.pestIssues}`,
+                    actions: ['Identify Pests', 'Apply Treatment']
                 });
-                
-                // Specific pest suggestions with detailed treatments
-                if (pestText.includes('aphid') || pestText.includes('bug')) {
-                    suggestions.push({
-                        type: 'warning',
-                        title: 'Insect Pest Management',
-                        description: 'Insect pests detected. Here are effective organic treatment options.',
-                        actions: ['Neem Oil Treatment', 'Insecticidal Soap', 'Beneficial Insects'],
-                        treatments: getInsectTreatments()
-                    });
-                }
-                
-                if (pestText.includes('fungus') || pestText.includes('mold') || pestText.includes('mildew')) {
-                    suggestions.push({
-                        type: 'warning',
-                        title: 'Fungal Disease Management',
-                        description: 'Fungal issues detected. Apply these treatments to prevent spread.',
-                        actions: ['Improve Drainage', 'Apply Fungicide', 'Prune Affected Areas'],
-                        treatments: getFungalTreatments()
-                    });
-                }
-                
-                if (pestText.includes('slug') || pestText.includes('snail')) {
-                    suggestions.push({
-                        type: 'warning',
-                        title: 'Slug & Snail Control',
-                        description: 'Slugs and snails detected. Use these effective control methods.',
-                        actions: ['Beer Traps', 'Diatomaceous Earth', 'Hand Picking'],
-                        treatments: getSlugTreatments()
-                    });
-                }
-                
-                if (pestText.includes('caterpillar') || pestText.includes('worm')) {
-                    suggestions.push({
-                        type: 'warning',
-                        title: 'Caterpillar Control',
-                        description: 'Caterpillars detected. Apply these targeted treatments.',
-                        actions: ['Bt Treatment', 'Hand Picking', 'Row Covers'],
-                        treatments: getCaterpillarTreatments()
-                    });
-                }
-                
-                if (pestText.includes('mite') || pestText.includes('spider')) {
-                    suggestions.push({
-                        type: 'warning',
-                        title: 'Spider Mite Control',
-                        description: 'Spider mites detected. Use these effective treatments.',
-                        actions: ['Water Spray', 'Insecticidal Soap', 'Predatory Mites'],
-                        treatments: getMiteTreatments()
-                    });
-                }
             } else {
                 suggestions.push({
                     type: 'success',
                     title: 'No Pest Issues',
-                    description: 'No pest problems reported. Continue regular monitoring and preventive measures.',
-                    actions: ['Continue Monitoring', 'Maintain Prevention', 'Record Status'],
-                    treatments: getPreventiveTreatments()
+                    description: 'No pest problems reported for this crop.',
+                    actions: ['Keep Monitoring']
                 });
             }
             
-            // Growth Stage Analysis
-            const plantedDate = new Date(crop.plantedDate);
-            const daysSincePlanted = Math.floor((Date.now() - plantedDate.getTime()) / (1000 * 60 * 60 * 24));
-            
-            if (daysSincePlanted < 7) {
-                suggestions.push({
-                    type: 'warning',
-                    title: 'Early Growth Stage',
-                    description: `Crop planted ${daysSincePlanted} days ago. Focus on soil moisture and protection.`,
-                    actions: ['Check Moisture', 'Protect from Weather', 'Monitor Germination']
-                });
-            } else if (daysSincePlanted < 30) {
-                suggestions.push({
-                    type: 'success',
-                    title: 'Active Growth Phase',
-                    description: `Crop is ${daysSincePlanted} days old. Monitor growth and apply nutrients as needed.`,
-                    actions: ['Fertilize', 'Weed Control', 'Monitor Growth']
-                });
-            } else {
-                suggestions.push({
-                    type: 'warning',
-                    title: 'Mature Growth Stage',
-                    description: `Crop is ${daysSincePlanted} days old. Prepare for harvest or continued care.`,
-                    actions: ['Harvest Check', 'Final Fertilizer', 'Harvest Planning']
-                });
-            }
-            
-            // Crop-specific suggestions
-            const cropName = crop.name.toLowerCase();
-            if (cropName.includes('tomato')) {
-                suggestions.push({
-                    type: 'warning',
-                    title: 'Tomato Care Tips',
-                    description: 'Tomatoes need consistent watering and support. Watch for blossom end rot.',
-                    actions: ['Stake Plants', 'Consistent Watering', 'Calcium Supplement']
-                });
-            } else if (cropName.includes('pepper') || cropName.includes('capsicum')) {
-                suggestions.push({
-                    type: 'warning',
-                    title: 'Pepper Care Tips',
-                    description: 'Peppers prefer warm temperatures and consistent moisture. Avoid overwatering.',
-                    actions: ['Temperature Check', 'Moderate Watering', 'Support Stems']
-                });
-            }
-
-                // Weather-based weeding recommendations
-                console.log('Generating weeding recommendations...');
-                const weedingSuggestions = generateWeedingRecommendations(crop, daysSincePlanted);
-                suggestions.push(...weedingSuggestions);
+            // Basic growth stage suggestion
+            try {
+                const plantedDate = new Date(crop.plantedDate);
+                const currentDate = new Date();
+                const daysSincePlanted = Math.floor((currentDate - plantedDate) / (1000 * 60 * 60 * 24));
                 
-                console.log('Final suggestions count:', suggestions.length);
-                return suggestions;
+                if (daysSincePlanted < 14) {
+                    suggestions.push({
+                        type: 'warning',
+                        title: 'Early Growth',
+                        description: `Crop is ${daysSincePlanted} days old. Focus on gentle care.`,
+                        actions: ['Light Watering', 'Monitor Daily']
+                    });
+                } else if (daysSincePlanted < 45) {
+                    suggestions.push({
+                        type: 'success',
+                        title: 'Active Growth',
+                        description: `Crop is ${daysSincePlanted} days old. Regular care needed.`,
+                        actions: ['Regular Watering', 'Fertilize']
+                    });
+                } else {
+                    suggestions.push({
+                        type: 'success',
+                        title: 'Mature Stage',
+                        description: `Crop is ${daysSincePlanted} days old. Prepare for harvest.`,
+                        actions: ['Check Readiness', 'Harvest Planning']
+                    });
+                }
             } catch (error) {
-                console.error('Error in generateAISuggestions:', error);
-                console.error('Error stack:', error.stack);
-                throw new Error('Failed to generate AI suggestions: ' + error.message);
+                console.error('Error calculating growth stage:', error);
+                suggestions.push({
+                    type: 'warning',
+                    title: 'Growth Stage Unknown',
+                    description: 'Unable to calculate growth stage. Please check planted date.',
+                    actions: ['Check Date', 'Manual Assessment']
+                });
             }
+            
+            console.log('Generated', suggestions.length, 'simple suggestions');
+            return suggestions;
         }
 
         // Weeding recommendation functions - Optimized for performance
