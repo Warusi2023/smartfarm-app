@@ -117,6 +117,12 @@
         .status-active { background: #d4edda; color: #155724; }
         .status-pending { background: #fff3cd; color: #856404; }
         .status-warning { background: #f8d7da; color: #721c24; }
+        .status-growing { background: #d4edda; color: #155724; }
+        .status-ready { background: #d1ecf1; color: #0c5460; }
+        .status-harvested { background: #f8d7da; color: #721c24; }
+        .status-healthy { background: #d4edda; color: #155724; }
+        .status-sick { background: #f8d7da; color: #721c24; }
+        .status-quarantine { background: #fff3cd; color: #856404; }
 
         .chart-container {
             position: relative;
@@ -1073,7 +1079,7 @@
                     <td>${crop.name}</td>
                     <td>${crop.field || 'Field A'}</td>
                     <td>${crop.plantedDate || new Date().toISOString().split('T')[0]}</td>
-                    <td><span class="status-badge status-${crop.status.toLowerCase().replace(' ', '-')}">${crop.status}</span></td>
+                    <td><span class="status-badge status-${crop.status.toLowerCase()}">${crop.status}</span></td>
                     <td>
                         <button class="btn btn-sm btn-outline-primary me-1" onclick="editCrop(${crop.id})">Edit</button>
                         <button class="btn btn-sm btn-outline-danger" onclick="deleteCrop(${crop.id})">Delete</button>
@@ -1095,7 +1101,7 @@
                     <td>${animal.breed}</td>
                     <td>${animal.quantity}</td>
                     <td>${animal.location}</td>
-                    <td><span class="status-badge status-${animal.status.toLowerCase().replace(' ', '-')}">${animal.status}</span></td>
+                    <td><span class="status-badge status-${animal.status.toLowerCase()}">${animal.status}</span></td>
                     <td>
                         <button class="btn btn-sm btn-outline-primary me-1" onclick="editLivestock(${animal.id})">Edit</button>
                         <button class="btn btn-sm btn-outline-danger" onclick="deleteLivestock(${animal.id})">Delete</button>
