@@ -208,22 +208,22 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="crop-management.html">
+                            <a class="nav-link" href="#" onclick="showCropManagement(); return false;">
                                 <i class="fas fa-seedling me-2"></i>Crop Management
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="livestock-management.html">
+                            <a class="nav-link" href="#" onclick="showLivestockManagement(); return false;">
                                 <i class="fas fa-cow me-2"></i>Livestock
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="inventory-management.html">
+                            <a class="nav-link" href="#" onclick="showInventoryManagement(); return false;">
                                 <i class="fas fa-boxes me-2"></i>Inventory
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="analytics-dashboard.html">
+                            <a class="nav-link" href="#" onclick="showAnalytics(); return false;">
                                 <i class="fas fa-chart-line me-2"></i>Analytics
                             </a>
                         </li>
@@ -900,24 +900,30 @@
         }
 
         function showCropManagement() {
+            console.log('Switching to Crop Management...');
             showView('cropManagementView');
             setActiveNav('crop');
             // Load fresh crop data when switching to this tab
             loadCropsData();
+            console.log('Crops data after loading:', crops);
         }
 
         function showLivestockManagement() {
+            console.log('Switching to Livestock Management...');
             showView('livestockManagementView');
             setActiveNav('livestock');
             // Load fresh livestock data when switching to this tab
             loadLivestockData();
+            console.log('Livestock data after loading:', livestock);
         }
 
         function showInventoryManagement() {
+            console.log('Switching to Inventory Management...');
             showView('inventoryManagementView');
             setActiveNav('inventory');
             // Load fresh inventory data when switching to this tab
             loadInventoryData();
+            console.log('Inventory data after loading:', inventory);
         }
 
         function showAnalytics() {
@@ -1143,6 +1149,8 @@
             };
             
             crops.push(newCrop);
+            console.log('Adding new crop:', newCrop);
+            console.log('All crops after adding:', crops);
             saveCropsData();
             renderCropsTable();
             showSuccessMessage('Crop added successfully!');
