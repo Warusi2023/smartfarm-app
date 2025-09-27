@@ -836,8 +836,8 @@
             } else {
                 // Initialize with default data
                 crops = [
-                    { id: 1, name: 'Tomatoes', variety: 'Cherry', area: '2.5', status: 'Growing', notes: 'Planted last month' },
-                    { id: 2, name: 'Lettuce', variety: 'Romaine', area: '1.0', status: 'Ready', notes: 'Harvest next week' }
+                    { id: 1, name: 'Tomatoes', field: 'Field A', plantedDate: '2025-01-15', status: 'Growing' },
+                    { id: 2, name: 'Lettuce', field: 'Field B', plantedDate: '2025-01-10', status: 'Ready' }
                 ];
                 saveCropsData();
             }
@@ -857,8 +857,8 @@
             } else {
                 // Initialize with default data
                 livestock = [
-                    { id: 1, type: 'Cattle', breed: 'Holstein', quantity: 25, location: 'Field 1', status: 'Healthy', notes: 'Milking cows' },
-                    { id: 2, type: 'Pigs', breed: 'Large White', quantity: 15, location: 'Pen 2', status: 'Healthy', notes: 'Breeding stock' }
+                    { id: 1, type: 'Cattle', breed: 'Holstein', quantity: 25, location: 'Pasture 1', status: 'Healthy' },
+                    { id: 2, type: 'Pigs', breed: 'Large White', quantity: 15, location: 'Pen 2', status: 'Healthy' }
                 ];
                 saveLivestockData();
             }
@@ -878,8 +878,8 @@
             } else {
                 // Initialize with default data
                 inventory = [
-                    { id: 1, name: 'Fertilizer', category: 'Supplies', quantity: 50, unit: 'bags', expiryDate: '2025-06-15', status: 'in-stock' },
-                    { id: 2, name: 'Seeds - Tomato', category: 'Seeds', quantity: 100, unit: 'packets', expiryDate: '2025-01-08', status: 'in-stock' }
+                    { id: 1, name: 'Fertilizer NPK', category: 'Chemicals', quantity: 50, unit: 'kg', lastUpdated: '2025-01-10' },
+                    { id: 2, name: 'Seeds - Tomato', category: 'Seeds', quantity: 100, unit: 'packets', lastUpdated: '2025-01-08' }
                 ];
                 saveInventoryData();
             }
@@ -1057,7 +1057,7 @@
 
         // Table rendering functions
         function renderCropsTable() {
-            const tbody = document.querySelector('#cropsTable tbody');
+            const tbody = document.querySelector('#cropsTable');
             if (!tbody) return;
 
             tbody.innerHTML = '';
@@ -1065,10 +1065,9 @@
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${crop.name}</td>
-                    <td>${crop.variety}</td>
-                    <td>${crop.area} ha</td>
-                    <td><span class="status-badge status-${crop.status.toLowerCase()}">${crop.status}</span></td>
-                    <td>${crop.notes}</td>
+                    <td>${crop.field || 'Field A'}</td>
+                    <td>${crop.plantedDate || new Date().toISOString().split('T')[0]}</td>
+                    <td><span class="status-badge status-${crop.status.toLowerCase().replace(' ', '-')}">${crop.status}</span></td>
                     <td>
                         <button class="btn btn-sm btn-outline-primary me-1" onclick="editCrop(${crop.id})">Edit</button>
                         <button class="btn btn-sm btn-outline-danger" onclick="deleteCrop(${crop.id})">Delete</button>
@@ -1079,7 +1078,7 @@
         }
 
         function renderLivestockTable() {
-            const tbody = document.querySelector('#livestockTable tbody');
+            const tbody = document.querySelector('#livestockTable');
             if (!tbody) return;
 
             tbody.innerHTML = '';
@@ -1090,8 +1089,7 @@
                     <td>${animal.breed}</td>
                     <td>${animal.quantity}</td>
                     <td>${animal.location}</td>
-                    <td><span class="status-badge status-${animal.status.toLowerCase()}">${animal.status}</span></td>
-                    <td>${animal.notes}</td>
+                    <td><span class="status-badge status-${animal.status.toLowerCase().replace(' ', '-')}">${animal.status}</span></td>
                     <td>
                         <button class="btn btn-sm btn-outline-primary me-1" onclick="editLivestock(${animal.id})">Edit</button>
                         <button class="btn btn-sm btn-outline-danger" onclick="deleteLivestock(${animal.id})">Delete</button>
@@ -1102,7 +1100,7 @@
         }
 
         function renderInventoryTable() {
-            const tbody = document.querySelector('#inventoryTable tbody');
+            const tbody = document.querySelector('#inventoryTable');
             if (!tbody) return;
 
             tbody.innerHTML = '';
@@ -1113,8 +1111,7 @@
                     <td>${item.category}</td>
                     <td>${item.quantity}</td>
                     <td>${item.unit}</td>
-                    <td>${item.expiryDate}</td>
-                    <td><span class="status-badge status-${item.status}">${item.status}</span></td>
+                    <td>${item.lastUpdated || new Date().toISOString().split('T')[0]}</td>
                     <td>
                         <button class="btn btn-sm btn-outline-primary me-1" onclick="editInventory(${item.id})">Edit</button>
                         <button class="btn btn-sm btn-outline-danger" onclick="deleteInventory(${item.id})">Delete</button>
@@ -1128,27 +1125,21 @@
             const name = prompt('Enter crop name:');
             if (!name) return;
             
-            const variety = prompt('Enter variety:');
-            if (!variety) return;
+            const field = prompt('Enter field location:', 'Field A');
+            if (!field) return;
             
-            const area = prompt('Enter area (hectares):');
-            if (!area || isNaN(area)) {
-                alert('Please enter a valid area.');
-                return;
-            }
+            const plantedDate = prompt('Enter planted date (YYYY-MM-DD):', new Date().toISOString().split('T')[0]);
+            if (!plantedDate) return;
             
             const status = prompt('Enter status (Growing/Ready/Harvested):', 'Growing');
             if (!status) return;
             
-            const notes = prompt('Enter notes (optional):', '');
-            
             const newCrop = {
                 id: Date.now(), // Simple ID generation
                 name: name.trim(),
-                variety: variety.trim(),
-                area: parseFloat(area),
-                status: status.trim(),
-                notes: notes.trim()
+                field: field.trim(),
+                plantedDate: plantedDate.trim(),
+                status: status.trim()
             };
             
             crops.push(newCrop);
@@ -1186,10 +1177,8 @@
             const location = prompt('Enter location:');
             if (!location) return;
             
-            const status = prompt('Enter status (Healthy/Sick/Quarantine):', 'Healthy');
+            const status = prompt('Enter health status (Healthy/Sick/Quarantine):', 'Healthy');
             if (!status) return;
-            
-            const notes = prompt('Enter notes (optional):', '');
             
             const newLivestock = {
                 id: Date.now(),
@@ -1197,8 +1186,7 @@
                 breed: breed.trim(),
                 quantity: parseInt(quantity),
                 location: location.trim(),
-                status: status.trim(),
-                notes: notes.trim()
+                status: status.trim()
             };
             
             livestock.push(newLivestock);
@@ -1236,20 +1224,13 @@
             const unit = prompt('Enter unit (bags/packets/pieces/liters):');
             if (!unit) return;
             
-            const expiryDate = prompt('Enter expiry date (YYYY-MM-DD):');
-            if (!expiryDate) return;
-            
-            const status = prompt('Enter status (in-stock/low-stock/out-of-stock):', 'in-stock');
-            if (!status) return;
-            
             const newItem = {
                 id: Date.now(),
                 name: name.trim(),
                 category: category.trim(),
                 quantity: parseInt(quantity),
                 unit: unit.trim(),
-                expiryDate: expiryDate.trim(),
-                status: status.trim()
+                lastUpdated: new Date().toISOString().split('T')[0]
             };
             
             inventory.push(newItem);
