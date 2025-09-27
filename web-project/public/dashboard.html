@@ -2295,16 +2295,41 @@ INVENTORY SUMMARY:
                                             <div class="me-3">
                                                 ${suggestion.type === 'critical' ? '🚨' : suggestion.type === 'warning' ? '⚠️' : '✅'}
                                             </div>
-                                            <div>
+                                            <div class="flex-grow-1">
                                                 <h6 class="mb-2">${suggestion.title}</h6>
                                                 <p class="mb-2">${suggestion.description}</p>
-                                                <div class="actions">
+                                                <div class="actions mb-3">
                                                     ${suggestion.actions.map(action => `
                                                         <button class="btn btn-sm btn-outline-primary me-2 mb-1" onclick="executeSuggestion('${action}', ${cropId})">
                                                             ${action}
                                                         </button>
                                                     `).join('')}
                                                 </div>
+                                                ${suggestion.treatments ? `
+                                                    <div class="treatment-recipes">
+                                                        <h6 class="text-primary mb-2">🧪 Treatment Recipes:</h6>
+                                                        ${suggestion.treatments.map(treatment => `
+                                                            <div class="treatment-card mb-3 p-3 bg-white border rounded">
+                                                                <h6 class="text-success mb-2">${treatment.name}</h6>
+                                                                <div class="ingredients mb-2">
+                                                                    <strong>Ingredients:</strong>
+                                                                    <ul class="mb-2">
+                                                                        ${treatment.ingredients.map(ingredient => `<li>${ingredient}</li>`).join('')}
+                                                                    </ul>
+                                                                </div>
+                                                                <div class="instructions">
+                                                                    <strong>Instructions:</strong>
+                                                                    <ol class="mb-2">
+                                                                        ${treatment.instructions.map(instruction => `<li>${instruction}</li>`).join('')}
+                                                                    </ol>
+                                                                </div>
+                                                                <div class="targets">
+                                                                    <small class="text-muted"><strong>Targets:</strong> ${treatment.targets}</small>
+                                                                </div>
+                                                            </div>
+                                                        `).join('')}
+                                                    </div>
+                                                ` : ''}
                                             </div>
                                         </div>
                                     </div>
@@ -2373,25 +2398,58 @@ INVENTORY SUMMARY:
                     type: 'critical',
                     title: 'Pest Issues Detected',
                     description: `Pest problems have been reported: "${crop.pestIssues}". Immediate action may be required.`,
-                    actions: ['Identify Pests', 'Apply Treatment', 'Consult Expert']
+                    actions: ['Identify Pests', 'Apply Treatment', 'Consult Expert'],
+                    treatments: getPestTreatments(pestText)
                 });
                 
-                // Specific pest suggestions
+                // Specific pest suggestions with detailed treatments
                 if (pestText.includes('aphid') || pestText.includes('bug')) {
                     suggestions.push({
                         type: 'warning',
                         title: 'Insect Pest Management',
-                        description: 'Insect pests detected. Consider organic or chemical treatments based on severity.',
-                        actions: ['Neem Oil Treatment', 'Insecticidal Soap', 'Beneficial Insects']
+                        description: 'Insect pests detected. Here are effective organic treatment options.',
+                        actions: ['Neem Oil Treatment', 'Insecticidal Soap', 'Beneficial Insects'],
+                        treatments: getInsectTreatments()
                     });
                 }
                 
-                if (pestText.includes('fungus') || pestText.includes('mold')) {
+                if (pestText.includes('fungus') || pestText.includes('mold') || pestText.includes('mildew')) {
                     suggestions.push({
                         type: 'warning',
                         title: 'Fungal Disease Management',
-                        description: 'Fungal issues detected. Improve air circulation and consider fungicide treatment.',
-                        actions: ['Improve Drainage', 'Apply Fungicide', 'Prune Affected Areas']
+                        description: 'Fungal issues detected. Apply these treatments to prevent spread.',
+                        actions: ['Improve Drainage', 'Apply Fungicide', 'Prune Affected Areas'],
+                        treatments: getFungalTreatments()
+                    });
+                }
+                
+                if (pestText.includes('slug') || pestText.includes('snail')) {
+                    suggestions.push({
+                        type: 'warning',
+                        title: 'Slug & Snail Control',
+                        description: 'Slugs and snails detected. Use these effective control methods.',
+                        actions: ['Beer Traps', 'Diatomaceous Earth', 'Hand Picking'],
+                        treatments: getSlugTreatments()
+                    });
+                }
+                
+                if (pestText.includes('caterpillar') || pestText.includes('worm')) {
+                    suggestions.push({
+                        type: 'warning',
+                        title: 'Caterpillar Control',
+                        description: 'Caterpillars detected. Apply these targeted treatments.',
+                        actions: ['Bt Treatment', 'Hand Picking', 'Row Covers'],
+                        treatments: getCaterpillarTreatments()
+                    });
+                }
+                
+                if (pestText.includes('mite') || pestText.includes('spider')) {
+                    suggestions.push({
+                        type: 'warning',
+                        title: 'Spider Mite Control',
+                        description: 'Spider mites detected. Use these effective treatments.',
+                        actions: ['Water Spray', 'Insecticidal Soap', 'Predatory Mites'],
+                        treatments: getMiteTreatments()
                     });
                 }
             } else {
@@ -2399,7 +2457,8 @@ INVENTORY SUMMARY:
                     type: 'success',
                     title: 'No Pest Issues',
                     description: 'No pest problems reported. Continue regular monitoring and preventive measures.',
-                    actions: ['Continue Monitoring', 'Maintain Prevention', 'Record Status']
+                    actions: ['Continue Monitoring', 'Maintain Prevention', 'Record Status'],
+                    treatments: getPreventiveTreatments()
                 });
             }
             
@@ -2449,6 +2508,284 @@ INVENTORY SUMMARY:
             }
             
             return suggestions;
+        }
+
+        // Treatment recipe functions
+        function getPestTreatments(pestText) {
+            const treatments = [];
+            
+            if (pestText.includes('aphid') || pestText.includes('bug')) {
+                treatments.push({
+                    name: "Neem Oil Spray",
+                    ingredients: [
+                        "2 teaspoons neem oil (cold-pressed)",
+                        "1 teaspoon liquid dish soap (unscented)",
+                        "1 gallon warm water",
+                        "1 teaspoon baking soda (optional)"
+                    ],
+                    instructions: [
+                        "Mix neem oil and dish soap in small container",
+                        "Add to 1 gallon of warm water",
+                        "Stir well and pour into spray bottle",
+                        "Shake before each use",
+                        "Apply early morning or evening"
+                    ],
+                    targets: "Aphids, whiteflies, spider mites, thrips, mealybugs"
+                });
+                
+                treatments.push({
+                    name: "Insecticidal Soap Spray",
+                    ingredients: [
+                        "2 tablespoons liquid dish soap (unscented, biodegradable)",
+                        "1 gallon water",
+                        "1 teaspoon vegetable oil (optional)"
+                    ],
+                    instructions: [
+                        "Mix soap with water in spray bottle",
+                        "Add vegetable oil if desired",
+                        "Shake well before use",
+                        "Apply directly to pests",
+                        "Reapply every 3-7 days"
+                    ],
+                    targets: "Aphids, spider mites, whiteflies, mealybugs, thrips"
+                });
+            }
+            
+            return treatments;
+        }
+
+        function getInsectTreatments() {
+            return [
+                {
+                    name: "Garlic Spray (Natural Repellent)",
+                    ingredients: [
+                        "10-12 garlic cloves",
+                        "1 tablespoon liquid dish soap",
+                        "1 tablespoon mineral oil",
+                        "1 quart water",
+                        "1 tablespoon cayenne pepper (optional)"
+                    ],
+                    instructions: [
+                        "Blend garlic cloves with 1 cup water",
+                        "Let steep for 24 hours",
+                        "Strain through cheesecloth",
+                        "Mix with remaining water, soap, and oil",
+                        "Add cayenne pepper for extra potency",
+                        "Store in refrigerator for up to 1 week"
+                    ],
+                    targets: "Aphids, cabbage worms, Japanese beetles, repels many insects"
+                },
+                {
+                    name: "Hot Pepper Spray",
+                    ingredients: [
+                        "6-10 hot peppers (jalapeño, habanero, or cayenne)",
+                        "2 tablespoons liquid dish soap",
+                        "1 tablespoon vegetable oil",
+                        "1 quart water",
+                        "1 tablespoon cayenne powder (optional)"
+                    ],
+                    instructions: [
+                        "Blend peppers with 1 cup water",
+                        "Let steep for 24 hours",
+                        "Strain through cheesecloth",
+                        "Mix with remaining ingredients",
+                        "Wear gloves when handling",
+                        "Test on small area first"
+                    ],
+                    targets: "Aphids, caterpillars, beetles, repels rabbits and deer"
+                }
+            ];
+        }
+
+        function getFungalTreatments() {
+            return [
+                {
+                    name: "Baking Soda Fungicide",
+                    ingredients: [
+                        "1 tablespoon baking soda",
+                        "1 teaspoon liquid dish soap",
+                        "1 gallon water",
+                        "2 tablespoons vegetable oil (optional)"
+                    ],
+                    instructions: [
+                        "Mix all ingredients in spray bottle",
+                        "Shake well before use",
+                        "Apply every 7-10 days",
+                        "Avoid applying in hot sun",
+                        "Test on small area first"
+                    ],
+                    targets: "Powdery mildew, black spot, rust, anthracnose"
+                },
+                {
+                    name: "Milk Spray (Fungal Prevention)",
+                    ingredients: [
+                        "1 part milk (whole or skim)",
+                        "9 parts water",
+                        "1 teaspoon baking soda (optional)"
+                    ],
+                    instructions: [
+                        "Mix milk with water",
+                        "Add baking soda if desired",
+                        "Apply every 7-10 days",
+                        "Use in morning",
+                        "Avoid applying in hot sun"
+                    ],
+                    targets: "Powdery mildew, mosaic viruses"
+                }
+            ];
+        }
+
+        function getSlugTreatments() {
+            return [
+                {
+                    name: "Beer Trap",
+                    ingredients: [
+                        "1 cup beer (cheap beer works best)",
+                        "Shallow container (yogurt cup, tuna can)",
+                        "1 tablespoon sugar (optional)"
+                    ],
+                    instructions: [
+                        "Pour beer into shallow container",
+                        "Add sugar if desired",
+                        "Bury container so rim is level with soil",
+                        "Replace beer every 2-3 days",
+                        "Place multiple traps around garden"
+                    ],
+                    targets: "Slugs, snails, earwigs"
+                },
+                {
+                    name: "Diatomaceous Earth Dust",
+                    ingredients: [
+                        "Food-grade diatomaceous earth",
+                        "Dust applicator or shaker",
+                        "Protective mask (for application)"
+                    ],
+                    instructions: [
+                        "Apply dry powder to plant surfaces",
+                        "Focus on undersides of leaves",
+                        "Reapply after rain or watering",
+                        "Use protective equipment",
+                        "Avoid breathing dust"
+                    ],
+                    targets: "Ants, beetles, caterpillars, slugs, soft-bodied insects"
+                }
+            ];
+        }
+
+        function getCaterpillarTreatments() {
+            return [
+                {
+                    name: "Bt (Bacillus Thuringiensis) Spray",
+                    ingredients: [
+                        "1-2 teaspoons Bt powder",
+                        "1 gallon water",
+                        "1 teaspoon liquid dish soap",
+                        "Spray bottle"
+                    ],
+                    instructions: [
+                        "Mix Bt powder with small amount of water",
+                        "Add to remaining water in spray bottle",
+                        "Add dish soap for better adhesion",
+                        "Apply to leaves where caterpillars feed",
+                        "Reapply every 7-10 days or after rain"
+                    ],
+                    targets: "Caterpillars, cabbage worms, tomato hornworms"
+                },
+                {
+                    name: "Hand Picking Method",
+                    ingredients: [
+                        "Bucket of soapy water",
+                        "Gloves (optional)",
+                        "Flashlight (for night picking)"
+                    ],
+                    instructions: [
+                        "Inspect plants daily for caterpillars",
+                        "Wear gloves if handling stinging caterpillars",
+                        "Drop caterpillars into soapy water",
+                        "Check undersides of leaves",
+                        "Best done early morning or evening"
+                    ],
+                    targets: "Large caterpillars, hornworms, cabbage worms"
+                }
+            ];
+        }
+
+        function getMiteTreatments() {
+            return [
+                {
+                    name: "Water Spray Treatment",
+                    ingredients: [
+                        "Strong water stream (hose or spray bottle)",
+                        "Water",
+                        "1 teaspoon liquid dish soap (optional)"
+                    ],
+                    instructions: [
+                        "Use strong water stream to dislodge mites",
+                        "Focus on undersides of leaves",
+                        "Apply every 2-3 days",
+                        "Increase humidity around plants",
+                        "Remove heavily infested leaves"
+                    ],
+                    targets: "Spider mites, aphids, small insects"
+                },
+                {
+                    name: "Essential Oil Spray",
+                    ingredients: [
+                        "10 drops peppermint oil",
+                        "10 drops eucalyptus oil",
+                        "5 drops tea tree oil",
+                        "1 tablespoon liquid dish soap",
+                        "1 gallon water"
+                    ],
+                    instructions: [
+                        "Mix essential oils with soap",
+                        "Add to water gradually",
+                        "Shake well before use",
+                        "Apply early morning or evening",
+                        "Store in cool place"
+                    ],
+                    targets: "Spider mites, aphids, ants, repels many insects"
+                }
+            ];
+        }
+
+        function getPreventiveTreatments() {
+            return [
+                {
+                    name: "General Preventive Spray",
+                    ingredients: [
+                        "1 tablespoon liquid dish soap",
+                        "1 tablespoon vegetable oil",
+                        "1 gallon water",
+                        "1 teaspoon baking soda (optional)"
+                    ],
+                    instructions: [
+                        "Mix soap and oil in small container",
+                        "Add to water gradually",
+                        "Add baking soda for fungal prevention",
+                        "Apply every 2 weeks",
+                        "Shake well before each use"
+                    ],
+                    targets: "General pest prevention, fungal prevention"
+                },
+                {
+                    name: "Companion Planting Guide",
+                    ingredients: [
+                        "Marigold seeds",
+                        "Garlic bulbs",
+                        "Chive plants",
+                        "Basil plants"
+                    ],
+                    instructions: [
+                        "Plant marigolds around vegetable beds",
+                        "Interplant garlic and chives",
+                        "Add basil near tomatoes",
+                        "Rotate companion plants annually",
+                        "Maintain good spacing for air circulation"
+                    ],
+                    targets: "Natural pest repellent, beneficial insect attraction"
+                }
+            ];
         }
 
         function executeSuggestion(action, cropId) {
