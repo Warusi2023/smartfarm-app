@@ -473,51 +473,217 @@
                     <h2>Livestock Management</h2>
                     <div class="dashboard-card">
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5>Livestock</h5>
+                            <h5>Livestock by Type</h5>
                             <button class="btn btn-custom" onclick="addNewLivestock()">
                                 <i class="fas fa-plus me-2"></i>Add Livestock
                             </button>
                         </div>
-                        <div class="table-responsive">
-                            <table class="table table-custom">
-                                <thead>
-                                    <tr>
-                                        <th>Species</th>
-                                        <th>Breed</th>
-                                        <th>Count</th>
-                                        <th>Ear Tags</th>
-                                        <th>Location</th>
-                                        <th>GPS</th>
-                                        <th>Last Weight</th>
-                                        <th>Health Status</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="livestockTable">
-                                    <tr>
-                                        <td>Cattle</td>
-                                        <td>Holstein</td>
-                                        <td>25</td>
-                                        <td>Pasture 1</td>
-                                        <td><span class="status-badge status-active">Healthy</span></td>
-                                        <td>
-                                            <button class="btn btn-sm btn-outline-primary me-1" onclick="editLivestock(1)">Edit</button>
-                                            <button class="btn btn-sm btn-outline-danger" onclick="deleteLivestock(1)">Delete</button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Pigs</td>
-                                        <td>Large White</td>
-                                        <td>15</td>
-                                        <td>Pen 2</td>
-                                        <td><span class="status-badge status-active">Healthy</span></td>
-                                        <td>
-                                            <button class="btn btn-sm btn-outline-primary me-1" onclick="editLivestock(2)">Edit</button>
-                                            <button class="btn btn-sm btn-outline-danger" onclick="deleteLivestock(2)">Delete</button>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                        
+                        <!-- Livestock Type Tabs -->
+                        <ul class="nav nav-tabs" id="livestockTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="all-livestock-tab" data-bs-toggle="tab" data-bs-target="#all-livestock" type="button" role="tab" aria-controls="all-livestock" aria-selected="true">
+                                    <i class="fas fa-list me-2"></i>All Livestock <span class="badge bg-secondary ms-1" id="all-count">0</span>
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="cattle-tab" data-bs-toggle="tab" data-bs-target="#cattle" type="button" role="tab" aria-controls="cattle" aria-selected="false">
+                                    <i class="fas fa-cow me-2"></i>Cattle <span class="badge bg-primary ms-1" id="cattle-count">0</span>
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="pigs-tab" data-bs-toggle="tab" data-bs-target="#pigs" type="button" role="tab" aria-controls="pigs" aria-selected="false">
+                                    <i class="fas fa-piggy-bank me-2"></i>Pigs <span class="badge bg-warning ms-1" id="pigs-count">0</span>
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="poultry-tab" data-bs-toggle="tab" data-bs-target="#poultry" type="button" role="tab" aria-controls="poultry" aria-selected="false">
+                                    <i class="fas fa-egg me-2"></i>Poultry <span class="badge bg-success ms-1" id="poultry-count">0</span>
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="sheep-goats-tab" data-bs-toggle="tab" data-bs-target="#sheep-goats" type="button" role="tab" aria-controls="sheep-goats" aria-selected="false">
+                                    <i class="fas fa-sheep me-2"></i>Sheep & Goats <span class="badge bg-info ms-1" id="sheep-goats-count">0</span>
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="horses-tab" data-bs-toggle="tab" data-bs-target="#horses" type="button" role="tab" aria-controls="horses" aria-selected="false">
+                                    <i class="fas fa-horse me-2"></i>Horses <span class="badge bg-dark ms-1" id="horses-count">0</span>
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="other-livestock-tab" data-bs-toggle="tab" data-bs-target="#other-livestock" type="button" role="tab" aria-controls="other-livestock" aria-selected="false">
+                                    <i class="fas fa-paw me-2"></i>Other <span class="badge bg-secondary ms-1" id="other-count">0</span>
+                                </button>
+                            </li>
+                        </ul>
+                        
+                        <!-- Tab Content -->
+                        <div class="tab-content" id="livestockTabContent">
+                            <!-- All Livestock Tab -->
+                            <div class="tab-pane fade show active" id="all-livestock" role="tabpanel" aria-labelledby="all-livestock-tab">
+                                <div class="table-responsive mt-3">
+                                    <table class="table table-custom">
+                                        <thead>
+                                            <tr>
+                                                <th>Species</th>
+                                                <th>Breed</th>
+                                                <th>Count</th>
+                                                <th>Ear Tags</th>
+                                                <th>Location</th>
+                                                <th>GPS</th>
+                                                <th>Last Weight</th>
+                                                <th>Health Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="allLivestockTable">
+                                            <!-- All livestock data will be populated here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <!-- Cattle Tab -->
+                            <div class="tab-pane fade" id="cattle" role="tabpanel" aria-labelledby="cattle-tab">
+                                <div class="table-responsive mt-3">
+                                    <table class="table table-custom">
+                                        <thead>
+                                            <tr>
+                                                <th>Breed</th>
+                                                <th>Count</th>
+                                                <th>Ear Tags</th>
+                                                <th>Location</th>
+                                                <th>GPS</th>
+                                                <th>Last Weight</th>
+                                                <th>Health Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="cattleTable">
+                                            <!-- Cattle data will be populated here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <!-- Pigs Tab -->
+                            <div class="tab-pane fade" id="pigs" role="tabpanel" aria-labelledby="pigs-tab">
+                                <div class="table-responsive mt-3">
+                                    <table class="table table-custom">
+                                        <thead>
+                                            <tr>
+                                                <th>Breed</th>
+                                                <th>Count</th>
+                                                <th>Ear Tags</th>
+                                                <th>Location</th>
+                                                <th>GPS</th>
+                                                <th>Last Weight</th>
+                                                <th>Health Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="pigsTable">
+                                            <!-- Pigs data will be populated here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <!-- Poultry Tab -->
+                            <div class="tab-pane fade" id="poultry" role="tabpanel" aria-labelledby="poultry-tab">
+                                <div class="table-responsive mt-3">
+                                    <table class="table table-custom">
+                                        <thead>
+                                            <tr>
+                                                <th>Type</th>
+                                                <th>Breed</th>
+                                                <th>Count</th>
+                                                <th>Ear Tags</th>
+                                                <th>Location</th>
+                                                <th>GPS</th>
+                                                <th>Last Weight</th>
+                                                <th>Health Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="poultryTable">
+                                            <!-- Poultry data will be populated here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <!-- Sheep & Goats Tab -->
+                            <div class="tab-pane fade" id="sheep-goats" role="tabpanel" aria-labelledby="sheep-goats-tab">
+                                <div class="table-responsive mt-3">
+                                    <table class="table table-custom">
+                                        <thead>
+                                            <tr>
+                                                <th>Type</th>
+                                                <th>Breed</th>
+                                                <th>Count</th>
+                                                <th>Ear Tags</th>
+                                                <th>Location</th>
+                                                <th>GPS</th>
+                                                <th>Last Weight</th>
+                                                <th>Health Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="sheepGoatsTable">
+                                            <!-- Sheep & Goats data will be populated here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <!-- Horses Tab -->
+                            <div class="tab-pane fade" id="horses" role="tabpanel" aria-labelledby="horses-tab">
+                                <div class="table-responsive mt-3">
+                                    <table class="table table-custom">
+                                        <thead>
+                                            <tr>
+                                                <th>Breed</th>
+                                                <th>Count</th>
+                                                <th>Ear Tags</th>
+                                                <th>Location</th>
+                                                <th>GPS</th>
+                                                <th>Last Weight</th>
+                                                <th>Health Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="horsesTable">
+                                            <!-- Horses data will be populated here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <!-- Other Livestock Tab -->
+                            <div class="tab-pane fade" id="other-livestock" role="tabpanel" aria-labelledby="other-livestock-tab">
+                                <div class="table-responsive mt-3">
+                                    <table class="table table-custom">
+                                        <thead>
+                                            <tr>
+                                                <th>Species</th>
+                                                <th>Breed</th>
+                                                <th>Count</th>
+                                                <th>Ear Tags</th>
+                                                <th>Location</th>
+                                                <th>GPS</th>
+                                                <th>Last Weight</th>
+                                                <th>Health Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="otherLivestockTable">
+                                            <!-- Other livestock data will be populated here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1376,57 +1542,171 @@
         }
 
         function renderLivestockTable() {
-            const tbody = document.querySelector('#livestockTable');
+            // Update tab counts first
+            updateLivestockTabCounts();
+            
+            // Render all tabs
+            renderAllLivestockTab();
+            renderCattleTab();
+            renderPigsTab();
+            renderPoultryTab();
+            renderSheepGoatsTab();
+            renderHorsesTab();
+            renderOtherLivestockTab();
+        }
+
+        function updateLivestockTabCounts() {
+            const counts = {
+                all: livestock.length,
+                cattle: livestock.filter(animal => animal.type.toLowerCase() === 'cattle').length,
+                pigs: livestock.filter(animal => animal.type.toLowerCase() === 'pigs').length,
+                poultry: livestock.filter(animal => ['chickens', 'ducks', 'turkeys'].includes(animal.type.toLowerCase())).length,
+                sheepGoats: livestock.filter(animal => ['sheep', 'goats'].includes(animal.type.toLowerCase())).length,
+                horses: livestock.filter(animal => animal.type.toLowerCase() === 'horses').length,
+                other: livestock.filter(animal => !['cattle', 'pigs', 'chickens', 'ducks', 'turkeys', 'sheep', 'goats', 'horses'].includes(animal.type.toLowerCase())).length
+            };
+
+            document.getElementById('all-count').textContent = counts.all;
+            document.getElementById('cattle-count').textContent = counts.cattle;
+            document.getElementById('pigs-count').textContent = counts.pigs;
+            document.getElementById('poultry-count').textContent = counts.poultry;
+            document.getElementById('sheep-goats-count').textContent = counts.sheepGoats;
+            document.getElementById('horses-count').textContent = counts.horses;
+            document.getElementById('other-count').textContent = counts.other;
+        }
+
+        function createLivestockRow(animal, showSpecies = true) {
+            const row = document.createElement('tr');
+            
+            // Get last weight record
+            const lastWeight = animal.weightRecords && animal.weightRecords.length > 0 
+                ? animal.weightRecords[animal.weightRecords.length - 1].avgWeight 
+                : 'N/A';
+            
+            // Get ear tags display
+            const earTagsDisplay = animal.earTags && animal.earTags.length > 0 
+                ? animal.earTags.slice(0, 2).join(', ') + (animal.earTags.length > 2 ? ` (+${animal.earTags.length - 2})` : '')
+                : 'None';
+            
+            // GPS location display
+            const gpsDisplay = animal.gpsLocation 
+                ? `<button class="btn btn-sm btn-outline-info" onclick="showGPSLocation(${animal.id})" title="View GPS Location">
+                     <i class="fas fa-map-marker-alt"></i>
+                   </button>`
+                : 'N/A';
+            
+            // Create row HTML based on whether to show species column
+            const speciesColumn = showSpecies ? `<td>${animal.type}</td>` : '';
+            
+            row.innerHTML = `
+                ${speciesColumn}
+                <td>${animal.breed}</td>
+                <td>${animal.quantity}</td>
+                <td><small>${earTagsDisplay}</small></td>
+                <td>${animal.location}</td>
+                <td>${gpsDisplay}</td>
+                <td>${lastWeight} kg</td>
+                <td><span class="status-badge status-${animal.status.toLowerCase()}">${animal.status}</span></td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary me-1" onclick="editLivestock(${animal.id})" title="Edit">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-info me-1" onclick="viewLivestockDetails(${animal.id})" title="View Details">
+                        <i class="fas fa-info-circle"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-success me-1" onclick="addWeightRecord(${animal.id})" title="Add Weight">
+                        <i class="fas fa-weight"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-warning me-1" onclick="addImmunization(${animal.id})" title="Add Immunization">
+                        <i class="fas fa-syringe"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteLivestock(${animal.id})" title="Delete">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            return row;
+        }
+
+        function renderAllLivestockTab() {
+            const tbody = document.querySelector('#allLivestockTable');
             if (!tbody) return;
 
             tbody.innerHTML = '';
             livestock.forEach(animal => {
-                const row = document.createElement('tr');
-                
-                // Get last weight record
-                const lastWeight = animal.weightRecords && animal.weightRecords.length > 0 
-                    ? animal.weightRecords[animal.weightRecords.length - 1].avgWeight 
-                    : 'N/A';
-                
-                // Get ear tags display
-                const earTagsDisplay = animal.earTags && animal.earTags.length > 0 
-                    ? animal.earTags.slice(0, 2).join(', ') + (animal.earTags.length > 2 ? ` (+${animal.earTags.length - 2})` : '')
-                    : 'None';
-                
-                // GPS location display
-                const gpsDisplay = animal.gpsLocation 
-                    ? `<button class="btn btn-sm btn-outline-info" onclick="showGPSLocation(${animal.id})" title="View GPS Location">
-                         <i class="fas fa-map-marker-alt"></i>
-                       </button>`
-                    : 'N/A';
-                
-                row.innerHTML = `
-                    <td>${animal.type}</td>
-                    <td>${animal.breed}</td>
-                    <td>${animal.quantity}</td>
-                    <td><small>${earTagsDisplay}</small></td>
-                    <td>${animal.location}</td>
-                    <td>${gpsDisplay}</td>
-                    <td>${lastWeight} kg</td>
-                    <td><span class="status-badge status-${animal.status.toLowerCase()}">${animal.status}</span></td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-primary me-1" onclick="editLivestock(${animal.id})" title="Edit">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn btn-sm btn-outline-info me-1" onclick="viewLivestockDetails(${animal.id})" title="View Details">
-                            <i class="fas fa-info-circle"></i>
-                        </button>
-                        <button class="btn btn-sm btn-outline-success me-1" onclick="addWeightRecord(${animal.id})" title="Add Weight">
-                            <i class="fas fa-weight"></i>
-                        </button>
-                        <button class="btn btn-sm btn-outline-warning me-1" onclick="addImmunization(${animal.id})" title="Add Immunization">
-                            <i class="fas fa-syringe"></i>
-                        </button>
-                        <button class="btn btn-sm btn-outline-danger" onclick="deleteLivestock(${animal.id})" title="Delete">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                `;
+                const row = createLivestockRow(animal, true);
+                tbody.appendChild(row);
+            });
+        }
+
+        function renderCattleTab() {
+            const tbody = document.querySelector('#cattleTable');
+            if (!tbody) return;
+
+            tbody.innerHTML = '';
+            const cattle = livestock.filter(animal => animal.type.toLowerCase() === 'cattle');
+            cattle.forEach(animal => {
+                const row = createLivestockRow(animal, false);
+                tbody.appendChild(row);
+            });
+        }
+
+        function renderPigsTab() {
+            const tbody = document.querySelector('#pigsTable');
+            if (!tbody) return;
+
+            tbody.innerHTML = '';
+            const pigs = livestock.filter(animal => animal.type.toLowerCase() === 'pigs');
+            pigs.forEach(animal => {
+                const row = createLivestockRow(animal, false);
+                tbody.appendChild(row);
+            });
+        }
+
+        function renderPoultryTab() {
+            const tbody = document.querySelector('#poultryTable');
+            if (!tbody) return;
+
+            tbody.innerHTML = '';
+            const poultry = livestock.filter(animal => ['chickens', 'ducks', 'turkeys'].includes(animal.type.toLowerCase()));
+            poultry.forEach(animal => {
+                const row = createLivestockRow(animal, true);
+                tbody.appendChild(row);
+            });
+        }
+
+        function renderSheepGoatsTab() {
+            const tbody = document.querySelector('#sheepGoatsTable');
+            if (!tbody) return;
+
+            tbody.innerHTML = '';
+            const sheepGoats = livestock.filter(animal => ['sheep', 'goats'].includes(animal.type.toLowerCase()));
+            sheepGoats.forEach(animal => {
+                const row = createLivestockRow(animal, true);
+                tbody.appendChild(row);
+            });
+        }
+
+        function renderHorsesTab() {
+            const tbody = document.querySelector('#horsesTable');
+            if (!tbody) return;
+
+            tbody.innerHTML = '';
+            const horses = livestock.filter(animal => animal.type.toLowerCase() === 'horses');
+            horses.forEach(animal => {
+                const row = createLivestockRow(animal, false);
+                tbody.appendChild(row);
+            });
+        }
+
+        function renderOtherLivestockTab() {
+            const tbody = document.querySelector('#otherLivestockTable');
+            if (!tbody) return;
+
+            tbody.innerHTML = '';
+            const other = livestock.filter(animal => !['cattle', 'pigs', 'chickens', 'ducks', 'turkeys', 'sheep', 'goats', 'horses'].includes(animal.type.toLowerCase()));
+            other.forEach(animal => {
+                const row = createLivestockRow(animal, true);
                 tbody.appendChild(row);
             });
         }
