@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pesticide Management - SmartFarm</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            margin: 20px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        .header-section {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 15px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            border-left: 5px solid #667eea;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .pesticide-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .pesticide-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            border-left: 5px solid #e74c3c;
+            transition: transform 0.3s ease;
+        }
+
+        .pesticide-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .pesticide-name {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        .pesticide-details {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            margin-bottom: 15px;
+        }
+
+        .effectiveness-bar {
+            height: 8px;
+            background: #ecf0f1;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .effectiveness-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #e74c3c, #f39c12);
+            border-radius: 4px;
+        }
+
+        .pest-matching-section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .pest-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .pest-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            border-left: 4px solid #28a745;
+        }
+
+        .pest-name {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .recommended-pesticides {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .btn-custom {
+            border-radius: 25px;
+            padding: 10px 20px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .alert-custom {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .metric-label {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Header Section -->
+        <div class="header-section">
+            <h1><i class="fas fa-bug me-3"></i>Pesticide Management System</h1>
+            <p class="mb-0">Comprehensive pesticide database with detailed chemical information and safety guidelines</p>
+        </div>
+
+        <!-- Statistics Section -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">4+</div>
+                <div class="stat-label">Pesticide Categories</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">15+</div>
+                <div class="stat-label">Target Pests</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">95%</div>
+                <div class="stat-label">Max Effectiveness</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">100%</div>
+                <div class="stat-label">Safety Compliance</div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <button class="btn btn-primary btn-custom w-100" onclick="viewAllPesticides()">
+                    <i class="fas fa-list me-2"></i>View All Pesticides
+                </button>
+            </div>
+            <div class="col-md-3">
+                <button class="btn btn-success btn-custom w-100" onclick="identifyPest()">
+                    <i class="fas fa-search me-2"></i>Identify Pest
+                </button>
+            </div>
+            <div class="col-md-3">
+                <button class="btn btn-warning btn-custom w-100" onclick="checkWeatherConditions()">
+                    <i class="fas fa-cloud-sun me-2"></i>Weather Check
+                </button>
+            </div>
+            <div class="col-md-3">
+                <button class="btn btn-info btn-custom w-100" onclick="viewApplicationHistory()">
+                    <i class="fas fa-history me-2"></i>Application History
+                </button>
+            </div>
+        </div>
+
+        <!-- Pesticide Database Section -->
+        <div class="row">
+            <div class="col-12">
+                <h3 class="mb-4"><i class="fas fa-database me-2"></i>Pesticide Database</h3>
+                
+                <div class="pesticide-grid">
+                    <!-- Malathion -->
+                    <div class="pesticide-card">
+                        <div class="pesticide-name">Malathion</div>
+                        <div class="pesticide-details">
+                            <strong>Type:</strong> Organophosphate Insecticide<br>
+                            <strong>Target:</strong> Aphids, Whiteflies, Thrips<br>
+                            <strong>Cost:</strong> $35.00/L<br>
+                            <strong>Safety:</strong> Moderate
+                        </div>
+                        <div class="effectiveness-bar">
+                            <div class="effectiveness-fill" style="width: 85%"></div>
+                        </div>
+                        <small class="text-muted">85% Effectiveness</small>
+                        <button class="btn btn-sm btn-outline-primary w-100 mt-2" onclick="selectPesticide('Malathion')">
+                            <i class="fas fa-bug me-1"></i>Select Pesticide
+                        </button>
+                        <button class="btn btn-sm btn-outline-info w-100 mt-2" onclick="showPesticideDetails('Malathion')">
+                            <i class="fas fa-info-circle me-1"></i>View Details
+                        </button>
+                    </div>
+
+                    <!-- Deltamethrin -->
+                    <div class="pesticide-card">
+                        <div class="pesticide-name">Deltamethrin</div>
+                        <div class="pesticide-details">
+                            <strong>Type:</strong> Pyrethroid Insecticide<br>
+                            <strong>Target:</strong> Caterpillars, Beetles, Thrips<br>
+                            <strong>Cost:</strong> $45.00/L<br>
+                            <strong>Safety:</strong> Moderate
+                        </div>
+                        <div class="effectiveness-bar">
+                            <div class="effectiveness-fill" style="width: 95%"></div>
+                        </div>
+                        <small class="text-muted">95% Effectiveness</small>
+                        <button class="btn btn-sm btn-outline-primary w-100 mt-2" onclick="selectPesticide('Deltamethrin')">
+                            <i class="fas fa-bug me-1"></i>Select Pesticide
+                        </button>
+                        <button class="btn btn-sm btn-outline-info w-100 mt-2" onclick="showPesticideDetails('Deltamethrin')">
+                            <i class="fas fa-info-circle me-1"></i>View Details
+                        </button>
+                    </div>
+
+                    <!-- Neem Oil -->
+                    <div class="pesticide-card">
+                        <div class="pesticide-name">Neem Oil</div>
+                        <div class="pesticide-details">
+                            <strong>Type:</strong> Organic Insecticide<br>
+                            <strong>Target:</strong> Aphids, Whiteflies, Spider Mites<br>
+                            <strong>Cost:</strong> $15.00/L<br>
+                            <strong>Safety:</strong> High
+                        </div>
+                        <div class="effectiveness-bar">
+                            <div class="effectiveness-fill" style="width: 75%"></div>
+                        </div>
+                        <small class="text-muted">75% Effectiveness</small>
+                        <button class="btn btn-sm btn-outline-success w-100 mt-2" onclick="selectPesticide('Neem Oil')">
+                            <i class="fas fa-leaf me-1"></i>Select Organic
+                        </button>
+                        <button class="btn btn-sm btn-outline-info w-100 mt-2" onclick="showPesticideDetails('Neem Oil')">
+                            <i class="fas fa-info-circle me-1"></i>View Details
+                        </button>
+                    </div>
+
+                    <!-- Insecticidal Soap -->
+                    <div class="pesticide-card">
+                        <div class="pesticide-name">Insecticidal Soap</div>
+                        <div class="pesticide-details">
+                            <strong>Type:</strong> Organic Insecticide<br>
+                            <strong>Target:</strong> Soft-bodied insects<br>
+                            <strong>Cost:</strong> $8.00/L<br>
+                            <strong>Safety:</strong> Very High
+                        </div>
+                        <div class="effectiveness-bar">
+                            <div class="effectiveness-fill" style="width: 70%"></div>
+                        </div>
+                        <small class="text-muted">70% Effectiveness</small>
+                        <button class="btn btn-sm btn-outline-success w-100 mt-2" onclick="selectPesticide('Insecticidal Soap')">
+                            <i class="fas fa-leaf me-1"></i>Select Organic
+                        </button>
+                        <button class="btn btn-sm btn-outline-info w-100 mt-2" onclick="showPesticideDetails('Insecticidal Soap')">
+                            <i class="fas fa-info-circle me-1"></i>View Details
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pest-Pesticide Matching Section -->
+        <div class="pest-matching-section">
+            <h3 class="mb-4"><i class="fas fa-crosshairs me-2"></i>Pest-Pesticide Matching</h3>
+            
+            <div class="pest-grid">
+                <div class="pest-card">
+                    <div class="pest-name">Aphids</div>
+                    <div class="recommended-pesticides">
+                        <strong>Recommended:</strong><br>
+                        • Malathion<br>
+                        • Deltamethrin<br>
+                        • Neem Oil<br>
+                        • Insecticidal Soap
+                    </div>
+                </div>
+
+                <div class="pest-card">
+                    <div class="pest-name">Whiteflies</div>
+                    <div class="recommended-pesticides">
+                        <strong>Recommended:</strong><br>
+                        • Malathion<br>
+                        • Deltamethrin<br>
+                        • Neem Oil
+                    </div>
+                </div>
+
+                <div class="pest-card">
+                    <div class="pest-name">Spider Mites</div>
+                    <div class="recommended-pesticides">
+                        <strong>Recommended:</strong><br>
+                        • Malathion<br>
+                        • Neem Oil<br>
+                        • Insecticidal Soap
+                    </div>
+                </div>
+
+                <div class="pest-card">
+                    <div class="pest-name">Caterpillars</div>
+                    <div class="recommended-pesticides">
+                        <strong>Recommended:</strong><br>
+                        • Deltamethrin<br>
+                        • Bacillus thuringiensis<br>
+                        • Neem Oil
+                    </div>
+                </div>
+
+                <div class="pest-card">
+                    <div class="pest-name">Thrips</div>
+                    <div class="recommended-pesticides">
+                        <strong>Recommended:</strong><br>
+                        • Malathion<br>
+                        • Deltamethrin<br>
+                        • Neem Oil
+                    </div>
+                </div>
+
+                <div class="pest-card">
+                    <div class="pest-name">Beetles</div>
+                    <div class="recommended-pesticides">
+                        <strong>Recommended:</strong><br>
+                        • Deltamethrin<br>
+                        • Neem Oil
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Safety Alerts -->
+        <div class="alert alert-warning alert-custom">
+            <h5><i class="fas fa-exclamation-triangle me-2"></i>Safety Reminders</h5>
+            <ul class="mb-0">
+                <li>Always wear appropriate protective equipment when handling pesticides</li>
+                <li>Check weather conditions before application (no rain for 4-6 hours)</li>
+                <li>Follow pre-harvest intervals to ensure food safety</li>
+                <li>Store pesticides in secure, labeled containers away from children</li>
+                <li>Rotate pesticides to prevent resistance development</li>
+            </ul>
+        </div>
+
+        <!-- Navigation -->
+        <div class="text-center mt-4">
+            <a href="dashboard.html" class="btn btn-outline-primary btn-custom me-3">
+                <i class="fas fa-tachometer-alt me-2"></i>Back to Dashboard
+            </a>
+            <a href="weeding-management.html" class="btn btn-outline-success btn-custom">
+                <i class="fas fa-seedling me-2"></i>Weeding Management
+            </a>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Pesticide Management System -->
+    <script src="js/pesticide-management.js"></script>
+    
+    <script>
+        // Check authentication
+        function checkAuthentication() {
+            const token = localStorage.getItem('smartfarm_token') || sessionStorage.getItem('smartfarm_token');
+            const loginTime = localStorage.getItem('smartfarm_login_time') || sessionStorage.getItem('smartfarm_login_time');
+            
+            if (!token || !loginTime) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // Check if session is expired (24 hours)
+            const now = new Date().getTime();
+            const login = new Date(loginTime).getTime();
+            const hoursDiff = (now - login) / (1000 * 60 * 60);
+            
+            if (hoursDiff > 24) {
+                localStorage.removeItem('smartfarm_token');
+                localStorage.removeItem('smartfarm_login_time');
+                sessionStorage.removeItem('smartfarm_token');
+                sessionStorage.removeItem('smartfarm_login_time');
+                window.location.href = 'login.html';
+                return;
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuthentication();
+            populatePesticideData();
+        });
+
+        function populatePesticideData() {
+            // This would populate the page with data from the pesticide management system
+            console.log('Pesticide Management System initialized');
+        }
+
+        function viewAllPesticides() {
+            alert(`📋 ALL PESTICIDES IN DATABASE\n\nINSECTICIDES:\n• Malathion (Organophosphate)\n• Deltamethrin (Pyrethroid)\n• Neem Oil (Organic)\n• Insecticidal Soap (Organic)\n\nFUNGICIDES:\n• Copper Fungicide\n• Baking Soda Fungicide\n\nBACTERICIDES:\n• Copper Compounds\n• Streptomycin\n\nACARICIDES:\n• Sulfur-based treatments\n• Miticides\n\nEach pesticide includes detailed chemical information, mixture instructions, and safety guidelines.`);
+        }
+
+        function identifyPest() {
+            alert(`🔍 PEST IDENTIFICATION\n\nCommon Agricultural Pests:\n\nINSECTS:\n• Aphids (small, soft-bodied)\n• Whiteflies (tiny, white, flying)\n• Spider Mites (tiny, web-spinning)\n• Thrips (slender, fringed wings)\n• Caterpillars (larval stage)\n• Beetles (hard-shelled)\n\nFUNGAL DISEASES:\n• Powdery Mildew (white coating)\n• Leaf Spot (circular spots)\n• Rust (orange/yellow pustules)\n\nBACTERIAL DISEASES:\n• Bacterial Blight (water-soaked lesions)\n• Crown Gall (swollen growths)\n\nUse the pest-pesticide matching section to find recommended treatments!`);
+        }
+
+        function checkWeatherConditions() {
+            const currentWeather = {
+                temperature: '25°C',
+                humidity: '65%',
+                wind: '8 km/h',
+                rain: 'No rain expected for 6 hours',
+                conditions: 'Ideal for pesticide application'
+            };
+
+            alert(`🌤️ WEATHER CONDITIONS\n\nCurrent Weather:\n• Temperature: ${currentWeather.temperature}\n• Humidity: ${currentWeather.humidity}\n• Wind Speed: ${currentWeather.wind}\n• Rainfall: ${currentWeather.rain}\n\nApplication Conditions: ${currentWeather.conditions}\n\n⚠️ Weather Requirements:\n• No rain for 4-6 hours after application\n• Wind speed below 15 km/h\n• Temperature below 30°C\n• Humidity above 40%`);
+        }
+
+        function viewApplicationHistory() {
+            alert(`📊 APPLICATION HISTORY\n\nRecent Pesticide Applications:\n\n1. Malathion - Tomato Field A\n   • Date: 2024-01-15\n   • Target: Aphids\n   • Effectiveness: 85%\n   • Cost: $35.00\n\n2. Neem Oil - Pepper Field B\n   • Date: 2024-01-12\n   • Target: Whiteflies\n   • Effectiveness: 75%\n   • Cost: $15.00\n\n3. Deltamethrin - Lettuce Field C\n   • Date: 2024-01-10\n   • Target: Caterpillars\n   • Effectiveness: 95%\n   • Cost: $45.00\n\nTrack your applications for better pest management and cost optimization!`);
+        }
+
+        function selectPesticide(pesticideName) {
+            if (typeof pesticideManagement !== 'undefined') {
+                pesticideManagement.selectPesticide(pesticideName);
+            } else {
+                alert(`🐛 Selected: ${pesticideName}\n\nThis would integrate with the pesticide management system to:\n\n• Calculate optimal application rates\n• Check weather suitability\n• Estimate costs and coverage\n• Generate application schedule\n• Track effectiveness over time\n\nPesticide selection logged and ready for application!`);
+            }
+        }
+
+        function showPesticideDetails(pesticideName) {
+            if (typeof pesticideManagement !== 'undefined') {
+                pesticideManagement.showPesticideDetails(pesticideName);
+            } else {
+                alert(`🔬 Pesticide Details for ${pesticideName}\n\nThis would display comprehensive pesticide information including:\n\n• Chemical properties and molecular data\n• Toxicity and ecotoxicity information\n• Target pests and resistance data\n• Application instructions and timing\n• Safety guidelines and protective equipment\n• Regulatory compliance information\n\nDetailed pesticide database integration required.`);
+            }
+        }
+    </script>
+</body>
+</html>
