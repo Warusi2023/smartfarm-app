@@ -92,6 +92,61 @@
             margin-bottom: 15px;
         }
 
+        /* Professional Modal Styles */
+        .pesticide-info-card, .pesticide-targets-card, .safety-guidelines-card, .application-info-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .info-item {
+            padding: 8px 12px;
+            background: white;
+            border-radius: 6px;
+            border-left: 3px solid #007bff;
+            font-size: 0.9rem;
+        }
+
+        .target-list, .safety-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .target-list li, .safety-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            align-items: center;
+        }
+
+        .target-list li:last-child, .safety-list li:last-child {
+            border-bottom: none;
+        }
+
+        .application-details {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .detail-item {
+            padding: 10px;
+            background: white;
+            border-radius: 6px;
+            border-left: 3px solid #17a2b8;
+            font-size: 0.9rem;
+        }
+
         .effectiveness-bar {
             height: 8px;
             background: #ecf0f1;
@@ -1026,19 +1081,312 @@
             if (typeof pesticideManagement !== 'undefined') {
                 pesticideManagement.showPesticideDetails(pesticideName);
             } else {
-                // Fallback with basic pesticide information
-                let basicInfo = '';
-                
-                switch(pesticideName) {
-                    case 'Malathion':
-                        basicInfo = `🔬 MALATHION DETAILS\n\nType: Organophosphate Insecticide\nEffectiveness: 85%\nSafety Level: Moderate\nCost: $35.00/L\n\nTarget Pests:\n• Aphids\n• Whiteflies\n• Thrips\n• Spider Mites\n\nSafety Guidelines:\n• Wear protective clothing\n• Use respirator\n• Avoid skin contact\n• 12-hour re-entry interval\n\nPre-Harvest Interval: 3 days`;
-                        break;
-                    case 'Deltamethrin':
-                        basicInfo = `🔬 DELTAMETHRIN DETAILS\n\nType: Pyrethroid Insecticide\nEffectiveness: 95%\nSafety Level: Moderate\nCost: $45.00/L\n\nTarget Pests:\n• Caterpillars\n• Beetles\n• Thrips\n• Aphids\n\nSafety Guidelines:\n• Wear protective clothing\n• Use chemical-resistant gloves\n• Avoid beneficial insects\n• 12-hour re-entry interval\n\nPre-Harvest Interval: 1 day`;
-                        break;
-                    case 'Neem Oil':
-                        basicInfo = `🔬 NEEM OIL DETAILS\n\nType: Organic Insecticide\nEffectiveness: 75%\nSafety Level: High\nCost: $15.00/L\n\nTarget Pests:\n• Aphids\n• Whiteflies\n• Spider Mites\n• Scale Insects\n\nSafety Guidelines:\n• Minimal protection needed\n• Safe for beneficial insects\n• No pre-harvest interval\n• Environmentally friendly\n\nPre-Harvest Interval: 0 days`;
-                        break;
+                showProfessionalPesticideDetailsModal(pesticideName);
+            }
+        }
+
+        function showProfessionalPesticideDetailsModal(pesticideName) {
+            const pesticideData = getPesticideData(pesticideName);
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-xl modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-flask me-2"></i>Pesticide Details: ${pesticideName}
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="pesticide-info-card">
+                                        <h6 class="text-primary mb-3">
+                                            <i class="fas fa-info-circle me-2"></i>Basic Information
+                                        </h6>
+                                        <div class="info-grid">
+                                            <div class="info-item">
+                                                <strong>Category:</strong> ${pesticideData.category}
+                                            </div>
+                                            <div class="info-item">
+                                                <strong>Type:</strong> ${pesticideData.type}
+                                            </div>
+                                            <div class="info-item">
+                                                <strong>Effectiveness:</strong> 
+                                                <span class="badge bg-${getEffectivenessColor(pesticideData.effectiveness)}">${pesticideData.effectiveness}%</span>
+                                            </div>
+                                            <div class="info-item">
+                                                <strong>Safety Level:</strong> 
+                                                <span class="badge bg-${getSafetyColor(pesticideData.safetyLevel)}">${pesticideData.safetyLevel}</span>
+                                            </div>
+                                            <div class="info-item">
+                                                <strong>Application Rate:</strong> ${pesticideData.applicationRate}
+                                            </div>
+                                            <div class="info-item">
+                                                <strong>Cost:</strong> ${pesticideData.cost}
+                                            </div>
+                                            <div class="info-item">
+                                                <strong>Environmental Impact:</strong> 
+                                                <span class="badge bg-${getEnvironmentalColor(pesticideData.environmentalImpact)}">${pesticideData.environmentalImpact}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="pesticide-targets-card">
+                                        <h6 class="text-success mb-3">
+                                            <i class="fas fa-bug me-2"></i>Target Pests
+                                        </h6>
+                                        <ul class="target-list">
+                                            ${pesticideData.targetPests.map(pest => `<li><i class="fas fa-arrow-right me-2"></i>${pest}</li>`).join('')}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row mt-4">
+                                <div class="col-md-6">
+                                    <div class="safety-guidelines-card">
+                                        <h6 class="text-warning mb-3">
+                                            <i class="fas fa-shield-alt me-2"></i>Safety Guidelines
+                                        </h6>
+                                        <ul class="safety-list">
+                                            ${pesticideData.safetyGuidelines.map(guideline => `<li><i class="fas fa-check me-2"></i>${guideline}</li>`).join('')}
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="application-info-card">
+                                        <h6 class="text-info mb-3">
+                                            <i class="fas fa-calendar-alt me-2"></i>Application Information
+                                        </h6>
+                                        <div class="application-details">
+                                            <div class="detail-item">
+                                                <strong>Pre-Harvest Interval:</strong> ${pesticideData.preHarvestInterval}
+                                            </div>
+                                            <div class="detail-item">
+                                                <strong>Re-entry Interval:</strong> ${pesticideData.reEntryInterval}
+                                            </div>
+                                            <div class="detail-item">
+                                                <strong>Best Application Time:</strong> ${pesticideData.bestApplicationTime}
+                                            </div>
+                                            <div class="detail-item">
+                                                <strong>Weather Conditions:</strong> ${pesticideData.weatherConditions}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-info mt-3">
+                                <i class="fas fa-lightbulb me-2"></i>
+                                <strong>Pro Tip:</strong> Always read the product label carefully before application and follow local regulations and safety guidelines.
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-primary" onclick="selectPesticide('${pesticideName}')">
+                                <i class="fas fa-check me-1"></i>Select This Pesticide
+                            </button>
+                            <button type="button" class="btn btn-success" onclick="printPesticideDetails('${pesticideName}')">
+                                <i class="fas fa-print me-1"></i>Print Details
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+        function getPesticideData(pesticideName) {
+            const pesticideDatabase = {
+                'Malathion': {
+                    category: 'Insecticide',
+                    type: 'Organophosphate',
+                    effectiveness: 85,
+                    safetyLevel: 'Moderate',
+                    applicationRate: '1-2 L/ha',
+                    cost: '$35.00/L',
+                    environmentalImpact: 'Medium',
+                    targetPests: ['Aphids', 'Whiteflies', 'Thrips', 'Spider Mites'],
+                    safetyGuidelines: [
+                        'Wear protective clothing',
+                        'Use respirator',
+                        'Avoid skin contact',
+                        '12-hour re-entry interval'
+                    ],
+                    preHarvestInterval: '3 days',
+                    reEntryInterval: '12 hours',
+                    bestApplicationTime: 'Early morning or evening',
+                    weatherConditions: 'Avoid windy conditions'
+                },
+                'Deltamethrin': {
+                    category: 'Insecticide',
+                    type: 'Pyrethroid',
+                    effectiveness: 95,
+                    safetyLevel: 'Moderate',
+                    applicationRate: '0.5-1 L/ha',
+                    cost: '$45.00/L',
+                    environmentalImpact: 'Medium',
+                    targetPests: ['Caterpillars', 'Beetles', 'Thrips', 'Aphids'],
+                    safetyGuidelines: [
+                        'Wear protective clothing',
+                        'Use chemical-resistant gloves',
+                        'Avoid beneficial insects',
+                        '12-hour re-entry interval'
+                    ],
+                    preHarvestInterval: '1 day',
+                    reEntryInterval: '12 hours',
+                    bestApplicationTime: 'Early morning or evening',
+                    weatherConditions: 'Avoid windy conditions'
+                },
+                'Neem Oil': {
+                    category: 'Insecticide',
+                    type: 'Organic',
+                    effectiveness: 75,
+                    safetyLevel: 'High',
+                    applicationRate: '2-4 L/ha',
+                    cost: '$15.00/L',
+                    environmentalImpact: 'Low',
+                    targetPests: ['Aphids', 'Whiteflies', 'Spider Mites', 'Scale Insects'],
+                    safetyGuidelines: [
+                        'Minimal protection needed',
+                        'Safe for beneficial insects',
+                        'No pre-harvest interval',
+                        'Environmentally friendly'
+                    ],
+                    preHarvestInterval: '0 days',
+                    reEntryInterval: '0 hours',
+                    bestApplicationTime: 'Early morning or evening',
+                    weatherConditions: 'Avoid direct sunlight'
+                },
+                'Mancozeb': {
+                    category: 'Fungicide',
+                    type: 'Dithiocarbamate',
+                    effectiveness: 85,
+                    safetyLevel: 'Moderate',
+                    applicationRate: '2-4 L/ha',
+                    cost: '$30.00/L',
+                    environmentalImpact: 'Medium',
+                    targetPests: ['Powdery Mildew', 'Leaf Spot', 'Rust', 'Blight'],
+                    safetyGuidelines: [
+                        'Wear protective clothing',
+                        'Use chemical-resistant gloves',
+                        'Avoid skin and eye contact',
+                        'Safe for organic farming'
+                    ],
+                    preHarvestInterval: '0 days',
+                    reEntryInterval: '12 hours',
+                    bestApplicationTime: 'Early morning or evening',
+                    weatherConditions: 'Avoid windy conditions'
+                }
+            };
+            
+            return pesticideDatabase[pesticideName] || {
+                category: 'Unknown',
+                type: 'Unknown',
+                effectiveness: 0,
+                safetyLevel: 'Unknown',
+                applicationRate: 'Unknown',
+                cost: 'Unknown',
+                environmentalImpact: 'Unknown',
+                targetPests: ['Unknown'],
+                safetyGuidelines: ['Unknown'],
+                preHarvestInterval: 'Unknown',
+                reEntryInterval: 'Unknown',
+                bestApplicationTime: 'Unknown',
+                weatherConditions: 'Unknown'
+            };
+        }
+
+        function getEffectivenessColor(effectiveness) {
+            if (effectiveness >= 90) return 'success';
+            if (effectiveness >= 80) return 'primary';
+            if (effectiveness >= 70) return 'warning';
+            return 'danger';
+        }
+
+        function getSafetyColor(safetyLevel) {
+            switch(safetyLevel) {
+                case 'Very High': return 'success';
+                case 'High': return 'primary';
+                case 'Moderate': return 'warning';
+                case 'Low': return 'danger';
+                default: return 'secondary';
+            }
+        }
+
+        function getEnvironmentalColor(impact) {
+            switch(impact) {
+                case 'Very Low': return 'success';
+                case 'Low': return 'primary';
+                case 'Medium': return 'warning';
+                case 'High': return 'danger';
+                default: return 'secondary';
+            }
+        }
+
+        function printPesticideDetails(pesticideName) {
+            const pesticideData = getPesticideData(pesticideName);
+            
+            const printContent = `
+                <html>
+                <head>
+                    <title>Pesticide Details - ${pesticideName}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 20px; }
+                        .header { background: #007bff; color: white; padding: 20px; text-align: center; }
+                        .section { margin: 20px 0; }
+                        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+                        .info-item { padding: 10px; border: 1px solid #ddd; }
+                        .target-list, .safety-list { list-style: none; padding: 0; }
+                        .target-list li, .safety-list li { padding: 5px 0; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>Pesticide Details: ${pesticideName}</h1>
+                    </div>
+                    <div class="section">
+                        <h3>Basic Information</h3>
+                        <div class="info-grid">
+                            <div class="info-item"><strong>Category:</strong> ${pesticideData.category}</div>
+                            <div class="info-item"><strong>Type:</strong> ${pesticideData.type}</div>
+                            <div class="info-item"><strong>Effectiveness:</strong> ${pesticideData.effectiveness}%</div>
+                            <div class="info-item"><strong>Safety Level:</strong> ${pesticideData.safetyLevel}</div>
+                            <div class="info-item"><strong>Application Rate:</strong> ${pesticideData.applicationRate}</div>
+                            <div class="info-item"><strong>Cost:</strong> ${pesticideData.cost}</div>
+                        </div>
+                    </div>
+                    <div class="section">
+                        <h3>Target Pests</h3>
+                        <ul class="target-list">
+                            ${pesticideData.targetPests.map(pest => `<li>• ${pest}</li>`).join('')}
+                        </ul>
+                    </div>
+                    <div class="section">
+                        <h3>Safety Guidelines</h3>
+                        <ul class="safety-list">
+                            ${pesticideData.safetyGuidelines.map(guideline => `<li>• ${guideline}</li>`).join('')}
+                        </ul>
+                    </div>
+                </body>
+                </html>
+            `;
+            
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(printContent);
+            printWindow.document.close();
+            printWindow.print();
+        }
                     case 'Insecticidal Soap':
                         basicInfo = `🔬 INSECTICIDAL SOAP DETAILS\n\nType: Organic Insecticide\nEffectiveness: 70%\nSafety Level: Very High\nCost: $8.00/L\n\nTarget Pests:\n• Aphids\n• Whiteflies\n• Spider Mites\n• Mealybugs\n\nSafety Guidelines:\n• Minimal protection needed\n• Safe for beneficial insects\n• No pre-harvest interval\n• Safe for organic farming\n\nPre-Harvest Interval: 0 days`;
                         break;
