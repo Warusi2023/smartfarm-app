@@ -7,6 +7,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     <script src="js/currency-config.js"></script>
     <script src="js/currency-selector.js"></script>
     <script src="js/competitive-features.js"></script>
@@ -2948,6 +2950,9 @@
             setActiveNav('tasks');
             updateURL('tasksView');
             
+            // Load tasks table
+            loadTasksTable();
+            
             // Initialize weeding tasks if not already done
             if (typeof intelligentWeeding !== 'undefined') {
                 intelligentWeeding.generateWeedingTasks();
@@ -5318,36 +5323,756 @@
         }
 
         function addNewTask() {
-            showInfoDialog('Coming Soon', 'Add new task functionality will be implemented', 'OK');
+            showAddTaskModal();
+        }
+
+        function showAddTaskModal() {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-success text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-plus-circle me-2"></i>Add New Task
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="addTaskForm">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <div class="mb-3">
+                                            <label for="taskTitle" class="form-label">Task Title *</label>
+                                            <input type="text" class="form-control" id="taskTitle" placeholder="Enter task title" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="taskPriority" class="form-label">Priority *</label>
+                                            <select class="form-select" id="taskPriority" required>
+                                                <option value="">Select Priority</option>
+                                                <option value="low">Low</option>
+                                                <option value="medium">Medium</option>
+                                                <option value="high">High</option>
+                                                <option value="urgent">Urgent</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="taskDueDate" class="form-label">Due Date *</label>
+                                            <input type="date" class="form-control" id="taskDueDate" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="taskAssignedTo" class="form-label">Assigned To</label>
+                                            <input type="text" class="form-control" id="taskAssignedTo" placeholder="Enter assignee name">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="taskDescription" class="form-label">Description</label>
+                                    <textarea class="form-control" id="taskDescription" rows="3" placeholder="Enter task description"></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="taskCategory" class="form-label">Category</label>
+                                    <select class="form-select" id="taskCategory">
+                                        <option value="">Select Category</option>
+                                        <option value="farming">Farming</option>
+                                        <option value="maintenance">Maintenance</option>
+                                        <option value="harvest">Harvest</option>
+                                        <option value="planting">Planting</option>
+                                        <option value="livestock">Livestock Care</option>
+                                        <option value="equipment">Equipment</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-success" onclick="saveNewTask()">
+                                <i class="fas fa-save me-2"></i>Save Task
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            // Set minimum date to today
+            document.getElementById('taskDueDate').min = new Date().toISOString().split('T')[0];
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        function saveNewTask() {
+            const title = document.getElementById('taskTitle').value.trim();
+            const priority = document.getElementById('taskPriority').value;
+            const dueDate = document.getElementById('taskDueDate').value;
+            const assignedTo = document.getElementById('taskAssignedTo').value.trim();
+            const description = document.getElementById('taskDescription').value.trim();
+            const category = document.getElementById('taskCategory').value;
+
+            if (!title || !priority || !dueDate) {
+                showErrorDialog('Validation Error', 'Please fill in all required fields (Title, Priority, Due Date).');
+                return;
+            }
+
+            // Create new task
+            const newTask = {
+                id: Date.now(),
+                title: title,
+                priority: priority,
+                dueDate: dueDate,
+                assignedTo: assignedTo || 'Unassigned',
+                description: description,
+                category: category || 'other',
+                status: 'pending',
+                createdAt: new Date().toISOString()
+            };
+
+            // Save to localStorage
+            let tasks = JSON.parse(localStorage.getItem('farmTasks') || '[]');
+            tasks.push(newTask);
+            localStorage.setItem('farmTasks', JSON.stringify(tasks));
+
+            // Close modal
+            const modal = document.querySelector('.modal');
+            if (modal) {
+                const bsModal = bootstrap.Modal.getInstance(modal);
+                if (bsModal) {
+                    bsModal.hide();
+                }
+            }
+
+            // Refresh tasks table
+            loadTasksTable();
+
+            showSuccessDialog(
+                '✅ Task Created Successfully',
+                `Task "${title}" has been created and added to your task list.\n\nPriority: ${priority.charAt(0).toUpperCase() + priority.slice(1)}\nDue Date: ${new Date(dueDate).toLocaleDateString()}\nAssigned To: ${assignedTo || 'Unassigned'}`
+            );
         }
 
         function editTask(id) {
-            showInfoDialog('Coming Soon', `Edit task ${id} functionality will be implemented`, 'OK');
+            const tasks = JSON.parse(localStorage.getItem('farmTasks') || '[]');
+            const task = tasks.find(t => t.id == id);
+            
+            if (!task) {
+                showErrorDialog('Task Not Found', 'The selected task could not be found.');
+                return;
+            }
+
+            showEditTaskModal(task);
+        }
+
+        function showEditTaskModal(task) {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-edit me-2"></i>Edit Task
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="editTaskForm">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <div class="mb-3">
+                                            <label for="editTaskTitle" class="form-label">Task Title *</label>
+                                            <input type="text" class="form-control" id="editTaskTitle" value="${task.title}" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="editTaskPriority" class="form-label">Priority *</label>
+                                            <select class="form-select" id="editTaskPriority" required>
+                                                <option value="low" ${task.priority === 'low' ? 'selected' : ''}>Low</option>
+                                                <option value="medium" ${task.priority === 'medium' ? 'selected' : ''}>Medium</option>
+                                                <option value="high" ${task.priority === 'high' ? 'selected' : ''}>High</option>
+                                                <option value="urgent" ${task.priority === 'urgent' ? 'selected' : ''}>Urgent</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="editTaskDueDate" class="form-label">Due Date *</label>
+                                            <input type="date" class="form-control" id="editTaskDueDate" value="${task.dueDate}" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="editTaskAssignedTo" class="form-label">Assigned To</label>
+                                            <input type="text" class="form-control" id="editTaskAssignedTo" value="${task.assignedTo}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="editTaskDescription" class="form-label">Description</label>
+                                    <textarea class="form-control" id="editTaskDescription" rows="3">${task.description}</textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="editTaskCategory" class="form-label">Category</label>
+                                    <select class="form-select" id="editTaskCategory">
+                                        <option value="farming" ${task.category === 'farming' ? 'selected' : ''}>Farming</option>
+                                        <option value="maintenance" ${task.category === 'maintenance' ? 'selected' : ''}>Maintenance</option>
+                                        <option value="harvest" ${task.category === 'harvest' ? 'selected' : ''}>Harvest</option>
+                                        <option value="planting" ${task.category === 'planting' ? 'selected' : ''}>Planting</option>
+                                        <option value="livestock" ${task.category === 'livestock' ? 'selected' : ''}>Livestock Care</option>
+                                        <option value="equipment" ${task.category === 'equipment' ? 'selected' : ''}>Equipment</option>
+                                        <option value="other" ${task.category === 'other' ? 'selected' : ''}>Other</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="editTaskStatus" class="form-label">Status</label>
+                                    <select class="form-select" id="editTaskStatus">
+                                        <option value="pending" ${task.status === 'pending' ? 'selected' : ''}>Pending</option>
+                                        <option value="in_progress" ${task.status === 'in_progress' ? 'selected' : ''}>In Progress</option>
+                                        <option value="completed" ${task.status === 'completed' ? 'selected' : ''}>Completed</option>
+                                        <option value="cancelled" ${task.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+                                    </select>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-danger me-2" onclick="deleteTask(${task.id})">
+                                <i class="fas fa-trash me-2"></i>Delete
+                            </button>
+                            <button type="button" class="btn btn-primary" onclick="saveEditedTask(${task.id})">
+                                <i class="fas fa-save me-2"></i>Save Changes
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
         }
 
         function completeTask(id) {
-            showInfoDialog('Task Complete', `Task ${id} marked as complete`, 'OK');
+            showConfirmDialog(
+                'Complete Task',
+                'Are you sure you want to mark this task as completed?',
+                'Yes, Complete',
+                'Cancel',
+                () => {
+                    let tasks = JSON.parse(localStorage.getItem('farmTasks') || '[]');
+                    const taskIndex = tasks.findIndex(t => t.id == id);
+                    
+                    if (taskIndex === -1) {
+                        showErrorDialog('Task Not Found', 'The selected task could not be found.');
+                        return;
+                    }
+
+                    tasks[taskIndex].status = 'completed';
+                    tasks[taskIndex].completedAt = new Date().toISOString();
+                    localStorage.setItem('farmTasks', JSON.stringify(tasks));
+
+                    // Refresh tasks table
+                    loadTasksTable();
+
+                    showSuccessDialog(
+                        '✅ Task Completed Successfully',
+                        `Task "${tasks[taskIndex].title}" has been marked as completed.\n\nCompleted on: ${new Date().toLocaleDateString()}`
+                    );
+                }
+            );
+        }
+
+        function saveEditedTask(taskId) {
+            const title = document.getElementById('editTaskTitle').value.trim();
+            const priority = document.getElementById('editTaskPriority').value;
+            const dueDate = document.getElementById('editTaskDueDate').value;
+            const assignedTo = document.getElementById('editTaskAssignedTo').value.trim();
+            const description = document.getElementById('editTaskDescription').value.trim();
+            const category = document.getElementById('editTaskCategory').value;
+            const status = document.getElementById('editTaskStatus').value;
+
+            if (!title || !priority || !dueDate) {
+                showErrorDialog('Validation Error', 'Please fill in all required fields (Title, Priority, Due Date).');
+                return;
+            }
+
+            // Update task
+            let tasks = JSON.parse(localStorage.getItem('farmTasks') || '[]');
+            const taskIndex = tasks.findIndex(t => t.id == taskId);
+            
+            if (taskIndex === -1) {
+                showErrorDialog('Task Not Found', 'The selected task could not be found.');
+                return;
+            }
+
+            tasks[taskIndex] = {
+                ...tasks[taskIndex],
+                title: title,
+                priority: priority,
+                dueDate: dueDate,
+                assignedTo: assignedTo || 'Unassigned',
+                description: description,
+                category: category || 'other',
+                status: status,
+                updatedAt: new Date().toISOString()
+            };
+
+            localStorage.setItem('farmTasks', JSON.stringify(tasks));
+
+            // Close modal
+            const modal = document.querySelector('.modal');
+            if (modal) {
+                const bsModal = bootstrap.Modal.getInstance(modal);
+                if (bsModal) {
+                    bsModal.hide();
+                }
+            }
+
+            // Refresh tasks table
+            loadTasksTable();
+
+            showSuccessDialog(
+                '✅ Task Updated Successfully',
+                `Task "${title}" has been updated successfully.\n\nPriority: ${priority.charAt(0).toUpperCase() + priority.slice(1)}\nStatus: ${status.charAt(0).toUpperCase() + status.slice(1).replace('_', ' ')}\nDue Date: ${new Date(dueDate).toLocaleDateString()}`
+            );
+        }
+
+        function deleteTask(taskId) {
+            showConfirmDialog(
+                'Delete Task',
+                'Are you sure you want to delete this task? This action cannot be undone.',
+                'Yes, Delete',
+                'Cancel',
+                () => {
+                    let tasks = JSON.parse(localStorage.getItem('farmTasks') || '[]');
+                    const taskIndex = tasks.findIndex(t => t.id == taskId);
+                    
+                    if (taskIndex === -1) {
+                        showErrorDialog('Task Not Found', 'The selected task could not be found.');
+                        return;
+                    }
+
+                    const taskTitle = tasks[taskIndex].title;
+                    tasks.splice(taskIndex, 1);
+                    localStorage.setItem('farmTasks', JSON.stringify(tasks));
+
+                    // Close modal
+                    const modal = document.querySelector('.modal');
+                    if (modal) {
+                        const bsModal = bootstrap.Modal.getInstance(modal);
+                        if (bsModal) {
+                            bsModal.hide();
+                        }
+                    }
+
+                    // Refresh tasks table
+                    loadTasksTable();
+
+                    showSuccessDialog(
+                        '✅ Task Deleted Successfully',
+                        `Task "${taskTitle}" has been deleted from your task list.`
+                    );
+                }
+            );
+        }
+
+        function loadTasksTable() {
+            const tasks = JSON.parse(localStorage.getItem('farmTasks') || '[]');
+            const tbody = document.getElementById('tasksTable');
+            
+            if (!tbody) return;
+
+            if (tasks.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">
+                            <i class="fas fa-tasks fa-3x mb-3 d-block"></i>
+                            <h5>No Tasks Found</h5>
+                            <p>Click "Add Task" to create your first task.</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = tasks.map(task => {
+                const priorityClass = {
+                    'low': 'bg-secondary',
+                    'medium': 'bg-info',
+                    'high': 'bg-warning',
+                    'urgent': 'bg-danger'
+                }[task.priority] || 'bg-secondary';
+
+                const statusClass = {
+                    'pending': 'status-pending',
+                    'in_progress': 'status-active',
+                    'completed': 'status-completed',
+                    'cancelled': 'status-cancelled'
+                }[task.status] || 'status-pending';
+
+                const statusText = {
+                    'pending': 'Pending',
+                    'in_progress': 'In Progress',
+                    'completed': 'Completed',
+                    'cancelled': 'Cancelled'
+                }[task.status] || 'Pending';
+
+                return `
+                    <tr>
+                        <td>
+                            <div>
+                                <strong>${task.title}</strong>
+                                ${task.description ? `<br><small class="text-muted">${task.description}</small>` : ''}
+                            </div>
+                        </td>
+                        <td><span class="badge ${priorityClass}">${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}</span></td>
+                        <td>${new Date(task.dueDate).toLocaleDateString()}</td>
+                        <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                        <td>${task.assignedTo}</td>
+                        <td>
+                            ${task.status !== 'completed' ? `
+                                <button class="btn btn-sm btn-outline-success me-1" onclick="completeTask(${task.id})" title="Complete Task">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                            ` : ''}
+                            <button class="btn btn-sm btn-outline-primary me-1" onclick="editTask(${task.id})" title="Edit Task">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteTask(${task.id})" title="Delete Task">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
         }
 
         function generateReport(type) {
-            console.log('Generating report:', type);
+            showInfoDialog(
+                '📄 Generating Report',
+                `Generating ${type.charAt(0).toUpperCase() + type.slice(1)} Report...\n\nPlease wait while we compile your farm data and create a comprehensive report.`
+            );
             
-            switch(type) {
-                case 'summary':
-                    generateSummaryReport();
-                    break;
-                case 'crops':
-                    generateCropReport();
-                    break;
-                case 'livestock':
-                    generateLivestockReport();
-                    break;
-                case 'inventory':
-                    generateInventoryReport();
-                    break;
-                default:
-                    showInfoDialog('Coming Soon', 'Report type not implemented yet', 'OK');
+            // Simulate report generation delay
+            setTimeout(() => {
+                switch(type) {
+                    case 'summary':
+                        generateSummaryReportPDF();
+                        break;
+                    case 'crops':
+                        generateCropReportPDF();
+                        break;
+                    case 'livestock':
+                        generateLivestockReportPDF();
+                        break;
+                    case 'inventory':
+                        generateInventoryReportPDF();
+                        break;
+                    case 'financial':
+                        generateFinancialReportPDF();
+                        break;
+                    case 'tasks':
+                        generateTasksReportPDF();
+                        break;
+                    default:
+                        showErrorDialog('Report Error', 'Report type not implemented yet');
+                }
+            }, 2000);
+        }
+
+        function generateSummaryReportPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Set up colors
+            const primaryColor = [46, 125, 50];
+            const secondaryColor = [76, 175, 80];
+            const textColor = [33, 37, 41];
+            
+            let yPosition = 20;
+            const pageWidth = doc.internal.pageSize.width;
+            const margin = 20;
+            const contentWidth = pageWidth - (margin * 2);
+            
+            // Helper functions
+            const addText = (text, x, y, options = {}) => {
+                doc.setFontSize(options.fontSize || 12);
+                doc.setTextColor(...(options.color || textColor));
+                if (options.fontStyle) doc.setFont(undefined, options.fontStyle);
+                doc.text(text, x, y, { align: options.align || 'left' });
+            };
+            
+            const addLine = (x1, y1, x2, y2, color = primaryColor, width = 1) => {
+                doc.setDrawColor(...color);
+                doc.setLineWidth(width);
+                doc.line(x1, y1, x2, y2);
+            };
+            
+            // Header
+            addText('SMARTFARM SUMMARY REPORT', pageWidth / 2, yPosition, {
+                fontSize: 24,
+                color: primaryColor,
+                fontStyle: 'bold',
+                align: 'center'
+            });
+            yPosition += 10;
+            addText(`Generated on: ${new Date().toLocaleDateString()}`, pageWidth / 2, yPosition, {
+                fontSize: 12,
+                color: textColor,
+                align: 'center'
+            });
+            yPosition += 15;
+            addLine(margin, yPosition, pageWidth - margin, yPosition, primaryColor, 2);
+            yPosition += 15;
+            
+            // Farm Information
+            const farmData = JSON.parse(localStorage.getItem('farmData') || '{}');
+            addText('FARM INFORMATION', margin, yPosition, {
+                fontSize: 18,
+                color: primaryColor,
+                fontStyle: 'bold'
+            });
+            yPosition += 10;
+            
+            const farmInfo = [
+                `Farm Name: ${farmData.name || 'Not specified'}`,
+                `Location: ${farmData.location || 'Not specified'}`,
+                `Total Area: ${farmData.area || 'Not specified'} hectares`,
+                `Farm Type: ${farmData.type || 'Not specified'}`
+            ];
+            
+            farmInfo.forEach(info => {
+                addText(`• ${info}`, margin + 10, yPosition);
+                yPosition += 7;
+            });
+            yPosition += 10;
+            
+            // Crop Summary
+            addText('CROP SUMMARY', margin, yPosition, {
+                fontSize: 18,
+                color: primaryColor,
+                fontStyle: 'bold'
+            });
+            yPosition += 10;
+            
+            const cropCount = crops.length;
+            const growingCrops = crops.filter(c => c.status.toLowerCase() === 'growing').length;
+            const readyCrops = crops.filter(c => c.status.toLowerCase() === 'ready').length;
+            const harvestedCrops = crops.filter(c => c.status.toLowerCase() === 'harvested').length;
+            
+            const cropInfo = [
+                `Total Crop Types: ${cropCount}`,
+                `Growing: ${growingCrops}`,
+                `Ready for Harvest: ${readyCrops}`,
+                `Harvested: ${harvestedCrops}`
+            ];
+            
+            cropInfo.forEach(info => {
+                addText(`• ${info}`, margin + 10, yPosition);
+                yPosition += 7;
+            });
+            yPosition += 10;
+            
+            // Livestock Summary
+            addText('LIVESTOCK SUMMARY', margin, yPosition, {
+                fontSize: 18,
+                color: primaryColor,
+                fontStyle: 'bold'
+            });
+            yPosition += 10;
+            
+            const livestockCount = livestock.reduce((total, animal) => total + animal.quantity, 0);
+            const cattleCount = livestock.filter(l => l.type.toLowerCase() === 'cattle').length;
+            const pigsCount = livestock.filter(l => l.type.toLowerCase() === 'pigs').length;
+            const poultryCount = livestock.filter(l => l.type.toLowerCase() === 'poultry').length;
+            
+            const livestockInfo = [
+                `Total Animals: ${livestockCount}`,
+                `Cattle: ${cattleCount}`,
+                `Pigs: ${pigsCount}`,
+                `Poultry: ${poultryCount}`
+            ];
+            
+            livestockInfo.forEach(info => {
+                addText(`• ${info}`, margin + 10, yPosition);
+                yPosition += 7;
+            });
+            yPosition += 10;
+            
+            // Footer
+            addLine(margin, yPosition, pageWidth - margin, yPosition, primaryColor, 1);
+            yPosition += 10;
+            addText('SmartFarm Management System', pageWidth / 2, yPosition, {
+                fontSize: 10,
+                color: textColor,
+                align: 'center'
+            });
+            
+            // Save the PDF
+            const fileName = `FarmSummaryReport_${new Date().toISOString().split('T')[0]}.pdf`;
+            doc.save(fileName);
+            
+            showSuccessDialog(
+                '📄 Report Generated Successfully',
+                `Your farm summary report has been generated and downloaded as a PDF.\n\nFile: ${fileName}\n\nThe report includes:\n• Farm information overview\n• Crop summary statistics\n• Livestock summary statistics\n• Complete farm data analysis\n\nYou can open the PDF file in any PDF viewer to view the full report.`
+            );
+        }
+
+        function generateCropReportPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Set up colors
+            const primaryColor = [46, 125, 50];
+            const textColor = [33, 37, 41];
+            
+            let yPosition = 20;
+            const pageWidth = doc.internal.pageSize.width;
+            const margin = 20;
+            
+            // Helper functions
+            const addText = (text, x, y, options = {}) => {
+                doc.setFontSize(options.fontSize || 12);
+                doc.setTextColor(...(options.color || textColor));
+                if (options.fontStyle) doc.setFont(undefined, options.fontStyle);
+                doc.text(text, x, y, { align: options.align || 'left' });
+            };
+            
+            // Header
+            addText('CROP MANAGEMENT REPORT', pageWidth / 2, yPosition, {
+                fontSize: 24,
+                color: primaryColor,
+                fontStyle: 'bold',
+                align: 'center'
+            });
+            yPosition += 10;
+            addText(`Generated on: ${new Date().toLocaleDateString()}`, pageWidth / 2, yPosition, {
+                fontSize: 12,
+                color: textColor,
+                align: 'center'
+            });
+            yPosition += 20;
+            
+            // Crop Details Table
+            if (crops.length > 0) {
+                const tableData = crops.map(crop => [
+                    crop.name || 'N/A',
+                    crop.variety || 'N/A',
+                    crop.plantingDate || 'N/A',
+                    crop.status || 'N/A',
+                    crop.area || 'N/A'
+                ]);
+                
+                doc.autoTable({
+                    head: [['Crop Name', 'Variety', 'Planting Date', 'Status', 'Area (hectares)']],
+                    body: tableData,
+                    startY: yPosition,
+                    margin: { left: margin, right: margin },
+                    styles: { fontSize: 10, cellPadding: 3 },
+                    headStyles: { fillColor: primaryColor, textColor: [255, 255, 255], fontStyle: 'bold' },
+                    alternateRowStyles: { fillColor: [248, 249, 250] }
+                });
+            } else {
+                addText('No crop data available', margin, yPosition);
             }
+            
+            // Save the PDF
+            const fileName = `CropReport_${new Date().toISOString().split('T')[0]}.pdf`;
+            doc.save(fileName);
+            
+            showSuccessDialog(
+                '📄 Crop Report Generated',
+                `Your crop management report has been generated and downloaded as a PDF.\n\nFile: ${fileName}\n\nThe report includes detailed information about all your crops.`
+            );
+        }
+
+        function generateTasksReportPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Set up colors
+            const primaryColor = [46, 125, 50];
+            const textColor = [33, 37, 41];
+            
+            let yPosition = 20;
+            const pageWidth = doc.internal.pageSize.width;
+            const margin = 20;
+            
+            // Helper functions
+            const addText = (text, x, y, options = {}) => {
+                doc.setFontSize(options.fontSize || 12);
+                doc.setTextColor(...(options.color || textColor));
+                if (options.fontStyle) doc.setFont(undefined, options.fontStyle);
+                doc.text(text, x, y, { align: options.align || 'left' });
+            };
+            
+            // Header
+            addText('TASK MANAGEMENT REPORT', pageWidth / 2, yPosition, {
+                fontSize: 24,
+                color: primaryColor,
+                fontStyle: 'bold',
+                align: 'center'
+            });
+            yPosition += 10;
+            addText(`Generated on: ${new Date().toLocaleDateString()}`, pageWidth / 2, yPosition, {
+                fontSize: 12,
+                color: textColor,
+                align: 'center'
+            });
+            yPosition += 20;
+            
+            // Task Details Table
+            const tasks = JSON.parse(localStorage.getItem('farmTasks') || '[]');
+            if (tasks.length > 0) {
+                const tableData = tasks.map(task => [
+                    task.title || 'N/A',
+                    task.priority || 'N/A',
+                    task.status || 'N/A',
+                    task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'N/A',
+                    task.assignedTo || 'N/A'
+                ]);
+                
+                doc.autoTable({
+                    head: [['Task Title', 'Priority', 'Status', 'Due Date', 'Assigned To']],
+                    body: tableData,
+                    startY: yPosition,
+                    margin: { left: margin, right: margin },
+                    styles: { fontSize: 10, cellPadding: 3 },
+                    headStyles: { fillColor: primaryColor, textColor: [255, 255, 255], fontStyle: 'bold' },
+                    alternateRowStyles: { fillColor: [248, 249, 250] }
+                });
+            } else {
+                addText('No tasks available', margin, yPosition);
+            }
+            
+            // Save the PDF
+            const fileName = `TasksReport_${new Date().toISOString().split('T')[0]}.pdf`;
+            doc.save(fileName);
+            
+            showSuccessDialog(
+                '📄 Tasks Report Generated',
+                `Your task management report has been generated and downloaded as a PDF.\n\nFile: ${fileName}\n\nThe report includes detailed information about all your tasks.`
+            );
         }
 
         function generateSummaryReport() {
@@ -7076,11 +7801,275 @@ INVENTORY SUMMARY:
 
         // User functions
         function editProfile() {
-            showInfoDialog('Coming Soon', 'Edit profile functionality will be implemented', 'OK');
+            showEditProfileModal();
+        }
+
+        function showEditProfileModal() {
+            const user = JSON.parse(localStorage.getItem('smartfarm_user') || '{}');
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-user-edit me-2"></i>Edit Profile
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="editProfileForm">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="profileFirstName" class="form-label">First Name *</label>
+                                            <input type="text" class="form-control" id="profileFirstName" value="${user.firstName || ''}" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="profileLastName" class="form-label">Last Name *</label>
+                                            <input type="text" class="form-control" id="profileLastName" value="${user.lastName || ''}" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="profileEmail" class="form-label">Email Address *</label>
+                                    <input type="email" class="form-control" id="profileEmail" value="${user.email || ''}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="profilePhone" class="form-label">Phone Number</label>
+                                    <input type="tel" class="form-control" id="profilePhone" value="${user.phone || ''}">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="profileFarmName" class="form-label">Farm Name</label>
+                                    <input type="text" class="form-control" id="profileFarmName" value="${user.farmName || ''}">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="profileLocation" class="form-label">Location</label>
+                                    <input type="text" class="form-control" id="profileLocation" value="${user.location || ''}">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="profileBio" class="form-label">Bio</label>
+                                    <textarea class="form-control" id="profileBio" rows="3" placeholder="Tell us about yourself and your farming experience">${user.bio || ''}</textarea>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-primary" onclick="saveProfile()">
+                                <i class="fas fa-save me-2"></i>Save Profile
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        function saveProfile() {
+            const firstName = document.getElementById('profileFirstName').value.trim();
+            const lastName = document.getElementById('profileLastName').value.trim();
+            const email = document.getElementById('profileEmail').value.trim();
+            const phone = document.getElementById('profilePhone').value.trim();
+            const farmName = document.getElementById('profileFarmName').value.trim();
+            const location = document.getElementById('profileLocation').value.trim();
+            const bio = document.getElementById('profileBio').value.trim();
+
+            if (!firstName || !lastName || !email) {
+                showErrorDialog('Validation Error', 'Please fill in all required fields (First Name, Last Name, Email).');
+                return;
+            }
+
+            // Update user data
+            const updatedUser = {
+                firstName: firstName,
+                lastName: lastName,
+                email: email,
+                phone: phone,
+                farmName: farmName,
+                location: location,
+                bio: bio,
+                updatedAt: new Date().toISOString()
+            };
+
+            localStorage.setItem('smartfarm_user', JSON.stringify(updatedUser));
+
+            // Close modal
+            const modal = document.querySelector('.modal');
+            if (modal) {
+                const bsModal = bootstrap.Modal.getInstance(modal);
+                if (bsModal) {
+                    bsModal.hide();
+                }
+            }
+
+            showSuccessDialog(
+                '✅ Profile Updated Successfully',
+                `Your profile has been updated successfully.\n\nName: ${firstName} ${lastName}\nEmail: ${email}\nFarm: ${farmName || 'Not specified'}`
+            );
         }
 
         function showSettings() {
-            showInfoDialog('Coming Soon', 'Settings functionality will be implemented', 'OK');
+            showSettingsModal();
+        }
+
+        function showSettingsModal() {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-info text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-cog me-2"></i>Settings
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6 class="text-primary mb-3">General Settings</h6>
+                                    <div class="mb-3">
+                                        <label for="currencySelect" class="form-label">Currency</label>
+                                        <select class="form-select" id="currencySelect">
+                                            <option value="USD">USD - US Dollar</option>
+                                            <option value="EUR">EUR - Euro</option>
+                                            <option value="GBP">GBP - British Pound</option>
+                                            <option value="JPY">JPY - Japanese Yen</option>
+                                            <option value="CAD">CAD - Canadian Dollar</option>
+                                            <option value="AUD">AUD - Australian Dollar</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="languageSelect" class="form-label">Language</label>
+                                        <select class="form-select" id="languageSelect">
+                                            <option value="en">English</option>
+                                            <option value="es">Spanish</option>
+                                            <option value="fr">French</option>
+                                            <option value="de">German</option>
+                                            <option value="it">Italian</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="timezoneSelect" class="form-label">Timezone</label>
+                                        <select class="form-select" id="timezoneSelect">
+                                            <option value="UTC">UTC</option>
+                                            <option value="EST">EST - Eastern Time</option>
+                                            <option value="PST">PST - Pacific Time</option>
+                                            <option value="CST">CST - Central Time</option>
+                                            <option value="MST">MST - Mountain Time</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="text-primary mb-3">Notification Settings</h6>
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" id="emailNotifications" checked>
+                                        <label class="form-check-label" for="emailNotifications">
+                                            Email Notifications
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" id="taskReminders" checked>
+                                        <label class="form-check-label" for="taskReminders">
+                                            Task Reminders
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" id="weatherAlerts" checked>
+                                        <label class="form-check-label" for="weatherAlerts">
+                                            Weather Alerts
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" id="harvestAlerts" checked>
+                                        <label class="form-check-label" for="harvestAlerts">
+                                            Harvest Alerts
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <h6 class="text-primary mb-3">Data Management</h6>
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-outline-primary" onclick="exportData()">
+                                            <i class="fas fa-download me-2"></i>Export All Data
+                                        </button>
+                                        <button class="btn btn-outline-warning" onclick="importData()">
+                                            <i class="fas fa-upload me-2"></i>Import Data
+                                        </button>
+                                        <button class="btn btn-outline-danger" onclick="clearAllData()">
+                                            <i class="fas fa-trash me-2"></i>Clear All Data
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-info" onclick="saveSettings()">
+                                <i class="fas fa-save me-2"></i>Save Settings
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        function saveSettings() {
+            const currency = document.getElementById('currencySelect').value;
+            const language = document.getElementById('languageSelect').value;
+            const timezone = document.getElementById('timezoneSelect').value;
+            const emailNotifications = document.getElementById('emailNotifications').checked;
+            const taskReminders = document.getElementById('taskReminders').checked;
+            const weatherAlerts = document.getElementById('weatherAlerts').checked;
+            const harvestAlerts = document.getElementById('harvestAlerts').checked;
+
+            const settings = {
+                currency: currency,
+                language: language,
+                timezone: timezone,
+                notifications: {
+                    email: emailNotifications,
+                    taskReminders: taskReminders,
+                    weatherAlerts: weatherAlerts,
+                    harvestAlerts: harvestAlerts
+                },
+                updatedAt: new Date().toISOString()
+            };
+
+            localStorage.setItem('smartfarm_settings', JSON.stringify(settings));
+
+            // Close modal
+            const modal = document.querySelector('.modal');
+            if (modal) {
+                const bsModal = bootstrap.Modal.getInstance(modal);
+                if (bsModal) {
+                    bsModal.hide();
+                }
+            }
+
+            showSuccessDialog(
+                '✅ Settings Saved Successfully',
+                `Your settings have been saved successfully.\n\nCurrency: ${currency}\nLanguage: ${language}\nTimezone: ${timezone}\n\nAll notification preferences have been updated.`
+            );
         }
 
         function logout() {
