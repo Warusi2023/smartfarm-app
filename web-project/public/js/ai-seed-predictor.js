@@ -387,7 +387,7 @@ class AISeedPredictor {
         return Math.round((baseYield * priceFactor * weatherFactor) * 100) / 100;
     }
 
-    getYieldMultiplier(yield) {
+    getYieldMultiplier(yieldLevel) {
         const multipliers = {
             'Very High': 120,
             'High': 100,
@@ -395,7 +395,7 @@ class AISeedPredictor {
             'Medium': 70,
             'Low': 50
         };
-        return multipliers[yield] || 70;
+        return multipliers[yieldLevel] || 70;
     }
 
     calculateWeatherFactor(seed) {

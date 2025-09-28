@@ -1219,7 +1219,12 @@ class IntelligentWeedingSystem {
             alertElement.className = 'alert alert-danger alert-dismissible fade show position-fixed';
             alertElement.style.cssText = 'top: 20px; right: 20px; z-index: 9999; max-width: 400px;';
             
-            document.body.appendChild(alertElement);
+            if (document.body) {
+                document.body.appendChild(alertElement);
+            } else {
+                console.warn('Document body not available for weeding alert');
+                return;
+            }
         }
         
         alertElement.innerHTML = `

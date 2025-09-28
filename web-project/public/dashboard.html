@@ -13,11 +13,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="js/currency-config.js"></script>
     <script src="js/currency-selector.js"></script>
+    <script src="js/ai-seed-predictor.js"></script>
+    <script src="js/intelligent-weeding.js"></script>
     <script src="js/qr-traceability.js"></script>
     <script src="js/competitive-features.js"></script>
     <script src="js/supply-chain-tracker.js"></script>
-    <script src="js/ai-seed-predictor.js"></script>
-    <script src="js/intelligent-weeding.js"></script>
     <style>
         :root {
             --primary-color: #2e7d32;
@@ -3349,8 +3349,9 @@
                 : 'N/A';
             
             // Get ear tags display
-            const earTagsDisplay = animal.earTags && animal.earTags.length > 0 
-                ? animal.earTags.slice(0, 2).join(', ') + (animal.earTags.length > 2 ? ` (+${animal.earTags.length - 2})` : '')
+            const earTags = Array.isArray(animal.earTags) ? animal.earTags : [];
+            const earTagsDisplay = earTags.length > 0 
+                ? earTags.slice(0, 2).join(', ') + (earTags.length > 2 ? ` (+${earTags.length - 2})` : '')
                 : 'None';
             
             // GPS location display

@@ -11,32 +11,46 @@ class QRTraceability {
     }
 
     loadQRCodeLibrary() {
-        if (typeof QRCode === 'undefined') {
-            console.log('QR Code library not found, waiting for it to load...');
-            // Wait a bit for the library to load from the HTML head
-            setTimeout(() => {
-                if (typeof QRCode !== 'undefined') {
-                    console.log('QR Code library loaded successfully');
-                    this.initializeQRSystem();
-                } else {
-                    console.log('Loading QR Code library dynamically...');
-                    const script = document.createElement('script');
-                    script.src = this.qrCodeLibrary;
-                    script.onload = () => {
-                        console.log('QR Code library loaded successfully');
-                        this.initializeQRSystem();
-                    };
-                    script.onerror = () => {
-                        console.error('Failed to load QR Code library');
-                        this.initializeQRSystemWithFallback();
-                    };
-                    document.head.appendChild(script);
-                }
-            }, 100);
-        } else {
+        if (typeof QRCode !== 'undefined') {
             console.log('QR Code library already loaded');
             this.initializeQRSystem();
+            return;
         }
+
+        console.log('QR Code library not found, waiting for it to load...');
+        
+        // Wait for the library to load from the HTML head
+        let attempts = 0;
+        const maxAttempts = 50; // 5 seconds total
+        
+        const checkLibrary = () => {
+            attempts++;
+            
+            if (typeof QRCode !== 'undefined') {
+                console.log('QR Code library loaded successfully');
+                this.initializeQRSystem();
+                return;
+            }
+            
+            if (attempts < maxAttempts) {
+                setTimeout(checkLibrary, 100);
+            } else {
+                console.log('QR Code library not found in HTML head, loading dynamically...');
+                const script = document.createElement('script');
+                script.src = this.qrCodeLibrary;
+                script.onload = () => {
+                    console.log('QR Code library loaded successfully');
+                    this.initializeQRSystem();
+                };
+                script.onerror = () => {
+                    console.error('Failed to load QR Code library');
+                    this.initializeQRSystemWithFallback();
+                };
+                document.head.appendChild(script);
+            }
+        };
+        
+        checkLibrary();
     }
 
     initializeQRSystemWithFallback() {
