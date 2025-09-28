@@ -607,33 +607,31 @@
                         </div>
                         <div class="col-lg-4">
                             <div class="dashboard-card">
-                                <h5 class="mb-3">🧪 Pesticide Database</h5>
-                                <div class="pesticide-stats">
-                                    <div class="stat-item">
-                                        <div class="stat-icon">🧪</div>
-                                        <div class="stat-content">
-                                            <div class="stat-number" id="totalPesticides">13</div>
-                                            <div class="stat-label">Available Pesticides</div>
-                                        </div>
+                                <h5 class="mb-3">🔗 QR Code Traceability Generator</h5>
+                                <div class="qr-generator-container">
+                                    <div class="mb-3">
+                                        <label for="productSelect" class="form-label">Select Product</label>
+                                        <select class="form-select" id="productSelect">
+                                            <option value="">Choose a product...</option>
+                                            <option value="PROD001">Organic Tomatoes (BATCH2024001)</option>
+                                            <option value="PROD002">Fresh Lettuce (BATCH2024002)</option>
+                                            <option value="PROD003">Organic Carrots (BATCH2024003)</option>
+                                            <option value="PROD004">Free-Range Eggs (BATCH2024004)</option>
+                                            <option value="PROD005">Organic Milk (BATCH2024005)</option>
+                                        </select>
                                     </div>
-                                    <div class="stat-item">
-                                        <div class="stat-icon">🐛</div>
-                                        <div class="stat-content">
-                                            <div class="stat-number" id="totalPests">80+</div>
-                                            <div class="stat-label">Pest Categories</div>
-                                        </div>
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-primary" onclick="generateQRCode()">
+                                            <i class="fas fa-qrcode me-2"></i>Generate QR Code
+                                        </button>
+                                        <button class="btn btn-success" onclick="addNewProduct()">
+                                            <i class="fas fa-plus me-2"></i>New Product
+                                        </button>
                                     </div>
-                                    <div class="stat-item">
-                                        <div class="stat-icon">🛡️</div>
-                                        <div class="stat-content">
-                                            <div class="stat-number">100%</div>
-                                            <div class="stat-label">Coverage</div>
-                                        </div>
+                                    <div id="qrCodeDisplay" class="mt-3 text-center">
+                                        <!-- QR code will be displayed here -->
                                     </div>
                                 </div>
-                                <button class="btn btn-custom mt-3" onclick="window.location.href='pesticide-management.html'">
-                                    <i class="fas fa-bug me-2"></i>Manage Pesticides
-                                </button>
                             </div>
                         </div>
                     </div>
@@ -2166,6 +2164,141 @@
             
             // Initialize URL routing
             initializeURLRouting();
+            
+        // Initialize QR Traceability System
+        if (typeof QRTraceability !== 'undefined') {
+            window.qrTraceability = new QRTraceability();
+            console.log('✅ QR Traceability System initialized');
+        } else {
+            console.log('⚠️ QR Traceability System not available');
+        }
+        
+        // QR Code Generator Functions
+        function generateQRCode() {
+            if (typeof qrTraceability !== 'undefined' && qrTraceability) {
+                qrTraceability.generateQRCode();
+            } else {
+                showErrorDialog('QR System Not Available', 'The QR Code system is not loaded. Please refresh the page and try again.');
+            }
+        }
+        
+        function addNewProduct() {
+            showAddProductModal();
+        }
+        
+        function showAddProductModal() {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-success text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-plus me-2"></i>Add New Product
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="addProductForm">
+                                <div class="mb-3">
+                                    <label for="productName" class="form-label">Product Name</label>
+                                    <input type="text" class="form-control" id="productName" placeholder="e.g., Organic Strawberries" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="batchNumber" class="form-label">Batch Number</label>
+                                    <input type="text" class="form-control" id="batchNumber" placeholder="e.g., BATCH2024006" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="productType" class="form-label">Product Type</label>
+                                    <select class="form-select" id="productType" required>
+                                        <option value="">Select type...</option>
+                                        <option value="vegetable">Vegetable</option>
+                                        <option value="fruit">Fruit</option>
+                                        <option value="dairy">Dairy</option>
+                                        <option value="poultry">Poultry</option>
+                                        <option value="grain">Grain</option>
+                                        <option value="herb">Herb</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="harvestDate" class="form-label">Harvest Date</label>
+                                    <input type="date" class="form-control" id="harvestDate" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="productDescription" class="form-label">Description</label>
+                                    <textarea class="form-control" id="productDescription" rows="3" placeholder="Brief description of the product..."></textarea>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-success" onclick="saveNewProduct()">
+                                <i class="fas fa-save me-1"></i>Add Product
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+        
+        function saveNewProduct() {
+            const productName = document.getElementById('productName').value;
+            const batchNumber = document.getElementById('batchNumber').value;
+            const productType = document.getElementById('productType').value;
+            const harvestDate = document.getElementById('harvestDate').value;
+            const description = document.getElementById('productDescription').value;
+            
+            if (!productName || !batchNumber || !productType || !harvestDate) {
+                showErrorDialog('Missing Information', 'Please fill in all required fields.');
+                return;
+            }
+            
+            // Generate new product ID
+            const productId = 'PROD' + String(Date.now()).slice(-6);
+            
+            // Add to product select dropdown
+            const productSelect = document.getElementById('productSelect');
+            const newOption = document.createElement('option');
+            newOption.value = productId;
+            newOption.textContent = `${productName} (${batchNumber})`;
+            productSelect.appendChild(newOption);
+            
+            // Add to QR traceability system if available
+            if (typeof qrTraceability !== 'undefined' && qrTraceability) {
+                const newProduct = {
+                    id: productId,
+                    name: productName,
+                    batchNumber: batchNumber,
+                    type: productType,
+                    harvestDate: harvestDate,
+                    description: description,
+                    createdAt: new Date().toISOString()
+                };
+                
+                qrTraceability.products.push(newProduct);
+                qrTraceability.saveProducts();
+            }
+            
+            // Close modal
+            const modal = document.querySelector('.modal.show');
+            if (modal) {
+                const bsModal = bootstrap.Modal.getInstance(modal);
+                bsModal.hide();
+            }
+            
+            showSuccessDialog(
+                '✅ Product Added Successfully',
+                `${productName} has been added to the system!\n\nProduct ID: ${productId}\nBatch: ${batchNumber}\nType: ${productType}\n\nYou can now generate QR codes for this product.`
+            );
+        }
         });
 
         // Competitive Features Implementation
