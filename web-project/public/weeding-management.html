@@ -505,6 +505,151 @@
             console.log('Authentication successful for:', user);
         }
 
+        // Professional Dialog Functions
+        function showSuccessDialog(title, message) {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-success text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-check-circle me-2"></i>${title}
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="text-center">
+                                <i class="fas fa-check-circle text-success mb-3" style="font-size: 3rem;"></i>
+                                <p class="mb-0">${message.replace(/\n/g, '<br>')}</p>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-success" data-bs-dismiss="modal">OK</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        function showErrorDialog(title, message) {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-danger text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-exclamation-triangle me-2"></i>${title}
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="text-center">
+                                <i class="fas fa-exclamation-triangle text-danger mb-3" style="font-size: 3rem;"></i>
+                                <p class="mb-0">${message.replace(/\n/g, '<br>')}</p>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-danger" data-bs-dismiss="modal">OK</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        function showInfoDialog(title, message) {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-info text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-info-circle me-2"></i>${title}
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="text-center">
+                                <i class="fas fa-info-circle text-info mb-3" style="font-size: 3rem;"></i>
+                                <p class="mb-0">${message.replace(/\n/g, '<br>')}</p>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-info" data-bs-dismiss="modal">OK</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        function showConfirmDialog(title, message, onConfirm) {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-warning text-dark">
+                            <h5 class="modal-title">
+                                <i class="fas fa-question-circle me-2"></i>${title}
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="text-center">
+                                <i class="fas fa-question-circle text-warning mb-3" style="font-size: 3rem;"></i>
+                                <p class="mb-0">${message.replace(/\n/g, '<br>')}</p>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-warning" onclick="confirmAction()">Confirm</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            // Store the confirm callback
+            window.confirmAction = function() {
+                if (onConfirm) onConfirm();
+                bsModal.hide();
+            };
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+                delete window.confirmAction;
+            });
+        }
+
         // Weeding Management Page Functions
         let weedGrowthChart;
 
@@ -661,57 +806,375 @@
         }
 
         function executeTask(taskId) {
-            alert(`🚀 Executing Weeding Task\n\nTask ID: ${taskId}\n\nThis will:\n• Mark the task as in progress\n• Show execution options (manual/chemical)\n• Track costs and time\n• Update crop data\n• Generate completion report\n\nProceed with execution?`);
+            showWeedingExecutionModal(taskId);
         }
 
-        function viewTaskDetails(taskId) {
-            alert(`📋 Task Details\n\nTask ID: ${taskId}\n\nDetailed information including:\n• Complete weed analysis\n• Weather impact assessment\n• Cost breakdown\n• Safety considerations\n• Environmental impact\n• Recommended timing\n\nThis would show comprehensive task information.`);
+        function showWeedingExecutionModal(taskId) {
+            // Get task details
+            const task = getTaskById(taskId);
+            if (!task) {
+                showErrorDialog('Task Not Found', 'The selected weeding task could not be found.');
+                return;
+            }
+
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-success text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-play-circle me-2"></i>Execute Weeding Task
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="task-execution-card p-3 border rounded mb-3" style="background: linear-gradient(135deg, #f8f9fa, #e9ecef);">
+                                        <h4 class="text-primary mb-3">${task.cropName} - ${task.location}</h4>
+                                        <div class="mb-2">
+                                            <strong>Urgency:</strong> 
+                                            <span class="badge ${getUrgencyBadgeClass(task.urgency)}">${task.urgency.toUpperCase()}</span>
+                                        </div>
+                                        <div class="mb-2">
+                                            <strong>Weed Growth Rate:</strong> ${task.weedGrowthRate}x
+                                        </div>
+                                        <div class="mb-2">
+                                            <strong>Days Since Last Weeding:</strong> ${task.daysSinceLastWeeding} days
+                                        </div>
+                                        <div class="mb-2">
+                                            <strong>Estimated Cost:</strong> <span class="text-success fw-bold">$${task.estimatedCost}</span>
+                                        </div>
+                                        <div class="mb-2">
+                                            <strong>Weather:</strong> ${task.weatherSuitability}
+                                        </div>
+                                        <div class="mb-3">
+                                            <strong>Recommended Action:</strong> ${task.recommendedAction}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="text-primary mb-3">Execution Options</h6>
+                                    <div class="list-group list-group-flush">
+                                        <div class="list-group-item d-flex align-items-center">
+                                            <i class="fas fa-flask text-primary me-3"></i>
+                                            <div>
+                                                <strong>Chemical Application</strong>
+                                                <small class="text-muted d-block">Fast and effective weed control</small>
+                                            </div>
+                                        </div>
+                                        <div class="list-group-item d-flex align-items-center">
+                                            <i class="fas fa-hands text-success me-3"></i>
+                                            <div>
+                                                <strong>Manual Weeding</strong>
+                                                <small class="text-muted d-block">Organic and precise removal</small>
+                                            </div>
+                                        </div>
+                                        <div class="list-group-item d-flex align-items-center">
+                                            <i class="fas fa-tractor text-info me-3"></i>
+                                            <div>
+                                                <strong>Mechanical Weeding</strong>
+                                                <small class="text-muted d-block">Efficient for large areas</small>
+                                            </div>
+                                        </div>
+                                        <div class="list-group-item d-flex align-items-center">
+                                            <i class="fas fa-seedling text-warning me-3"></i>
+                                            <div>
+                                                <strong>Integrated Approach</strong>
+                                                <small class="text-muted d-block">Combination of methods</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mt-3">
+                                        <h6 class="text-primary mb-2">Execution Steps</h6>
+                                        <div class="execution-steps">
+                                            <div class="step-item mb-2">
+                                                <i class="fas fa-check-circle text-success me-2"></i>
+                                                <span>Mark task as in progress</span>
+                                            </div>
+                                            <div class="step-item mb-2">
+                                                <i class="fas fa-check-circle text-success me-2"></i>
+                                                <span>Select execution method</span>
+                                            </div>
+                                            <div class="step-item mb-2">
+                                                <i class="fas fa-check-circle text-success me-2"></i>
+                                                <span>Track costs and time</span>
+                                            </div>
+                                            <div class="step-item mb-2">
+                                                <i class="fas fa-check-circle text-success me-2"></i>
+                                                <span>Update crop data</span>
+                                            </div>
+                                            <div class="step-item mb-2">
+                                                <i class="fas fa-check-circle text-success me-2"></i>
+                                                <span>Generate completion report</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-info mt-3">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Note:</strong> This task will be marked as completed and removed from the active tasks list once execution is confirmed.
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-success" onclick="confirmTaskExecution('${taskId}')">
+                                <i class="fas fa-play me-2"></i>Execute Task
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
         }
 
-        function rescheduleTask(taskId) {
-            const newDate = prompt('Enter new date for weeding task (MM/DD/YYYY):');
-            if (newDate && new Date(newDate) > new Date()) {
-                alert(`✅ Task rescheduled successfully!\n\nTask ID: ${taskId}\nNew Date: ${newDate}\n\nTask has been updated in the system.`);
+        function getTaskById(taskId) {
+            const tasks = [
+                {
+                    id: 'task1',
+                    cropName: 'Tomatoes',
+                    location: 'Field A',
+                    urgency: 'critical',
+                    weedGrowthRate: 1.3,
+                    daysSinceLastWeeding: 20,
+                    recommendedAction: 'Immediate chemical application required',
+                    estimatedCost: 125.00,
+                    weatherSuitability: 'Weather OK',
+                    scheduledDate: 'Today'
+                },
+                {
+                    id: 'task2',
+                    cropName: 'Peppers',
+                    location: 'Field B',
+                    urgency: 'urgent',
+                    weedGrowthRate: 1.1,
+                    daysSinceLastWeeding: 18,
+                    recommendedAction: 'Chemical application recommended within 24 hours',
+                    estimatedCost: 95.00,
+                    weatherSuitability: 'Weather OK',
+                    scheduledDate: 'Tomorrow'
+                },
+                {
+                    id: 'task3',
+                    cropName: 'Lettuce',
+                    location: 'Field C',
+                    urgency: 'medium',
+                    weedGrowthRate: 0.9,
+                    daysSinceLastWeeding: 14,
+                    recommendedAction: 'Manual weeding or light chemical treatment',
+                    estimatedCost: 60.00,
+                    weatherSuitability: 'Weather Issue - Wait for dry conditions',
+                    scheduledDate: 'Day after tomorrow'
+                },
+                {
+                    id: 'task4',
+                    cropName: 'Carrots',
+                    location: 'Field D',
+                    urgency: 'low',
+                    weedGrowthRate: 0.6,
+                    daysSinceLastWeeding: 10,
+                    recommendedAction: 'Manual weeding when weather permits',
+                    estimatedCost: 45.00,
+                    weatherSuitability: 'Weather OK',
+                    scheduledDate: 'Next week'
+                }
+            ];
+            
+            return tasks.find(task => task.id === taskId);
+        }
+
+        function getUrgencyBadgeClass(urgency) {
+            switch(urgency) {
+                case 'critical': return 'bg-danger';
+                case 'urgent': return 'bg-warning text-dark';
+                case 'medium': return 'bg-info';
+                case 'low': return 'bg-secondary';
+                default: return 'bg-secondary';
             }
         }
 
+        function confirmTaskExecution(taskId) {
+            // Close the execution modal
+            const modal = document.querySelector('.modal');
+            if (modal) {
+                const bsModal = bootstrap.Modal.getInstance(modal);
+                if (bsModal) {
+                    bsModal.hide();
+                }
+            }
+            
+            // Mark task as completed and remove from list
+            markTaskAsCompleted(taskId);
+            
+            // Show success confirmation
+            showSuccessDialog(
+                '✅ Task Executed Successfully',
+                `Weeding task ${taskId} has been executed and completed!\n\n• Task marked as completed\n• Removed from active tasks list\n• Execution data logged\n• Cost and time tracked\n• Completion report generated\n\nThe task will no longer appear in your active weeding tasks.`
+            );
+        }
+
+        function markTaskAsCompleted(taskId) {
+            // In a real application, this would update the database
+            // For now, we'll just refresh the tasks list to simulate removal
+            console.log(`Task ${taskId} marked as completed`);
+            
+            // Refresh the tasks list (in a real app, this would filter out completed tasks)
+            setTimeout(() => {
+                populateWeedingTasks();
+            }, 2000);
+        }
+
+        function viewTaskDetails(taskId) {
+            showInfoDialog(
+                '📋 Task Details',
+                `Task ID: ${taskId}\n\nDetailed information including:\n• Complete weed analysis\n• Weather impact assessment\n• Cost breakdown\n• Safety considerations\n• Environmental impact\n• Recommended timing\n\nThis would show comprehensive task information.`
+            );
+        }
+
+        function rescheduleTask(taskId) {
+            showRescheduleModal(taskId);
+        }
+
+        function showRescheduleModal(taskId) {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-warning text-dark">
+                            <h5 class="modal-title">
+                                <i class="fas fa-calendar-alt me-2"></i>Reschedule Weeding Task
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="newDate" class="form-label">Select New Date for Task ${taskId}</label>
+                                <input type="date" class="form-control" id="newDate" min="${new Date().toISOString().split('T')[0]}">
+                            </div>
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Note:</strong> The new date must be in the future. Weather conditions will be checked before confirmation.
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-warning" onclick="confirmReschedule('${taskId}')">
+                                <i class="fas fa-calendar-check me-2"></i>Reschedule Task
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        function confirmReschedule(taskId) {
+            const newDateInput = document.getElementById('newDate');
+            const newDate = newDateInput.value;
+            
+            if (!newDate) {
+                showErrorDialog('Invalid Date', 'Please select a valid date for rescheduling.');
+                return;
+            }
+            
+            if (new Date(newDate) <= new Date()) {
+                showErrorDialog('Invalid Date', 'The new date must be in the future.');
+                return;
+            }
+            
+            // Close the modal
+            const modal = document.querySelector('.modal');
+            if (modal) {
+                const bsModal = bootstrap.Modal.getInstance(modal);
+                if (bsModal) {
+                    bsModal.hide();
+                }
+            }
+            
+            showSuccessDialog(
+                '✅ Task Rescheduled Successfully',
+                `Task ID: ${taskId}\nNew Date: ${new Date(newDate).toLocaleDateString()}\n\nTask has been updated in the system and will appear on the new scheduled date.`
+            );
+        }
+
         function viewUrgentTasks() {
-            alert(`🚨 URGENT WEEDING TASKS\n\n1. Tomatoes - Field A\n   • Urgency: CRITICAL\n   • Weed Growth: 1.3x\n   • Days Since: 20 days\n   • Action: Immediate chemical application\n   • Cost: $125.00\n\n2. Peppers - Field B\n   • Urgency: URGENT\n   • Weed Growth: 1.1x\n   • Days Since: 18 days\n   • Action: Chemical application within 24h\n   • Cost: $95.00\n\nThese tasks require immediate attention to prevent crop damage!`);
+            showInfoDialog(
+                '🚨 URGENT WEEDING TASKS',
+                `1. Tomatoes - Field A\n   • Urgency: CRITICAL\n   • Weed Growth: 1.3x\n   • Days Since: 20 days\n   • Action: Immediate chemical application\n   • Cost: $125.00\n\n2. Peppers - Field B\n   • Urgency: URGENT\n   • Weed Growth: 1.1x\n   • Days Since: 18 days\n   • Action: Chemical application within 24h\n   • Cost: $95.00\n\nThese tasks require immediate attention to prevent crop damage!`
+            );
         }
 
         function selectChemical(chemicalName) {
-            alert(`🧪 Selected: ${chemicalName}\n\nChemical details:\n• Type and effectiveness\n• Application rate and cost\n• Safety considerations\n• Weather restrictions\n• Environmental impact\n• Pre-harvest interval\n\nThis chemical has been selected for application.`);
+            showInfoDialog(
+                `🧪 Selected: ${chemicalName}`,
+                `Chemical details:\n• Type and effectiveness\n• Application rate and cost\n• Safety considerations\n• Weather restrictions\n• Environmental impact\n• Pre-harvest interval\n\nThis chemical has been selected for application.`
+            );
         }
 
         function showChemicalDetails(chemicalName) {
             if (typeof intelligentWeeding !== 'undefined') {
                 intelligentWeeding.showChemicalDetails(chemicalName);
             } else {
-                alert(`🔬 Chemical Details for ${chemicalName}\n\nThis would display comprehensive chemical information including:\n\n• Molecular formula and properties\n• Physical and chemical characteristics\n• Toxicity and ecotoxicity data\n• Environmental fate information\n• Regulatory status and compliance\n• Storage and handling requirements\n• Resistance management strategies\n\nDetailed chemical database integration required.`);
+                showInfoDialog(
+                    `🔬 Chemical Details for ${chemicalName}`,
+                    `This would display comprehensive chemical information including:\n\n• Molecular formula and properties\n• Physical and chemical characteristics\n• Toxicity and ecotoxicity data\n• Environmental fate information\n• Regulatory status and compliance\n• Storage and handling requirements\n• Resistance management strategies\n\nDetailed chemical database integration required.`
+                );
             }
         }
 
         function refreshWeedingTasks() {
-            alert('🔄 Refreshing Weeding Tasks...\n\nUpdating:\n• Weather conditions\n• Weed growth rates\n• Task priorities\n• Cost estimates\n• Schedule optimization\n\nTasks have been refreshed with latest data!');
+            showInfoDialog(
+                '🔄 Refreshing Weeding Tasks...',
+                `Updating:\n• Weather conditions\n• Weed growth rates\n• Task priorities\n• Cost estimates\n• Schedule optimization\n\nTasks have been refreshed with latest data!`
+            );
             populateWeedingTasks();
         }
 
         function scheduleWeeding() {
-            alert('📅 Schedule Weeding\n\nScheduling options:\n\n1. Immediate (Today)\n   • Best for critical tasks\n   • Weather permitting\n\n2. Tomorrow\n   • Good for urgent tasks\n   • Better weather forecast\n\n3. This Week\n   • Planned approach\n   • Cost optimization\n\n4. Custom Date\n   • Flexible scheduling\n   • Weather-dependent\n\nSelect your preferred scheduling option?');
+            showInfoDialog(
+                '📅 Schedule Weeding',
+                `Scheduling options:\n\n1. Immediate (Today)\n   • Best for critical tasks\n   • Weather permitting\n\n2. Tomorrow\n   • Good for urgent tasks\n   • Better weather forecast\n\n3. This Week\n   • Planned approach\n   • Cost optimization\n\n4. Custom Date\n   • Flexible scheduling\n   • Weather-dependent\n\nSelect your preferred scheduling option?`
+            );
         }
 
         function generateWeedingReport() {
-            alert('📄 Generating Weeding Report...\n\nReport includes:\n• Task completion summary\n• Cost analysis\n• Weather impact assessment\n• Effectiveness metrics\n• Environmental impact\n• Recommendations for future\n\nReport is ready for download!');
+            showInfoDialog(
+                '📄 Generating Weeding Report...',
+                `Report includes:\n• Task completion summary\n• Cost analysis\n• Weather impact assessment\n• Effectiveness metrics\n• Environmental impact\n• Recommendations for future\n\nReport is ready for download!`
+            );
         }
 
         function logout() {
-            if (confirm('Are you sure you want to logout?')) {
-                localStorage.removeItem('smartfarm_user');
-                localStorage.removeItem('smartfarm_token');
-                sessionStorage.removeItem('smartfarm_user');
-                sessionStorage.removeItem('smartfarm_token');
-                window.location.href = 'login.html';
-            }
+            showConfirmDialog(
+                'Logout Confirmation',
+                'Are you sure you want to logout?',
+                function() {
+                    localStorage.removeItem('smartfarm_user');
+                    localStorage.removeItem('smartfarm_token');
+                    sessionStorage.removeItem('smartfarm_user');
+                    sessionStorage.removeItem('smartfarm_token');
+                    window.location.href = 'login.html';
+                }
+            );
         }
     </script>
 </body>
