@@ -2998,26 +2998,30 @@
 
             // Basic validation
             if (!farmName) {
-                alert('Please enter a farm name.');
-                document.getElementById('farmName').focus();
+                showInfoDialog('Validation Error', 'Please enter a farm name.', 'OK', () => {
+                    document.getElementById('farmName').focus();
+                });
                 return;
             }
 
             if (!farmLocation) {
-                alert('Please enter a farm location.');
-                document.getElementById('farmLocation').focus();
+                showInfoDialog('Validation Error', 'Please enter a farm location.', 'OK', () => {
+                    document.getElementById('farmLocation').focus();
+                });
                 return;
             }
 
             if (!farmArea || isNaN(farmArea) || parseFloat(farmArea) <= 0) {
-                alert('Please enter a valid farm area (positive number).');
-                document.getElementById('farmArea').focus();
+                showInfoDialog('Validation Error', 'Please enter a valid farm area (positive number).', 'OK', () => {
+                    document.getElementById('farmArea').focus();
+                });
                 return;
             }
 
             if (!farmType) {
-                alert('Please select a farm type.');
-                document.getElementById('farmType').focus();
+                showInfoDialog('Validation Error', 'Please select a farm type.', 'OK', () => {
+                    document.getElementById('farmType').focus();
+                });
                 return;
             }
 
@@ -3045,7 +3049,7 @@
                 
             } catch (error) {
                 console.error('Error saving farm data:', error);
-                alert('Error saving farm data. Please try again.');
+                showInfoDialog('Error', 'Error saving farm data. Please try again.', 'OK');
             }
         }
 
@@ -3441,7 +3445,7 @@
             const notes = document.getElementById('newCropNotes').value.trim();
 
             if (!name || !field || !plantedDate || !status) {
-                alert('Please fill in all required fields');
+                showInfoDialog('Validation Error', 'Please fill in all required fields', 'OK');
                 return;
             }
 
@@ -3476,7 +3480,7 @@
         function editCrop(id) {
             const crop = crops.find(c => c.id === id);
             if (!crop) {
-                alert('Crop not found');
+                showInfoDialog('Error', 'Crop not found', 'OK');
                 return;
             }
 
@@ -3560,7 +3564,7 @@
             const notes = document.getElementById('editCropNotes').value.trim();
 
             if (!name || !field || !plantedDate || !status) {
-                alert('Please fill in all required fields');
+                showInfoDialog('Validation Error', 'Please fill in all required fields', 'OK');
                 return;
             }
 
@@ -3595,12 +3599,18 @@
         }
 
         function deleteCrop(id) {
-            if (confirm('Are you sure you want to delete this crop?')) {
-                crops = crops.filter(crop => crop.id !== id);
-                saveCropsData();
-                renderCropsTable();
-                showSuccessMessage('Crop deleted successfully!');
-            }
+            showConfirmDialog(
+                'Delete Crop',
+                'Are you sure you want to delete this crop?',
+                'Yes, Delete',
+                'Cancel',
+                () => {
+                    crops = crops.filter(crop => crop.id !== id);
+                    saveCropsData();
+                    renderCropsTable();
+                    showSuccessMessage('Crop deleted successfully!');
+                }
+            );
         }
 
         function addNewLivestock() {
@@ -3708,7 +3718,7 @@
             const healthNotes = document.getElementById('healthNotes').value;
 
             if (!type || !breed || !quantity || !location || !status) {
-                alert('Please fill in all required fields');
+                showInfoDialog('Validation Error', 'Please fill in all required fields', 'OK');
                 return;
             }
 
@@ -3757,7 +3767,7 @@
         function editLivestock(id) {
             const animal = livestock.find(l => l.id === id);
             if (!animal) {
-                alert('Livestock record not found');
+                showInfoDialog('Error', 'Livestock record not found', 'OK');
                 return;
             }
 
@@ -3950,12 +3960,12 @@
             const healthNotes = document.getElementById('editHealthNotes').value;
 
             if (!type || !breed || !quantity || !location || !status) {
-                alert('Please fill in all required fields');
+                showInfoDialog('Validation Error', 'Please fill in all required fields', 'OK');
                 return;
             }
 
             if (quantity < 1) {
-                alert('Quantity must be at least 1');
+                showInfoDialog('Validation Error', 'Quantity must be at least 1', 'OK');
                 return;
             }
 
@@ -4002,12 +4012,18 @@
         }
 
         function deleteLivestock(id) {
-            if (confirm('Are you sure you want to delete this livestock record?')) {
-                livestock = livestock.filter(animal => animal.id !== id);
-                saveLivestockData();
-                renderLivestockTable();
-                showSuccessMessage('Livestock deleted successfully!');
-            }
+            showConfirmDialog(
+                'Delete Livestock',
+                'Are you sure you want to delete this livestock record?',
+                'Yes, Delete',
+                'Cancel',
+                () => {
+                    livestock = livestock.filter(animal => animal.id !== id);
+                    saveLivestockData();
+                    renderLivestockTable();
+                    showSuccessMessage('Livestock deleted successfully!');
+                }
+            );
         }
 
         // Pets Management Functions
@@ -4513,19 +4529,25 @@
         }
 
         function deletePet(id) {
-            if (confirm('Are you sure you want to delete this pet record?')) {
-                pets = pets.filter(pet => pet.id !== id);
-                savePetsData();
-                renderPetsTable();
-                showSuccessMessage('Pet deleted successfully!');
-            }
+            showConfirmDialog(
+                'Delete Pet',
+                'Are you sure you want to delete this pet record?',
+                'Yes, Delete',
+                'Cancel',
+                () => {
+                    pets = pets.filter(pet => pet.id !== id);
+                    savePetsData();
+                    renderPetsTable();
+                    showSuccessMessage('Pet deleted successfully!');
+                }
+            );
         }
 
         // Enhanced Livestock Management Functions
         function viewLivestockDetails(id) {
             const animal = livestock.find(l => l.id === id);
             if (!animal) {
-                alert('Livestock record not found');
+                showInfoDialog('Error', 'Livestock record not found', 'OK');
                 return;
             }
 
@@ -4638,7 +4660,7 @@
         function showGPSLocation(id) {
             const animal = livestock.find(l => l.id === id);
             if (!animal || !animal.gpsLocation) {
-                alert('No GPS location data available for this livestock');
+                showInfoDialog('No GPS Data', 'No GPS location data available for this livestock', 'OK');
                 return;
             }
 
@@ -4780,7 +4802,7 @@
             const notes = document.getElementById('weightNotes').value;
 
             if (!date || !weight || weight <= 0) {
-                alert('Please fill in all required fields with valid data');
+                showInfoDialog('Validation Error', 'Please fill in all required fields with valid data', 'OK');
                 return;
             }
 
@@ -4891,7 +4913,7 @@
             const notes = document.getElementById('immunizationNotes').value;
 
             if (!date || !vaccine || !nextDue || !vet) {
-                alert('Please fill in all required fields');
+                showInfoDialog('Validation Error', 'Please fill in all required fields', 'OK');
                 return;
             }
 
@@ -4929,130 +4951,169 @@
         function addWeightRecordFromEdit(id) {
             // Create a simple weight record modal within the edit context
             const date = new Date().toISOString().split('T')[0];
-            const weight = prompt('Enter weight (kg):');
-            if (!weight || isNaN(weight)) {
-                alert('Please enter a valid weight');
-                return;
-            }
-            
-            const notes = prompt('Enter notes (optional):') || 'No notes';
-            
-            const animal = livestock.find(l => l.id === id);
-            if (animal) {
-                if (!animal.weightRecords) animal.weightRecords = [];
-                
-                animal.weightRecords.push({
-                    date: date,
-                    avgWeight: parseFloat(weight),
-                    notes: notes
-                });
-                
-                // Sort by date (newest first)
-                animal.weightRecords.sort((a, b) => new Date(b.date) - new Date(a.date));
-                
-                // Refresh the edit modal by closing and reopening
-                const modal = document.querySelector('.modal');
-                if (modal) {
-                    const bsModal = bootstrap.Modal.getInstance(modal);
-                    bsModal.hide();
+            showPromptDialog(
+                'Add Weight Record',
+                'Enter weight (kg):',
+                'number',
+                'Enter weight in kg',
+                'Add',
+                'Cancel',
+                (weight) => {
+                    if (!weight || isNaN(weight)) {
+                        showInfoDialog('Validation Error', 'Please enter a valid weight', 'OK');
+                        return;
+                    }
+                    
+                    const notes = 'No notes'; // Default notes
+                    
+                    const animal = livestock.find(l => l.id === id);
+                    if (animal) {
+                        if (!animal.weightRecords) animal.weightRecords = [];
+                        
+                        animal.weightRecords.push({
+                            date: date,
+                            avgWeight: parseFloat(weight),
+                            notes: notes
+                        });
+                        
+                        // Sort by date (newest first)
+                        animal.weightRecords.sort((a, b) => new Date(b.date) - new Date(a.date));
+                        
+                        // Refresh the edit modal by closing and reopening
+                        const modal = document.querySelector('.modal');
+                        if (modal) {
+                            const bsModal = bootstrap.Modal.getInstance(modal);
+                            bsModal.hide();
+                        }
+                        
+                        // Reopen edit modal with updated data
+                        setTimeout(() => {
+                            editLivestock(id);
+                        }, 300);
+                    }
                 }
-                
-                // Reopen edit modal with updated data
-                setTimeout(() => {
-                    editLivestock(id);
-                }, 300);
-            }
+            );
         }
 
         function addImmunizationFromEdit(id) {
             // Create a simple immunization modal within the edit context
             const date = new Date().toISOString().split('T')[0];
-            const vaccine = prompt('Enter vaccine name:');
-            if (!vaccine) {
-                alert('Please enter vaccine name');
-                return;
-            }
-            
-            const nextDue = prompt('Enter next due date (YYYY-MM-DD):');
-            if (!nextDue) {
-                alert('Please enter next due date');
-                return;
-            }
-            
-            const vet = prompt('Enter veterinarian name:') || 'Dr. Unknown';
-            const notes = prompt('Enter notes (optional):') || 'No notes';
-            
-            const animal = livestock.find(l => l.id === id);
-            if (animal) {
-                if (!animal.immunizations) animal.immunizations = [];
-                
-                animal.immunizations.push({
-                    date: date,
-                    vaccine: vaccine,
-                    nextDue: nextDue,
-                    vet: vet,
-                    notes: notes
-                });
-                
-                // Sort by date (newest first)
-                animal.immunizations.sort((a, b) => new Date(b.date) - new Date(a.date));
-                
-                // Refresh the edit modal by closing and reopening
-                const modal = document.querySelector('.modal');
-                if (modal) {
-                    const bsModal = bootstrap.Modal.getInstance(modal);
-                    bsModal.hide();
+            showPromptDialog(
+                'Add Immunization Record',
+                'Enter vaccine name:',
+                'text',
+                'Enter vaccine name',
+                'Next',
+                'Cancel',
+                (vaccine) => {
+                    if (!vaccine) {
+                        showInfoDialog('Validation Error', 'Please enter vaccine name', 'OK');
+                        return;
+                    }
+                    
+                    showPromptDialog(
+                        'Add Immunization Record',
+                        'Enter next due date (YYYY-MM-DD):',
+                        'date',
+                        'Enter next due date',
+                        'Add',
+                        'Cancel',
+                        (nextDue) => {
+                            if (!nextDue) {
+                                showInfoDialog('Validation Error', 'Please enter next due date', 'OK');
+                                return;
+                            }
+                            
+                            const vet = 'Dr. Unknown'; // Default vet
+                            const notes = 'No notes'; // Default notes
+                            
+                            const animal = livestock.find(l => l.id === id);
+                            if (animal) {
+                                if (!animal.immunizations) animal.immunizations = [];
+                                
+                                animal.immunizations.push({
+                                    date: date,
+                                    vaccine: vaccine,
+                                    nextDue: nextDue,
+                                    vet: vet,
+                                    notes: notes
+                                });
+                                
+                                // Sort by date (newest first)
+                                animal.immunizations.sort((a, b) => new Date(b.date) - new Date(a.date));
+                                
+                                // Refresh the edit modal by closing and reopening
+                                const modal = document.querySelector('.modal');
+                                if (modal) {
+                                    const bsModal = bootstrap.Modal.getInstance(modal);
+                                    bsModal.hide();
+                                }
+                                
+                                // Reopen edit modal with updated data
+                                setTimeout(() => {
+                                    editLivestock(id);
+                                }, 300);
+                            }
+                        }
+                    );
                 }
-                
-                // Reopen edit modal with updated data
-                setTimeout(() => {
-                    editLivestock(id);
-                }, 300);
-            }
+            );
         }
 
         function removeWeightRecord(id, date) {
-            if (confirm('Are you sure you want to remove this weight record?')) {
-                const animal = livestock.find(l => l.id === id);
-                if (animal && animal.weightRecords) {
-                    animal.weightRecords = animal.weightRecords.filter(record => record.date !== date);
-                    
-                    // Refresh the edit modal by closing and reopening
-                    const modal = document.querySelector('.modal');
-                    if (modal) {
-                        const bsModal = bootstrap.Modal.getInstance(modal);
-                        bsModal.hide();
+            showConfirmDialog(
+                'Remove Weight Record',
+                'Are you sure you want to remove this weight record?',
+                'Yes, Remove',
+                'Cancel',
+                () => {
+                    const animal = livestock.find(l => l.id === id);
+                    if (animal && animal.weightRecords) {
+                        animal.weightRecords = animal.weightRecords.filter(record => record.date !== date);
+                        
+                        // Refresh the edit modal by closing and reopening
+                        const modal = document.querySelector('.modal');
+                        if (modal) {
+                            const bsModal = bootstrap.Modal.getInstance(modal);
+                            bsModal.hide();
+                        }
+                        
+                        // Reopen edit modal with updated data
+                        setTimeout(() => {
+                            editLivestock(id);
+                        }, 300);
                     }
-                    
-                    // Reopen edit modal with updated data
-                    setTimeout(() => {
-                        editLivestock(id);
-                    }, 300);
                 }
-            }
+            );
         }
 
         function removeImmunizationRecord(id, date, vaccine) {
-            if (confirm('Are you sure you want to remove this immunization record?')) {
-                const animal = livestock.find(l => l.id === id);
-                if (animal && animal.immunizations) {
-                    animal.immunizations = animal.immunizations.filter(immunization => 
-                        !(immunization.date === date && immunization.vaccine === vaccine)
-                    );
-                    
-                    // Refresh the edit modal by closing and reopening
-                    const modal = document.querySelector('.modal');
-                    if (modal) {
-                        const bsModal = bootstrap.Modal.getInstance(modal);
-                        bsModal.hide();
+            showConfirmDialog(
+                'Remove Immunization Record',
+                'Are you sure you want to remove this immunization record?',
+                'Yes, Remove',
+                'Cancel',
+                () => {
+                    const animal = livestock.find(l => l.id === id);
+                    if (animal && animal.immunizations) {
+                        animal.immunizations = animal.immunizations.filter(immunization => 
+                            !(immunization.date === date && immunization.vaccine === vaccine)
+                        );
+                        
+                        // Refresh the edit modal by closing and reopening
+                        const modal = document.querySelector('.modal');
+                        if (modal) {
+                            const bsModal = bootstrap.Modal.getInstance(modal);
+                            bsModal.hide();
+                        }
+                        
+                        // Reopen edit modal with updated data
+                        setTimeout(() => {
+                            editLivestock(id);
+                        }, 300);
                     }
-                    
-                    // Reopen edit modal with updated data
-                    setTimeout(() => {
-                        editLivestock(id);
-                    }, 300);
                 }
-            }
+            );
         }
 
         function addInventoryItem() {
@@ -5064,7 +5125,7 @@
             
             const quantity = prompt('Enter quantity:');
             if (!quantity || isNaN(quantity) || parseInt(quantity) <= 0) {
-                alert('Please enter a valid quantity.');
+                showInfoDialog('Validation Error', 'Please enter a valid quantity.', 'OK');
                 return;
             }
             
@@ -5089,7 +5150,7 @@
         function editInventory(id) {
             const item = inventory.find(i => i.id === id);
             if (!item) {
-                alert('Inventory item not found');
+                showInfoDialog('Error', 'Inventory item not found', 'OK');
                 return;
             }
 
@@ -5174,7 +5235,7 @@
             const status = document.getElementById('editInventoryStatus').value.trim();
 
             if (!name || !category || quantity < 0 || !unit || !status) {
-                alert('Please fill in all required fields');
+                showInfoDialog('Validation Error', 'Please fill in all required fields', 'OK');
                 return;
             }
 
@@ -5206,24 +5267,30 @@
         }
 
         function deleteInventory(id) {
-            if (confirm('Are you sure you want to delete this inventory item?')) {
-                inventory = inventory.filter(item => item.id !== id);
-                saveInventoryData();
-                renderInventoryTable();
-                showSuccessMessage('Inventory item deleted successfully!');
-            }
+            showConfirmDialog(
+                'Delete Inventory Item',
+                'Are you sure you want to delete this inventory item?',
+                'Yes, Delete',
+                'Cancel',
+                () => {
+                    inventory = inventory.filter(item => item.id !== id);
+                    saveInventoryData();
+                    renderInventoryTable();
+                    showSuccessMessage('Inventory item deleted successfully!');
+                }
+            );
         }
 
         function addNewTask() {
-            alert('Add new task functionality will be implemented');
+            showInfoDialog('Coming Soon', 'Add new task functionality will be implemented', 'OK');
         }
 
         function editTask(id) {
-            alert(`Edit task ${id} functionality will be implemented`);
+            showInfoDialog('Coming Soon', `Edit task ${id} functionality will be implemented`, 'OK');
         }
 
         function completeTask(id) {
-            alert(`Task ${id} marked as complete`);
+            showInfoDialog('Task Complete', `Task ${id} marked as complete`, 'OK');
         }
 
         function generateReport(type) {
@@ -5243,7 +5310,7 @@
                     generateInventoryReport();
                     break;
                 default:
-                    alert('Report type not implemented yet');
+                    showInfoDialog('Coming Soon', 'Report type not implemented yet', 'OK');
             }
         }
 
@@ -5528,7 +5595,7 @@ INVENTORY SUMMARY:
         function showAISuggestions(cropId) {
             const crop = crops.find(c => c.id === cropId);
             if (!crop) {
-                alert('Crop not found');
+                showInfoDialog('Error', 'Crop not found', 'OK');
                 return;
             }
 
@@ -5560,7 +5627,7 @@ INVENTORY SUMMARY:
                 } catch (error) {
                     console.error('Error generating AI suggestions:', error);
                     console.error('Error stack:', error.stack);
-                    alert('Error generating AI suggestions: ' + error.message);
+                    showInfoDialog('AI Error', 'Error generating AI suggestions: ' + error.message, 'OK');
                 } finally {
                     // Restore brain icon
                     if (brainIcon) {
@@ -6973,19 +7040,25 @@ INVENTORY SUMMARY:
 
         // User functions
         function editProfile() {
-            alert('Edit profile functionality will be implemented');
+            showInfoDialog('Coming Soon', 'Edit profile functionality will be implemented', 'OK');
         }
 
         function showSettings() {
-            alert('Settings functionality will be implemented');
+            showInfoDialog('Coming Soon', 'Settings functionality will be implemented', 'OK');
         }
 
         function logout() {
-            if (confirm('Are you sure you want to logout?')) {
-                localStorage.removeItem('smartfarm_user');
-                sessionStorage.removeItem('smartfarm_user');
-                window.location.href = 'login.html';
-            }
+            showConfirmDialog(
+                'Logout',
+                'Are you sure you want to logout?',
+                'Yes, Logout',
+                'Cancel',
+                () => {
+                    localStorage.removeItem('smartfarm_user');
+                    sessionStorage.removeItem('smartfarm_user');
+                    window.location.href = 'login.html';
+                }
+            );
         }
 
         // Mobile sidebar toggle
@@ -7345,7 +7418,7 @@ INVENTORY SUMMARY:
             const feedingDays = parseInt(document.getElementById('feedingDays').value);
             
             if (!livestockType || !growthStage || !animalWeight || !animalCount || !feedingDays) {
-                alert('Please fill in all fields');
+                showInfoDialog('Validation Error', 'Please fill in all fields', 'OK');
                 return;
             }
             
@@ -7365,7 +7438,7 @@ INVENTORY SUMMARY:
                     type: mix.livestockType, 
                     stage: mix.growthStage 
                 })));
-                alert('No feed mix found for the selected livestock type and growth stage');
+                showInfoDialog('No Feed Mix Found', 'No feed mix found for the selected livestock type and growth stage', 'OK');
                 return;
             }
             
@@ -7610,7 +7683,7 @@ INVENTORY SUMMARY:
             feedMixSettings.costOptimization = document.getElementById('costOptimization').checked;
             feedMixSettings.nutritionalFocus = document.getElementById('nutritionalFocus').value;
             localStorage.setItem('feedMixSettings', JSON.stringify(feedMixSettings));
-            alert('Settings saved successfully!');
+            showNotification('Settings saved successfully!', 'success');
         }
 
         // Load feed mix settings
@@ -7630,27 +7703,33 @@ INVENTORY SUMMARY:
         // Add custom feed mix
         function addCustomFeedMix() {
             // This would open a modal for adding custom feed mixes
-            alert('Custom feed mix feature coming soon!');
+            showInfoDialog('Coming Soon', 'Custom feed mix feature coming soon!', 'OK');
         }
 
         // Edit feed mix
         function editFeedMix(id) {
-            alert('Edit feed mix feature coming soon!');
+            showInfoDialog('Coming Soon', 'Edit feed mix feature coming soon!', 'OK');
         }
 
         // Delete feed mix
         function deleteFeedMix(id) {
-            if (confirm('Are you sure you want to delete this feed mix?')) {
-                feedMixDatabase = feedMixDatabase.filter(mix => mix.id !== id);
-                saveFeedMixDatabase();
-                renderFeedMixDatabase();
-                updateFeedMixTabCount();
-            }
+            showConfirmDialog(
+                'Delete Feed Mix',
+                'Are you sure you want to delete this feed mix?',
+                'Yes, Delete',
+                'Cancel',
+                () => {
+                    feedMixDatabase = feedMixDatabase.filter(mix => mix.id !== id);
+                    saveFeedMixDatabase();
+                    renderFeedMixDatabase();
+                    updateFeedMixTabCount();
+                }
+            );
         }
 
         // Save feed mix plan
         function saveFeedMixPlan() {
-            alert('Feed mix plan saved successfully!');
+            showNotification('Feed mix plan saved successfully!', 'success');
         }
 
         // Print feed mix plan
@@ -7882,7 +7961,7 @@ INVENTORY SUMMARY:
             notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
             notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; max-width: 400px;';
             notification.innerHTML = `
-                <i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'} me-2"></i>
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
                 ${message}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             `;
@@ -7894,6 +7973,147 @@ INVENTORY SUMMARY:
                     notification.parentNode.removeChild(notification);
                 }
             }, 5000);
+        }
+
+        // Professional Dialog System
+        function showConfirmDialog(title, message, confirmText = 'Yes', cancelText = 'No', confirmCallback, cancelCallback = null) {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-warning text-dark">
+                            <h5 class="modal-title">
+                                <i class="fas fa-exclamation-triangle me-2"></i>${title}
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="mb-0">${message}</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">${cancelText}</button>
+                            <button type="button" class="btn btn-warning" id="confirmBtn">${confirmText}</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            // Handle confirm button click
+            document.getElementById('confirmBtn').addEventListener('click', () => {
+                bsModal.hide();
+                if (confirmCallback) confirmCallback();
+            });
+            
+            // Handle cancel
+            if (cancelCallback) {
+                modal.addEventListener('hidden.bs.modal', () => {
+                    cancelCallback();
+                });
+            }
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        function showPromptDialog(title, message, inputType = 'text', placeholder = '', confirmText = 'OK', cancelText = 'Cancel', confirmCallback, cancelCallback = null) {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-edit me-2"></i>${title}
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="mb-3">${message}</p>
+                            <div class="mb-3">
+                                <input type="${inputType}" class="form-control" id="promptInput" placeholder="${placeholder}" autofocus>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">${cancelText}</button>
+                            <button type="button" class="btn btn-primary" id="promptConfirmBtn">${confirmText}</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            // Focus on input
+            setTimeout(() => {
+                document.getElementById('promptInput').focus();
+            }, 500);
+            
+            // Handle confirm button click
+            document.getElementById('promptConfirmBtn').addEventListener('click', () => {
+                const value = document.getElementById('promptInput').value;
+                bsModal.hide();
+                if (confirmCallback) confirmCallback(value);
+            });
+            
+            // Handle Enter key
+            document.getElementById('promptInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    const value = document.getElementById('promptInput').value;
+                    bsModal.hide();
+                    if (confirmCallback) confirmCallback(value);
+                }
+            });
+            
+            // Handle cancel
+            if (cancelCallback) {
+                modal.addEventListener('hidden.bs.modal', () => {
+                    cancelCallback();
+                });
+            }
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        function showInfoDialog(title, message, buttonText = 'OK', callback = null) {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-info text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-info-circle me-2"></i>${title}
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="mb-0">${message}</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-info" data-bs-dismiss="modal">${buttonText}</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+                if (callback) callback();
+            });
         }
 
         // Global Livestock Database Functions
