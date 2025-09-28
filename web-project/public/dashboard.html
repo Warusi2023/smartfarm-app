@@ -6998,9 +6998,9 @@ INVENTORY SUMMARY:
                 };
                 
                 crops.push(newCrop);
-                saveCropData();
+                saveCropsData();
                 renderCropTable();
-                updateCropMetrics();
+                updateAnalyticsCharts();
                 
                 // Show success notification
                 showNotification(`Successfully added ${cropName} to your farm!`, 'success');
@@ -7215,7 +7215,7 @@ INVENTORY SUMMARY:
                 livestock.push(newLivestock);
                 saveLivestockData();
                 renderLivestockTable();
-                updateLivestockMetrics();
+                updateAnalyticsCharts();
                 
                 showNotification(`Successfully added ${livestockName} to your farm!`, 'success');
             } catch (error) {
