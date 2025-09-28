@@ -12,18 +12,27 @@ class QRTraceability {
 
     loadQRCodeLibrary() {
         if (typeof QRCode === 'undefined') {
-            console.log('Loading QR Code library...');
-            const script = document.createElement('script');
-            script.src = this.qrCodeLibrary;
-            script.onload = () => {
-                console.log('QR Code library loaded successfully');
-                this.initializeQRSystem();
-            };
-            script.onerror = () => {
-                console.error('Failed to load QR Code library');
-                this.initializeQRSystemWithFallback();
-            };
-            document.head.appendChild(script);
+            console.log('QR Code library not found, waiting for it to load...');
+            // Wait a bit for the library to load from the HTML head
+            setTimeout(() => {
+                if (typeof QRCode !== 'undefined') {
+                    console.log('QR Code library loaded successfully');
+                    this.initializeQRSystem();
+                } else {
+                    console.log('Loading QR Code library dynamically...');
+                    const script = document.createElement('script');
+                    script.src = this.qrCodeLibrary;
+                    script.onload = () => {
+                        console.log('QR Code library loaded successfully');
+                        this.initializeQRSystem();
+                    };
+                    script.onerror = () => {
+                        console.error('Failed to load QR Code library');
+                        this.initializeQRSystemWithFallback();
+                    };
+                    document.head.appendChild(script);
+                }
+            }, 100);
         } else {
             console.log('QR Code library already loaded');
             this.initializeQRSystem();
@@ -255,36 +264,21 @@ class QRTraceability {
 
         // Check if QRCode library is available
         if (typeof QRCode === 'undefined') {
-            console.error('QR Code library not loaded');
-            qrContainer.innerHTML = `
-                <div class="qr-code-result">
-                    <div class="qr-placeholder" style="width: 200px; height: 200px; background: #f8f9fa; border: 2px dashed #dee2e6; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
-                        <div class="text-center">
-                            <i class="fas fa-qrcode fa-3x text-muted mb-2"></i>
-                            <p class="text-muted">QR Code Placeholder</p>
-                        </div>
-                    </div>
-                    <h6>${product.name}</h6>
-                    <p class="text-muted small">Batch: ${product.batchNumber}</p>
-                    <div class="qr-actions">
-                        <button class="btn btn-sm btn-outline-primary me-2" onclick="qrTraceability.downloadQRCode('${productId}')">
-                            <i class="fas fa-download me-1"></i>Download
-                        </button>
-                        <button class="btn btn-sm btn-outline-success" onclick="qrTraceability.printQRCode('${productId}')">
-                            <i class="fas fa-print me-1"></i>Print
-                        </button>
-                    </div>
-                    <div class="mt-3">
-                        <small class="text-muted">Scan this QR code to view complete traceability information</small>
-                        <br>
-                        <small class="text-muted">URL: ${traceabilityURL}</small>
-                        <br>
-                        <button class="btn btn-sm btn-outline-info mt-2" onclick="window.open('${traceabilityURL}', '_blank')">
-                            <i class="fas fa-external-link-alt me-1"></i>View Traceability Page
-                        </button>
-                    </div>
-                </div>
-            `;
+            console.log('QR Code library not loaded, waiting for it...');
+            qrContainer.innerHTML = '<div class="spinner-border" role="status"></div><p>Loading QR Code library...</p>';
+            
+            // Wait for the library to load
+            const checkLibrary = () => {
+                if (typeof QRCode !== 'undefined') {
+                    console.log('QR Code library loaded, generating QR code...');
+                    this.generateQRCode();
+                } else {
+                    setTimeout(checkLibrary, 100);
+                }
+            };
+            
+            // Start checking after a short delay
+            setTimeout(checkLibrary, 100);
             return;
         }
 
