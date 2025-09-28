@@ -1341,14 +1341,265 @@ class IntelligentWeedingSystem {
         // Refresh display
         this.generateWeedingTasks();
         
-        alert(`✅ Weeding task completed successfully!\n\nTask: ${task.cropName} - ${task.location}\nMethod: ${method}\nCost: $${task.estimatedCost}\n\nTask has been marked as completed and crop data updated.`);
+        // Show professional completion notification
+        this.showTaskCompletionNotification(task, method);
+    }
+
+    showTaskCompletionNotification(task, method) {
+        // Create professional completion modal
+        const modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.innerHTML = `
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg">
+                    <div class="modal-header bg-success text-white border-0">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                <i class="fas fa-check-circle fa-2x"></i>
+                            </div>
+                            <div>
+                                <h4 class="modal-title mb-0 fw-bold">Task Completed Successfully!</h4>
+                                <small class="opacity-75">Weeding task has been completed</small>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <div class="completion-summary">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="completion-item mb-3">
+                                        <h6 class="text-primary mb-2">
+                                            <i class="fas fa-seedling me-2"></i>Task Details
+                                        </h6>
+                                        <div class="info-item">
+                                            <strong>Crop:</strong> ${task.cropName}
+                                        </div>
+                                        <div class="info-item">
+                                            <strong>Location:</strong> ${task.location}
+                                        </div>
+                                        <div class="info-item">
+                                            <strong>Method:</strong> ${method}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="completion-item mb-3">
+                                        <h6 class="text-success mb-2">
+                                            <i class="fas fa-dollar-sign me-2"></i>Cost Summary
+                                        </h6>
+                                        <div class="info-item">
+                                            <strong>Total Cost:</strong> 
+                                            <span class="text-success fw-bold fs-5">$${task.estimatedCost}</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <strong>Status:</strong> 
+                                            <span class="badge bg-success">Completed</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="completion-actions mt-4 pt-3 border-top">
+                                <div class="alert alert-success mb-3">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <strong>Task has been marked as completed and crop data updated.</strong>
+                                </div>
+                                
+                                <div class="d-flex gap-2 flex-wrap justify-content-center">
+                                    <button class="btn btn-primary" onclick="intelligentWeeding.showWeedingAnalytics()">
+                                        <i class="fas fa-chart-bar me-1"></i>View Analytics
+                                    </button>
+                                    <button class="btn btn-outline-success" onclick="intelligentWeeding.generateWeedingTasks()">
+                                        <i class="fas fa-refresh me-1"></i>Refresh Tasks
+                                    </button>
+                                    <button class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                                        <i class="fas fa-times me-1"></i>Close
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Add custom styles
+        const style = document.createElement('style');
+        style.textContent = `
+            .completion-item {
+                background: #f8f9fa;
+                border-radius: 8px;
+                padding: 1rem;
+                border-left: 4px solid #28a745;
+            }
+            .info-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0.25rem 0;
+                border-bottom: 1px solid #e9ecef;
+            }
+            .info-item:last-child {
+                border-bottom: none;
+            }
+            .completion-actions .btn {
+                min-width: 140px;
+            }
+        `;
+        document.head.appendChild(style);
+        
+        document.body.appendChild(modal);
+        const bsModal = new bootstrap.Modal(modal);
+        bsModal.show();
+        
+        modal.addEventListener('hidden.bs.modal', () => {
+            document.body.removeChild(modal);
+            document.head.removeChild(style);
+        });
     }
 
     viewTaskDetails(taskId) {
         const task = this.weedingTasks.find(t => t.id === taskId);
         if (!task) return;
 
-        alert(`📋 Weeding Task Details\n\nCrop: ${task.cropName}\nLocation: ${task.location}\nUrgency: ${task.urgency.level.toUpperCase()}\nWeed Growth Rate: ${task.weedGrowthRate}x\nDays Since Last Weeding: ${task.daysSinceLastWeeding}\nRecommended Action: ${task.recommendedAction}\nEstimated Cost: $${task.estimatedCost}\nWeather Suitability: ${task.weatherSuitability.reason}\nScheduled Date: ${task.scheduledDate}`);
+        // Create professional task details modal
+        const modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.innerHTML = `
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg">
+                    <div class="modal-header bg-primary text-white border-0">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                <i class="fas fa-clipboard-list fa-2x"></i>
+                            </div>
+                            <div>
+                                <h4 class="modal-title mb-0 fw-bold">Task Details</h4>
+                                <small class="opacity-75">${task.cropName} - ${task.location}</small>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="info-card mb-3">
+                                    <h6 class="text-primary mb-3">
+                                        <i class="fas fa-info-circle me-2"></i>Basic Information
+                                    </h6>
+                                    <div class="info-item mb-2">
+                                        <strong>Crop:</strong> ${task.cropName}
+                                    </div>
+                                    <div class="info-item mb-2">
+                                        <strong>Location:</strong> ${task.location}
+                                    </div>
+                                    <div class="info-item mb-2">
+                                        <strong>Scheduled Date:</strong> ${task.scheduledDate}
+                                    </div>
+                                    <div class="info-item mb-2">
+                                        <strong>Days Since Last Weeding:</strong> ${task.daysSinceLastWeeding}
+                                    </div>
+                                </div>
+                                
+                                <div class="info-card mb-3">
+                                    <h6 class="text-warning mb-3">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>Urgency & Priority
+                                    </h6>
+                                    <div class="d-flex align-items-center mb-2">
+                                        <span class="badge bg-${this.getUrgencyColor(task.urgency.level)} px-3 py-2 me-2">
+                                            ${task.urgency.level.toUpperCase()}
+                                        </span>
+                                        <span class="text-muted">Priority Level</span>
+                                    </div>
+                                    <div class="info-item mb-2">
+                                        <strong>Weed Growth Rate:</strong> ${task.weedGrowthRate}x normal
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="info-card mb-3">
+                                    <h6 class="text-success mb-3">
+                                        <i class="fas fa-tools me-2"></i>Action Required
+                                    </h6>
+                                    <div class="info-item mb-2">
+                                        <strong>Recommended Action:</strong><br>
+                                        <span class="text-muted">${task.recommendedAction}</span>
+                                    </div>
+                                    <div class="info-item mb-2">
+                                        <strong>Estimated Cost:</strong> 
+                                        <span class="text-success fw-bold">$${task.estimatedCost}</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="info-card mb-3">
+                                    <h6 class="text-info mb-3">
+                                        <i class="fas fa-cloud-sun me-2"></i>Weather Conditions
+                                    </h6>
+                                    <div class="info-item mb-2">
+                                        <strong>Suitability:</strong> 
+                                        <span class="badge bg-${task.weatherSuitability.suitable ? 'success' : 'warning'}">
+                                            ${task.weatherSuitability.suitable ? 'Suitable' : 'Not Ideal'}
+                                        </span>
+                                    </div>
+                                    <div class="info-item mb-2">
+                                        <strong>Reason:</strong><br>
+                                        <span class="text-muted small">${task.weatherSuitability.reason}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="action-buttons mt-4 pt-3 border-top">
+                            <div class="d-flex gap-2 flex-wrap">
+                                <button class="btn btn-success" onclick="intelligentWeeding.executeTask('${task.id}')">
+                                    <i class="fas fa-play me-1"></i>Execute Task
+                                </button>
+                                <button class="btn btn-warning" onclick="intelligentWeeding.rescheduleTask('${task.id}')">
+                                    <i class="fas fa-calendar-alt me-1"></i>Reschedule
+                                </button>
+                                <button class="btn btn-info" onclick="intelligentWeeding.showChemicalOptions()">
+                                    <i class="fas fa-flask me-1"></i>Chemical Options
+                                </button>
+                                <button class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                                    <i class="fas fa-times me-1"></i>Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Add custom styles
+        const style = document.createElement('style');
+        style.textContent = `
+            .info-card {
+                background: #f8f9fa;
+                border-radius: 8px;
+                padding: 1rem;
+                border-left: 4px solid #007bff;
+            }
+            .info-item {
+                display: flex;
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+            .action-buttons .btn {
+                min-width: 120px;
+            }
+        `;
+        document.head.appendChild(style);
+        
+        document.body.appendChild(modal);
+        const bsModal = new bootstrap.Modal(modal);
+        bsModal.show();
+        
+        modal.addEventListener('hidden.bs.modal', () => {
+            document.body.removeChild(modal);
+            document.head.removeChild(style);
+        });
     }
 
     rescheduleTask(taskId) {
@@ -1366,19 +1617,272 @@ class IntelligentWeedingSystem {
     viewUrgentTasks() {
         const urgentTasks = this.weedingTasks.filter(task => task.urgency.level === 'critical' || task.urgency.level === 'urgent');
         
-        let message = `🚨 URGENT WEEDING TASKS\n\n`;
-        urgentTasks.forEach((task, index) => {
-            message += `${index + 1}. ${task.cropName} - ${task.location}\n`;
-            message += `   Urgency: ${task.urgency.level.toUpperCase()}\n`;
-            message += `   Action: ${task.recommendedAction}\n`;
-            message += `   Cost: $${task.estimatedCost}\n\n`;
-        });
+        // Create professional modal
+        const modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.setAttribute('data-bs-backdrop', 'static');
+        modal.setAttribute('data-bs-keyboard', 'false');
+        modal.innerHTML = `
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg">
+                    <div class="modal-header bg-gradient-danger text-white border-0">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                <i class="fas fa-exclamation-triangle fa-2x"></i>
+                            </div>
+                            <div>
+                                <h4 class="modal-title mb-0 fw-bold">URGENT WEEDING TASKS</h4>
+                                <small class="opacity-75">Immediate attention required</small>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body p-0">
+                        <div class="urgent-tasks-container" style="max-height: 500px; overflow-y: auto;">
+                            ${urgentTasks.map((task, index) => `
+                                <div class="urgent-task-item p-4 border-bottom">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <div class="task-number me-3">
+                                                    <span class="badge bg-primary rounded-circle">${index + 1}</span>
+                                                </div>
+                                                <div>
+                                                    <h6 class="mb-1 fw-bold text-dark">${task.cropName} - ${task.location}</h6>
+                                                    <div class="d-flex align-items-center gap-3">
+                                                        <span class="badge bg-${this.getUrgencyColor(task.urgency.level)} px-3 py-2">
+                                                            <i class="fas fa-${task.urgency.level === 'critical' ? 'exclamation-triangle' : 'clock'} me-1"></i>
+                                                            ${task.urgency.level.toUpperCase()}
+                                                        </span>
+                                                        <small class="text-muted">
+                                                            <i class="fas fa-calendar me-1"></i>
+                                                            ${task.scheduledDate}
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="task-details">
+                                                <p class="mb-2 text-dark">
+                                                    <i class="fas fa-tools me-2 text-primary"></i>
+                                                    <strong>Action Required:</strong> ${task.recommendedAction}
+                                                </p>
+                                                <div class="row">
+                                                    <div class="col-sm-6">
+                                                        <small class="text-muted">
+                                                            <i class="fas fa-dollar-sign me-1"></i>
+                                                            <strong>Cost:</strong> $${task.estimatedCost}
+                                                        </small>
+                                                    </div>
+                                                    <div class="col-sm-6">
+                                                        <small class="text-muted">
+                                                            <i class="fas fa-leaf me-1"></i>
+                                                            <strong>Weed Growth:</strong> ${task.weedGrowthRate}x
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 text-end">
+                                            <div class="d-grid gap-2">
+                                                <button class="btn btn-outline-primary btn-sm" onclick="intelligentWeeding.viewTaskDetails('${task.id}')">
+                                                    <i class="fas fa-info-circle me-1"></i>Details
+                                                </button>
+                                                <button class="btn btn-outline-success btn-sm" onclick="intelligentWeeding.executeTask('${task.id}')">
+                                                    <i class="fas fa-play me-1"></i>Execute
+                                                </button>
+                                                <button class="btn btn-outline-warning btn-sm" onclick="intelligentWeeding.rescheduleTask('${task.id}')">
+                                                    <i class="fas fa-calendar-alt me-1"></i>Reschedule
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light border-0">
+                        <div class="d-flex justify-content-between w-100">
+                            <div>
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    ${urgentTasks.length} urgent task${urgentTasks.length > 1 ? 's' : ''} requiring immediate attention
+                                </small>
+                            </div>
+                            <div>
+                                <button type="button" class="btn btn-outline-secondary me-2" data-bs-dismiss="modal">
+                                    <i class="fas fa-times me-1"></i>Close
+                                </button>
+                                <button type="button" class="btn btn-primary" onclick="intelligentWeeding.showWeedingSchedule()">
+                                    <i class="fas fa-calendar me-1"></i>View Schedule
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
         
-        alert(message);
+        // Add custom styles
+        const style = document.createElement('style');
+        style.textContent = `
+            .urgent-task-item {
+                transition: all 0.3s ease;
+            }
+            .urgent-task-item:hover {
+                background-color: #f8f9fa;
+                transform: translateX(5px);
+            }
+            .task-number .badge {
+                width: 30px;
+                height: 30px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 0.8rem;
+            }
+            .bg-gradient-danger {
+                background: linear-gradient(135deg, #dc3545, #c82333) !important;
+            }
+            .urgent-tasks-container::-webkit-scrollbar {
+                width: 6px;
+            }
+            .urgent-tasks-container::-webkit-scrollbar-track {
+                background: #f1f1f1;
+            }
+            .urgent-tasks-container::-webkit-scrollbar-thumb {
+                background: #c1c1c1;
+                border-radius: 3px;
+            }
+            .urgent-tasks-container::-webkit-scrollbar-thumb:hover {
+                background: #a8a8a8;
+            }
+        `;
+        document.head.appendChild(style);
+        
+        document.body.appendChild(modal);
+        const bsModal = new bootstrap.Modal(modal);
+        bsModal.show();
+        
+        modal.addEventListener('hidden.bs.modal', () => {
+            document.body.removeChild(modal);
+            document.head.removeChild(style);
+        });
     }
 
     showWeedingSchedule() {
-        alert('📅 Weeding Schedule\n\nThis would show a calendar view of all scheduled weeding tasks, weather forecasts, and optimal timing windows.\n\nFeatures:\n• Calendar view of tasks\n• Weather integration\n• Optimal timing suggestions\n• Cost tracking\n• Progress monitoring');
+        // Create professional schedule modal
+        const modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.innerHTML = `
+            <div class="modal-dialog modal-xl modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg">
+                    <div class="modal-header bg-info text-white border-0">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                <i class="fas fa-calendar-alt fa-2x"></i>
+                            </div>
+                            <div>
+                                <h4 class="modal-title mb-0 fw-bold">Weeding Schedule</h4>
+                                <small class="opacity-75">Calendar view of all scheduled tasks</small>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <div class="schedule-features">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="feature-card mb-3">
+                                        <h6 class="text-primary mb-3">
+                                            <i class="fas fa-calendar me-2"></i>Calendar View
+                                        </h6>
+                                        <p class="text-muted">Interactive calendar showing all scheduled weeding tasks with color-coded urgency levels.</p>
+                                    </div>
+                                    
+                                    <div class="feature-card mb-3">
+                                        <h6 class="text-success mb-3">
+                                            <i class="fas fa-cloud-sun me-2"></i>Weather Integration
+                                        </h6>
+                                        <p class="text-muted">Real-time weather data integration to suggest optimal timing windows for weeding activities.</p>
+                                    </div>
+                                    
+                                    <div class="feature-card mb-3">
+                                        <h6 class="text-warning mb-3">
+                                            <i class="fas fa-clock me-2"></i>Optimal Timing
+                                        </h6>
+                                        <p class="text-muted">AI-powered suggestions for the best times to perform weeding based on weather and crop conditions.</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="feature-card mb-3">
+                                        <h6 class="text-info mb-3">
+                                            <i class="fas fa-dollar-sign me-2"></i>Cost Tracking
+                                        </h6>
+                                        <p class="text-muted">Track costs for each weeding method and generate budget reports for better financial planning.</p>
+                                    </div>
+                                    
+                                    <div class="feature-card mb-3">
+                                        <h6 class="text-secondary mb-3">
+                                            <i class="fas fa-chart-line me-2"></i>Progress Monitoring
+                                        </h6>
+                                        <p class="text-muted">Monitor weeding progress across all fields with completion status and performance metrics.</p>
+                                    </div>
+                                    
+                                    <div class="feature-card mb-3">
+                                        <h6 class="text-danger mb-3">
+                                            <i class="fas fa-bell me-2"></i>Smart Notifications
+                                        </h6>
+                                        <p class="text-muted">Get timely reminders and alerts for upcoming weeding tasks and weather changes.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="coming-soon mt-4 pt-3 border-top text-center">
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <strong>Coming Soon!</strong> This feature is currently in development and will be available in the next update.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light border-0">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-1"></i>Close
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="intelligentWeeding.showWeedingAnalytics()">
+                            <i class="fas fa-chart-bar me-1"></i>View Analytics
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Add custom styles
+        const style = document.createElement('style');
+        style.textContent = `
+            .feature-card {
+                background: #f8f9fa;
+                border-radius: 8px;
+                padding: 1.5rem;
+                border-left: 4px solid #17a2b8;
+                transition: transform 0.2s ease;
+            }
+            .feature-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            }
+        `;
+        document.head.appendChild(style);
+        
+        document.body.appendChild(modal);
+        const bsModal = new bootstrap.Modal(modal);
+        bsModal.show();
+        
+        modal.addEventListener('hidden.bs.modal', () => {
+            document.body.removeChild(modal);
+            document.head.removeChild(style);
+        });
     }
 
     showChemicalOptions() {
@@ -2036,7 +2540,181 @@ class IntelligentWeedingSystem {
     }
 
     showWeedingAnalytics() {
-        alert('📊 Weeding Analytics\n\nThis would show comprehensive analytics including:\n\n• Weed growth trends over time\n• Cost analysis of weeding methods\n• Weather correlation with weed growth\n• Effectiveness of different chemicals\n• Labor cost tracking\n• Environmental impact metrics\n• ROI analysis of weeding investments');
+        // Create professional analytics modal
+        const modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.innerHTML = `
+            <div class="modal-dialog modal-xl modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg">
+                    <div class="modal-header bg-purple text-white border-0">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                <i class="fas fa-chart-bar fa-2x"></i>
+                            </div>
+                            <div>
+                                <h4 class="modal-title mb-0 fw-bold">Weeding Analytics</h4>
+                                <small class="opacity-75">Comprehensive performance insights</small>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <div class="analytics-features">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="analytics-card mb-3">
+                                        <h6 class="text-primary mb-3">
+                                            <i class="fas fa-chart-line me-2"></i>Growth Trends
+                                        </h6>
+                                        <p class="text-muted">Track weed growth patterns over time with interactive charts and trend analysis.</p>
+                                        <div class="feature-tags">
+                                            <span class="badge bg-primary me-1">Time Series</span>
+                                            <span class="badge bg-primary me-1">Predictive</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="analytics-card mb-3">
+                                        <h6 class="text-success mb-3">
+                                            <i class="fas fa-dollar-sign me-2"></i>Cost Analysis
+                                        </h6>
+                                        <p class="text-muted">Compare costs across different weeding methods and identify the most cost-effective approaches.</p>
+                                        <div class="feature-tags">
+                                            <span class="badge bg-success me-1">ROI Analysis</span>
+                                            <span class="badge bg-success me-1">Budget Tracking</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="analytics-card mb-3">
+                                        <h6 class="text-warning mb-3">
+                                            <i class="fas fa-cloud-rain me-2"></i>Weather Correlation
+                                        </h6>
+                                        <p class="text-muted">Analyze how weather conditions affect weed growth and weeding effectiveness.</p>
+                                        <div class="feature-tags">
+                                            <span class="badge bg-warning me-1">Weather Data</span>
+                                            <span class="badge bg-warning me-1">Correlation</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="analytics-card mb-3">
+                                        <h6 class="text-info mb-3">
+                                            <i class="fas fa-flask me-2"></i>Chemical Effectiveness
+                                        </h6>
+                                        <p class="text-muted">Evaluate the effectiveness of different chemicals and treatments across various conditions.</p>
+                                        <div class="feature-tags">
+                                            <span class="badge bg-info me-1">Effectiveness</span>
+                                            <span class="badge bg-info me-1">Comparison</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="analytics-card mb-3">
+                                        <h6 class="text-secondary mb-3">
+                                            <i class="fas fa-users me-2"></i>Labor Tracking
+                                        </h6>
+                                        <p class="text-muted">Monitor labor costs, efficiency metrics, and resource allocation for weeding operations.</p>
+                                        <div class="feature-tags">
+                                            <span class="badge bg-secondary me-1">Labor Costs</span>
+                                            <span class="badge bg-secondary me-1">Efficiency</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="analytics-card mb-3">
+                                        <h6 class="text-danger mb-3">
+                                            <i class="fas fa-leaf me-2"></i>Environmental Impact
+                                        </h6>
+                                        <p class="text-muted">Assess environmental impact metrics and sustainability of different weeding approaches.</p>
+                                        <div class="feature-tags">
+                                            <span class="badge bg-danger me-1">Sustainability</span>
+                                            <span class="badge bg-danger me-1">Impact</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="analytics-preview mt-4 pt-3 border-top">
+                                <h6 class="text-center mb-3">Sample Analytics Dashboard</h6>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="metric-card text-center p-3">
+                                            <i class="fas fa-chart-pie fa-2x text-primary mb-2"></i>
+                                            <h5 class="text-primary">85%</h5>
+                                            <small class="text-muted">Weed Control Efficiency</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="metric-card text-center p-3">
+                                            <i class="fas fa-dollar-sign fa-2x text-success mb-2"></i>
+                                            <h5 class="text-success">$2,450</h5>
+                                            <small class="text-muted">Total Savings This Month</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="metric-card text-center p-3">
+                                            <i class="fas fa-clock fa-2x text-warning mb-2"></i>
+                                            <h5 class="text-warning">12</h5>
+                                            <small class="text-muted">Hours Saved</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="coming-soon mt-4 pt-3 border-top text-center">
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <strong>Coming Soon!</strong> Advanced analytics dashboard with real-time data visualization and insights.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light border-0">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-1"></i>Close
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="intelligentWeeding.showWeedingSchedule()">
+                            <i class="fas fa-calendar me-1"></i>View Schedule
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Add custom styles
+        const style = document.createElement('style');
+        style.textContent = `
+            .bg-purple {
+                background: linear-gradient(135deg, #6f42c1, #5a32a3) !important;
+            }
+            .analytics-card {
+                background: #f8f9fa;
+                border-radius: 8px;
+                padding: 1.5rem;
+                border-left: 4px solid #6f42c1;
+                transition: transform 0.2s ease;
+            }
+            .analytics-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            }
+            .feature-tags {
+                margin-top: 0.5rem;
+            }
+            .metric-card {
+                background: #f8f9fa;
+                border-radius: 8px;
+                border: 1px solid #e9ecef;
+            }
+        `;
+        document.head.appendChild(style);
+        
+        document.body.appendChild(modal);
+        const bsModal = new bootstrap.Modal(modal);
+        bsModal.show();
+        
+        modal.addEventListener('hidden.bs.modal', () => {
+            document.body.removeChild(modal);
+            document.head.removeChild(style);
+        });
     }
 
     saveData() {
