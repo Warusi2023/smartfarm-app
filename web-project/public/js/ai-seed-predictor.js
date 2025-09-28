@@ -533,7 +533,13 @@ class AISeedPredictor {
     }
 
     selectSeed(seedName, variety) {
-        alert(`🌱 Selected: ${seedName} - ${variety}\n\nThis seed has been added to your planting schedule!\n\nNext steps:\n1. Prepare soil according to planting guide\n2. Schedule planting date\n3. Set up irrigation system\n4. Monitor growth progress\n\nCheck the Crop Management section for detailed tracking.`);
+        // Use the professional modal from the main page
+        if (typeof showSeedSelectionModal === 'function') {
+            showSeedSelectionModal(seedName, variety);
+        } else {
+            // Fallback to basic alert if modal function not available
+            alert(`🌱 Selected: ${seedName} - ${variety}\n\nThis seed has been added to your planting schedule!\n\nNext steps:\n1. Prepare soil according to planting guide\n2. Schedule planting date\n3. Set up irrigation system\n4. Monitor growth progress\n\nCheck the Crop Management section for detailed tracking.`);
+        }
         
         // Add to crop management system
         this.addToCropManagement(seedName, variety);
@@ -604,7 +610,13 @@ class AISeedPredictor {
     }
 
     getPlantingGuide(seedName) {
-        alert(`📖 Planting Guide for ${seedName}\n\n1. Soil Preparation:\n   • Loosen soil to 30cm depth\n   • Add compost and organic matter\n   • Ensure good drainage\n\n2. Planting:\n   • Follow recommended spacing\n   • Plant at correct depth\n   • Water immediately after planting\n\n3. Care:\n   • Water regularly\n   • Monitor for pests\n   • Fertilize as needed\n\n4. Harvest:\n   • Pick at optimal ripeness\n   • Handle carefully\n   • Store properly\n\nFor detailed instructions, check the Crop Management section!`);
+        // Use the professional modal from the main page
+        if (typeof showSeedDetailsModal === 'function') {
+            showSeedDetailsModal(seedName);
+        } else {
+            // Fallback to basic alert if modal function not available
+            alert(`📖 Planting Guide for ${seedName}\n\n1. Soil Preparation:\n   • Loosen soil to 30cm depth\n   • Add compost and organic matter\n   • Ensure good drainage\n\n2. Planting:\n   • Follow recommended spacing\n   • Plant at correct depth\n   • Water immediately after planting\n\n3. Care:\n   • Water regularly\n   • Monitor for pests\n   • Fertilize as needed\n\n4. Harvest:\n   • Pick at optimal ripeness\n   • Handle carefully\n   • Store properly\n\nFor detailed instructions, check the Crop Management section!`);
+        }
     }
 
     addToCropManagement(seedName, variety) {

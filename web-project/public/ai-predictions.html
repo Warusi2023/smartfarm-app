@@ -169,6 +169,47 @@
             gap: 10px;
         }
 
+        /* Professional Modal Styles */
+        .seed-info-card, .next-steps-card, .seed-basic-info, .growing-conditions, .planting-instructions, .care-requirements {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .info-grid, .conditions-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .info-item, .condition-item {
+            padding: 8px 12px;
+            background: white;
+            border-radius: 6px;
+            border-left: 3px solid #007bff;
+            font-size: 0.9rem;
+        }
+
+        .steps-list, .instructions-list, .care-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .steps-list li, .instructions-list li, .care-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            align-items: center;
+        }
+
+        .steps-list li:last-child, .instructions-list li:last-child, .care-list li:last-child {
+            border-bottom: none;
+        }
+
         .btn-seed {
             background: linear-gradient(135deg, #4caf50, #8bc34a);
             border: none;
@@ -609,11 +650,11 @@
         }
 
         function selectSeed(seedName, variety) {
-            alert(`🌱 Selected: ${seedName} - ${variety}\n\nThis seed has been added to your planting schedule!\n\nNext steps:\n1. Prepare soil according to planting guide\n2. Schedule planting date\n3. Set up irrigation system\n4. Monitor growth progress\n\nCheck the Crop Management section for detailed tracking.`);
+            showSeedSelectionModal(seedName, variety);
         }
 
         function viewSeedDetails(seedName) {
-            alert(`📖 Seed Details for ${seedName}\n\nDetailed information about optimal growing conditions, planting instructions, and care requirements will be displayed here.\n\nThis would integrate with the detailed seed database for comprehensive information.`);
+            showSeedDetailsModal(seedName);
         }
 
         function refreshPredictions() {
@@ -637,6 +678,369 @@
                 sessionStorage.removeItem('smartfarm_token');
                 window.location.href = 'login.html';
             }
+        }
+
+        // Professional Modal Functions
+        function showSeedSelectionModal(seedName, variety) {
+            const seedData = getSeedData(seedName);
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-success text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-seedling me-2"></i>Seed Selected Successfully!
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="seed-info-card">
+                                        <h6 class="text-success mb-3">
+                                            <i class="fas fa-info-circle me-2"></i>Selected Seed
+                                        </h6>
+                                        <div class="info-grid">
+                                            <div class="info-item">
+                                                <strong>Seed Name:</strong> ${seedName}
+                                            </div>
+                                            <div class="info-item">
+                                                <strong>Variety:</strong> ${variety}
+                                            </div>
+                                            <div class="info-item">
+                                                <strong>Yield Potential:</strong> 
+                                                <span class="badge bg-${getYieldColor(seedData.yieldPotential)}">${seedData.yieldPotential}</span>
+                                            </div>
+                                            <div class="info-item">
+                                                <strong>Growing Days:</strong> ${seedData.growingDays} days
+                                            </div>
+                                            <div class="info-item">
+                                                <strong>Risk Level:</strong> 
+                                                <span class="badge bg-${getRiskColor(seedData.riskLevel)}">${seedData.riskLevel}</span>
+                                            </div>
+                                            <div class="info-item">
+                                                <strong>Best Season:</strong> ${seedData.bestSeason}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="next-steps-card">
+                                        <h6 class="text-primary mb-3">
+                                            <i class="fas fa-list-check me-2"></i>Next Steps
+                                        </h6>
+                                        <ul class="steps-list">
+                                            <li><i class="fas fa-check me-2"></i>Prepare soil according to planting guide</li>
+                                            <li><i class="fas fa-check me-2"></i>Schedule planting date</li>
+                                            <li><i class="fas fa-check me-2"></i>Set up irrigation system</li>
+                                            <li><i class="fas fa-check me-2"></i>Monitor growth progress</li>
+                                            <li><i class="fas fa-check me-2"></i>Check Crop Management section for tracking</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-info mt-3">
+                                <i class="fas fa-lightbulb me-2"></i>
+                                <strong>Pro Tip:</strong> This seed has been added to your planting schedule. You can track its progress in the Crop Management section.
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-primary" onclick="viewSeedDetails('${seedName}')">
+                                <i class="fas fa-info-circle me-1"></i>View Details
+                            </button>
+                            <button type="button" class="btn btn-success" onclick="schedulePlanting()">
+                                <i class="fas fa-calendar me-1"></i>Schedule Planting
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        function showSeedDetailsModal(seedName) {
+            const seedData = getSeedData(seedName);
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-xl modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-seedling me-2"></i>Seed Details: ${seedName}
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="seed-basic-info">
+                                        <h6 class="text-primary mb-3">
+                                            <i class="fas fa-info-circle me-2"></i>Basic Information
+                                        </h6>
+                                        <div class="info-grid">
+                                            <div class="info-item">
+                                                <strong>Seed Name:</strong> ${seedName}
+                                            </div>
+                                            <div class="info-item">
+                                                <strong>Variety:</strong> ${seedData.variety}
+                                            </div>
+                                            <div class="info-item">
+                                                <strong>Yield Potential:</strong> 
+                                                <span class="badge bg-${getYieldColor(seedData.yieldPotential)}">${seedData.yieldPotential}</span>
+                                            </div>
+                                            <div class="info-item">
+                                                <strong>Growing Days:</strong> ${seedData.growingDays} days
+                                            </div>
+                                            <div class="info-item">
+                                                <strong>Risk Level:</strong> 
+                                                <span class="badge bg-${getRiskColor(seedData.riskLevel)}">${seedData.riskLevel}</span>
+                                            </div>
+                                            <div class="info-item">
+                                                <strong>Best Season:</strong> ${seedData.bestSeason}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="growing-conditions">
+                                        <h6 class="text-success mb-3">
+                                            <i class="fas fa-thermometer-half me-2"></i>Growing Conditions
+                                        </h6>
+                                        <div class="conditions-grid">
+                                            <div class="condition-item">
+                                                <strong>Temperature:</strong> ${seedData.temperature}
+                                            </div>
+                                            <div class="condition-item">
+                                                <strong>Soil Type:</strong> ${seedData.soilType}
+                                            </div>
+                                            <div class="condition-item">
+                                                <strong>Water Needs:</strong> ${seedData.waterNeeds}
+                                            </div>
+                                            <div class="condition-item">
+                                                <strong>Sunlight:</strong> ${seedData.sunlight}
+                                            </div>
+                                            <div class="condition-item">
+                                                <strong>pH Level:</strong> ${seedData.pHLevel}
+                                            </div>
+                                            <div class="condition-item">
+                                                <strong>Spacing:</strong> ${seedData.spacing}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row mt-4">
+                                <div class="col-md-6">
+                                    <div class="planting-instructions">
+                                        <h6 class="text-warning mb-3">
+                                            <i class="fas fa-seedling me-2"></i>Planting Instructions
+                                        </h6>
+                                        <ul class="instructions-list">
+                                            ${seedData.plantingInstructions.map(instruction => `<li><i class="fas fa-arrow-right me-2"></i>${instruction}</li>`).join('')}
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="care-requirements">
+                                        <h6 class="text-info mb-3">
+                                            <i class="fas fa-tools me-2"></i>Care Requirements
+                                        </h6>
+                                        <ul class="care-list">
+                                            ${seedData.careRequirements.map(requirement => `<li><i class="fas fa-check me-2"></i>${requirement}</li>`).join('')}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-info mt-3">
+                                <i class="fas fa-lightbulb me-2"></i>
+                                <strong>Pro Tip:</strong> Follow these detailed instructions for optimal growth and maximum yield potential.
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-primary" onclick="selectSeed('${seedName}', '${seedData.variety}')">
+                                <i class="fas fa-seedling me-1"></i>Select This Seed
+                            </button>
+                            <button type="button" class="btn btn-success" onclick="printSeedDetails('${seedName}')">
+                                <i class="fas fa-print me-1"></i>Print Details
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        function getSeedData(seedName) {
+            const seedDatabase = {
+                'Tomato': {
+                    variety: 'Cherry',
+                    yieldPotential: 'High',
+                    growingDays: 75,
+                    riskLevel: 'Low',
+                    bestSeason: 'Spring/Summer',
+                    temperature: '20-30°C',
+                    soilType: 'Well-drained loam',
+                    waterNeeds: 'Regular watering',
+                    sunlight: 'Full sun (6-8 hours)',
+                    pHLevel: '6.0-6.8',
+                    spacing: '60cm between plants',
+                    plantingInstructions: [
+                        'Prepare soil with compost',
+                        'Plant seeds 1cm deep',
+                        'Water immediately after planting',
+                        'Provide support stakes'
+                    ],
+                    careRequirements: [
+                        'Water regularly but avoid overwatering',
+                        'Fertilize every 2 weeks',
+                        'Prune suckers regularly',
+                        'Monitor for pests and diseases'
+                    ]
+                },
+                'Lettuce': {
+                    variety: 'Romaine',
+                    yieldPotential: 'Medium',
+                    growingDays: 45,
+                    riskLevel: 'Low',
+                    bestSeason: 'Spring/Fall',
+                    temperature: '15-20°C',
+                    soilType: 'Rich, well-drained soil',
+                    waterNeeds: 'Consistent moisture',
+                    sunlight: 'Partial shade',
+                    pHLevel: '6.0-7.0',
+                    spacing: '30cm between plants',
+                    plantingInstructions: [
+                        'Sow seeds directly in soil',
+                        'Keep soil consistently moist',
+                        'Thin seedlings when 2-3 inches tall',
+                        'Plant in cool weather'
+                    ],
+                    careRequirements: [
+                        'Water regularly to prevent bolting',
+                        'Harvest outer leaves first',
+                        'Protect from extreme heat',
+                        'Fertilize lightly'
+                    ]
+                }
+            };
+            
+            return seedDatabase[seedName] || {
+                variety: 'Standard',
+                yieldPotential: 'Medium',
+                growingDays: 60,
+                riskLevel: 'Medium',
+                bestSeason: 'Spring',
+                temperature: '20-25°C',
+                soilType: 'Well-drained soil',
+                waterNeeds: 'Regular watering',
+                sunlight: 'Full sun',
+                pHLevel: '6.0-7.0',
+                spacing: '30cm between plants',
+                plantingInstructions: ['Prepare soil', 'Plant seeds', 'Water regularly'],
+                careRequirements: ['Water regularly', 'Fertilize as needed', 'Monitor growth']
+            };
+        }
+
+        function getYieldColor(yield) {
+            switch(yield) {
+                case 'High': return 'success';
+                case 'Medium': return 'primary';
+                case 'Low': return 'warning';
+                default: return 'secondary';
+            }
+        }
+
+        function getRiskColor(risk) {
+            switch(risk) {
+                case 'Low': return 'success';
+                case 'Medium': return 'warning';
+                case 'High': return 'danger';
+                default: return 'secondary';
+            }
+        }
+
+        function printSeedDetails(seedName) {
+            const seedData = getSeedData(seedName);
+            
+            const printContent = `
+                <html>
+                <head>
+                    <title>Seed Details - ${seedName}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 20px; }
+                        .header { background: #007bff; color: white; padding: 20px; text-align: center; }
+                        .section { margin: 20px 0; }
+                        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+                        .info-item { padding: 10px; border: 1px solid #ddd; }
+                        .instructions-list, .care-list { list-style: none; padding: 0; }
+                        .instructions-list li, .care-list li { padding: 5px 0; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>Seed Details: ${seedName}</h1>
+                    </div>
+                    <div class="section">
+                        <h3>Basic Information</h3>
+                        <div class="info-grid">
+                            <div class="info-item"><strong>Variety:</strong> ${seedData.variety}</div>
+                            <div class="info-item"><strong>Yield Potential:</strong> ${seedData.yieldPotential}</div>
+                            <div class="info-item"><strong>Growing Days:</strong> ${seedData.growingDays} days</div>
+                            <div class="info-item"><strong>Risk Level:</strong> ${seedData.riskLevel}</div>
+                        </div>
+                    </div>
+                    <div class="section">
+                        <h3>Growing Conditions</h3>
+                        <div class="info-grid">
+                            <div class="info-item"><strong>Temperature:</strong> ${seedData.temperature}</div>
+                            <div class="info-item"><strong>Soil Type:</strong> ${seedData.soilType}</div>
+                            <div class="info-item"><strong>Water Needs:</strong> ${seedData.waterNeeds}</div>
+                            <div class="info-item"><strong>Sunlight:</strong> ${seedData.sunlight}</div>
+                        </div>
+                    </div>
+                    <div class="section">
+                        <h3>Planting Instructions</h3>
+                        <ul class="instructions-list">
+                            ${seedData.plantingInstructions.map(instruction => `<li>• ${instruction}</li>`).join('')}
+                        </ul>
+                    </div>
+                    <div class="section">
+                        <h3>Care Requirements</h3>
+                        <ul class="care-list">
+                            ${seedData.careRequirements.map(requirement => `<li>• ${requirement}</li>`).join('')}
+                        </ul>
+                    </div>
+                </body>
+                </html>
+            `;
+            
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(printContent);
+            printWindow.document.close();
+            printWindow.print();
         }
     </script>
 </body>
