@@ -685,6 +685,14 @@ class IntelligentWeedingSystem {
 
     async initializeIntelligentWeeding() {
         console.log('🌱 Initializing Intelligent Weeding System...');
+        
+        // Wait for DOM to be ready
+        if (document.readyState === 'loading') {
+            await new Promise(resolve => {
+                document.addEventListener('DOMContentLoaded', resolve);
+            });
+        }
+        
         await this.fetchWeatherData();
         await this.loadCropData();
         this.createWeedingTaskWidget();

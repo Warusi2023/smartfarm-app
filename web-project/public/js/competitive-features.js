@@ -88,7 +88,20 @@ class SmartFarmCompetitive {
         container.innerHTML = '';
 
         Object.entries(this.iotSensors).forEach(([sensorName, data]) => {
-            if (!data || typeof data.value !== 'number') {
+            if (!data) {
+                console.warn(`No sensor data for ${sensorName}`);
+                return;
+            }
+            
+            // Handle different sensor data structures
+            let value = data.value;
+            if (typeof value === 'object' && value !== null) {
+                // For complex sensors like livestockHealth, use the first numeric value
+                const numericValues = Object.values(value).filter(v => typeof v === 'number');
+                value = numericValues.length > 0 ? numericValues[0] : 0;
+            }
+            
+            if (typeof value !== 'number') {
                 console.warn(`Invalid sensor data for ${sensorName}:`, data);
                 return;
             }

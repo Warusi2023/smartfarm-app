@@ -254,13 +254,13 @@ class QRTraceability {
     generateQRCode() {
         const productId = document.getElementById('productSelect')?.value;
         if (!productId) {
-            alert('Please select a product first');
+            this.showErrorDialog('No Product Selected', 'Please select a product first');
             return;
         }
 
         const product = this.products.find(p => p.id === productId);
         if (!product) {
-            alert('Product not found');
+            this.showErrorDialog('Product Not Found', 'The selected product could not be found');
             return;
         }
 
@@ -281,13 +281,20 @@ class QRTraceability {
             console.log('QR Code library not loaded, waiting for it...');
             qrContainer.innerHTML = '<div class="spinner-border" role="status"></div><p>Loading QR Code library...</p>';
             
-            // Wait for the library to load
+            // Wait for the library to load with timeout
+            let attempts = 0;
+            const maxAttempts = 30; // 3 seconds
+            
             const checkLibrary = () => {
+                attempts++;
+                
                 if (typeof QRCode !== 'undefined') {
                     console.log('QR Code library loaded, generating QR code...');
                     this.generateQRCode();
-                } else {
+                } else if (attempts < maxAttempts) {
                     setTimeout(checkLibrary, 100);
+                } else {
+                    this.showQRCodeFallback(product, traceabilityURL);
                 }
             };
             
@@ -352,6 +359,69 @@ class QRTraceability {
             product.qrCode = qrCodeDataURL;
             this.saveProducts();
         });
+    }
+
+    showErrorDialog(title, message) {
+        const modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.innerHTML = `
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title">
+                            <i class="fas fa-exclamation-circle me-2"></i>${title}
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+                        <p class="mb-0">${message}</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">OK</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        const bsModal = new bootstrap.Modal(modal);
+        bsModal.show();
+        
+        modal.addEventListener('hidden.bs.modal', () => {
+            document.body.removeChild(modal);
+        });
+    }
+
+    showQRCodeFallback(product, traceabilityURL) {
+        const qrContainer = document.getElementById('qrCodeDisplay');
+        if (!qrContainer) return;
+        
+        qrContainer.innerHTML = `
+            <div class="qr-code-result">
+                <div class="qr-placeholder" style="width: 200px; height: 200px; background: #f8f9fa; border: 2px dashed #dee2e6; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                    <div class="text-center">
+                        <i class="fas fa-qrcode fa-3x text-muted mb-2"></i>
+                        <p class="text-muted">QR Code Placeholder</p>
+                    </div>
+                </div>
+                <h6>${product.name}</h6>
+                <p class="text-muted small">Batch: ${product.batchNumber}</p>
+                <div class="qr-actions">
+                    <button class="btn btn-sm btn-outline-primary me-2" onclick="window.open('${traceabilityURL}', '_blank')">
+                        <i class="fas fa-external-link-alt me-1"></i>View Traceability
+                    </button>
+                    <button class="btn btn-sm btn-outline-success" onclick="navigator.clipboard.writeText('${traceabilityURL}')">
+                        <i class="fas fa-copy me-1"></i>Copy URL
+                    </button>
+                </div>
+                <div class="mt-3">
+                    <small class="text-muted">QR Code library not available. You can still access the traceability page directly.</small>
+                    <br>
+                    <small class="text-muted">URL: ${traceabilityURL}</small>
+                </div>
+            </div>
+        `;
     }
 
     // Download QR Code

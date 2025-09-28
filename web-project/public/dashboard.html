@@ -2831,16 +2831,24 @@
         }
 
         function updatePesticideStatistics() {
-            // Update pesticide count
-            document.getElementById('totalPesticides').textContent = '13';
-            document.getElementById('totalPests').textContent = '80+';
+            // Update pesticide count - check if elements exist first
+            const totalPesticidesEl = document.getElementById('totalPesticides');
+            const totalPestsEl = document.getElementById('totalPests');
+            
+            if (totalPesticidesEl) {
+                totalPesticidesEl.textContent = '13';
+            }
+            
+            if (totalPestsEl) {
+                totalPestsEl.textContent = '80+';
+            }
             
             // You can also dynamically load from the pesticide management system
             // if (typeof pesticideManagement !== 'undefined') {
             //     const pesticideCount = pesticideManagement.pesticideDatabase.length;
             //     const pestCount = Object.keys(pesticideManagement.pestPesticideMatching).length;
-            //     document.getElementById('totalPesticides').textContent = pesticideCount;
-            //     document.getElementById('totalPests').textContent = pestCount + '+';
+            //     if (totalPesticidesEl) totalPesticidesEl.textContent = pesticideCount;
+            //     if (totalPestsEl) totalPestsEl.textContent = pestCount + '+';
             // }
         }
 
