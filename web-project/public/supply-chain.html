@@ -661,6 +661,8 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     <script>
         // Professional Dialog System
         function showInfoDialog(title, message, buttonText = 'OK', callback = null) {
@@ -997,124 +999,286 @@
                 }
             };
             
-            // Create HTML report
-            const reportHTML = `
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <title>${reportData.title}</title>
-                    <style>
-                        body { font-family: Arial, sans-serif; margin: 20px; }
-                        .header { text-align: center; color: #2e7d32; border-bottom: 2px solid #2e7d32; padding-bottom: 20px; }
-                        .section { margin: 20px 0; }
-                        .metric { display: inline-block; margin: 10px; padding: 15px; background: #f8f9fa; border-radius: 8px; min-width: 200px; }
-                        .metric-value { font-size: 24px; font-weight: bold; color: #2e7d32; }
-                        .metric-label { font-size: 14px; color: #666; }
-                        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-                        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-                        th { background-color: #2e7d32; color: white; }
-                        .footer { text-align: center; margin-top: 40px; color: #666; }
-                    </style>
-                </head>
-                <body>
-                    <div class="header">
-                        <h1>${reportData.title}</h1>
-                        <p>Generated on: ${reportData.generatedDate}</p>
-                    </div>
-                    
-                    <div class="section">
-                        <h2>Executive Summary</h2>
-                        <div class="metric">
-                            <div class="metric-value">${reportData.summary.totalPartners}</div>
-                            <div class="metric-label">Total Partners</div>
-                        </div>
-                        <div class="metric">
-                            <div class="metric-value">${reportData.summary.activePartners}</div>
-                            <div class="metric-label">Active Partners</div>
-                        </div>
-                        <div class="metric">
-                            <div class="metric-value">${reportData.summary.totalSales}</div>
-                            <div class="metric-label">Total Sales</div>
-                        </div>
-                        <div class="metric">
-                            <div class="metric-value">${reportData.summary.customerSatisfaction}</div>
-                            <div class="metric-label">Customer Satisfaction</div>
-                        </div>
-                    </div>
-                    
-                    <div class="section">
-                        <h2>Supply Chain Performance</h2>
-                        <h3>Farm-to-Table Journey</h3>
-                        <p><strong>Average Delivery Time:</strong> ${reportData.metrics.farmToTable.averageTime}</p>
-                        <p><strong>Freshness Score:</strong> ${reportData.metrics.farmToTable.freshnessScore}</p>
-                        <p><strong>Customer Satisfaction:</strong> ${reportData.metrics.farmToTable.customerSatisfaction}</p>
-                        
-                        <h3>Farm-to-Counter Journey</h3>
-                        <p><strong>Average Delivery Time:</strong> ${reportData.metrics.farmToCounter.averageTime}</p>
-                        <p><strong>Distribution Efficiency:</strong> ${reportData.metrics.farmToCounter.distributionEfficiency}</p>
-                        <p><strong>Retail Satisfaction:</strong> ${reportData.metrics.farmToCounter.retailSatisfaction}</p>
-                        
-                        <h3>Cold Chain Integrity</h3>
-                        <p><strong>Temperature Compliance:</strong> ${reportData.metrics.coldChain.temperatureCompliance}</p>
-                        <p><strong>Quality Retention:</strong> ${reportData.metrics.coldChain.qualityRetention}</p>
-                        <p><strong>Energy Efficiency:</strong> ${reportData.metrics.coldChain.energyEfficiency}</p>
-                        
-                        <h3>Route Optimization</h3>
-                        <p><strong>Route Efficiency:</strong> ${reportData.metrics.optimization.routeEfficiency}</p>
-                        <p><strong>Fuel Savings:</strong> ${reportData.metrics.optimization.fuelSavings}</p>
-                        <p><strong>Carbon Reduction:</strong> ${reportData.metrics.optimization.carbonReduction}</p>
-                        <p><strong>Monthly Cost Savings:</strong> ${reportData.metrics.optimization.costSavings}</p>
-                    </div>
-                    
-                    ${partners.length > 0 ? `
-                    <div class="section">
-                        <h2>Retail Partners</h2>
-                        <table>
-                            <tr>
-                                <th>Partner Name</th>
-                                <th>Store Type</th>
-                                <th>Contact Person</th>
-                                <th>Email</th>
-                                <th>Status</th>
-                                <th>Date Added</th>
-                            </tr>
-                            ${partners.map(partner => `
-                                <tr>
-                                    <td>${partner.name}</td>
-                                    <td>${partner.storeType}</td>
-                                    <td>${partner.contactPerson}</td>
-                                    <td>${partner.email}</td>
-                                    <td>${partner.status}</td>
-                                    <td>${partner.dateAdded}</td>
-                                </tr>
-                            `).join('')}
-                        </table>
-                    </div>
-                    ` : ''}
-                    
-                    <div class="footer">
-                        <p>This report was generated by SmartFarm Supply Chain Management System</p>
-                        <p>For questions or support, contact: support@smartfarm.com</p>
-                    </div>
-                </body>
-                </html>
-            `;
+            // Create PDF report using jsPDF
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
             
-            // Create and download the report
-            const blob = new Blob([reportHTML], { type: 'text/html' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `SupplyChainReport_${new Date().toISOString().split('T')[0]}.html`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
+            // Set up colors
+            const primaryColor = [46, 125, 50]; // #2e7d32
+            const secondaryColor = [76, 175, 80]; // #4caf50
+            const textColor = [33, 37, 41]; // #212529
+            const lightGray = [248, 249, 250]; // #f8f9fa
+            
+            // Helper function to add text with styling
+            const addText = (text, x, y, options = {}) => {
+                const { fontSize = 12, color = textColor, fontStyle = 'normal', align = 'left' } = options;
+                doc.setFontSize(fontSize);
+                doc.setTextColor(...color);
+                doc.setFont('helvetica', fontStyle);
+                doc.text(text, x, y, { align });
+            };
+            
+            // Helper function to add a line
+            const addLine = (x1, y1, x2, y2, color = primaryColor, width = 0.5) => {
+                doc.setDrawColor(...color);
+                doc.setLineWidth(width);
+                doc.line(x1, y1, x2, y2);
+            };
+            
+            // Helper function to add a rectangle
+            const addRect = (x, y, width, height, fillColor = null, strokeColor = primaryColor) => {
+                if (fillColor) {
+                    doc.setFillColor(...fillColor);
+                    doc.rect(x, y, width, height, 'F');
+                }
+                if (strokeColor) {
+                    doc.setDrawColor(...strokeColor);
+                    doc.rect(x, y, width, height, 'S');
+                }
+            };
+            
+            let yPosition = 20;
+            const pageWidth = doc.internal.pageSize.width;
+            const margin = 20;
+            const contentWidth = pageWidth - (margin * 2);
+            
+            // Header
+            addText(reportData.title, pageWidth / 2, yPosition, { 
+                fontSize: 24, 
+                color: primaryColor, 
+                fontStyle: 'bold', 
+                align: 'center' 
+            });
+            yPosition += 10;
+            
+            addText(`Generated on: ${reportData.generatedDate}`, pageWidth / 2, yPosition, { 
+                fontSize: 12, 
+                color: textColor, 
+                align: 'center' 
+            });
+            yPosition += 15;
+            
+            // Add header line
+            addLine(margin, yPosition, pageWidth - margin, yPosition, primaryColor, 1);
+            yPosition += 15;
+            
+            // Executive Summary Section
+            addText('Executive Summary', margin, yPosition, { 
+                fontSize: 18, 
+                color: primaryColor, 
+                fontStyle: 'bold' 
+            });
+            yPosition += 10;
+            
+            // Summary metrics in a grid
+            const metrics = [
+                { label: 'Total Partners', value: reportData.summary.totalPartners },
+                { label: 'Active Partners', value: reportData.summary.activePartners },
+                { label: 'Total Sales', value: reportData.summary.totalSales },
+                { label: 'Customer Satisfaction', value: reportData.summary.customerSatisfaction }
+            ];
+            
+            const metricsPerRow = 2;
+            const metricWidth = (contentWidth - 10) / metricsPerRow;
+            const metricHeight = 25;
+            
+            metrics.forEach((metric, index) => {
+                const row = Math.floor(index / metricsPerRow);
+                const col = index % metricsPerRow;
+                const x = margin + (col * (metricWidth + 10));
+                const y = yPosition + (row * (metricHeight + 10));
+                
+                // Metric box
+                addRect(x, y, metricWidth, metricHeight, lightGray, [200, 200, 200]);
+                
+                // Metric value
+                addText(metric.value, x + 10, y + 15, { 
+                    fontSize: 16, 
+                    color: primaryColor, 
+                    fontStyle: 'bold' 
+                });
+                
+                // Metric label
+                addText(metric.label, x + 10, y + 25, { 
+                    fontSize: 10, 
+                    color: textColor 
+                });
+            });
+            
+            yPosition += 60;
+            
+            // Check if we need a new page
+            if (yPosition > 250) {
+                doc.addPage();
+                yPosition = 20;
+            }
+            
+            // Supply Chain Performance Section
+            addText('Supply Chain Performance', margin, yPosition, { 
+                fontSize: 18, 
+                color: primaryColor, 
+                fontStyle: 'bold' 
+            });
+            yPosition += 10;
+            
+            // Farm-to-Table Journey
+            addText('Farm-to-Table Journey', margin, yPosition, { 
+                fontSize: 14, 
+                color: secondaryColor, 
+                fontStyle: 'bold' 
+            });
+            yPosition += 8;
+            
+            addText(`Average Delivery Time: ${reportData.metrics.farmToTable.averageTime}`, margin + 10, yPosition);
+            yPosition += 6;
+            addText(`Freshness Score: ${reportData.metrics.farmToTable.freshnessScore}`, margin + 10, yPosition);
+            yPosition += 6;
+            addText(`Customer Satisfaction: ${reportData.metrics.farmToTable.customerSatisfaction}`, margin + 10, yPosition);
+            yPosition += 10;
+            
+            // Farm-to-Counter Journey
+            addText('Farm-to-Counter Journey', margin, yPosition, { 
+                fontSize: 14, 
+                color: secondaryColor, 
+                fontStyle: 'bold' 
+            });
+            yPosition += 8;
+            
+            addText(`Average Delivery Time: ${reportData.metrics.farmToCounter.averageTime}`, margin + 10, yPosition);
+            yPosition += 6;
+            addText(`Distribution Efficiency: ${reportData.metrics.farmToCounter.distributionEfficiency}`, margin + 10, yPosition);
+            yPosition += 6;
+            addText(`Retail Satisfaction: ${reportData.metrics.farmToCounter.retailSatisfaction}`, margin + 10, yPosition);
+            yPosition += 10;
+            
+            // Cold Chain Integrity
+            addText('Cold Chain Integrity', margin, yPosition, { 
+                fontSize: 14, 
+                color: secondaryColor, 
+                fontStyle: 'bold' 
+            });
+            yPosition += 8;
+            
+            addText(`Temperature Compliance: ${reportData.metrics.coldChain.temperatureCompliance}`, margin + 10, yPosition);
+            yPosition += 6;
+            addText(`Quality Retention: ${reportData.metrics.coldChain.qualityRetention}`, margin + 10, yPosition);
+            yPosition += 6;
+            addText(`Energy Efficiency: ${reportData.metrics.coldChain.energyEfficiency}`, margin + 10, yPosition);
+            yPosition += 10;
+            
+            // Route Optimization
+            addText('Route Optimization', margin, yPosition, { 
+                fontSize: 14, 
+                color: secondaryColor, 
+                fontStyle: 'bold' 
+            });
+            yPosition += 8;
+            
+            addText(`Route Efficiency: ${reportData.metrics.optimization.routeEfficiency}`, margin + 10, yPosition);
+            yPosition += 6;
+            addText(`Fuel Savings: ${reportData.metrics.optimization.fuelSavings}`, margin + 10, yPosition);
+            yPosition += 6;
+            addText(`Carbon Reduction: ${reportData.metrics.optimization.carbonReduction}`, margin + 10, yPosition);
+            yPosition += 6;
+            addText(`Monthly Cost Savings: ${reportData.metrics.optimization.costSavings}`, margin + 10, yPosition);
+            yPosition += 15;
+            
+            // Check if we need a new page for partners table
+            if (yPosition > 200) {
+                doc.addPage();
+                yPosition = 20;
+            }
+            
+            // Retail Partners Table
+            if (partners.length > 0) {
+                addText('Retail Partners', margin, yPosition, { 
+                    fontSize: 18, 
+                    color: primaryColor, 
+                    fontStyle: 'bold' 
+                });
+                yPosition += 10;
+                
+                // Prepare table data
+                const tableData = partners.map(partner => [
+                    partner.name || 'N/A',
+                    partner.storeType || 'N/A',
+                    partner.contactPerson || 'N/A',
+                    partner.email || 'N/A',
+                    partner.status || 'N/A',
+                    partner.dateAdded || 'N/A'
+                ]);
+                
+                // Add table using autoTable
+                doc.autoTable({
+                    head: [['Partner Name', 'Store Type', 'Contact Person', 'Email', 'Status', 'Date Added']],
+                    body: tableData,
+                    startY: yPosition,
+                    margin: { left: margin, right: margin },
+                    styles: {
+                        fontSize: 8,
+                        cellPadding: 3,
+                        overflow: 'linebreak',
+                        halign: 'left'
+                    },
+                    headStyles: {
+                        fillColor: primaryColor,
+                        textColor: [255, 255, 255],
+                        fontStyle: 'bold'
+                    },
+                    alternateRowStyles: {
+                        fillColor: [248, 249, 250]
+                    },
+                    columnStyles: {
+                        0: { cellWidth: 30 },
+                        1: { cellWidth: 25 },
+                        2: { cellWidth: 30 },
+                        3: { cellWidth: 35 },
+                        4: { cellWidth: 20 },
+                        5: { cellWidth: 25 }
+                    }
+                });
+                
+                yPosition = doc.lastAutoTable.finalY + 15;
+            }
+            
+            // Footer
+            const pageCount = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                
+                // Footer line
+                addLine(margin, 280, pageWidth - margin, 280, [200, 200, 200], 0.5);
+                
+                // Footer text
+                addText('This report was generated by SmartFarm Supply Chain Management System', 
+                       pageWidth / 2, 285, { 
+                           fontSize: 8, 
+                           color: [108, 117, 125], 
+                           align: 'center' 
+                       });
+                addText('For questions or support, contact: support@smartfarm.com', 
+                       pageWidth / 2, 290, { 
+                           fontSize: 8, 
+                           color: [108, 117, 125], 
+                           align: 'center' 
+                       });
+                
+                // Page number
+                addText(`Page ${i} of ${pageCount}`, pageWidth - margin, 290, { 
+                    fontSize: 8, 
+                    color: [108, 117, 125], 
+                    align: 'right' 
+                });
+            }
+            
+            // Save the PDF
+            const fileName = `SupplyChainReport_${new Date().toISOString().split('T')[0]}.pdf`;
+            doc.save(fileName);
             
             // Show success message
             showInfoDialog(
-                '📄 Report Generated Successfully!',
-                `Your supply chain report has been generated and downloaded.\n\nFile: SupplyChainReport_${new Date().toISOString().split('T')[0]}.html\n\nThe report includes:\n• Executive summary with key metrics\n• Supply chain performance analysis\n• Cold chain integrity statistics\n• Route optimization results\n• Complete partner directory\n\nYou can open the HTML file in any web browser to view the full report.`
+                '📄 PDF Report Generated Successfully!',
+                `Your supply chain report has been generated and downloaded as a PDF.\n\nFile: ${fileName}\n\nThe report includes:\n• Executive summary with key metrics\n• Supply chain performance analysis\n• Cold chain integrity statistics\n• Route optimization results\n• Complete partner directory table\n\nYou can open the PDF file in any PDF viewer to view the full report.`
             );
         }
 
