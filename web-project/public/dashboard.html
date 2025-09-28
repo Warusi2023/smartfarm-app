@@ -6965,6 +6965,11 @@ INVENTORY SUMMARY:
 
         function addCropFromDatabase(cropName, scientificName, category) {
             console.log('Adding crop from database:', { cropName, scientificName, category });
+            console.log('Global crop database available:', !!globalCropDatabase);
+            console.log('Crops array available:', !!crops);
+            console.log('saveCropsData function available:', typeof saveCropsData);
+            console.log('renderCropsTable function available:', typeof renderCropsTable);
+            console.log('updateAnalyticsCharts function available:', typeof updateAnalyticsCharts);
             
             // Close the modal first
             const modal = document.querySelector('.modal');
@@ -6999,7 +7004,7 @@ INVENTORY SUMMARY:
                 
                 crops.push(newCrop);
                 saveCropsData();
-                renderCropTable();
+                renderCropsTable();
                 updateAnalyticsCharts();
                 
                 // Show success notification
@@ -7187,6 +7192,11 @@ INVENTORY SUMMARY:
 
         function addLivestockFromDatabase(livestockName, category) {
             console.log('Adding livestock from database:', { livestockName, category });
+            console.log('Global livestock database available:', !!globalLivestockDatabase);
+            console.log('Livestock array available:', !!livestock);
+            console.log('saveLivestockData function available:', typeof saveLivestockData);
+            console.log('renderLivestockTable function available:', typeof renderLivestockTable);
+            console.log('updateAnalyticsCharts function available:', typeof updateAnalyticsCharts);
             
             try {
                 // Close the modal first
