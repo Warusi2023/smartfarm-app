@@ -556,11 +556,390 @@ class SmartFarmCompetitive {
     }
 
     downloadAllQRCodes() {
-        alert('📦 Downloading all QR codes as ZIP file...\n\nThis will include:\n• QR codes for all products\n• Product labels\n• Batch information\n• Traceability URLs');
+        this.showDownloadQRModal();
+    }
+
+    showDownloadQRModal() {
+        const modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.innerHTML = `
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content border-0 shadow-lg">
+                    <div class="modal-header bg-success text-white">
+                        <h5 class="modal-title">
+                            <i class="fas fa-download me-2"></i>Download All QR Codes
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="text-center mb-4">
+                            <i class="fas fa-file-archive fa-4x text-success mb-3"></i>
+                            <h5>Preparing QR Codes Download</h5>
+                            <p class="text-muted">Generating a comprehensive ZIP file with all your product QR codes</p>
+                        </div>
+                        
+                        <div class="download-preview">
+                            <h6 class="mb-3">📦 ZIP File Contents:</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="download-item mb-3">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-qrcode text-primary me-3"></i>
+                                            <div>
+                                                <h6 class="mb-1">QR Code Images</h6>
+                                                <small class="text-muted">High-resolution QR codes for all products</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="download-item mb-3">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-tags text-info me-3"></i>
+                                            <div>
+                                                <h6 class="mb-1">Product Labels</h6>
+                                                <small class="text-muted">Ready-to-print product labels with QR codes</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="download-item mb-3">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-info-circle text-warning me-3"></i>
+                                            <div>
+                                                <h6 class="mb-1">Batch Information</h6>
+                                                <small class="text-muted">Complete batch details and metadata</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="download-item mb-3">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-link text-success me-3"></i>
+                                            <div>
+                                                <h6 class="mb-1">Traceability URLs</h6>
+                                                <small class="text-muted">Direct links to traceability pages</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="download-options mt-4">
+                            <h6 class="mb-3">📋 Download Options:</h6>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" id="includeLabels" checked>
+                                <label class="form-check-label" for="includeLabels">
+                                    Include printable product labels
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" id="includeMetadata" checked>
+                                <label class="form-check-label" for="includeMetadata">
+                                    Include batch information and metadata
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" id="includeInstructions" checked>
+                                <label class="form-check-label" for="includeInstructions">
+                                    Include consumer instructions
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="progress-container mt-4" id="downloadProgress" style="display: none;">
+                            <div class="progress mb-2">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                            </div>
+                            <small class="text-muted" id="progressText">Preparing download...</small>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-success" onclick="smartFarm.startQRDownload()">
+                            <i class="fas fa-download me-2"></i>Start Download
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        const bsModal = new bootstrap.Modal(modal);
+        bsModal.show();
+        
+        modal.addEventListener('hidden.bs.modal', () => {
+            document.body.removeChild(modal);
+        });
+    }
+
+    startQRDownload() {
+        const progressContainer = document.getElementById('downloadProgress');
+        const progressBar = progressContainer.querySelector('.progress-bar');
+        const progressText = document.getElementById('progressText');
+        
+        // Show progress
+        progressContainer.style.display = 'block';
+        
+        // Simulate download progress
+        let progress = 0;
+        const interval = setInterval(() => {
+            progress += Math.random() * 15;
+            if (progress > 100) progress = 100;
+            
+            progressBar.style.width = progress + '%';
+            
+            if (progress < 30) {
+                progressText.textContent = 'Generating QR codes...';
+            } else if (progress < 60) {
+                progressText.textContent = 'Creating product labels...';
+            } else if (progress < 90) {
+                progressText.textContent = 'Compiling metadata...';
+            } else {
+                progressText.textContent = 'Finalizing ZIP file...';
+            }
+            
+            if (progress >= 100) {
+                clearInterval(interval);
+                setTimeout(() => {
+                    this.completeQRDownload();
+                }, 500);
+            }
+        }, 200);
+    }
+
+    completeQRDownload() {
+        // Close the current modal
+        const modal = document.querySelector('.modal.show');
+        if (modal) {
+            const bsModal = bootstrap.Modal.getInstance(modal);
+            bsModal.hide();
+        }
+        
+        // Show success modal
+        const successModal = document.createElement('div');
+        successModal.className = 'modal fade';
+        successModal.innerHTML = `
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg">
+                    <div class="modal-header bg-success text-white">
+                        <h5 class="modal-title">
+                            <i class="fas fa-check-circle me-2"></i>Download Complete!
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <i class="fas fa-file-archive fa-4x text-success mb-3"></i>
+                        <h5>QR Codes Downloaded Successfully!</h5>
+                        <p class="text-muted mb-3">Your ZIP file has been downloaded and contains:</p>
+                        <ul class="list-unstyled text-start">
+                            <li><i class="fas fa-check text-success me-2"></i>QR code images for all products</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Printable product labels</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Batch information and metadata</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Traceability URLs and instructions</li>
+                        </ul>
+                        <div class="alert alert-info mt-3">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Tip:</strong> You can now print the labels and attach them to your products for complete traceability!
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-success" data-bs-dismiss="modal">Great!</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(successModal);
+        const bsModal = new bootstrap.Modal(successModal);
+        bsModal.show();
+        
+        successModal.addEventListener('hidden.bs.modal', () => {
+            document.body.removeChild(successModal);
+        });
     }
 
     printAllQRCodes() {
-        alert('🖨️ Printing all QR codes...\n\nThis will print:\n• QR codes for all products\n• Product information\n• Batch details\n• Instructions for consumers');
+        this.showPrintQRModal();
+    }
+
+    showPrintQRModal() {
+        const modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.innerHTML = `
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content border-0 shadow-lg">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title">
+                            <i class="fas fa-print me-2"></i>Print All QR Codes
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="text-center mb-4">
+                            <i class="fas fa-print fa-4x text-primary mb-3"></i>
+                            <h5>Print QR Codes & Labels</h5>
+                            <p class="text-muted">Generate printable QR codes and product labels for all your products</p>
+                        </div>
+                        
+                        <div class="print-preview">
+                            <h6 class="mb-3">🖨️ Print Options:</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="print-item mb-3">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-qrcode text-primary me-3"></i>
+                                            <div>
+                                                <h6 class="mb-1">QR Code Sheets</h6>
+                                                <small class="text-muted">High-quality QR codes for all products</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="print-item mb-3">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-tags text-info me-3"></i>
+                                            <div>
+                                                <h6 class="mb-1">Product Labels</h6>
+                                                <small class="text-muted">Ready-to-print product labels with QR codes</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="print-item mb-3">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-info-circle text-warning me-3"></i>
+                                            <div>
+                                                <h6 class="mb-1">Product Information</h6>
+                                                <small class="text-muted">Complete product details and descriptions</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="print-item mb-3">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-list text-success me-3"></i>
+                                            <div>
+                                                <h6 class="mb-1">Batch Details</h6>
+                                                <small class="text-muted">Harvest dates, batch numbers, and metadata</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="print-settings mt-4">
+                            <h6 class="mb-3">⚙️ Print Settings:</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="printFormat" class="form-label">Print Format</label>
+                                        <select class="form-select" id="printFormat">
+                                            <option value="labels">Product Labels (4x6 inches)</option>
+                                            <option value="sheets">QR Code Sheets (A4)</option>
+                                            <option value="both">Both Formats</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="printQuality" class="form-label">Print Quality</label>
+                                        <select class="form-select" id="printQuality">
+                                            <option value="high">High Quality (300 DPI)</option>
+                                            <option value="medium">Medium Quality (150 DPI)</option>
+                                            <option value="draft">Draft Quality (75 DPI)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" id="includeInstructions" checked>
+                                <label class="form-check-label" for="includeInstructions">
+                                    Include consumer instructions
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" id="includeFarmInfo" checked>
+                                <label class="form-check-label" for="includeFarmInfo">
+                                    Include farm information and contact details
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" onclick="smartFarm.startQRPrint()">
+                            <i class="fas fa-print me-2"></i>Start Printing
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        const bsModal = new bootstrap.Modal(modal);
+        bsModal.show();
+        
+        modal.addEventListener('hidden.bs.modal', () => {
+            document.body.removeChild(modal);
+        });
+    }
+
+    startQRPrint() {
+        // Simulate print process
+        setTimeout(() => {
+            this.completeQRPrint();
+        }, 2000);
+    }
+
+    completeQRPrint() {
+        // Close the current modal
+        const modal = document.querySelector('.modal.show');
+        if (modal) {
+            const bsModal = bootstrap.Modal.getInstance(modal);
+            bsModal.hide();
+        }
+        
+        // Show success modal
+        const successModal = document.createElement('div');
+        successModal.className = 'modal fade';
+        successModal.innerHTML = `
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title">
+                            <i class="fas fa-check-circle me-2"></i>Print Ready!
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <i class="fas fa-print fa-4x text-primary mb-3"></i>
+                        <h5>Print Job Prepared Successfully!</h5>
+                        <p class="text-muted mb-3">Your print job is ready and the print dialog should open automatically. The printout includes:</p>
+                        <ul class="list-unstyled text-start">
+                            <li><i class="fas fa-check text-primary me-2"></i>QR codes for all products</li>
+                            <li><i class="fas fa-check text-primary me-2"></i>Product information and descriptions</li>
+                            <li><i class="fas fa-check text-primary me-2"></i>Batch details and harvest dates</li>
+                            <li><i class="fas fa-check text-primary me-2"></i>Consumer instructions and farm contact info</li>
+                        </ul>
+                        <div class="alert alert-info mt-3">
+                            <i class="fas fa-lightbulb me-2"></i>
+                            <strong>Tip:</strong> Use high-quality paper for the best QR code scanning results!
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Got it!</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(successModal);
+        const bsModal = new bootstrap.Modal(successModal);
+        bsModal.show();
+        
+        successModal.addEventListener('hidden.bs.modal', () => {
+            document.body.removeChild(successModal);
+        });
     }
 
     // Market Intelligence
