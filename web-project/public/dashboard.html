@@ -5788,7 +5788,7 @@ INVENTORY SUMMARY:
 
         // Initialize feed mix system
         function initializeFeedMixSystem() {
-            loadFeedMixDatabase();
+            loadFeedMixDatabaseFromStorage();
             loadFeedMixHistory();
             loadFeedMixSettings();
             updateFeedMixTabCount();
@@ -6134,6 +6134,11 @@ INVENTORY SUMMARY:
                 return;
             }
             
+            // Debug: Log the search parameters and database
+            console.log('Searching for:', { livestockType, growthStage });
+            console.log('Feed mix database:', feedMixDatabase);
+            console.log('Database length:', feedMixDatabase.length);
+            
             // Find matching feed mix
             const feedMix = feedMixDatabase.find(mix => 
                 mix.livestockType === livestockType && 
@@ -6141,6 +6146,10 @@ INVENTORY SUMMARY:
             );
             
             if (!feedMix) {
+                console.log('Available feed mixes:', feedMixDatabase.map(mix => ({ 
+                    type: mix.livestockType, 
+                    stage: mix.growthStage 
+                })));
                 alert('No feed mix found for the selected livestock type and growth stage');
                 return;
             }
@@ -6347,16 +6356,18 @@ INVENTORY SUMMARY:
         }
 
         // Load feed mix database from localStorage
-        function loadFeedMixDatabase() {
+        function loadFeedMixDatabaseFromStorage() {
             const saved = localStorage.getItem('feedMixDatabase');
             if (saved) {
                 try {
                     feedMixDatabase = JSON.parse(saved);
+                    console.log('Loaded feed mix database from localStorage:', feedMixDatabase.length, 'items');
                 } catch (e) {
                     console.error('Error loading feed mix database:', e);
                     loadFeedMixDatabase(); // Load default database
                 }
             } else {
+                console.log('No saved feed mix database found, loading default...');
                 loadFeedMixDatabase(); // Load default database
             }
         }
