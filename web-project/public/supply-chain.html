@@ -662,43 +662,149 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Professional Dialog System
+        function showInfoDialog(title, message, buttonText = 'OK', callback = null) {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-info text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-info-circle me-2"></i>${title}
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div style="white-space: pre-line;">${message}</div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-info" data-bs-dismiss="modal">${buttonText}</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+                if (callback) callback();
+            });
+        }
+
+        function showConfirmDialog(title, message, confirmText = 'Yes', cancelText = 'No', confirmCallback, cancelCallback = null) {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-warning text-dark">
+                            <h5 class="modal-title">
+                                <i class="fas fa-exclamation-triangle me-2"></i>${title}
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="mb-0">${message}</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">${cancelText}</button>
+                            <button type="button" class="btn btn-warning" id="confirmBtn">${confirmText}</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            // Handle confirm button click
+            document.getElementById('confirmBtn').addEventListener('click', () => {
+                bsModal.hide();
+                if (confirmCallback) confirmCallback();
+            });
+            
+            // Handle cancel
+            if (cancelCallback) {
+                modal.addEventListener('hidden.bs.modal', () => {
+                    cancelCallback();
+                });
+            }
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
         // Supply Chain Management Functions
         function showFarmToTableJourney() {
-            alert('🌱 Farm-to-Table Journey\n\nThis journey represents our direct-to-consumer model:\n\n1. Farm Production - Organic farming practices\n2. Quality Testing - Freshness and safety verification\n3. Eco-Friendly Packaging - Sustainable materials\n4. Cold Storage - Temperature-controlled preservation\n5. Direct Delivery - Fresh to your doorstep\n6. Consumer Purchase - Available at farmers markets\n7. Consumer Table - Fresh within 24-48 hours\n\nBenefits:\n• Maximum freshness\n• Direct farmer-consumer connection\n• Premium pricing\n• Complete transparency');
+            showInfoDialog(
+                '🌱 Farm-to-Table Journey',
+                'This journey represents our direct-to-consumer model:\n\n1. Farm Production - Organic farming practices\n2. Quality Testing - Freshness and safety verification\n3. Eco-Friendly Packaging - Sustainable materials\n4. Cold Storage - Temperature-controlled preservation\n5. Direct Delivery - Fresh to your doorstep\n6. Consumer Purchase - Available at farmers markets\n7. Consumer Table - Fresh within 24-48 hours\n\nBenefits:\n• Maximum freshness\n• Direct farmer-consumer connection\n• Premium pricing\n• Complete transparency'
+            );
         }
 
         function showFarmToCounterJourney() {
-            alert('🏪 Farm-to-Counter Journey\n\nThis journey represents our retail distribution model:\n\n1. Farm Production - Commercial-scale farming\n2. Quality Testing - Batch testing for standards\n3. Commercial Packaging - Retail-ready packaging\n4. Cold Chain Storage - Industrial preservation\n5. Refrigerated Transport - Temperature-controlled shipping\n6. Wholesale Distribution - Partner warehouses\n7. Retail Store Delivery - Supermarket chains\n8. Store Counter Display - Available for purchase\n\nBenefits:\n• Wide market reach\n• Scalable distribution\n• Retail partnerships\n• Volume sales');
+            showInfoDialog(
+                '🏪 Farm-to-Counter Journey',
+                'This journey represents our retail distribution model:\n\n1. Farm Production - Commercial-scale farming\n2. Quality Testing - Batch testing for standards\n3. Commercial Packaging - Retail-ready packaging\n4. Cold Chain Storage - Industrial preservation\n5. Refrigerated Transport - Temperature-controlled shipping\n6. Wholesale Distribution - Partner warehouses\n7. Retail Store Delivery - Supermarket chains\n8. Store Counter Display - Available for purchase\n\nBenefits:\n• Wide market reach\n• Scalable distribution\n• Retail partnerships\n• Volume sales'
+            );
         }
 
         function trackShipment(partnerId) {
-            alert(`🚛 Tracking Shipment to ${partnerId}\n\nCurrent Status: In Transit\nEstimated Arrival: Tomorrow 2:00 PM\nTracking Number: SHIP${Date.now()}\n\nReal-time Updates:\n• Left distribution center: 2 hours ago\n• Current location: Highway 1, 45km from destination\n• Temperature: 2°C (Optimal)\n• ETA: 1 hour 30 minutes\n\nYou can track this shipment in real-time through our logistics dashboard.`);
+            const trackingNumber = `SHIP${Date.now()}`;
+            showInfoDialog(
+                `🚛 Tracking Shipment to ${partnerId}`,
+                `Current Status: In Transit\nEstimated Arrival: Tomorrow 2:00 PM\nTracking Number: ${trackingNumber}\n\nReal-time Updates:\n• Left distribution center: 2 hours ago\n• Current location: Highway 1, 45km from destination\n• Temperature: 2°C (Optimal)\n• ETA: 1 hour 30 minutes\n\nYou can track this shipment in real-time through our logistics dashboard.`
+            );
         }
 
         function viewSalesData(partnerId) {
-            alert(`📊 Sales Data for ${partnerId}\n\nMonthly Performance:\n• Total Sales: $12,450\n• Units Sold: 1,250 kg\n• Average Price: $9.96/kg\n• Growth: +15% vs last month\n\nTop Products:\n1. Organic Tomatoes - 450 kg\n2. Fresh Lettuce - 320 kg\n3. Carrots - 280 kg\n4. Bell Peppers - 200 kg\n\nPerformance Rating: Excellent ⭐⭐⭐⭐⭐`);
+            showInfoDialog(
+                `📊 Sales Data for ${partnerId}`,
+                `Monthly Performance:\n• Total Sales: $12,450\n• Units Sold: 1,250 kg\n• Average Price: $9.96/kg\n• Growth: +15% vs last month\n\nTop Products:\n1. Organic Tomatoes - 450 kg\n2. Fresh Lettuce - 320 kg\n3. Carrots - 280 kg\n4. Bell Peppers - 200 kg\n\nPerformance Rating: Excellent ⭐⭐⭐⭐⭐`
+            );
         }
 
         function addNewRetailPartner() {
-            alert('🏪 Add New Retail Partner\n\nTo add a new retail partner:\n\n1. Contact Information\n2. Store Type (Supermarket, Specialty, Farmers Market)\n3. Location and Coverage Area\n4. Partnership Terms\n5. Delivery Schedule\n6. Quality Standards\n\nOur team will review the application and set up the partnership within 48 hours.\n\nContact: partnerships@smartfarm.com');
+            showInfoDialog(
+                '🏪 Add New Retail Partner',
+                'To add a new retail partner:\n\n1. Contact Information\n2. Store Type (Supermarket, Specialty, Farmers Market)\n3. Location and Coverage Area\n4. Partnership Terms\n5. Delivery Schedule\n6. Quality Standards\n\nOur team will review the application and set up the partnership within 48 hours.\n\nContact: partnerships@smartfarm.com'
+            );
         }
 
         function generateSupplyChainReport() {
-            alert('📄 Generating Supply Chain Report...\n\nThis comprehensive report includes:\n\n• Complete farm-to-table journey analysis\n• Farm-to-counter distribution metrics\n• Retail partner performance data\n• Cold chain integrity statistics\n• Delivery time optimization\n• Quality assurance metrics\n• Environmental impact assessment\n• Cost analysis and ROI\n\nReport will be available for download shortly!');
+            showInfoDialog(
+                '📄 Generating Supply Chain Report...',
+                'This comprehensive report includes:\n\n• Complete farm-to-table journey analysis\n• Farm-to-counter distribution metrics\n• Retail partner performance data\n• Cold chain integrity statistics\n• Delivery time optimization\n• Quality assurance metrics\n• Environmental impact assessment\n• Cost analysis and ROI\n\nReport will be available for download shortly!'
+            );
         }
 
         function optimizeSupplyChain() {
-            alert('🚀 Optimizing Supply Chain Routes...\n\nOptimization Results:\n\n• Reduced delivery time by 23%\n• Decreased fuel consumption by 18%\n• Improved cold chain efficiency by 15%\n• Optimized 47 delivery routes\n• Reduced carbon footprint by 12%\n\nNew optimized routes are now active!\n\nEstimated savings: $2,340/month');
+            showInfoDialog(
+                '🚀 Optimizing Supply Chain Routes...',
+                'Optimization Results:\n\n• Reduced delivery time by 23%\n• Decreased fuel consumption by 18%\n• Improved cold chain efficiency by 15%\n• Optimized 47 delivery routes\n• Reduced carbon footprint by 12%\n\nNew optimized routes are now active!\n\nEstimated savings: $2,340/month'
+            );
         }
 
         function logout() {
-            if (confirm('Are you sure you want to logout?')) {
-                localStorage.removeItem('smartfarm_user');
-                localStorage.removeItem('smartfarm_token');
-                sessionStorage.removeItem('smartfarm_user');
-                sessionStorage.removeItem('smartfarm_token');
-                window.location.href = 'login.html';
-            }
+            showConfirmDialog(
+                'Logout',
+                'Are you sure you want to logout?',
+                'Yes, Logout',
+                'Cancel',
+                () => {
+                    localStorage.removeItem('smartfarm_user');
+                    localStorage.removeItem('smartfarm_token');
+                    sessionStorage.removeItem('smartfarm_user');
+                    sessionStorage.removeItem('smartfarm_token');
+                    window.location.href = 'login.html';
+                }
+            );
         }
 
         // Initialize page

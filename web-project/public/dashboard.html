@@ -5117,34 +5117,70 @@
         }
 
         function addInventoryItem() {
-            const name = prompt('Enter item name:');
-            if (!name) return;
-            
-            const category = prompt('Enter category (Seeds/Supplies/Tools/Equipment):');
-            if (!category) return;
-            
-            const quantity = prompt('Enter quantity:');
-            if (!quantity || isNaN(quantity) || parseInt(quantity) <= 0) {
-                showInfoDialog('Validation Error', 'Please enter a valid quantity.', 'OK');
-                return;
-            }
-            
-            const unit = prompt('Enter unit (bags/packets/pieces/liters):');
-            if (!unit) return;
-            
-            const newItem = {
-                id: Date.now(),
-                name: name.trim(),
-                category: category.trim(),
-                quantity: parseInt(quantity),
-                unit: unit.trim(),
-                lastUpdated: new Date().toISOString().split('T')[0]
-            };
-            
-            inventory.push(newItem);
-            saveInventoryData();
-            renderInventoryTable();
-            showSuccessMessage('Inventory item added successfully!');
+            showPromptDialog(
+                'Add Inventory Item',
+                'Enter item name:',
+                'text',
+                'Enter item name',
+                'Next',
+                'Cancel',
+                (name) => {
+                    if (!name) return;
+                    
+                    showPromptDialog(
+                        'Add Inventory Item',
+                        'Enter category (Seeds/Supplies/Tools/Equipment):',
+                        'text',
+                        'Enter category',
+                        'Next',
+                        'Cancel',
+                        (category) => {
+                            if (!category) return;
+                            
+                            showPromptDialog(
+                                'Add Inventory Item',
+                                'Enter quantity:',
+                                'number',
+                                'Enter quantity',
+                                'Next',
+                                'Cancel',
+                                (quantity) => {
+                                    if (!quantity || isNaN(quantity) || parseInt(quantity) <= 0) {
+                                        showInfoDialog('Validation Error', 'Please enter a valid quantity.', 'OK');
+                                        return;
+                                    }
+                                    
+                                    showPromptDialog(
+                                        'Add Inventory Item',
+                                        'Enter unit (bags/packets/pieces/liters):',
+                                        'text',
+                                        'Enter unit',
+                                        'Add',
+                                        'Cancel',
+                                        (unit) => {
+                                            if (!unit) return;
+                                            
+                                            const newItem = {
+                                                id: Date.now(),
+                                                name: name.trim(),
+                                                category: category.trim(),
+                                                quantity: parseInt(quantity),
+                                                unit: unit.trim(),
+                                                lastUpdated: new Date().toISOString().split('T')[0]
+                                            };
+                                            
+                                            inventory.push(newItem);
+                                            saveInventoryData();
+                                            renderInventoryTable();
+                                            showSuccessMessage('Inventory item added successfully!');
+                                        }
+                                    );
+                                }
+                            );
+                        }
+                    );
+                }
+            );
         }
 
         function editInventory(id) {
