@@ -683,12 +683,115 @@
             console.log('Pesticide Management System initialized');
         }
 
+        // Professional Dialog System
+        function showInfoDialog(title, message, buttonText = 'OK', callback = null) {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-info text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-info-circle me-2"></i>${title}
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div style="white-space: pre-line;">${message}</div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-info" data-bs-dismiss="modal">${buttonText}</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+                if (callback) callback();
+            });
+        }
+
+        function showSuccessDialog(title, message, buttonText = 'OK', callback = null) {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-success text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-check-circle me-2"></i>${title}
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div style="white-space: pre-line;">${message}</div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-success" data-bs-dismiss="modal">${buttonText}</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+                if (callback) callback();
+            });
+        }
+
+        function showWarningDialog(title, message, buttonText = 'OK', callback = null) {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-warning text-dark">
+                            <h5 class="modal-title">
+                                <i class="fas fa-exclamation-triangle me-2"></i>${title}
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div style="white-space: pre-line;">${message}</div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-warning" data-bs-dismiss="modal">${buttonText}</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+                if (callback) callback();
+            });
+        }
+
         function viewAllPesticides() {
-            alert(`📋 ALL PESTICIDES IN DATABASE\n\nINSECTICIDES:\n• Malathion (Organophosphate)\n• Deltamethrin (Pyrethroid)\n• Neem Oil (Organic)\n• Insecticidal Soap (Organic)\n\nFUNGICIDES:\n• Copper Fungicide\n• Baking Soda Fungicide\n\nBACTERICIDES:\n• Copper Compounds\n• Streptomycin\n\nACARICIDES:\n• Sulfur-based treatments\n• Miticides\n\nEach pesticide includes detailed chemical information, mixture instructions, and safety guidelines.`);
+            showInfoDialog(
+                '📋 All Pesticides in Database',
+                'INSECTICIDES:\n• Malathion (Organophosphate)\n• Deltamethrin (Pyrethroid)\n• Neem Oil (Organic)\n• Insecticidal Soap (Organic)\n\nFUNGICIDES:\n• Copper Fungicide\n• Baking Soda Fungicide\n\nBACTERICIDES:\n• Copper Compounds\n• Streptomycin\n\nACARICIDES:\n• Sulfur-based treatments\n• Miticides\n\nEach pesticide includes detailed chemical information, mixture instructions, and safety guidelines.'
+            );
         }
 
         function identifyPest() {
-            alert(`🔍 PEST IDENTIFICATION\n\nCommon Agricultural Pests:\n\nINSECTS:\n• Aphids (small, soft-bodied)\n• Whiteflies (tiny, white, flying)\n• Spider Mites (tiny, web-spinning)\n• Thrips (slender, fringed wings)\n• Caterpillars (larval stage)\n• Beetles (hard-shelled)\n\nFUNGAL DISEASES:\n• Powdery Mildew (white coating)\n• Leaf Spot (circular spots)\n• Rust (orange/yellow pustules)\n\nBACTERIAL DISEASES:\n• Bacterial Blight (water-soaked lesions)\n• Crown Gall (swollen growths)\n\nUse the pest-pesticide matching section to find recommended treatments!`);
+            showInfoDialog(
+                '🔍 Pest Identification',
+                'Common Agricultural Pests:\n\nINSECTS:\n• Aphids (small, soft-bodied)\n• Whiteflies (tiny, white, flying)\n• Spider Mites (tiny, web-spinning)\n• Thrips (slender, fringed wings)\n• Caterpillars (larval stage)\n• Beetles (hard-shelled)\n\nFUNGAL DISEASES:\n• Powdery Mildew (white coating)\n• Leaf Spot (circular spots)\n• Rust (orange/yellow pustules)\n\nBACTERIAL DISEASES:\n• Bacterial Blight (water-soaked lesions)\n• Crown Gall (swollen growths)\n\nUse the pest-pesticide matching section to find recommended treatments!'
+            );
         }
 
         function checkWeatherConditions() {
@@ -700,18 +803,27 @@
                 conditions: 'Ideal for pesticide application'
             };
 
-            alert(`🌤️ WEATHER CONDITIONS\n\nCurrent Weather:\n• Temperature: ${currentWeather.temperature}\n• Humidity: ${currentWeather.humidity}\n• Wind Speed: ${currentWeather.wind}\n• Rainfall: ${currentWeather.rain}\n\nApplication Conditions: ${currentWeather.conditions}\n\n⚠️ Weather Requirements:\n• No rain for 4-6 hours after application\n• Wind speed below 15 km/h\n• Temperature below 30°C\n• Humidity above 40%`);
+            showWarningDialog(
+                '🌤️ Weather Conditions',
+                `Current Weather:\n• Temperature: ${currentWeather.temperature}\n• Humidity: ${currentWeather.humidity}\n• Wind Speed: ${currentWeather.wind}\n• Rainfall: ${currentWeather.rain}\n\nApplication Conditions: ${currentWeather.conditions}\n\n⚠️ Weather Requirements:\n• No rain for 4-6 hours after application\n• Wind speed below 15 km/h\n• Temperature below 30°C\n• Humidity above 40%`
+            );
         }
 
         function viewApplicationHistory() {
-            alert(`📊 APPLICATION HISTORY\n\nRecent Pesticide Applications:\n\n1. Malathion - Tomato Field A\n   • Date: 2024-01-15\n   • Target: Aphids\n   • Effectiveness: 85%\n   • Cost: $35.00\n\n2. Neem Oil - Pepper Field B\n   • Date: 2024-01-12\n   • Target: Whiteflies\n   • Effectiveness: 75%\n   • Cost: $15.00\n\n3. Deltamethrin - Lettuce Field C\n   • Date: 2024-01-10\n   • Target: Caterpillars\n   • Effectiveness: 95%\n   • Cost: $45.00\n\nTrack your applications for better pest management and cost optimization!`);
+            showInfoDialog(
+                '📊 Application History',
+                'Recent Pesticide Applications:\n\n1. Malathion - Tomato Field A\n   • Date: 2024-01-15\n   • Target: Aphids\n   • Effectiveness: 85%\n   • Cost: $35.00\n\n2. Neem Oil - Pepper Field B\n   • Date: 2024-01-12\n   • Target: Whiteflies\n   • Effectiveness: 75%\n   • Cost: $15.00\n\n3. Deltamethrin - Lettuce Field C\n   • Date: 2024-01-10\n   • Target: Caterpillars\n   • Effectiveness: 95%\n   • Cost: $45.00\n\nTrack your applications for better pest management and cost optimization!'
+            );
         }
 
         function selectPesticide(pesticideName) {
             if (typeof pesticideManagement !== 'undefined') {
                 pesticideManagement.selectPesticide(pesticideName);
             } else {
-                alert(`🐛 Selected: ${pesticideName}\n\nThis would integrate with the pesticide management system to:\n\n• Calculate optimal application rates\n• Check weather suitability\n• Estimate costs and coverage\n• Generate application schedule\n• Track effectiveness over time\n\nPesticide selection logged and ready for application!`);
+                showSuccessDialog(
+                    `🐛 Selected: ${pesticideName}`,
+                    `This would integrate with the pesticide management system to:\n\n• Calculate optimal application rates\n• Check weather suitability\n• Estimate costs and coverage\n• Generate application schedule\n• Track effectiveness over time\n\nPesticide selection logged and ready for application!`
+                );
             }
         }
 
@@ -763,7 +875,10 @@
                         basicInfo = `🔬 ${pesticideName} DETAILS\n\nThis would display comprehensive pesticide information including:\n\n• Chemical properties and molecular data\n• Toxicity and ecotoxicity information\n• Target pests and resistance data\n• Application instructions and timing\n• Safety guidelines and protective equipment\n• Regulatory compliance information\n\nDetailed pesticide database integration required.`;
                 }
                 
-                alert(basicInfo);
+                showInfoDialog(
+                    `🔬 ${pesticideName} Details`,
+                    basicInfo.replace(`🔬 ${pesticideName} DETAILS\n\n`, '')
+                );
             }
         }
     </script>
