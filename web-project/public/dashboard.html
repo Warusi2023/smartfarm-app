@@ -457,6 +457,11 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showPetsManagement(); return false;">
+                                <i class="fas fa-paw me-2"></i>Pets
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" href="#" onclick="showInventoryManagement(); return false;">
                                 <i class="fas fa-boxes me-2"></i>Inventory
                             </a>
@@ -1248,6 +1253,194 @@
                     </div>
                 </div>
 
+                <div id="petsManagementView" style="display: none;">
+                    <h2>Pets Management</h2>
+                    <div class="dashboard-card">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5>Pets by Type</h5>
+                            <div>
+                                <button class="btn btn-outline-success me-2" onclick="showGlobalPetsDatabase()">
+                                    <i class="fas fa-globe me-2"></i>Global Database
+                                </button>
+                                <button class="btn btn-custom" onclick="addNewPet()">
+                                    <i class="fas fa-plus me-2"></i>Add Pet
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Pets Type Tabs -->
+                        <ul class="nav nav-tabs" id="petsTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="all-pets-tab" data-bs-toggle="tab" data-bs-target="#all-pets" type="button" role="tab" aria-controls="all-pets" aria-selected="true">
+                                    <i class="fas fa-list me-2"></i>All Pets <span class="badge bg-secondary ms-1" id="all-pets-count">0</span>
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="dogs-tab" data-bs-toggle="tab" data-bs-target="#dogs" type="button" role="tab" aria-controls="dogs" aria-selected="false">
+                                    <i class="fas fa-dog me-2"></i>Dogs <span class="badge bg-primary ms-1" id="dogs-count">0</span>
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="cats-tab" data-bs-toggle="tab" data-bs-target="#cats" type="button" role="tab" aria-controls="cats" aria-selected="false">
+                                    <i class="fas fa-cat me-2"></i>Cats <span class="badge bg-info ms-1" id="cats-count">0</span>
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="birds-tab" data-bs-toggle="tab" data-bs-target="#birds" type="button" role="tab" aria-controls="birds" aria-selected="false">
+                                    <i class="fas fa-dove me-2"></i>Birds <span class="badge bg-warning ms-1" id="birds-count">0</span>
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="fish-tab" data-bs-toggle="tab" data-bs-target="#fish" type="button" role="tab" aria-controls="fish" aria-selected="false">
+                                    <i class="fas fa-fish me-2"></i>Fish <span class="badge bg-success ms-1" id="fish-count">0</span>
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="other-pets-tab" data-bs-toggle="tab" data-bs-target="#other-pets" type="button" role="tab" aria-controls="other-pets" aria-selected="false">
+                                    <i class="fas fa-paw me-2"></i>Other <span class="badge bg-secondary ms-1" id="other-pets-count">0</span>
+                                </button>
+                            </li>
+                        </ul>
+                        
+                        <!-- Tab Content -->
+                        <div class="tab-content" id="petsTabContent">
+                            <!-- All Pets Tab -->
+                            <div class="tab-pane fade show active" id="all-pets" role="tabpanel" aria-labelledby="all-pets-tab">
+                                <div class="table-responsive mt-3">
+                                    <table class="table table-custom">
+                                        <thead>
+                                            <tr>
+                                                <th>Species</th>
+                                                <th>Breed</th>
+                                                <th>Name</th>
+                                                <th>Age</th>
+                                                <th>Gender</th>
+                                                <th>Health Status</th>
+                                                <th>Vaccination</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="petsTable">
+                                            <!-- Pets will be populated here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <!-- Dogs Tab -->
+                            <div class="tab-pane fade" id="dogs" role="tabpanel" aria-labelledby="dogs-tab">
+                                <div class="table-responsive mt-3">
+                                    <table class="table table-custom">
+                                        <thead>
+                                            <tr>
+                                                <th>Breed</th>
+                                                <th>Name</th>
+                                                <th>Age</th>
+                                                <th>Gender</th>
+                                                <th>Health Status</th>
+                                                <th>Vaccination</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="dogsTable">
+                                            <!-- Dogs will be populated here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <!-- Cats Tab -->
+                            <div class="tab-pane fade" id="cats" role="tabpanel" aria-labelledby="cats-tab">
+                                <div class="table-responsive mt-3">
+                                    <table class="table table-custom">
+                                        <thead>
+                                            <tr>
+                                                <th>Breed</th>
+                                                <th>Name</th>
+                                                <th>Age</th>
+                                                <th>Gender</th>
+                                                <th>Health Status</th>
+                                                <th>Vaccination</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="catsTable">
+                                            <!-- Cats will be populated here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <!-- Birds Tab -->
+                            <div class="tab-pane fade" id="birds" role="tabpanel" aria-labelledby="birds-tab">
+                                <div class="table-responsive mt-3">
+                                    <table class="table table-custom">
+                                        <thead>
+                                            <tr>
+                                                <th>Species</th>
+                                                <th>Name</th>
+                                                <th>Age</th>
+                                                <th>Gender</th>
+                                                <th>Health Status</th>
+                                                <th>Vaccination</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="birdsTable">
+                                            <!-- Birds will be populated here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <!-- Fish Tab -->
+                            <div class="tab-pane fade" id="fish" role="tabpanel" aria-labelledby="fish-tab">
+                                <div class="table-responsive mt-3">
+                                    <table class="table table-custom">
+                                        <thead>
+                                            <tr>
+                                                <th>Species</th>
+                                                <th>Name</th>
+                                                <th>Age</th>
+                                                <th>Gender</th>
+                                                <th>Health Status</th>
+                                                <th>Vaccination</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="fishTable">
+                                            <!-- Fish will be populated here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <!-- Other Pets Tab -->
+                            <div class="tab-pane fade" id="other-pets" role="tabpanel" aria-labelledby="other-pets-tab">
+                                <div class="table-responsive mt-3">
+                                    <table class="table table-custom">
+                                        <thead>
+                                            <tr>
+                                                <th>Species</th>
+                                                <th>Breed</th>
+                                                <th>Name</th>
+                                                <th>Age</th>
+                                                <th>Gender</th>
+                                                <th>Health Status</th>
+                                                <th>Vaccination</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="otherPetsTable">
+                                            <!-- Other pets will be populated here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div id="inventoryManagementView" style="display: none;">
                     <h2>Inventory Management</h2>
                     <div class="dashboard-card">
@@ -1517,15 +1710,17 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
-        // Data arrays for crops, livestock, and inventory
+        // Data arrays for crops, livestock, pets, and inventory
         let crops = [];
         let livestock = [];
+        let pets = [];
         let inventory = [];
 
         // Global Agricultural Database
         let globalCropDatabase = {};
         let globalLivestockDatabase = {};
         let globalAquacultureDatabase = {};
+        let globalPetsDatabase = {};
 
         // Initialize Global Agricultural Database
         function initializeGlobalDatabase() {
@@ -1868,6 +2063,90 @@
                         { name: 'Freshwater Prawn', scientific: 'Macrobrachium rosenbergii', notes: 'Freshwater alternative' },
                         { name: 'Mud Crab', scientific: 'Scylla serrata', notes: 'High-value crustacean' },
                         { name: 'Blue Swimming Crab', scientific: 'Portunus pelagicus', notes: 'Popular in Asian markets' }
+                    ]
+                }
+            };
+
+            // Global Pets Database
+            globalPetsDatabase = {
+                'dogs': {
+                    name: 'Dogs',
+                    icon: '🐕',
+                    breeds: [
+                        { name: 'Golden Retriever', size: 'Large', temperament: 'Friendly, Intelligent', lifespan: '10-12 years' },
+                        { name: 'Labrador Retriever', size: 'Large', temperament: 'Outgoing, Active', lifespan: '10-14 years' },
+                        { name: 'German Shepherd', size: 'Large', temperament: 'Confident, Courageous', lifespan: '9-13 years' },
+                        { name: 'French Bulldog', size: 'Small', temperament: 'Adaptable, Playful', lifespan: '10-12 years' },
+                        { name: 'Bulldog', size: 'Medium', temperament: 'Calm, Friendly', lifespan: '8-10 years' },
+                        { name: 'Poodle', size: 'Medium', temperament: 'Active, Alert', lifespan: '12-15 years' },
+                        { name: 'Beagle', size: 'Medium', temperament: 'Friendly, Curious', lifespan: '13-16 years' },
+                        { name: 'Rottweiler', size: 'Large', temperament: 'Loyal, Confident', lifespan: '9-10 years' },
+                        { name: 'Siberian Husky', size: 'Large', temperament: 'Loyal, Mischievous', lifespan: '12-14 years' },
+                        { name: 'Chihuahua', size: 'Small', temperament: 'Graceful, Alert', lifespan: '14-16 years' }
+                    ]
+                },
+                'cats': {
+                    name: 'Cats',
+                    icon: '🐱',
+                    breeds: [
+                        { name: 'Persian', size: 'Medium', temperament: 'Quiet, Sweet', lifespan: '10-17 years' },
+                        { name: 'Maine Coon', size: 'Large', temperament: 'Gentle, Friendly', lifespan: '13-14 years' },
+                        { name: 'British Shorthair', size: 'Medium', temperament: 'Calm, Easy-going', lifespan: '12-20 years' },
+                        { name: 'Siamese', size: 'Medium', temperament: 'Active, Vocal', lifespan: '15-20 years' },
+                        { name: 'Ragdoll', size: 'Large', temperament: 'Calm, Affectionate', lifespan: '12-17 years' },
+                        { name: 'Scottish Fold', size: 'Medium', temperament: 'Sweet, Easy-going', lifespan: '11-15 years' },
+                        { name: 'Sphynx', size: 'Medium', temperament: 'Energetic, Curious', lifespan: '8-14 years' },
+                        { name: 'Abyssinian', size: 'Medium', temperament: 'Active, Playful', lifespan: '9-15 years' },
+                        { name: 'Russian Blue', size: 'Medium', temperament: 'Quiet, Shy', lifespan: '15-20 years' },
+                        { name: 'Bengal', size: 'Large', temperament: 'Active, Playful', lifespan: '12-16 years' }
+                    ]
+                },
+                'birds': {
+                    name: 'Birds',
+                    icon: '🐦',
+                    species: [
+                        { name: 'Budgerigar (Budgie)', size: 'Small', temperament: 'Social, Playful', lifespan: '5-10 years' },
+                        { name: 'Cockatiel', size: 'Small', temperament: 'Gentle, Affectionate', lifespan: '10-15 years' },
+                        { name: 'Canary', size: 'Small', temperament: 'Active, Musical', lifespan: '10-15 years' },
+                        { name: 'Lovebird', size: 'Small', temperament: 'Social, Active', lifespan: '10-15 years' },
+                        { name: 'Cockatoo', size: 'Large', temperament: 'Intelligent, Demanding', lifespan: '40-60 years' },
+                        { name: 'African Grey Parrot', size: 'Medium', temperament: 'Intelligent, Talkative', lifespan: '40-60 years' },
+                        { name: 'Macaw', size: 'Large', temperament: 'Social, Intelligent', lifespan: '50-80 years' },
+                        { name: 'Conure', size: 'Medium', temperament: 'Playful, Social', lifespan: '15-30 years' },
+                        { name: 'Finch', size: 'Small', temperament: 'Active, Social', lifespan: '5-10 years' },
+                        { name: 'Zebra Finch', size: 'Small', temperament: 'Active, Hardy', lifespan: '5-7 years' }
+                    ]
+                },
+                'fish': {
+                    name: 'Fish',
+                    icon: '🐠',
+                    species: [
+                        { name: 'Goldfish', size: 'Small', temperament: 'Peaceful', lifespan: '10-30 years' },
+                        { name: 'Betta Fish', size: 'Small', temperament: 'Territorial', lifespan: '2-3 years' },
+                        { name: 'Guppy', size: 'Small', temperament: 'Peaceful', lifespan: '1-3 years' },
+                        { name: 'Angelfish', size: 'Medium', temperament: 'Semi-aggressive', lifespan: '10-12 years' },
+                        { name: 'Neon Tetra', size: 'Small', temperament: 'Peaceful', lifespan: '5-8 years' },
+                        { name: 'Discus', size: 'Medium', temperament: 'Peaceful', lifespan: '10-15 years' },
+                        { name: 'Oscar', size: 'Large', temperament: 'Aggressive', lifespan: '10-18 years' },
+                        { name: 'Molly', size: 'Small', temperament: 'Peaceful', lifespan: '3-5 years' },
+                        { name: 'Platy', size: 'Small', temperament: 'Peaceful', lifespan: '2-3 years' },
+                        { name: 'Swordtail', size: 'Small', temperament: 'Peaceful', lifespan: '3-5 years' }
+                    ]
+                },
+                'other_pets': {
+                    name: 'Other Pets',
+                    icon: '🐾',
+                    species: [
+                        { name: 'Rabbit', size: 'Small', temperament: 'Gentle, Social', lifespan: '8-12 years' },
+                        { name: 'Hamster', size: 'Small', temperament: 'Active, Nocturnal', lifespan: '2-3 years' },
+                        { name: 'Guinea Pig', size: 'Small', temperament: 'Social, Gentle', lifespan: '4-8 years' },
+                        { name: 'Chinchilla', size: 'Small', temperament: 'Active, Playful', lifespan: '10-20 years' },
+                        { name: 'Ferret', size: 'Small', temperament: 'Playful, Curious', lifespan: '6-10 years' },
+                        { name: 'Hedgehog', size: 'Small', temperament: 'Solitary, Nocturnal', lifespan: '3-6 years' },
+                        { name: 'Turtle', size: 'Medium', temperament: 'Calm, Long-lived', lifespan: '20-40 years' },
+                        { name: 'Iguana', size: 'Large', temperament: 'Docile, Arboreal', lifespan: '15-20 years' },
+                        { name: 'Snake', size: 'Medium', temperament: 'Calm, Low-maintenance', lifespan: '10-30 years' },
+                        { name: 'Tarantula', size: 'Small', temperament: 'Docile, Low-maintenance', lifespan: '5-20 years' }
                     ]
                 }
             };
@@ -2532,6 +2811,50 @@
             renderLivestockTable();
         }
 
+        function loadPetsData() {
+            const savedPets = localStorage.getItem('petsData');
+            if (savedPets) {
+                try {
+                    pets = JSON.parse(savedPets);
+                    console.log('Pets data loaded from localStorage:', pets);
+                } catch (e) {
+                    console.error('Error loading pets data:', e);
+                    pets = [];
+                }
+            } else {
+                // Initialize with default data
+                pets = [
+                    { 
+                        id: 1, 
+                        species: 'Dog', 
+                        breed: 'Golden Retriever', 
+                        name: 'Buddy',
+                        age: 3,
+                        gender: 'Male',
+                        healthStatus: 'Healthy',
+                        vaccination: 'Up to date',
+                        lastVetVisit: '2025-01-01',
+                        notes: 'Friendly and energetic'
+                    },
+                    { 
+                        id: 2, 
+                        species: 'Cat', 
+                        breed: 'Persian', 
+                        name: 'Whiskers',
+                        age: 2,
+                        gender: 'Female',
+                        healthStatus: 'Healthy',
+                        vaccination: 'Up to date',
+                        lastVetVisit: '2024-12-15',
+                        notes: 'Calm and affectionate'
+                    }
+                ];
+                savePetsData();
+            }
+            renderPetsTable();
+            updatePetsTabCounts();
+        }
+
         function loadInventoryData() {
             const savedInventory = localStorage.getItem('inventoryData');
             if (savedInventory) {
@@ -2586,6 +2909,16 @@
             // Load fresh livestock data when switching to this tab
             loadLivestockData();
             console.log('Livestock data after loading:', livestock);
+        }
+
+        function showPetsManagement() {
+            console.log('Switching to Pets Management...');
+            showView('petsManagementView');
+            setActiveNav('pets');
+            updateURL('petsManagementView');
+            // Load fresh pets data when switching to this tab
+            loadPetsData();
+            console.log('Pets data after loading:', pets);
         }
 
         function showInventoryManagement() {
@@ -2788,6 +3121,10 @@
 
         function saveLivestockData() {
             localStorage.setItem('livestockData', JSON.stringify(livestock));
+        }
+
+        function savePetsData() {
+            localStorage.setItem('petsData', JSON.stringify(pets));
         }
 
         function saveInventoryData() {
@@ -3670,6 +4007,517 @@
                 saveLivestockData();
                 renderLivestockTable();
                 showSuccessMessage('Livestock deleted successfully!');
+            }
+        }
+
+        // Pets Management Functions
+        function renderPetsTable() {
+            // Update tab counts first
+            updatePetsTabCounts();
+            
+            // Render all pets table
+            const allPetsTbody = document.querySelector('#petsTable');
+            if (allPetsTbody) {
+                allPetsTbody.innerHTML = '';
+                pets.forEach(pet => {
+                    allPetsTbody.appendChild(createPetRow(pet, true));
+                });
+            }
+            
+            // Render dogs table
+            const dogsTbody = document.querySelector('#dogsTable');
+            if (dogsTbody) {
+                dogsTbody.innerHTML = '';
+                pets.filter(pet => pet.species.toLowerCase() === 'dog').forEach(pet => {
+                    dogsTbody.appendChild(createPetRow(pet, false));
+                });
+            }
+            
+            // Render cats table
+            const catsTbody = document.querySelector('#catsTable');
+            if (catsTbody) {
+                catsTbody.innerHTML = '';
+                pets.filter(pet => pet.species.toLowerCase() === 'cat').forEach(pet => {
+                    catsTbody.appendChild(createPetRow(pet, false));
+                });
+            }
+            
+            // Render birds table
+            const birdsTbody = document.querySelector('#birdsTable');
+            if (birdsTbody) {
+                birdsTbody.innerHTML = '';
+                pets.filter(pet => pet.species.toLowerCase() === 'bird').forEach(pet => {
+                    birdsTbody.appendChild(createPetRow(pet, true));
+                });
+            }
+            
+            // Render fish table
+            const fishTbody = document.querySelector('#fishTable');
+            if (fishTbody) {
+                fishTbody.innerHTML = '';
+                pets.filter(pet => pet.species.toLowerCase() === 'fish').forEach(pet => {
+                    fishTbody.appendChild(createPetRow(pet, true));
+                });
+            }
+            
+            // Render other pets table
+            const otherPetsTbody = document.querySelector('#otherPetsTable');
+            if (otherPetsTbody) {
+                otherPetsTbody.innerHTML = '';
+                pets.filter(pet => !['dog', 'cat', 'bird', 'fish'].includes(pet.species.toLowerCase())).forEach(pet => {
+                    otherPetsTbody.appendChild(createPetRow(pet, true));
+                });
+            }
+        }
+
+        function updatePetsTabCounts() {
+            const counts = {
+                all: pets.length,
+                dogs: pets.filter(pet => pet.species.toLowerCase() === 'dog').length,
+                cats: pets.filter(pet => pet.species.toLowerCase() === 'cat').length,
+                birds: pets.filter(pet => pet.species.toLowerCase() === 'bird').length,
+                fish: pets.filter(pet => pet.species.toLowerCase() === 'fish').length,
+                other: pets.filter(pet => !['dog', 'cat', 'bird', 'fish'].includes(pet.species.toLowerCase())).length
+            };
+
+            document.getElementById('all-pets-count').textContent = counts.all;
+            document.getElementById('dogs-count').textContent = counts.dogs;
+            document.getElementById('cats-count').textContent = counts.cats;
+            document.getElementById('birds-count').textContent = counts.birds;
+            document.getElementById('fish-count').textContent = counts.fish;
+            document.getElementById('other-pets-count').textContent = counts.other;
+        }
+
+        function createPetRow(pet, showSpecies = true) {
+            const row = document.createElement('tr');
+            
+            const healthStatusClass = pet.healthStatus === 'Healthy' ? 'text-success' : 
+                                    pet.healthStatus === 'Sick' ? 'text-danger' : 'text-warning';
+            
+            const vaccinationClass = pet.vaccination === 'Up to date' ? 'text-success' : 'text-warning';
+            
+            row.innerHTML = `
+                ${showSpecies ? `<td>${pet.species}</td>` : ''}
+                <td>${pet.breed}</td>
+                <td><strong>${pet.name}</strong></td>
+                <td>${pet.age} years</td>
+                <td>${pet.gender}</td>
+                <td><span class="${healthStatusClass}">${pet.healthStatus}</span></td>
+                <td><span class="${vaccinationClass}">${pet.vaccination}</span></td>
+                <td>
+                    <div class="btn-group" role="group">
+                        <button class="btn btn-sm btn-outline-primary" onclick="viewPetDetails(${pet.id})" title="View Details">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-warning" onclick="editPet(${pet.id})" title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deletePet(${pet.id})" title="Delete">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            `;
+            
+            return row;
+        }
+
+        function addNewPet() {
+            // Create comprehensive add pet modal
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-plus me-2"></i>Add New Pet
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="addPetForm">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="petSpecies" class="form-label">Species</label>
+                                            <select class="form-select" id="petSpecies" required onchange="updatePetBreeds()">
+                                                <option value="">Select Species</option>
+                                                <option value="Dog">Dog</option>
+                                                <option value="Cat">Cat</option>
+                                                <option value="Bird">Bird</option>
+                                                <option value="Fish">Fish</option>
+                                                <option value="Other">Other</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="petBreed" class="form-label">Breed</label>
+                                            <input type="text" class="form-control" id="petBreed" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="petName" class="form-label">Name</label>
+                                            <input type="text" class="form-control" id="petName" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="petAge" class="form-label">Age (years)</label>
+                                            <input type="number" class="form-control" id="petAge" min="0" max="50" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="petGender" class="form-label">Gender</label>
+                                            <select class="form-select" id="petGender" required>
+                                                <option value="">Select Gender</option>
+                                                <option value="Male">Male</option>
+                                                <option value="Female">Female</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="petHealthStatus" class="form-label">Health Status</label>
+                                            <select class="form-select" id="petHealthStatus" required>
+                                                <option value="Healthy">Healthy</option>
+                                                <option value="Sick">Sick</option>
+                                                <option value="Recovering">Recovering</option>
+                                                <option value="Under Treatment">Under Treatment</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="petVaccination" class="form-label">Vaccination Status</label>
+                                            <select class="form-select" id="petVaccination" required>
+                                                <option value="Up to date">Up to date</option>
+                                                <option value="Due soon">Due soon</option>
+                                                <option value="Overdue">Overdue</option>
+                                                <option value="Not vaccinated">Not vaccinated</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="lastVetVisit" class="form-label">Last Vet Visit</label>
+                                            <input type="date" class="form-control" id="lastVetVisit">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="petNotes" class="form-label">Notes</label>
+                                    <textarea class="form-control" id="petNotes" rows="3" placeholder="Any additional notes about the pet..."></textarea>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-primary" onclick="saveNewPet()">
+                                <i class="fas fa-save me-2"></i>Add Pet
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        function updatePetBreeds() {
+            const species = document.getElementById('petSpecies').value;
+            const breedInput = document.getElementById('petBreed');
+            
+            if (species && globalPetsDatabase[species.toLowerCase()]) {
+                const breeds = globalPetsDatabase[species.toLowerCase()].breeds || globalPetsDatabase[species.toLowerCase()].species;
+                if (breeds) {
+                    breedInput.type = 'text';
+                    breedInput.setAttribute('list', 'breedList');
+                    
+                    // Create datalist for breed suggestions
+                    let datalist = document.getElementById('breedList');
+                    if (datalist) datalist.remove();
+                    
+                    datalist = document.createElement('datalist');
+                    datalist.id = 'breedList';
+                    breeds.forEach(breed => {
+                        const option = document.createElement('option');
+                        option.value = breed.name;
+                        datalist.appendChild(option);
+                    });
+                    document.body.appendChild(datalist);
+                }
+            } else {
+                breedInput.type = 'text';
+                breedInput.removeAttribute('list');
+            }
+        }
+
+        function saveNewPet() {
+            const species = document.getElementById('petSpecies').value;
+            const breed = document.getElementById('petBreed').value;
+            const name = document.getElementById('petName').value;
+            const age = parseInt(document.getElementById('petAge').value);
+            const gender = document.getElementById('petGender').value;
+            const healthStatus = document.getElementById('petHealthStatus').value;
+            const vaccination = document.getElementById('petVaccination').value;
+            const lastVetVisit = document.getElementById('lastVetVisit').value;
+            const notes = document.getElementById('petNotes').value;
+
+            if (!species || !breed || !name || !age || !gender) {
+                showSuccessMessage('Please fill in all required fields', 'error');
+                return;
+            }
+
+            const newPet = {
+                id: Date.now(),
+                species: species,
+                breed: breed,
+                name: name,
+                age: age,
+                gender: gender,
+                healthStatus: healthStatus,
+                vaccination: vaccination,
+                lastVetVisit: lastVetVisit || null,
+                notes: notes || '',
+                dateAdded: new Date().toISOString()
+            };
+
+            pets.push(newPet);
+            savePetsData();
+            renderPetsTable();
+            updateAnalyticsCharts();
+            
+            // Close modal
+            const modal = document.querySelector('.modal');
+            if (modal) {
+                const bsModal = bootstrap.Modal.getInstance(modal);
+                if (bsModal) {
+                    bsModal.hide();
+                }
+            }
+            
+            showSuccessMessage('Pet added successfully!');
+        }
+
+        function viewPetDetails(id) {
+            const pet = pets.find(p => p.id === id);
+            if (!pet) {
+                showSuccessMessage('Pet record not found', 'error');
+                return;
+            }
+
+            // Create detailed view modal
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header bg-info text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-paw me-2"></i>Pet Details - ${pet.name}
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>Basic Information</h6>
+                                    <table class="table table-sm">
+                                        <tr><td><strong>Species:</strong></td><td>${pet.species}</td></tr>
+                                        <tr><td><strong>Breed:</strong></td><td>${pet.breed}</td></tr>
+                                        <tr><td><strong>Name:</strong></td><td>${pet.name}</td></tr>
+                                        <tr><td><strong>Age:</strong></td><td>${pet.age} years</td></tr>
+                                        <tr><td><strong>Gender:</strong></td><td>${pet.gender}</td></tr>
+                                    </table>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>Health Information</h6>
+                                    <table class="table table-sm">
+                                        <tr><td><strong>Health Status:</strong></td><td><span class="${pet.healthStatus === 'Healthy' ? 'text-success' : 'text-warning'}">${pet.healthStatus}</span></td></tr>
+                                        <tr><td><strong>Vaccination:</strong></td><td><span class="${pet.vaccination === 'Up to date' ? 'text-success' : 'text-warning'}">${pet.vaccination}</span></td></tr>
+                                        <tr><td><strong>Last Vet Visit:</strong></td><td>${pet.lastVetVisit || 'Not recorded'}</td></tr>
+                                        <tr><td><strong>Date Added:</strong></td><td>${new Date(pet.dateAdded).toLocaleDateString()}</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                            ${pet.notes ? `<div class="mt-3"><h6>Notes</h6><p>${pet.notes}</p></div>` : ''}
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-warning" onclick="editPet(${pet.id})">
+                                <i class="fas fa-edit me-2"></i>Edit Pet
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        function editPet(id) {
+            const pet = pets.find(p => p.id === id);
+            if (!pet) {
+                showSuccessMessage('Pet record not found', 'error');
+                return;
+            }
+
+            // Create edit pet modal
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header bg-warning text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-edit me-2"></i>Edit Pet - ${pet.name}
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="editPetForm">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="editPetSpecies" class="form-label">Species</label>
+                                            <select class="form-select" id="editPetSpecies" required>
+                                                <option value="Dog" ${pet.species === 'Dog' ? 'selected' : ''}>Dog</option>
+                                                <option value="Cat" ${pet.species === 'Cat' ? 'selected' : ''}>Cat</option>
+                                                <option value="Bird" ${pet.species === 'Bird' ? 'selected' : ''}>Bird</option>
+                                                <option value="Fish" ${pet.species === 'Fish' ? 'selected' : ''}>Fish</option>
+                                                <option value="Other" ${pet.species === 'Other' ? 'selected' : ''}>Other</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="editPetBreed" class="form-label">Breed</label>
+                                            <input type="text" class="form-control" id="editPetBreed" value="${pet.breed}" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="editPetName" class="form-label">Name</label>
+                                            <input type="text" class="form-control" id="editPetName" value="${pet.name}" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="editPetAge" class="form-label">Age (years)</label>
+                                            <input type="number" class="form-control" id="editPetAge" value="${pet.age}" min="0" max="50" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="editPetGender" class="form-label">Gender</label>
+                                            <select class="form-select" id="editPetGender" required>
+                                                <option value="Male" ${pet.gender === 'Male' ? 'selected' : ''}>Male</option>
+                                                <option value="Female" ${pet.gender === 'Female' ? 'selected' : ''}>Female</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="editPetHealthStatus" class="form-label">Health Status</label>
+                                            <select class="form-select" id="editPetHealthStatus" required>
+                                                <option value="Healthy" ${pet.healthStatus === 'Healthy' ? 'selected' : ''}>Healthy</option>
+                                                <option value="Sick" ${pet.healthStatus === 'Sick' ? 'selected' : ''}>Sick</option>
+                                                <option value="Recovering" ${pet.healthStatus === 'Recovering' ? 'selected' : ''}>Recovering</option>
+                                                <option value="Under Treatment" ${pet.healthStatus === 'Under Treatment' ? 'selected' : ''}>Under Treatment</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="editPetVaccination" class="form-label">Vaccination Status</label>
+                                            <select class="form-select" id="editPetVaccination" required>
+                                                <option value="Up to date" ${pet.vaccination === 'Up to date' ? 'selected' : ''}>Up to date</option>
+                                                <option value="Due soon" ${pet.vaccination === 'Due soon' ? 'selected' : ''}>Due soon</option>
+                                                <option value="Overdue" ${pet.vaccination === 'Overdue' ? 'selected' : ''}>Overdue</option>
+                                                <option value="Not vaccinated" ${pet.vaccination === 'Not vaccinated' ? 'selected' : ''}>Not vaccinated</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="editLastVetVisit" class="form-label">Last Vet Visit</label>
+                                            <input type="date" class="form-control" id="editLastVetVisit" value="${pet.lastVetVisit || ''}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="editPetNotes" class="form-label">Notes</label>
+                                    <textarea class="form-control" id="editPetNotes" rows="3">${pet.notes || ''}</textarea>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-warning" onclick="saveEditedPet(${pet.id})">
+                                <i class="fas fa-save me-2"></i>Update Pet
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        function saveEditedPet(id) {
+            const pet = pets.find(p => p.id === id);
+            if (!pet) {
+                showSuccessMessage('Pet record not found', 'error');
+                return;
+            }
+
+            const species = document.getElementById('editPetSpecies').value;
+            const breed = document.getElementById('editPetBreed').value;
+            const name = document.getElementById('editPetName').value;
+            const age = parseInt(document.getElementById('editPetAge').value);
+            const gender = document.getElementById('editPetGender').value;
+            const healthStatus = document.getElementById('editPetHealthStatus').value;
+            const vaccination = document.getElementById('editPetVaccination').value;
+            const lastVetVisit = document.getElementById('editLastVetVisit').value;
+            const notes = document.getElementById('editPetNotes').value;
+
+            if (!species || !breed || !name || !age || !gender) {
+                showSuccessMessage('Please fill in all required fields', 'error');
+                return;
+            }
+
+            // Update pet data
+            pet.species = species;
+            pet.breed = breed;
+            pet.name = name;
+            pet.age = age;
+            pet.gender = gender;
+            pet.healthStatus = healthStatus;
+            pet.vaccination = vaccination;
+            pet.lastVetVisit = lastVetVisit || null;
+            pet.notes = notes || '';
+            pet.lastUpdated = new Date().toISOString();
+
+            savePetsData();
+            renderPetsTable();
+            updateAnalyticsCharts();
+            
+            // Close modal
+            const modal = document.querySelector('.modal');
+            if (modal) {
+                const bsModal = bootstrap.Modal.getInstance(modal);
+                if (bsModal) {
+                    bsModal.hide();
+                }
+            }
+            
+            showSuccessMessage('Pet updated successfully!');
+        }
+
+        function deletePet(id) {
+            if (confirm('Are you sure you want to delete this pet record?')) {
+                pets = pets.filter(pet => pet.id !== id);
+                savePetsData();
+                renderPetsTable();
+                showSuccessMessage('Pet deleted successfully!');
             }
         }
 
@@ -6098,6 +6946,9 @@ INVENTORY SUMMARY:
                 case 'livestockManagementView':
                     showLivestockManagement();
                     break;
+                case 'petsManagementView':
+                    showPetsManagement();
+                    break;
                 case 'inventoryManagementView':
                     showInventoryManagement();
                     break;
@@ -7245,16 +8096,198 @@ INVENTORY SUMMARY:
             URL.revokeObjectURL(url);
         }
 
+        // Global Pets Database Functions
+        function showGlobalPetsDatabase() {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-xl modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-paw me-2"></i>Global Pets Database
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body p-4">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-search"></i>
+                                        </span>
+                                        <input type="text" class="form-control" id="petsSearchInput" placeholder="Search pets by name, breed, or species..." onkeyup="filterPets()">
+                                    </div>
+                                </div>
+                                <div class="col-md-6 text-end">
+                                    <button class="btn btn-outline-success" onclick="exportPetsDatabase()">
+                                        <i class="fas fa-download me-2"></i>Export Database
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="row" id="petsDatabaseContent">
+                                ${Object.keys(globalPetsDatabase).map(category => `
+                                    <div class="col-md-6 col-lg-4 mb-4 pets-category" data-category="${category}">
+                                        <div class="card h-100 border-0 shadow-sm">
+                                            <div class="card-header bg-light">
+                                                <h6 class="mb-0">
+                                                    <span class="me-2">${globalPetsDatabase[category].icon}</span>
+                                                    ${globalPetsDatabase[category].name}
+                                                </h6>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="row">
+                                                    ${(globalPetsDatabase[category].breeds || globalPetsDatabase[category].species).map(pet => `
+                                                        <div class="col-12 mb-2">
+                                                            <div class="d-flex justify-content-between align-items-center p-2 border rounded">
+                                                                <div>
+                                                                    <strong>${pet.name}</strong>
+                                                                    <br>
+                                                                    <small class="text-muted">${pet.size} • ${pet.temperament}</small>
+                                                                    <br>
+                                                                    <small class="text-info">Lifespan: ${pet.lifespan}</small>
+                                                                </div>
+                                                                <button class="btn btn-sm btn-outline-primary" onclick="addPetFromDatabase('${pet.name}', '${category}')">
+                                                                    <i class="fas fa-plus"></i> Add to Farm
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    `).join('')}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        function filterPets() {
+            const searchTerm = document.getElementById('petsSearchInput').value.toLowerCase();
+            const categories = document.querySelectorAll('.pets-category');
+            
+            categories.forEach(category => {
+                const categoryName = category.dataset.category;
+                const categoryData = globalPetsDatabase[categoryName];
+                const pets = categoryData.breeds || categoryData.species;
+                
+                const hasMatch = pets.some(pet => 
+                    pet.name.toLowerCase().includes(searchTerm) ||
+                    pet.temperament.toLowerCase().includes(searchTerm) ||
+                    pet.size.toLowerCase().includes(searchTerm)
+                );
+                
+                if (hasMatch || searchTerm === '') {
+                    category.style.display = 'block';
+                } else {
+                    category.style.display = 'none';
+                }
+            });
+        }
+
+        function addPetFromDatabase(petName, category) {
+            console.log('Adding pet from database:', { petName, category });
+            console.log('Global pets database available:', !!globalPetsDatabase);
+            console.log('Pets array available:', !!pets);
+            console.log('savePetsData function available:', typeof savePetsData);
+            console.log('renderPetsTable function available:', typeof renderPetsTable);
+            console.log('updateAnalyticsCharts function available:', typeof updateAnalyticsCharts);
+            
+            try {
+                // Close the modal first
+                const modal = document.querySelector('.modal');
+                if (modal) {
+                    const bsModal = bootstrap.Modal.getInstance(modal);
+                    if (bsModal) {
+                        bsModal.hide();
+                    }
+                }
+                
+                // Add pet directly to the farm
+                addNewPetWithData(petName, category);
+            } catch (error) {
+                console.error('Error adding pet from database:', error);
+                showNotification(`Error adding ${petName}: ${error.message}`, 'danger');
+            }
+        }
+
+        function addNewPetWithData(petName, category) {
+            console.log('Adding new pet with data:', { petName, category });
+            
+            try {
+                // Find the pet in the global database
+                const categoryData = globalPetsDatabase[category];
+                const petData = (categoryData.breeds || categoryData.species).find(pet => pet.name === petName);
+                
+                if (!petData) {
+                    throw new Error('Pet not found in global database');
+                }
+                
+                // Create new pet object
+                const newPet = {
+                    id: Date.now(),
+                    species: categoryData.name,
+                    breed: petName,
+                    name: petName,
+                    age: 1,
+                    gender: 'Unknown',
+                    healthStatus: 'Healthy',
+                    vaccination: 'Not vaccinated',
+                    lastVetVisit: null,
+                    notes: `Added from global database - ${categoryData.name}`,
+                    dateAdded: new Date().toISOString()
+                };
+                
+                pets.push(newPet);
+                savePetsData();
+                renderPetsTable();
+                updateAnalyticsCharts();
+                
+                showNotification(`Successfully added ${petName} to your farm!`, 'success');
+            } catch (error) {
+                console.error('Error adding pet:', error);
+                showNotification(`Error adding ${petName}: ${error.message}`, 'danger');
+            }
+        }
+
+        function exportPetsDatabase() {
+            const dataStr = JSON.stringify(globalPetsDatabase, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'global-pets-database.json';
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
         // Make functions globally accessible after they are defined
         window.addCropFromDatabase = addCropFromDatabase;
         window.addLivestockFromDatabase = addLivestockFromDatabase;
+        window.addPetFromDatabase = addPetFromDatabase;
         window.addNewCropWithData = addNewCropWithData;
+        window.addNewPetWithData = addNewPetWithData;
         window.showGlobalCropDatabase = showGlobalCropDatabase;
         window.showGlobalLivestockDatabase = showGlobalLivestockDatabase;
+        window.showGlobalPetsDatabase = showGlobalPetsDatabase;
         window.filterCrops = filterCrops;
         window.filterLivestock = filterLivestock;
+        window.filterPets = filterPets;
         window.exportCropDatabase = exportCropDatabase;
         window.exportLivestockDatabase = exportLivestockDatabase;
+        window.exportPetsDatabase = exportPetsDatabase;
         window.showNotification = showNotification;
     </script>
 </body>
