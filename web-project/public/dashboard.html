@@ -6964,53 +6964,50 @@ INVENTORY SUMMARY:
         }
 
         function addCropFromDatabase(cropName, scientificName, category) {
+            console.log('Adding crop from database:', { cropName, scientificName, category });
+            
             // Close the modal first
             const modal = document.querySelector('.modal');
             if (modal) {
                 const bsModal = bootstrap.Modal.getInstance(modal);
-                bsModal.hide();
+                if (bsModal) {
+                    bsModal.hide();
+                }
             }
             
-            // Pre-fill the add crop form
-            setTimeout(() => {
-                const addCropModal = document.querySelector('#addCropModal');
-                if (addCropModal) {
-                    const bsModal = new bootstrap.Modal(addCropModal);
-                    bsModal.show();
-                    
-                    // Pre-fill form fields
-                    document.getElementById('cropName').value = cropName;
-                    document.getElementById('cropScientific').value = scientificName;
-                    document.getElementById('cropCategory').value = category;
-                } else {
-                    // If no modal exists, create a simple form
-                    addNewCropWithData(cropName, scientificName, category);
-                }
-            }, 300);
+            // Add crop directly to the farm
+            addNewCropWithData(cropName, scientificName, category);
         }
 
         function addNewCropWithData(cropName, scientificName, category) {
-            const newCrop = {
-                id: Date.now(),
-                name: cropName,
-                scientific: scientificName,
-                category: category,
-                variety: '',
-                plantingDate: new Date().toISOString().split('T')[0],
-                expectedHarvest: '',
-                field: 'Field A',
-                area: 1,
-                status: 'Growing',
-                notes: `Added from global database - ${globalCropDatabase[category].name}`
-            };
+            console.log('Adding new crop with data:', { cropName, scientificName, category });
             
-            crops.push(newCrop);
-            saveCropData();
-            renderCropTable();
-            updateCropMetrics();
-            
-            // Show success notification
-            showNotification(`Successfully added ${cropName} to your farm!`, 'success');
+            try {
+                const newCrop = {
+                    id: Date.now(),
+                    name: cropName,
+                    scientific: scientificName,
+                    category: category,
+                    variety: '',
+                    plantingDate: new Date().toISOString().split('T')[0],
+                    expectedHarvest: '',
+                    field: 'Field A',
+                    area: 1,
+                    status: 'Growing',
+                    notes: `Added from global database - ${globalCropDatabase[category] ? globalCropDatabase[category].name : category}`
+                };
+                
+                crops.push(newCrop);
+                saveCropData();
+                renderCropTable();
+                updateCropMetrics();
+                
+                // Show success notification
+                showNotification(`Successfully added ${cropName} to your farm!`, 'success');
+            } catch (error) {
+                console.error('Error adding crop:', error);
+                showNotification(`Error adding ${cropName}: ${error.message}`, 'danger');
+            }
         }
 
         function exportCropDatabase() {
@@ -7189,33 +7186,42 @@ INVENTORY SUMMARY:
         }
 
         function addLivestockFromDatabase(livestockName, category) {
-            // Close the modal first
-            const modal = document.querySelector('.modal');
-            if (modal) {
-                const bsModal = bootstrap.Modal.getInstance(modal);
-                bsModal.hide();
+            console.log('Adding livestock from database:', { livestockName, category });
+            
+            try {
+                // Close the modal first
+                const modal = document.querySelector('.modal');
+                if (modal) {
+                    const bsModal = bootstrap.Modal.getInstance(modal);
+                    if (bsModal) {
+                        bsModal.hide();
+                    }
+                }
+                
+                // Add livestock directly
+                const newLivestock = {
+                    id: Date.now(),
+                    type: category,
+                    breed: livestockName,
+                    quantity: 1,
+                    earTags: `ET${Date.now()}`,
+                    location: 'Barn A',
+                    gps: '0.0000, 0.0000',
+                    lastWeight: 0,
+                    status: 'Healthy',
+                    healthNotes: `Added from global database - ${globalLivestockDatabase[category] ? globalLivestockDatabase[category].name : category}`
+                };
+                
+                livestock.push(newLivestock);
+                saveLivestockData();
+                renderLivestockTable();
+                updateLivestockMetrics();
+                
+                showNotification(`Successfully added ${livestockName} to your farm!`, 'success');
+            } catch (error) {
+                console.error('Error adding livestock:', error);
+                showNotification(`Error adding ${livestockName}: ${error.message}`, 'danger');
             }
-            
-            // Add livestock directly
-            const newLivestock = {
-                id: Date.now(),
-                type: category,
-                breed: livestockName,
-                quantity: 1,
-                earTags: `ET${Date.now()}`,
-                location: 'Barn A',
-                gps: '0.0000, 0.0000',
-                lastWeight: 0,
-                status: 'Healthy',
-                healthNotes: `Added from global database - ${globalLivestockDatabase[category].name}`
-            };
-            
-            livestock.push(newLivestock);
-            saveLivestockData();
-            renderLivestockTable();
-            updateLivestockMetrics();
-            
-            showNotification(`Successfully added ${livestockName} to your farm!`, 'success');
         }
 
         function exportLivestockDatabase() {
@@ -7228,6 +7234,18 @@ INVENTORY SUMMARY:
             link.click();
             URL.revokeObjectURL(url);
         }
+
+        // Make functions globally accessible after they are defined
+        window.addCropFromDatabase = addCropFromDatabase;
+        window.addLivestockFromDatabase = addLivestockFromDatabase;
+        window.addNewCropWithData = addNewCropWithData;
+        window.showGlobalCropDatabase = showGlobalCropDatabase;
+        window.showGlobalLivestockDatabase = showGlobalLivestockDatabase;
+        window.filterCrops = filterCrops;
+        window.filterLivestock = filterLivestock;
+        window.exportCropDatabase = exportCropDatabase;
+        window.exportLivestockDatabase = exportLivestockDatabase;
+        window.showNotification = showNotification;
     </script>
 </body>
 </html>
