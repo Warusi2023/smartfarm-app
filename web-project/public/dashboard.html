@@ -420,6 +420,102 @@
             color: #6c757d;
         }
 
+        /* Identification & Diagnosis Styles */
+        .identification-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            height: 100%;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .identification-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .identification-card .card-icon {
+            margin-bottom: 20px;
+        }
+
+        .identification-card .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+
+        .identification-card .card-text {
+            color: #6c757d;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        /* Analysis Results Styles */
+        .analysis-result {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+
+        .treatment-section, .prevention-section {
+            margin: 20px 0;
+        }
+
+        .treatment-list, .prevention-list {
+            padding-left: 20px;
+        }
+
+        .treatment-list li, .prevention-list li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        .disease-list, .health-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .disease-item, .health-item {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .disease-item strong, .health-item strong {
+            color: #2c3e50;
+            font-size: 1.1rem;
+        }
+
+        .disease-item p, .health-item p {
+            color: #6c757d;
+            margin: 5px 0;
+            font-size: 0.9rem;
+        }
+
+        .prevention-tips {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .tip-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            align-items: center;
+        }
+
+        .tip-item:last-child {
+            border-bottom: none;
+        }
+
         .navbar-custom {
             background: white !important;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -778,6 +874,55 @@
                                 <h5 class="mb-3">Field Status</h5>
                                 <div class="chart-container">
                                     <canvas id="fieldStatusChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Identification & Diagnosis Center -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="dashboard-card">
+                                <h5 class="mb-3">
+                                    <i class="fas fa-microscope me-2"></i>🔍 Identification & Diagnosis Center
+                                </h5>
+                                <p class="text-muted mb-4">Get professional help identifying crop diseases, pest issues, and livestock health problems</p>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="identification-card">
+                                            <div class="card-icon">
+                                                <i class="fas fa-seedling fa-3x text-success"></i>
+                                            </div>
+                                            <h6 class="card-title">Crop Identification</h6>
+                                            <p class="card-text">Identify crop diseases, pests, and nutrient deficiencies with AI-powered analysis</p>
+                                            <div class="d-grid gap-2">
+                                                <button class="btn btn-success" onclick="startCropIdentification()">
+                                                    <i class="fas fa-search me-2"></i>Identify Crop Issues
+                                                </button>
+                                                <button class="btn btn-outline-success" onclick="showCropDiseaseGuide()">
+                                                    <i class="fas fa-book me-2"></i>Disease Guide
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="identification-card">
+                                            <div class="card-icon">
+                                                <i class="fas fa-cow fa-3x text-info"></i>
+                                            </div>
+                                            <h6 class="card-title">Livestock Diagnosis</h6>
+                                            <p class="card-text">Diagnose livestock health issues and get treatment recommendations from experts</p>
+                                            <div class="d-grid gap-2">
+                                                <button class="btn btn-info" onclick="startLivestockDiagnosis()">
+                                                    <i class="fas fa-stethoscope me-2"></i>Diagnose Livestock
+                                                </button>
+                                                <button class="btn btn-outline-info" onclick="showLivestockHealthGuide()">
+                                                    <i class="fas fa-heartbeat me-2"></i>Health Guide
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -2430,6 +2575,640 @@
                             <div class="alert alert-info mt-3">
                                 <i class="fas fa-info-circle me-2"></i>
                                 <strong>Tip:</strong> QR codes contain traceability URLs that link to detailed product information including harvest date, location, farmer details, and certifications.
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        // Identification & Diagnosis Functions
+        function startCropIdentification() {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-xl modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-success text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-seedling me-2"></i>Crop Issue Identification
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="identification-form">
+                                        <h6 class="text-success mb-3">
+                                            <i class="fas fa-clipboard-list me-2"></i>Describe the Issue
+                                        </h6>
+                                        <div class="mb-3">
+                                            <label class="form-label">Crop Type</label>
+                                            <select class="form-select" id="cropType">
+                                                <option value="">Select crop type...</option>
+                                                <option value="tomato">Tomato</option>
+                                                <option value="lettuce">Lettuce</option>
+                                                <option value="corn">Corn</option>
+                                                <option value="wheat">Wheat</option>
+                                                <option value="potato">Potato</option>
+                                                <option value="carrot">Carrot</option>
+                                                <option value="pepper">Pepper</option>
+                                                <option value="cucumber">Cucumber</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Symptoms</label>
+                                            <select class="form-select" id="cropSymptoms">
+                                                <option value="">Select symptoms...</option>
+                                                <option value="yellow-leaves">Yellow leaves</option>
+                                                <option value="brown-spots">Brown spots on leaves</option>
+                                                <option value="wilting">Wilting plants</option>
+                                                <option value="stunted-growth">Stunted growth</option>
+                                                <option value="holes-leaves">Holes in leaves</option>
+                                                <option value="white-powder">White powdery coating</option>
+                                                <option value="black-spots">Black spots</option>
+                                                <option value="curling-leaves">Curling leaves</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Affected Area</label>
+                                            <select class="form-select" id="affectedArea">
+                                                <option value="">Select area...</option>
+                                                <option value="leaves">Leaves</option>
+                                                <option value="stems">Stems</option>
+                                                <option value="roots">Roots</option>
+                                                <option value="fruits">Fruits</option>
+                                                <option value="flowers">Flowers</option>
+                                                <option value="entire-plant">Entire plant</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Additional Notes</label>
+                                            <textarea class="form-control" id="cropNotes" rows="3" placeholder="Describe any other observations..."></textarea>
+                                        </div>
+                                        <button class="btn btn-success w-100" onclick="analyzeCropIssue()">
+                                            <i class="fas fa-search me-2"></i>Analyze Issue
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="identification-results" id="cropResults" style="display: none;">
+                                        <h6 class="text-primary mb-3">
+                                            <i class="fas fa-diagnosis me-2"></i>Analysis Results
+                                        </h6>
+                                        <div id="cropAnalysisContent">
+                                            <!-- Analysis results will be displayed here -->
+                                        </div>
+                                    </div>
+                                    <div class="identification-guide" id="cropGuide">
+                                        <h6 class="text-info mb-3">
+                                            <i class="fas fa-book me-2"></i>Quick Guide
+                                        </h6>
+                                        <div class="guide-content">
+                                            <p><strong>Common Issues:</strong></p>
+                                            <ul class="list-unstyled">
+                                                <li><i class="fas fa-arrow-right text-success me-2"></i>Yellow leaves: Nutrient deficiency or overwatering</li>
+                                                <li><i class="fas fa-arrow-right text-warning me-2"></i>Brown spots: Fungal disease or sunburn</li>
+                                                <li><i class="fas fa-arrow-right text-danger me-2"></i>Wilting: Underwatering or root rot</li>
+                                                <li><i class="fas fa-arrow-right text-info me-2"></i>Holes in leaves: Pest damage</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-success" onclick="showCropDiseaseGuide()">
+                                <i class="fas fa-book me-1"></i>Disease Guide
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        function analyzeCropIssue() {
+            const cropType = document.getElementById('cropType').value;
+            const symptoms = document.getElementById('cropSymptoms').value;
+            const affectedArea = document.getElementById('affectedArea').value;
+            const notes = document.getElementById('cropNotes').value;
+
+            if (!cropType || !symptoms) {
+                showErrorMessage('Please select both crop type and symptoms for analysis.');
+                return;
+            }
+
+            // Show loading
+            const resultsDiv = document.getElementById('cropResults');
+            const analysisContent = document.getElementById('cropAnalysisContent');
+            resultsDiv.style.display = 'block';
+            analysisContent.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin fa-2x"></i><br>Analyzing issue...</div>';
+
+            // Simulate analysis delay
+            setTimeout(() => {
+                const analysis = getCropAnalysis(cropType, symptoms, affectedArea, notes);
+                analysisContent.innerHTML = analysis;
+            }, 2000);
+        }
+
+        function getCropAnalysis(cropType, symptoms, affectedArea, notes) {
+            const analysisDatabase = {
+                'yellow-leaves': {
+                    likelyCause: 'Nutrient Deficiency or Overwatering',
+                    severity: 'Medium',
+                    treatment: [
+                        'Check soil pH and nutrient levels',
+                        'Reduce watering frequency if overwatering',
+                        'Apply balanced fertilizer (NPK 10-10-10)',
+                        'Ensure proper drainage'
+                    ],
+                    prevention: [
+                        'Regular soil testing',
+                        'Proper watering schedule',
+                        'Crop rotation',
+                        'Organic matter addition'
+                    ]
+                },
+                'brown-spots': {
+                    likelyCause: 'Fungal Disease or Sunburn',
+                    severity: 'High',
+                    treatment: [
+                        'Remove affected leaves immediately',
+                        'Apply fungicide (copper-based)',
+                        'Improve air circulation',
+                        'Avoid overhead watering'
+                    ],
+                    prevention: [
+                        'Proper spacing between plants',
+                        'Morning watering only',
+                        'Regular fungicide application',
+                        'Remove plant debris'
+                    ]
+                },
+                'wilting': {
+                    likelyCause: 'Underwatering or Root Rot',
+                    severity: 'High',
+                    treatment: [
+                        'Check soil moisture levels',
+                        'Water deeply but infrequently',
+                        'Check for root damage',
+                        'Apply root treatment if needed'
+                    ],
+                    prevention: [
+                        'Consistent watering schedule',
+                        'Well-draining soil',
+                        'Proper irrigation system',
+                        'Monitor soil moisture'
+                    ]
+                },
+                'holes-leaves': {
+                    likelyCause: 'Pest Damage',
+                    severity: 'Medium',
+                    treatment: [
+                        'Identify specific pest',
+                        'Apply appropriate pesticide',
+                        'Use organic alternatives (neem oil)',
+                        'Hand-pick larger pests'
+                    ],
+                    prevention: [
+                        'Regular pest monitoring',
+                        'Companion planting',
+                        'Physical barriers',
+                        'Beneficial insects'
+                    ]
+                }
+            };
+
+            const analysis = analysisDatabase[symptoms] || {
+                likelyCause: 'Unknown Issue',
+                severity: 'Unknown',
+                treatment: ['Consult with agricultural expert', 'Take detailed photos', 'Test soil samples'],
+                prevention: ['Regular monitoring', 'Proper care practices']
+            };
+
+            return `
+                <div class="analysis-result">
+                    <div class="alert alert-${analysis.severity === 'High' ? 'danger' : analysis.severity === 'Medium' ? 'warning' : 'info'}">
+                        <h6><i class="fas fa-exclamation-triangle me-2"></i>Likely Cause: ${analysis.likelyCause}</h6>
+                        <p class="mb-0">Severity: <span class="badge bg-${analysis.severity === 'High' ? 'danger' : analysis.severity === 'Medium' ? 'warning' : 'info'}">${analysis.severity}</span></p>
+                    </div>
+                    
+                    <div class="treatment-section">
+                        <h6 class="text-success"><i class="fas fa-medkit me-2"></i>Treatment Steps:</h6>
+                        <ol class="treatment-list">
+                            ${analysis.treatment.map(step => `<li>${step}</li>`).join('')}
+                        </ol>
+                    </div>
+                    
+                    <div class="prevention-section">
+                        <h6 class="text-info"><i class="fas fa-shield-alt me-2"></i>Prevention Tips:</h6>
+                        <ul class="prevention-list">
+                            ${analysis.prevention.map(tip => `<li>${tip}</li>`).join('')}
+                        </ul>
+                    </div>
+                    
+                    <div class="alert alert-light mt-3">
+                        <i class="fas fa-lightbulb me-2"></i>
+                        <strong>Pro Tip:</strong> For accurate diagnosis, consider taking photos and consulting with local agricultural extension services.
+                    </div>
+                </div>
+            `;
+        }
+
+        function startLivestockDiagnosis() {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-xl modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-info text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-stethoscope me-2"></i>Livestock Health Diagnosis
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="diagnosis-form">
+                                        <h6 class="text-info mb-3">
+                                            <i class="fas fa-clipboard-list me-2"></i>Animal Information
+                                        </h6>
+                                        <div class="mb-3">
+                                            <label class="form-label">Animal Type</label>
+                                            <select class="form-select" id="animalType">
+                                                <option value="">Select animal type...</option>
+                                                <option value="cattle">Cattle</option>
+                                                <option value="pigs">Pigs</option>
+                                                <option value="sheep">Sheep</option>
+                                                <option value="goats">Goats</option>
+                                                <option value="chickens">Chickens</option>
+                                                <option value="ducks">Ducks</option>
+                                                <option value="horses">Horses</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Age</label>
+                                            <select class="form-select" id="animalAge">
+                                                <option value="">Select age...</option>
+                                                <option value="young">Young (0-6 months)</option>
+                                                <option value="adult">Adult (6 months - 2 years)</option>
+                                                <option value="mature">Mature (2+ years)</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Symptoms</label>
+                                            <select class="form-select" id="animalSymptoms">
+                                                <option value="">Select symptoms...</option>
+                                                <option value="lethargy">Lethargy/Weakness</option>
+                                                <option value="fever">Fever/High temperature</option>
+                                                <option value="loss-appetite">Loss of appetite</option>
+                                                <option value="diarrhea">Diarrhea</option>
+                                                <option value="coughing">Coughing/Sneezing</option>
+                                                <option value="lameness">Lameness</option>
+                                                <option value="discharge">Nasal/Eye discharge</option>
+                                                <option value="behavioral">Behavioral changes</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Duration</label>
+                                            <select class="form-select" id="symptomDuration">
+                                                <option value="">Select duration...</option>
+                                                <option value="acute">Acute (0-24 hours)</option>
+                                                <option value="subacute">Subacute (1-3 days)</option>
+                                                <option value="chronic">Chronic (3+ days)</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Additional Observations</label>
+                                            <textarea class="form-control" id="animalNotes" rows="3" placeholder="Describe any other observations..."></textarea>
+                                        </div>
+                                        <button class="btn btn-info w-100" onclick="analyzeLivestockIssue()">
+                                            <i class="fas fa-stethoscope me-2"></i>Diagnose Issue
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="diagnosis-results" id="livestockResults" style="display: none;">
+                                        <h6 class="text-primary mb-3">
+                                            <i class="fas fa-diagnosis me-2"></i>Diagnosis Results
+                                        </h6>
+                                        <div id="livestockAnalysisContent">
+                                            <!-- Analysis results will be displayed here -->
+                                        </div>
+                                    </div>
+                                    <div class="diagnosis-guide" id="livestockGuide">
+                                        <h6 class="text-info mb-3">
+                                            <i class="fas fa-heartbeat me-2"></i>Health Guide
+                                        </h6>
+                                        <div class="guide-content">
+                                            <p><strong>Common Issues:</strong></p>
+                                            <ul class="list-unstyled">
+                                                <li><i class="fas fa-arrow-right text-danger me-2"></i>Lethargy: Possible infection or nutritional issue</li>
+                                                <li><i class="fas fa-arrow-right text-warning me-2"></i>Fever: Bacterial or viral infection</li>
+                                                <li><i class="fas fa-arrow-right text-info me-2"></i>Loss of appetite: Digestive or stress-related</li>
+                                                <li><i class="fas fa-arrow-right text-success me-2"></i>Diarrhea: Parasitic or dietary issue</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-info" onclick="showLivestockHealthGuide()">
+                                <i class="fas fa-heartbeat me-1"></i>Health Guide
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        function analyzeLivestockIssue() {
+            const animalType = document.getElementById('animalType').value;
+            const age = document.getElementById('animalAge').value;
+            const symptoms = document.getElementById('animalSymptoms').value;
+            const duration = document.getElementById('symptomDuration').value;
+            const notes = document.getElementById('animalNotes').value;
+
+            if (!animalType || !symptoms) {
+                showErrorMessage('Please select both animal type and symptoms for diagnosis.');
+                return;
+            }
+
+            // Show loading
+            const resultsDiv = document.getElementById('livestockResults');
+            const analysisContent = document.getElementById('livestockAnalysisContent');
+            resultsDiv.style.display = 'block';
+            analysisContent.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin fa-2x"></i><br>Analyzing health issue...</div>';
+
+            // Simulate analysis delay
+            setTimeout(() => {
+                const analysis = getLivestockAnalysis(animalType, age, symptoms, duration, notes);
+                analysisContent.innerHTML = analysis;
+            }, 2000);
+        }
+
+        function getLivestockAnalysis(animalType, age, symptoms, duration, notes) {
+            const analysisDatabase = {
+                'lethargy': {
+                    likelyCause: 'Infection or Nutritional Deficiency',
+                    severity: 'High',
+                    treatment: [
+                        'Isolate the animal immediately',
+                        'Check temperature and vital signs',
+                        'Provide fresh water and quality feed',
+                        'Consult veterinarian if severe'
+                    ],
+                    prevention: [
+                        'Regular health monitoring',
+                        'Balanced nutrition',
+                        'Clean living environment',
+                        'Vaccination schedule'
+                    ]
+                },
+                'fever': {
+                    likelyCause: 'Bacterial or Viral Infection',
+                    severity: 'High',
+                    treatment: [
+                        'Isolate immediately',
+                        'Monitor temperature regularly',
+                        'Provide cool, clean water',
+                        'Contact veterinarian urgently'
+                    ],
+                    prevention: [
+                        'Proper vaccination',
+                        'Clean environment',
+                        'Quarantine new animals',
+                        'Regular health checks'
+                    ]
+                },
+                'loss-appetite': {
+                    likelyCause: 'Digestive Issue or Stress',
+                    severity: 'Medium',
+                    treatment: [
+                        'Check feed quality and freshness',
+                        'Reduce stress factors',
+                        'Provide clean water',
+                        'Monitor for other symptoms'
+                    ],
+                    prevention: [
+                        'Consistent feeding schedule',
+                        'High-quality feed',
+                        'Minimize stress',
+                        'Regular health monitoring'
+                    ]
+                },
+                'diarrhea': {
+                    likelyCause: 'Parasitic or Dietary Issue',
+                    severity: 'Medium',
+                    treatment: [
+                        'Provide electrolyte solution',
+                        'Check for parasites',
+                        'Review diet changes',
+                        'Monitor hydration'
+                    ],
+                    prevention: [
+                        'Regular deworming',
+                        'Gradual diet changes',
+                        'Clean water supply',
+                        'Proper sanitation'
+                    ]
+                }
+            };
+
+            const analysis = analysisDatabase[symptoms] || {
+                likelyCause: 'Unknown Health Issue',
+                severity: 'Unknown',
+                treatment: ['Consult with veterinarian', 'Monitor closely', 'Isolate if necessary'],
+                prevention: ['Regular health monitoring', 'Proper care practices']
+            };
+
+            return `
+                <div class="analysis-result">
+                    <div class="alert alert-${analysis.severity === 'High' ? 'danger' : analysis.severity === 'Medium' ? 'warning' : 'info'}">
+                        <h6><i class="fas fa-exclamation-triangle me-2"></i>Likely Cause: ${analysis.likelyCause}</h6>
+                        <p class="mb-0">Severity: <span class="badge bg-${analysis.severity === 'High' ? 'danger' : analysis.severity === 'Medium' ? 'warning' : 'info'}">${analysis.severity}</span></p>
+                    </div>
+                    
+                    <div class="treatment-section">
+                        <h6 class="text-success"><i class="fas fa-medkit me-2"></i>Treatment Steps:</h6>
+                        <ol class="treatment-list">
+                            ${analysis.treatment.map(step => `<li>${step}</li>`).join('')}
+                        </ol>
+                    </div>
+                    
+                    <div class="prevention-section">
+                        <h6 class="text-info"><i class="fas fa-shield-alt me-2"></i>Prevention Tips:</h6>
+                        <ul class="prevention-list">
+                            ${analysis.prevention.map(tip => `<li>${tip}</li>`).join('')}
+                        </ul>
+                    </div>
+                    
+                    <div class="alert alert-warning mt-3">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Important:</strong> This is a preliminary diagnosis. Always consult with a qualified veterinarian for proper medical treatment.
+                    </div>
+                </div>
+            `;
+        }
+
+        function showCropDiseaseGuide() {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-xl modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-success text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-book me-2"></i>Crop Disease Identification Guide
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6 class="text-danger">Fungal Diseases</h6>
+                                    <div class="disease-list">
+                                        <div class="disease-item">
+                                            <strong>Powdery Mildew</strong>
+                                            <p>White powdery coating on leaves</p>
+                                            <span class="badge bg-warning">Medium Severity</span>
+                                        </div>
+                                        <div class="disease-item">
+                                            <strong>Late Blight</strong>
+                                            <p>Dark spots with water-soaked appearance</p>
+                                            <span class="badge bg-danger">High Severity</span>
+                                        </div>
+                                        <div class="disease-item">
+                                            <strong>Rust</strong>
+                                            <p>Orange/yellow pustules on leaves</p>
+                                            <span class="badge bg-warning">Medium Severity</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="text-info">Bacterial Diseases</h6>
+                                    <div class="disease-list">
+                                        <div class="disease-item">
+                                            <strong>Bacterial Blight</strong>
+                                            <p>Water-soaked lesions on leaves</p>
+                                            <span class="badge bg-danger">High Severity</span>
+                                        </div>
+                                        <div class="disease-item">
+                                            <strong>Crown Gall</strong>
+                                            <p>Swollen growths on stems/roots</p>
+                                            <span class="badge bg-warning">Medium Severity</span>
+                                        </div>
+                                        <div class="disease-item">
+                                            <strong>Soft Rot</strong>
+                                            <p>Mushy, foul-smelling tissue</p>
+                                            <span class="badge bg-danger">High Severity</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        function showLivestockHealthGuide() {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-xl modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-info text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-heartbeat me-2"></i>Livestock Health Guide
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6 class="text-danger">Common Health Issues</h6>
+                                    <div class="health-list">
+                                        <div class="health-item">
+                                            <strong>Mastitis</strong>
+                                            <p>Inflammation of mammary gland</p>
+                                            <span class="badge bg-danger">High Severity</span>
+                                        </div>
+                                        <div class="health-item">
+                                            <strong>Foot Rot</strong>
+                                            <p>Bacterial infection of hooves</p>
+                                            <span class="badge bg-warning">Medium Severity</span>
+                                        </div>
+                                        <div class="health-item">
+                                            <strong>Respiratory Issues</strong>
+                                            <p>Coughing, nasal discharge</p>
+                                            <span class="badge bg-warning">Medium Severity</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="text-success">Prevention Tips</h6>
+                                    <div class="prevention-tips">
+                                        <div class="tip-item">
+                                            <i class="fas fa-check-circle text-success me-2"></i>
+                                            Regular vaccination schedule
+                                        </div>
+                                        <div class="tip-item">
+                                            <i class="fas fa-check-circle text-success me-2"></i>
+                                            Clean, dry living environment
+                                        </div>
+                                        <div class="tip-item">
+                                            <i class="fas fa-check-circle text-success me-2"></i>
+                                            Balanced nutrition
+                                        </div>
+                                        <div class="tip-item">
+                                            <i class="fas fa-check-circle text-success me-2"></i>
+                                            Regular health monitoring
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="modal-footer">
