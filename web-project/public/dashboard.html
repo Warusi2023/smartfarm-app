@@ -210,6 +210,47 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
+        /* Weeding Task Cards */
+        .weeding-task-card {
+            transition: all 0.3s ease;
+            border-left: 4px solid;
+        }
+
+        .weeding-task-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .task-metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .metric-item {
+            display: flex;
+            align-items: center;
+            font-size: 0.85rem;
+            padding: 4px 0;
+        }
+
+        .metric-item i {
+            width: 16px;
+            margin-right: 8px;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .task-actions .btn {
+            flex: 1;
+            min-width: 80px;
+        }
+
         .alert-warning {
             background: #fff3cd;
             color: #856404;
@@ -639,6 +680,9 @@
                                         </button>
                                         <button class="btn btn-success" onclick="addNewProduct()">
                                             <i class="fas fa-plus me-2"></i>New Product
+                                        </button>
+                                        <button class="btn btn-info" onclick="showQRCodeOptions()">
+                                            <i class="fas fa-cog me-2"></i>QR Options
                                         </button>
                                     </div>
                                     <div id="qrCodeDisplay" class="mt-3 text-center">
@@ -2186,12 +2230,305 @@
             console.log('⚠️ QR Traceability System not available');
         }
         
+        // Initialize Weeding Task Synchronization
+        initializeWeedingTaskSync();
+        
         // QR Code Generator Functions
         function generateQRCode() {
             if (typeof qrTraceability !== 'undefined' && qrTraceability) {
                 qrTraceability.generateQRCode();
             } else {
                 showErrorDialog('QR System Not Available', 'The QR Code system is not loaded. Please refresh the page and try again.');
+            }
+        }
+
+        // Auto-generate QR code for newly created product
+        function autoGenerateQRCode(productData) {
+            if (typeof qrTraceability !== 'undefined' && qrTraceability) {
+                // Add the new product to the QR system
+                qrTraceability.addProduct(productData);
+                
+                // Update the product selector
+                qrTraceability.updateProductSelector();
+                
+                // Auto-select the new product
+                const productSelect = document.getElementById('productSelect');
+                if (productSelect) {
+                    productSelect.value = productData.id;
+                    
+                    // Generate QR code automatically
+                    setTimeout(() => {
+                        qrTraceability.generateQRCode();
+                        showQRCodeGenerationModal(productData);
+                    }, 500);
+                }
+            }
+        }
+
+        function showQRCodeGenerationModal(productData) {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-success text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-qrcode me-2"></i>QR Code Generated Successfully!
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>Product Information</h6>
+                                    <p><strong>Product:</strong> ${productData.name}</p>
+                                    <p><strong>Batch Number:</strong> ${productData.batchNumber}</p>
+                                    <p><strong>Location:</strong> ${productData.location}</p>
+                                    <p><strong>Farmer:</strong> ${productData.farmer}</p>
+                                    <p><strong>Harvest Date:</strong> ${productData.harvestDate}</p>
+                                    <p><strong>Certifications:</strong> ${productData.certifications.join(', ')}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <div id="qrCodePreview" class="text-center">
+                                        <p class="text-muted">QR Code will appear here...</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-info mt-3">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Traceability URL:</strong> <span id="traceabilityUrl">Generating...</span>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-primary" onclick="downloadQRCode('${productData.id}')">
+                                <i class="fas fa-download me-1"></i>Download QR Code
+                            </button>
+                            <button type="button" class="btn btn-success" onclick="printQRCode('${productData.id}')">
+                                <i class="fas fa-print me-1"></i>Print QR Code
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            // Generate QR code for preview
+            setTimeout(() => {
+                generateQRCodePreview(productData, modal);
+            }, 1000);
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        function generateQRCodePreview(productData, modal) {
+            const traceabilityURL = `https://smartfarm-app.com/traceability?product=${productData.id}&batch=${productData.batchNumber}`;
+            
+            // Update traceability URL
+            const urlElement = modal.querySelector('#traceabilityUrl');
+            if (urlElement) {
+                urlElement.textContent = traceabilityURL;
+            }
+            
+            // Generate QR code
+            if (typeof QRCode !== 'undefined') {
+                const qrContainer = modal.querySelector('#qrCodePreview');
+                qrContainer.innerHTML = '';
+                
+                QRCode.toCanvas(qrContainer, traceabilityURL, {
+                    width: 200,
+                    height: 200,
+                    color: {
+                        dark: '#000000',
+                        light: '#FFFFFF'
+                    }
+                }, (error) => {
+                    if (error) {
+                        console.error('QR Code generation error:', error);
+                        qrContainer.innerHTML = '<p class="text-danger">Error generating QR code</p>';
+                    } else {
+                        console.log('QR Code generated successfully');
+                    }
+                });
+            } else {
+                const qrContainer = modal.querySelector('#qrCodePreview');
+                qrContainer.innerHTML = `
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        QR Code library not loaded. Please refresh the page and try again.
+                    </div>
+                `;
+            }
+        }
+
+        function downloadQRCode(productId) {
+            if (typeof qrTraceability !== 'undefined' && qrTraceability) {
+                qrTraceability.downloadQRCode(productId);
+            } else {
+                showErrorDialog('Download Failed', 'QR Code system not available for download.');
+            }
+        }
+
+        function printQRCode(productId) {
+            if (typeof qrTraceability !== 'undefined' && qrTraceability) {
+                qrTraceability.printQRCode(productId);
+            } else {
+                showErrorDialog('Print Failed', 'QR Code system not available for printing.');
+            }
+        }
+
+        function showQRCodeOptions() {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-info text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-cog me-2"></i>QR Code Options
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>Quick Actions</h6>
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-primary" onclick="generateQRCode()">
+                                            <i class="fas fa-qrcode me-2"></i>Generate QR Code
+                                        </button>
+                                        <button class="btn btn-success" onclick="downloadAllQRCodes()">
+                                            <i class="fas fa-download me-2"></i>Download All QR Codes
+                                        </button>
+                                        <button class="btn btn-warning" onclick="printAllQRCodes()">
+                                            <i class="fas fa-print me-2"></i>Print All QR Codes
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>Product Management</h6>
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-info" onclick="addNewProduct()">
+                                            <i class="fas fa-plus me-2"></i>Add New Product
+                                        </button>
+                                        <button class="btn btn-secondary" onclick="viewAllProducts()">
+                                            <i class="fas fa-list me-2"></i>View All Products
+                                        </button>
+                                        <button class="btn btn-outline-primary" onclick="refreshProductList()">
+                                            <i class="fas fa-sync me-2"></i>Refresh List
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-info mt-3">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Tip:</strong> QR codes contain traceability URLs that link to detailed product information including harvest date, location, farmer details, and certifications.
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        function viewAllProducts() {
+            if (typeof qrTraceability !== 'undefined' && qrTraceability) {
+                const products = qrTraceability.products;
+                
+                const modal = document.createElement('div');
+                modal.className = 'modal fade';
+                modal.innerHTML = `
+                    <div class="modal-dialog modal-dialog-centered modal-xl">
+                        <div class="modal-content border-0 shadow-lg">
+                            <div class="modal-header bg-primary text-white">
+                                <h5 class="modal-title">
+                                    <i class="fas fa-list me-2"></i>All Products (${products.length})
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="row">
+                                    ${products.map(product => `
+                                        <div class="col-md-6 mb-3">
+                                            <div class="card">
+                                                <div class="card-body">
+                                                    <h6 class="card-title">${product.name}</h6>
+                                                    <p class="card-text">
+                                                        <strong>Batch:</strong> ${product.batchNumber}<br>
+                                                        <strong>Type:</strong> ${product.type}<br>
+                                                        <strong>Harvest Date:</strong> ${product.harvestDate}<br>
+                                                        <strong>Location:</strong> ${product.location || 'N/A'}<br>
+                                                        <strong>Farmer:</strong> ${product.farmer || 'N/A'}
+                                                    </p>
+                                                    <div class="d-grid gap-2">
+                                                        <button class="btn btn-primary btn-sm" onclick="generateQRForProduct('${product.id}')">
+                                                            <i class="fas fa-qrcode me-1"></i>Generate QR
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+                const bsModal = new bootstrap.Modal(modal);
+                bsModal.show();
+                
+                modal.addEventListener('hidden.bs.modal', () => {
+                    document.body.removeChild(modal);
+                });
+            }
+        }
+
+        function generateQRForProduct(productId) {
+            // Close the current modal
+            const currentModal = document.querySelector('.modal.show');
+            if (currentModal) {
+                const bsModal = bootstrap.Modal.getInstance(currentModal);
+                bsModal.hide();
+            }
+            
+            // Select the product in the dropdown
+            const productSelect = document.getElementById('productSelect');
+            if (productSelect) {
+                productSelect.value = productId;
+            }
+            
+            // Generate QR code
+            setTimeout(() => {
+                generateQRCode();
+            }, 500);
+        }
+
+        function refreshProductList() {
+            if (typeof qrTraceability !== 'undefined' && qrTraceability) {
+                qrTraceability.updateProductSelector();
+                showSuccessDialog('List Refreshed', 'Product list has been updated successfully.');
             }
         }
         
@@ -2293,11 +2630,19 @@
                     type: productType,
                     harvestDate: harvestDate,
                     description: description,
+                    location: 'Nakaile', // Default location
+                    farmer: 'Local', // Default farmer
+                    certifications: ['Organic'], // Default certification
                     createdAt: new Date().toISOString()
                 };
                 
                 qrTraceability.products.push(newProduct);
                 qrTraceability.saveProducts();
+                
+                // Auto-generate QR code for the new product
+                setTimeout(() => {
+                    autoGenerateQRCode(newProduct);
+                }, 1000);
             }
             
             // Close modal
@@ -2308,8 +2653,8 @@
             }
             
             showSuccessDialog(
-                '✅ Product Added Successfully',
-                `${productName} has been added to the system!\n\nProduct ID: ${productId}\nBatch: ${batchNumber}\nType: ${productType}\n\nYou can now generate QR codes for this product.`
+                '✅ Product Created Successfully!',
+                `${productName} has been added to the system!\n\nProduct ID: ${productId}\nBatch: ${batchNumber}\nType: ${productType}\n\nQR Code is being generated automatically...`
             );
         }
         });
@@ -2718,6 +3063,464 @@
 
         function printWeatherAdvice(title) {
             window.print();
+        }
+
+        // Weeding Task Synchronization System
+        function initializeWeedingTaskSync() {
+            console.log('🌱 Initializing Weeding Task Synchronization...');
+            
+            // Create unified weeding task storage
+            if (!localStorage.getItem('unifiedWeedingTasks')) {
+                const defaultTasks = [
+                    {
+                        id: 'task_001',
+                        crop: 'Tomatoes',
+                        field: 'Field A',
+                        urgency: 'Critical',
+                        urgencyPercent: 85,
+                        weedGrowth: 1.3,
+                        daysSince: 20,
+                        estimatedCost: 125,
+                        weather: 'Weather OK',
+                        schedule: 'Today',
+                        action: 'Immediate chemical application required',
+                        status: 'active',
+                        weatherIssue: false,
+                        lastUpdated: new Date().toISOString()
+                    },
+                    {
+                        id: 'task_002',
+                        crop: 'Lettuce',
+                        field: 'Field C',
+                        urgency: 'Medium',
+                        urgencyPercent: 60,
+                        weedGrowth: 0.9,
+                        daysSince: 14,
+                        estimatedCost: 60,
+                        weather: 'Weather Issue - Wait for dry conditions',
+                        schedule: 'Day after tomorrow',
+                        action: 'Manual weeding or light chemical treatment',
+                        status: 'active',
+                        weatherIssue: true,
+                        lastUpdated: new Date().toISOString()
+                    },
+                    {
+                        id: 'task_003',
+                        crop: 'Carrots',
+                        field: 'Field D',
+                        urgency: 'Low',
+                        urgencyPercent: 30,
+                        weedGrowth: 0.6,
+                        daysSince: 10,
+                        estimatedCost: 45,
+                        weather: 'Weather OK',
+                        schedule: 'Next week',
+                        action: 'Manual weeding when weather permits',
+                        status: 'active',
+                        weatherIssue: false,
+                        lastUpdated: new Date().toISOString()
+                    },
+                    {
+                        id: 'task_004',
+                        crop: 'Peppers',
+                        field: 'Field B',
+                        urgency: 'Critical',
+                        urgencyPercent: 75,
+                        weedGrowth: 1.12,
+                        daysSince: 15,
+                        estimatedCost: 30,
+                        weather: 'Rain expected - wait for dry conditions',
+                        schedule: '29/09/2025',
+                        action: 'Immediate chemical application required',
+                        status: 'active',
+                        weatherIssue: true,
+                        lastUpdated: new Date().toISOString()
+                    }
+                ];
+                localStorage.setItem('unifiedWeedingTasks', JSON.stringify(defaultTasks));
+            }
+            
+            // Sync with intelligent weeding system
+            syncWithIntelligentWeeding();
+            
+            // Update dashboard weeding tasks
+            updateDashboardWeedingTasks();
+            
+            console.log('✅ Weeding Task Synchronization initialized');
+        }
+
+        function syncWithIntelligentWeeding() {
+            const tasks = JSON.parse(localStorage.getItem('unifiedWeedingTasks') || '[]');
+            
+            // Update intelligent weeding system if available
+            if (typeof window.intelligentWeeding !== 'undefined') {
+                window.intelligentWeeding.syncTasks(tasks);
+            }
+            
+            // Update weeding management page if open
+            if (window.location.pathname.includes('weeding-management.html')) {
+                updateWeedingManagementPage(tasks);
+            }
+        }
+
+        function updateDashboardWeedingTasks() {
+            const tasks = JSON.parse(localStorage.getItem('unifiedWeedingTasks') || '[]');
+            const container = document.getElementById('weedingTasksContainer');
+            
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            tasks.forEach(task => {
+                const taskCard = createWeedingTaskCard(task);
+                container.appendChild(taskCard);
+            });
+        }
+
+        function createWeedingTaskCard(task) {
+            const card = document.createElement('div');
+            card.className = 'col-md-4 mb-3';
+            
+            const urgencyColor = getUrgencyColor(task.urgency);
+            const urgencyBadge = getUrgencyBadge(task.urgency);
+            
+            card.innerHTML = `
+                <div class="card weeding-task-card border-${urgencyColor}">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">${task.crop} - ${task.field}</h6>
+                        <span class="badge bg-${urgencyColor}">${urgencyBadge}</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="task-metrics">
+                            <div class="metric-item">
+                                <i class="fas fa-chart-line text-primary"></i>
+                                <span>Weed Growth: ${task.weedGrowth}x</span>
+                            </div>
+                            <div class="metric-item">
+                                <i class="fas fa-calendar text-info"></i>
+                                <span>Days Since: ${task.daysSince} days</span>
+                            </div>
+                            <div class="metric-item">
+                                <i class="fas fa-dollar-sign text-success"></i>
+                                <span>Est. Cost: $${task.estimatedCost}</span>
+                            </div>
+                            <div class="metric-item">
+                                <i class="fas fa-cloud text-${task.weatherIssue ? 'warning' : 'success'}"></i>
+                                <span>${task.weather}</span>
+                            </div>
+                            <div class="metric-item">
+                                <i class="fas fa-calendar-alt text-secondary"></i>
+                                <span>Schedule: ${task.schedule}</span>
+                            </div>
+                            <div class="metric-item">
+                                <i class="fas fa-info-circle text-info"></i>
+                                <span>${task.action}</span>
+                            </div>
+                        </div>
+                        <div class="task-actions mt-3">
+                            <button class="btn btn-success btn-sm me-2" onclick="executeWeedingTask('${task.id}')">
+                                <i class="fas fa-play me-1"></i>Execute
+                            </button>
+                            <button class="btn btn-info btn-sm me-2" onclick="viewWeedingTaskDetails('${task.id}')">
+                                <i class="fas fa-info me-1"></i>Details
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm" onclick="rescheduleWeedingTask('${task.id}')">
+                                <i class="fas fa-clock me-1"></i>Reschedule
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            return card;
+        }
+
+        function getUrgencyColor(urgency) {
+            switch(urgency) {
+                case 'Critical': return 'danger';
+                case 'Urgent': return 'warning';
+                case 'Medium': return 'info';
+                case 'Low': return 'success';
+                default: return 'secondary';
+            }
+        }
+
+        function getUrgencyBadge(urgency) {
+            switch(urgency) {
+                case 'Critical': return 'CRITICAL';
+                case 'Urgent': return 'URGENT';
+                case 'Medium': return 'MEDIUM';
+                case 'Low': return 'LOW';
+                default: return 'UNKNOWN';
+            }
+        }
+
+        // Weeding Task Actions
+        function executeWeedingTask(taskId) {
+            const tasks = JSON.parse(localStorage.getItem('unifiedWeedingTasks') || '[]');
+            const task = tasks.find(t => t.id === taskId);
+            
+            if (!task) {
+                showErrorDialog('Task Not Found', 'The selected weeding task could not be found.');
+                return;
+            }
+            
+            showWeedingExecutionModal(task);
+        }
+
+        function viewWeedingTaskDetails(taskId) {
+            const tasks = JSON.parse(localStorage.getItem('unifiedWeedingTasks') || '[]');
+            const task = tasks.find(t => t.id === taskId);
+            
+            if (!task) {
+                showErrorDialog('Task Not Found', 'The selected weeding task could not be found.');
+                return;
+            }
+            
+            showWeedingTaskDetailsModal(task);
+        }
+
+        function rescheduleWeedingTask(taskId) {
+            const tasks = JSON.parse(localStorage.getItem('unifiedWeedingTasks') || '[]');
+            const task = tasks.find(t => t.id === taskId);
+            
+            if (!task) {
+                showErrorDialog('Task Not Found', 'The selected weeding task could not be found.');
+                return;
+            }
+            
+            showWeedingRescheduleModal(task);
+        }
+
+        function showWeedingExecutionModal(task) {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-success text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-play me-2"></i>Execute Weeding Task
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>Task Details</h6>
+                                    <p><strong>Crop:</strong> ${task.crop} - ${task.field}</p>
+                                    <p><strong>Urgency:</strong> <span class="badge bg-${getUrgencyColor(task.urgency)}">${task.urgency}</span></p>
+                                    <p><strong>Action:</strong> ${task.action}</p>
+                                    <p><strong>Estimated Cost:</strong> $${task.estimatedCost}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>Current Conditions</h6>
+                                    <p><strong>Weather:</strong> ${task.weather}</p>
+                                    <p><strong>Weed Growth:</strong> ${task.weedGrowth}x</p>
+                                    <p><strong>Days Since Last Action:</strong> ${task.daysSince} days</p>
+                                    <p><strong>Scheduled:</strong> ${task.schedule}</p>
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-info mt-3">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Note:</strong> This task will be marked as completed and removed from the active tasks list.
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-success" onclick="confirmWeedingTaskExecution('${task.id}')">
+                                <i class="fas fa-check me-1"></i>Confirm Execution
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        function confirmWeedingTaskExecution(taskId) {
+            const tasks = JSON.parse(localStorage.getItem('unifiedWeedingTasks') || '[]');
+            const taskIndex = tasks.findIndex(t => t.id === taskId);
+            
+            if (taskIndex !== -1) {
+                // Mark task as completed
+                tasks[taskIndex].status = 'completed';
+                tasks[taskIndex].completedAt = new Date().toISOString();
+                
+                // Save updated tasks
+                localStorage.setItem('unifiedWeedingTasks', JSON.stringify(tasks));
+                
+                // Update displays
+                updateDashboardWeedingTasks();
+                syncWithIntelligentWeeding();
+                
+                // Close modal
+                const modal = document.querySelector('.modal.show');
+                if (modal) {
+                    const bsModal = bootstrap.Modal.getInstance(modal);
+                    bsModal.hide();
+                }
+                
+                showSuccessDialog(
+                    '✅ Task Completed',
+                    `Weeding task for ${tasks[taskIndex].crop} - ${tasks[taskIndex].field} has been completed successfully!`
+                );
+            }
+        }
+
+        function showWeedingTaskDetailsModal(task) {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-info text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-info me-2"></i>Weeding Task Details
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>Task Information</h6>
+                                    <p><strong>Crop:</strong> ${task.crop}</p>
+                                    <p><strong>Field:</strong> ${task.field}</p>
+                                    <p><strong>Urgency:</strong> <span class="badge bg-${getUrgencyColor(task.urgency)}">${task.urgency} (${task.urgencyPercent}%)</span></p>
+                                    <p><strong>Status:</strong> <span class="badge bg-${task.status === 'active' ? 'success' : 'secondary'}">${task.status.toUpperCase()}</span></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>Metrics</h6>
+                                    <p><strong>Weed Growth Rate:</strong> ${task.weedGrowth}x</p>
+                                    <p><strong>Days Since Last Action:</strong> ${task.daysSince} days</p>
+                                    <p><strong>Estimated Cost:</strong> $${task.estimatedCost}</p>
+                                    <p><strong>Last Updated:</strong> ${new Date(task.lastUpdated).toLocaleString()}</p>
+                                </div>
+                            </div>
+                            
+                            <div class="row mt-3">
+                                <div class="col-md-6">
+                                    <h6>Weather Conditions</h6>
+                                    <p><strong>Current Weather:</strong> ${task.weather}</p>
+                                    <p><strong>Weather Issue:</strong> ${task.weatherIssue ? 'Yes' : 'No'}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>Schedule & Action</h6>
+                                    <p><strong>Scheduled:</strong> ${task.schedule}</p>
+                                    <p><strong>Recommended Action:</strong> ${task.action}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-success" onclick="executeWeedingTask('${task.id}')">
+                                <i class="fas fa-play me-1"></i>Execute Task
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        function showWeedingRescheduleModal(task) {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-warning text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-clock me-2"></i>Reschedule Weeding Task
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="newSchedule" class="form-label">New Schedule Date</label>
+                                <input type="date" class="form-control" id="newSchedule" value="${task.schedule}">
+                            </div>
+                            <div class="mb-3">
+                                <label for="rescheduleReason" class="form-label">Reason for Rescheduling</label>
+                                <select class="form-select" id="rescheduleReason">
+                                    <option value="weather">Weather Conditions</option>
+                                    <option value="equipment">Equipment Issues</option>
+                                    <option value="priority">Priority Change</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Current Schedule:</strong> ${task.schedule}
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-warning" onclick="confirmWeedingTaskReschedule('${task.id}')">
+                                <i class="fas fa-check me-1"></i>Reschedule Task
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        function confirmWeedingTaskReschedule(taskId) {
+            const newSchedule = document.getElementById('newSchedule').value;
+            const reason = document.getElementById('rescheduleReason').value;
+            
+            if (!newSchedule) {
+                showErrorDialog('Invalid Date', 'Please select a valid schedule date.');
+                return;
+            }
+            
+            const tasks = JSON.parse(localStorage.getItem('unifiedWeedingTasks') || '[]');
+            const taskIndex = tasks.findIndex(t => t.id === taskId);
+            
+            if (taskIndex !== -1) {
+                tasks[taskIndex].schedule = newSchedule;
+                tasks[taskIndex].rescheduleReason = reason;
+                tasks[taskIndex].lastUpdated = new Date().toISOString();
+                
+                localStorage.setItem('unifiedWeedingTasks', JSON.stringify(tasks));
+                
+                updateDashboardWeedingTasks();
+                syncWithIntelligentWeeding();
+                
+                const modal = document.querySelector('.modal.show');
+                if (modal) {
+                    const bsModal = bootstrap.Modal.getInstance(modal);
+                    bsModal.hide();
+                }
+                
+                showSuccessDialog(
+                    '✅ Task Rescheduled',
+                    `Weeding task has been rescheduled to ${newSchedule}.`
+                );
+            }
         }
 
         // Financial Analytics
