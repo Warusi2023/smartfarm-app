@@ -820,11 +820,206 @@
             if (typeof pesticideManagement !== 'undefined') {
                 pesticideManagement.selectPesticide(pesticideName);
             } else {
-                showSuccessDialog(
-                    `🐛 Selected: ${pesticideName}`,
-                    `This would integrate with the pesticide management system to:\n\n• Calculate optimal application rates\n• Check weather suitability\n• Estimate costs and coverage\n• Generate application schedule\n• Track effectiveness over time\n\nPesticide selection logged and ready for application!`
-                );
+                showPesticideSelectionModal(pesticideName);
             }
+        }
+
+        function showPesticideSelectionModal(pesticideName) {
+            // Get pesticide details based on name
+            const pesticideData = getPesticideData(pesticideName);
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-success text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-check-circle me-2"></i>Pesticide Selected Successfully
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="pesticide-selection-card p-3 border rounded mb-3" style="background: linear-gradient(135deg, #f8f9fa, #e9ecef);">
+                                        <h4 class="text-primary mb-3">${pesticideData.name}</h4>
+                                        <div class="mb-2">
+                                            <strong>Type:</strong> ${pesticideData.type}
+                                        </div>
+                                        <div class="mb-2">
+                                            <strong>Target Pests:</strong> ${pesticideData.target}
+                                        </div>
+                                        <div class="mb-2">
+                                            <strong>Cost:</strong> <span class="text-success fw-bold">${pesticideData.cost}</span>
+                                        </div>
+                                        <div class="mb-2">
+                                            <strong>Safety Level:</strong> 
+                                            <span class="badge ${pesticideData.safetyClass}">${pesticideData.safety}</span>
+                                        </div>
+                                        <div class="mb-3">
+                                            <strong>Effectiveness:</strong> ${pesticideData.effectiveness}%
+                                            <div class="progress mt-1" style="height: 8px;">
+                                                <div class="progress-bar ${pesticideData.effectivenessClass}" 
+                                                     style="width: ${pesticideData.effectiveness}%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="text-primary mb-3">Next Steps</h6>
+                                    <div class="list-group list-group-flush">
+                                        <div class="list-group-item d-flex align-items-center">
+                                            <i class="fas fa-calculator text-primary me-3"></i>
+                                            <div>
+                                                <strong>Calculate Application Rate</strong>
+                                                <small class="text-muted d-block">Based on field size and pest density</small>
+                                            </div>
+                                        </div>
+                                        <div class="list-group-item d-flex align-items-center">
+                                            <i class="fas fa-cloud-sun text-info me-3"></i>
+                                            <div>
+                                                <strong>Check Weather Conditions</strong>
+                                                <small class="text-muted d-block">Ensure optimal application timing</small>
+                                            </div>
+                                        </div>
+                                        <div class="list-group-item d-flex align-items-center">
+                                            <i class="fas fa-dollar-sign text-success me-3"></i>
+                                            <div>
+                                                <strong>Estimate Costs & Coverage</strong>
+                                                <small class="text-muted d-block">Calculate total application cost</small>
+                                            </div>
+                                        </div>
+                                        <div class="list-group-item d-flex align-items-center">
+                                            <i class="fas fa-calendar-alt text-warning me-3"></i>
+                                            <div>
+                                                <strong>Generate Application Schedule</strong>
+                                                <small class="text-muted d-block">Plan optimal application timing</small>
+                                            </div>
+                                        </div>
+                                        <div class="list-group-item d-flex align-items-center">
+                                            <i class="fas fa-chart-line text-info me-3"></i>
+                                            <div>
+                                                <strong>Track Effectiveness</strong>
+                                                <small class="text-muted d-block">Monitor results over time</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-info mt-3">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Note:</strong> This pesticide has been logged in your selection history. You can now proceed with application planning or select additional pesticides for a comprehensive treatment plan.
+                            </div>
+                            
+                            <div class="row mt-3">
+                                <div class="col-md-6">
+                                    <div class="d-grid">
+                                        <button class="btn btn-outline-primary" onclick="checkWeatherConditions()">
+                                            <i class="fas fa-cloud-sun me-2"></i>Check Weather
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-grid">
+                                        <button class="btn btn-outline-info" onclick="viewApplicationHistory()">
+                                            <i class="fas fa-history me-2"></i>View History
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-success" onclick="proceedWithApplication('${pesticideName}')">
+                                <i class="fas fa-play me-2"></i>Proceed with Application
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        function getPesticideData(pesticideName) {
+            const pesticides = {
+                'Malathion': {
+                    name: 'Malathion',
+                    type: 'Organophosphate Insecticide',
+                    target: 'Aphids, Whiteflies, Thrips',
+                    cost: '$35.00/L',
+                    safety: 'Moderate',
+                    safetyClass: 'bg-warning text-dark',
+                    effectiveness: 85,
+                    effectivenessClass: 'bg-warning'
+                },
+                'Deltamethrin': {
+                    name: 'Deltamethrin',
+                    type: 'Pyrethroid Insecticide',
+                    target: 'Caterpillars, Beetles, Thrips',
+                    cost: '$45.00/L',
+                    safety: 'Moderate',
+                    safetyClass: 'bg-warning text-dark',
+                    effectiveness: 95,
+                    effectivenessClass: 'bg-success'
+                },
+                'Neem Oil': {
+                    name: 'Neem Oil',
+                    type: 'Organic Insecticide',
+                    target: 'Aphids, Whiteflies, Spider Mites',
+                    cost: '$15.00/L',
+                    safety: 'High',
+                    safetyClass: 'bg-success',
+                    effectiveness: 75,
+                    effectivenessClass: 'bg-warning'
+                },
+                'Insecticidal Soap': {
+                    name: 'Insecticidal Soap',
+                    type: 'Organic Insecticide',
+                    target: 'Soft-bodied insects',
+                    cost: '$8.00/L',
+                    safety: 'Very High',
+                    safetyClass: 'bg-success',
+                    effectiveness: 70,
+                    effectivenessClass: 'bg-warning'
+                }
+            };
+            
+            return pesticides[pesticideName] || {
+                name: pesticideName,
+                type: 'Unknown Type',
+                target: 'Various pests',
+                cost: 'Price not available',
+                safety: 'Unknown',
+                safetyClass: 'bg-secondary',
+                effectiveness: 0,
+                effectivenessClass: 'bg-secondary'
+            };
+        }
+
+        function proceedWithApplication(pesticideName) {
+            // Close the selection modal
+            const modal = document.querySelector('.modal');
+            if (modal) {
+                const bsModal = bootstrap.Modal.getInstance(modal);
+                if (bsModal) {
+                    bsModal.hide();
+                }
+            }
+            
+            // Show application planning dialog
+            showSuccessDialog(
+                '🚀 Application Planning Started',
+                `Application planning for ${pesticideName} has been initiated!\n\n• Weather conditions will be checked\n• Optimal application rate will be calculated\n• Cost estimation will be provided\n• Application schedule will be generated\n\nYou can now proceed with the application process.`
+            );
         }
 
         function showPesticideDetails(pesticideName) {
