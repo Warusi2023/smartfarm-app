@@ -7363,6 +7363,144 @@
             );
         }
 
+        function generateLivestockReportPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Set up colors
+            const primaryColor = [46, 125, 50];
+            const textColor = [33, 37, 41];
+            
+            let yPosition = 20;
+            const pageWidth = doc.internal.pageSize.width;
+            const margin = 20;
+            
+            // Helper functions
+            const addText = (text, x, y, options = {}) => {
+                doc.setFontSize(options.fontSize || 12);
+                doc.setTextColor(...(options.color || textColor));
+                if (options.fontStyle) doc.setFont(undefined, options.fontStyle);
+                doc.text(text, x, y, { align: options.align || 'left' });
+            };
+            
+            // Header
+            addText('LIVESTOCK MANAGEMENT REPORT', pageWidth / 2, yPosition, {
+                fontSize: 24,
+                color: primaryColor,
+                fontStyle: 'bold',
+                align: 'center'
+            });
+            yPosition += 10;
+            addText(`Generated on: ${new Date().toLocaleDateString()}`, pageWidth / 2, yPosition, {
+                fontSize: 12,
+                color: textColor,
+                align: 'center'
+            });
+            yPosition += 20;
+            
+            // Livestock Details Table
+            if (livestock.length > 0) {
+                const tableData = livestock.map(animal => [
+                    animal.type || 'N/A',
+                    animal.breed || 'N/A',
+                    animal.quantity || 'N/A',
+                    animal.location || 'N/A',
+                    animal.status || 'N/A',
+                    animal.age || 'N/A'
+                ]);
+                
+                doc.autoTable({
+                    head: [['Type', 'Breed', 'Quantity', 'Location', 'Status', 'Age']],
+                    body: tableData,
+                    startY: yPosition,
+                    margin: { left: margin, right: margin },
+                    styles: { fontSize: 10, cellPadding: 3 },
+                    headStyles: { fillColor: primaryColor, textColor: [255, 255, 255], fontStyle: 'bold' },
+                    alternateRowStyles: { fillColor: [248, 249, 250] }
+                });
+            } else {
+                addText('No livestock data available', margin, yPosition);
+            }
+            
+            // Save the PDF
+            const fileName = `LivestockReport_${new Date().toISOString().split('T')[0]}.pdf`;
+            doc.save(fileName);
+            
+            showSuccessDialog(
+                '📄 Livestock Report Generated',
+                `Your livestock management report has been generated and downloaded as a PDF.\n\nFile: ${fileName}\n\nThe report includes detailed information about all your livestock.`
+            );
+        }
+
+        function generateInventoryReportPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Set up colors
+            const primaryColor = [46, 125, 50];
+            const textColor = [33, 37, 41];
+            
+            let yPosition = 20;
+            const pageWidth = doc.internal.pageSize.width;
+            const margin = 20;
+            
+            // Helper functions
+            const addText = (text, x, y, options = {}) => {
+                doc.setFontSize(options.fontSize || 12);
+                doc.setTextColor(...(options.color || textColor));
+                if (options.fontStyle) doc.setFont(undefined, options.fontStyle);
+                doc.text(text, x, y, { align: options.align || 'left' });
+            };
+            
+            // Header
+            addText('INVENTORY MANAGEMENT REPORT', pageWidth / 2, yPosition, {
+                fontSize: 24,
+                color: primaryColor,
+                fontStyle: 'bold',
+                align: 'center'
+            });
+            yPosition += 10;
+            addText(`Generated on: ${new Date().toLocaleDateString()}`, pageWidth / 2, yPosition, {
+                fontSize: 12,
+                color: textColor,
+                align: 'center'
+            });
+            yPosition += 20;
+            
+            // Inventory Details Table
+            if (inventory.length > 0) {
+                const tableData = inventory.map(item => [
+                    item.name || 'N/A',
+                    item.category || 'N/A',
+                    item.quantity || 'N/A',
+                    item.unit || 'N/A',
+                    item.status || 'N/A',
+                    item.lastUpdated || 'N/A'
+                ]);
+                
+                doc.autoTable({
+                    head: [['Item Name', 'Category', 'Quantity', 'Unit', 'Status', 'Last Updated']],
+                    body: tableData,
+                    startY: yPosition,
+                    margin: { left: margin, right: margin },
+                    styles: { fontSize: 10, cellPadding: 3 },
+                    headStyles: { fillColor: primaryColor, textColor: [255, 255, 255], fontStyle: 'bold' },
+                    alternateRowStyles: { fillColor: [248, 249, 250] }
+                });
+            } else {
+                addText('No inventory data available', margin, yPosition);
+            }
+            
+            // Save the PDF
+            const fileName = `InventoryReport_${new Date().toISOString().split('T')[0]}.pdf`;
+            doc.save(fileName);
+            
+            showSuccessDialog(
+                '📄 Inventory Report Generated',
+                `Your inventory management report has been generated and downloaded as a PDF.\n\nFile: ${fileName}\n\nThe report includes detailed information about all your inventory items.`
+            );
+        }
+
         function generateSummaryReport() {
             const farmData = JSON.parse(localStorage.getItem('farmData') || '{}');
             const cropCount = crops.length;
