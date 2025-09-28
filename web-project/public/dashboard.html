@@ -838,9 +838,14 @@
                     <div class="dashboard-card">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h5>Crops</h5>
-                            <button class="btn btn-custom" onclick="addNewCrop()">
-                                <i class="fas fa-plus me-2"></i>Add Crop
-                            </button>
+                            <div>
+                                <button class="btn btn-outline-primary me-2" onclick="showGlobalCropDatabase()">
+                                    <i class="fas fa-globe me-2"></i>Global Database
+                                </button>
+                                <button class="btn btn-custom" onclick="addNewCrop()">
+                                    <i class="fas fa-plus me-2"></i>Add Crop
+                                </button>
+                            </div>
                         </div>
                         <div class="table-responsive">
                             <table class="table table-custom">
@@ -887,9 +892,14 @@
                     <div class="dashboard-card">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h5>Livestock by Type</h5>
-                            <button class="btn btn-custom" onclick="addNewLivestock()">
-                                <i class="fas fa-plus me-2"></i>Add Livestock
-                            </button>
+                            <div>
+                                <button class="btn btn-outline-success me-2" onclick="showGlobalLivestockDatabase()">
+                                    <i class="fas fa-globe me-2"></i>Global Database
+                                </button>
+                                <button class="btn btn-custom" onclick="addNewLivestock()">
+                                    <i class="fas fa-plus me-2"></i>Add Livestock
+                                </button>
+                            </div>
                         </div>
                         
                         <!-- Livestock Type Tabs -->
@@ -1512,8 +1522,362 @@
         let livestock = [];
         let inventory = [];
 
+        // Global Agricultural Database
+        let globalCropDatabase = {};
+        let globalLivestockDatabase = {};
+        let globalAquacultureDatabase = {};
+
+        // Initialize Global Agricultural Database
+        function initializeGlobalDatabase() {
+            // Global Crop Database
+            globalCropDatabase = {
+                'cereals': {
+                    name: 'Cereal Crops (Grains)',
+                    description: 'Staple food sources high in carbohydrates',
+                    icon: '🌾',
+                    crops: [
+                        { name: 'Wheat', scientific: 'Triticum aestivum', category: 'cereals' },
+                        { name: 'Rice', scientific: 'Oryza sativa', category: 'cereals' },
+                        { name: 'Maize (Corn)', scientific: 'Zea mays', category: 'cereals' },
+                        { name: 'Barley', scientific: 'Hordeum vulgare', category: 'cereals' },
+                        { name: 'Sorghum', scientific: 'Sorghum bicolor', category: 'cereals' },
+                        { name: 'Millet', scientific: 'Panicum miliaceum', category: 'cereals' },
+                        { name: 'Oats', scientific: 'Avena sativa', category: 'cereals' },
+                        { name: 'Rye', scientific: 'Secale cereale', category: 'cereals' },
+                        { name: 'Triticale', scientific: 'Triticosecale', category: 'cereals' }
+                    ]
+                },
+                'legumes': {
+                    name: 'Legumes (Pulses)',
+                    description: 'High-protein crops important for soil nitrogen fixing',
+                    icon: '🌰',
+                    crops: [
+                        { name: 'Soybeans', scientific: 'Glycine max', category: 'legumes' },
+                        { name: 'Lentils', scientific: 'Lens culinaris', category: 'legumes' },
+                        { name: 'Chickpeas', scientific: 'Cicer arietinum', category: 'legumes' },
+                        { name: 'Peas', scientific: 'Pisum sativum', category: 'legumes' },
+                        { name: 'Kidney Beans', scientific: 'Phaseolus vulgaris', category: 'legumes' },
+                        { name: 'Navy Beans', scientific: 'Phaseolus vulgaris', category: 'legumes' },
+                        { name: 'Pinto Beans', scientific: 'Phaseolus vulgaris', category: 'legumes' },
+                        { name: 'Mung Beans', scientific: 'Vigna radiata', category: 'legumes' },
+                        { name: 'Black Beans', scientific: 'Phaseolus vulgaris', category: 'legumes' },
+                        { name: 'Pigeon Peas', scientific: 'Cajanus cajan', category: 'legumes' },
+                        { name: 'Cowpeas', scientific: 'Vigna unguiculata', category: 'legumes' },
+                        { name: 'Faba Beans', scientific: 'Vicia faba', category: 'legumes' }
+                    ]
+                },
+                'root_tubers': {
+                    name: 'Root and Tuber Crops',
+                    description: 'Underground storage organs, rich in starch',
+                    icon: '🥔',
+                    crops: [
+                        { name: 'Potatoes', scientific: 'Solanum tuberosum', category: 'root_tubers' },
+                        { name: 'Cassava', scientific: 'Manihot esculenta', category: 'root_tubers' },
+                        { name: 'Sweet Potatoes', scientific: 'Ipomoea batatas', category: 'root_tubers' },
+                        { name: 'Yams', scientific: 'Dioscorea spp.', category: 'root_tubers' },
+                        { name: 'Taro', scientific: 'Colocasia esculenta', category: 'root_tubers' },
+                        { name: 'Sugar Beet', scientific: 'Beta vulgaris', category: 'root_tubers' },
+                        { name: 'Table Beet', scientific: 'Beta vulgaris', category: 'root_tubers' },
+                        { name: 'Carrots', scientific: 'Daucus carota', category: 'root_tubers' },
+                        { name: 'Radish', scientific: 'Raphanus sativus', category: 'root_tubers' },
+                        { name: 'Turnips', scientific: 'Brassica rapa', category: 'root_tubers' },
+                        { name: 'Ginger', scientific: 'Zingiber officinale', category: 'root_tubers' },
+                        { name: 'Turmeric', scientific: 'Curcuma longa', category: 'root_tubers' }
+                    ]
+                },
+                'vegetables': {
+                    name: 'Vegetables',
+                    description: 'Cultivated for leaves, stems, roots, or fruits',
+                    icon: '🫑',
+                    crops: [
+                        { name: 'Tomatoes', scientific: 'Solanum lycopersicum', category: 'vegetables' },
+                        { name: 'Onions', scientific: 'Allium cepa', category: 'vegetables' },
+                        { name: 'Cabbage', scientific: 'Brassica oleracea', category: 'vegetables' },
+                        { name: 'Lettuce', scientific: 'Lactuca sativa', category: 'vegetables' },
+                        { name: 'Spinach', scientific: 'Spinacia oleracea', category: 'vegetables' },
+                        { name: 'Kale', scientific: 'Brassica oleracea', category: 'vegetables' },
+                        { name: 'Cauliflower', scientific: 'Brassica oleracea', category: 'vegetables' },
+                        { name: 'Broccoli', scientific: 'Brassica oleracea', category: 'vegetables' },
+                        { name: 'Cucumber', scientific: 'Cucumis sativus', category: 'vegetables' },
+                        { name: 'Pumpkin', scientific: 'Cucurbita pepo', category: 'vegetables' },
+                        { name: 'Eggplant', scientific: 'Solanum melongena', category: 'vegetables' },
+                        { name: 'Zucchini', scientific: 'Cucurbita pepo', category: 'vegetables' },
+                        { name: 'Bell Peppers', scientific: 'Capsicum annuum', category: 'vegetables' },
+                        { name: 'Chili Peppers', scientific: 'Capsicum frutescens', category: 'vegetables' },
+                        { name: 'Okra', scientific: 'Abelmoschus esculentus', category: 'vegetables' }
+                    ]
+                },
+                'fruits': {
+                    name: 'Fruits (Tree and Non-Tree)',
+                    description: 'Consumed fresh or processed, high in vitamins',
+                    icon: '🍎',
+                    crops: [
+                        // Tree Fruits
+                        { name: 'Apples', scientific: 'Malus domestica', category: 'fruits', subcategory: 'tree' },
+                        { name: 'Oranges', scientific: 'Citrus sinensis', category: 'fruits', subcategory: 'tree' },
+                        { name: 'Mangoes', scientific: 'Mangifera indica', category: 'fruits', subcategory: 'tree' },
+                        { name: 'Bananas', scientific: 'Musa acuminata', category: 'fruits', subcategory: 'tree' },
+                        { name: 'Avocados', scientific: 'Persea americana', category: 'fruits', subcategory: 'tree' },
+                        { name: 'Papayas', scientific: 'Carica papaya', category: 'fruits', subcategory: 'tree' },
+                        { name: 'Pears', scientific: 'Pyrus communis', category: 'fruits', subcategory: 'tree' },
+                        { name: 'Cherries', scientific: 'Prunus avium', category: 'fruits', subcategory: 'tree' },
+                        { name: 'Plums', scientific: 'Prunus domestica', category: 'fruits', subcategory: 'tree' },
+                        { name: 'Coconuts', scientific: 'Cocos nucifera', category: 'fruits', subcategory: 'tree' },
+                        { name: 'Dates', scientific: 'Phoenix dactylifera', category: 'fruits', subcategory: 'tree' },
+                        { name: 'Olives', scientific: 'Olea europaea', category: 'fruits', subcategory: 'tree' },
+                        // Vine/Bush Fruits
+                        { name: 'Grapes', scientific: 'Vitis vinifera', category: 'fruits', subcategory: 'vine' },
+                        { name: 'Strawberries', scientific: 'Fragaria ananassa', category: 'fruits', subcategory: 'vine' },
+                        { name: 'Blueberries', scientific: 'Vaccinium corymbosum', category: 'fruits', subcategory: 'vine' },
+                        { name: 'Watermelon', scientific: 'Citrullus lanatus', category: 'fruits', subcategory: 'vine' },
+                        { name: 'Cantaloupe', scientific: 'Cucumis melo', category: 'fruits', subcategory: 'vine' },
+                        { name: 'Honeydew', scientific: 'Cucumis melo', category: 'fruits', subcategory: 'vine' },
+                        { name: 'Pineapples', scientific: 'Ananas comosus', category: 'fruits', subcategory: 'vine' },
+                        { name: 'Passion Fruit', scientific: 'Passiflora edulis', category: 'fruits', subcategory: 'vine' },
+                        { name: 'Guava', scientific: 'Psidium guajava', category: 'fruits', subcategory: 'vine' }
+                    ]
+                },
+                'herbs_spices': {
+                    name: 'Herbs & Spices',
+                    description: 'Used for flavor, medicine, or perfume',
+                    icon: '🌱',
+                    crops: [
+                        { name: 'Coriander', scientific: 'Coriandrum sativum', category: 'herbs_spices' },
+                        { name: 'Basil', scientific: 'Ocimum basilicum', category: 'herbs_spices' },
+                        { name: 'Mint', scientific: 'Mentha spp.', category: 'herbs_spices' },
+                        { name: 'Parsley', scientific: 'Petroselinum crispum', category: 'herbs_spices' },
+                        { name: 'Thyme', scientific: 'Thymus vulgaris', category: 'herbs_spices' },
+                        { name: 'Oregano', scientific: 'Origanum vulgare', category: 'herbs_spices' },
+                        { name: 'Rosemary', scientific: 'Rosmarinus officinalis', category: 'herbs_spices' },
+                        { name: 'Sage', scientific: 'Salvia officinalis', category: 'herbs_spices' },
+                        { name: 'Chili Pepper', scientific: 'Capsicum annuum', category: 'herbs_spices' },
+                        { name: 'Black Pepper', scientific: 'Piper nigrum', category: 'herbs_spices' },
+                        { name: 'Cinnamon', scientific: 'Cinnamomum verum', category: 'herbs_spices' },
+                        { name: 'Cloves', scientific: 'Syzygium aromaticum', category: 'herbs_spices' },
+                        { name: 'Nutmeg', scientific: 'Myristica fragrans', category: 'herbs_spices' },
+                        { name: 'Cardamom', scientific: 'Elettaria cardamomum', category: 'herbs_spices' },
+                        { name: 'Vanilla', scientific: 'Vanilla planifolia', category: 'herbs_spices' }
+                    ]
+                },
+                'oilseeds': {
+                    name: 'Oilseed Crops',
+                    description: 'Farmed for oil extraction',
+                    icon: '🌻',
+                    crops: [
+                        { name: 'Sunflower', scientific: 'Helianthus annuus', category: 'oilseeds' },
+                        { name: 'Canola', scientific: 'Brassica napus', category: 'oilseeds' },
+                        { name: 'Soybeans', scientific: 'Glycine max', category: 'oilseeds' },
+                        { name: 'Sesame', scientific: 'Sesamum indicum', category: 'oilseeds' },
+                        { name: 'Groundnuts', scientific: 'Arachis hypogaea', category: 'oilseeds' },
+                        { name: 'Palm Oil', scientific: 'Elaeis guineensis', category: 'oilseeds' },
+                        { name: 'Flaxseed', scientific: 'Linum usitatissimum', category: 'oilseeds' },
+                        { name: 'Cottonseed', scientific: 'Gossypium hirsutum', category: 'oilseeds' },
+                        { name: 'Safflower', scientific: 'Carthamus tinctorius', category: 'oilseeds' }
+                    ]
+                },
+                'beverage': {
+                    name: 'Beverage Crops',
+                    description: 'Grown specifically for drink production',
+                    icon: '🧃',
+                    crops: [
+                        { name: 'Coffee', scientific: 'Coffea arabica', category: 'beverage' },
+                        { name: 'Tea', scientific: 'Camellia sinensis', category: 'beverage' },
+                        { name: 'Cocoa', scientific: 'Theobroma cacao', category: 'beverage' },
+                        { name: 'Sugarcane', scientific: 'Saccharum officinarum', category: 'beverage' },
+                        { name: 'Sugar Beet', scientific: 'Beta vulgaris', category: 'beverage' }
+                    ]
+                },
+                'industrial': {
+                    name: 'Industrial/Fiber Crops',
+                    description: 'Grown for materials and non-food purposes',
+                    icon: '🏭',
+                    crops: [
+                        { name: 'Cotton', scientific: 'Gossypium hirsutum', category: 'industrial' },
+                        { name: 'Hemp', scientific: 'Cannabis sativa', category: 'industrial' },
+                        { name: 'Flax', scientific: 'Linum usitatissimum', category: 'industrial' },
+                        { name: 'Jute', scientific: 'Corchorus olitorius', category: 'industrial' },
+                        { name: 'Rubber', scientific: 'Hevea brasiliensis', category: 'industrial' },
+                        { name: 'Kenaf', scientific: 'Hibiscus cannabinus', category: 'industrial' },
+                        { name: 'Agave', scientific: 'Agave sisalana', category: 'industrial' },
+                        { name: 'Indigo', scientific: 'Indigofera tinctoria', category: 'industrial' }
+                    ]
+                },
+                'medicinal': {
+                    name: 'Medicinal and Aromatic Plants',
+                    description: 'Cultivated for healing, pharma, or cosmetic use',
+                    icon: '🌿',
+                    crops: [
+                        { name: 'Aloe Vera', scientific: 'Aloe barbadensis', category: 'medicinal' },
+                        { name: 'Neem', scientific: 'Azadirachta indica', category: 'medicinal' },
+                        { name: 'Chamomile', scientific: 'Matricaria chamomilla', category: 'medicinal' },
+                        { name: 'Echinacea', scientific: 'Echinacea purpurea', category: 'medicinal' },
+                        { name: 'Lemongrass', scientific: 'Cymbopogon citratus', category: 'medicinal' },
+                        { name: 'Ginseng', scientific: 'Panax ginseng', category: 'medicinal' },
+                        { name: 'Ashwagandha', scientific: 'Withania somnifera', category: 'medicinal' },
+                        { name: 'Turmeric', scientific: 'Curcuma longa', category: 'medicinal' },
+                        { name: 'Moringa', scientific: 'Moringa oleifera', category: 'medicinal' },
+                        { name: 'Lavender', scientific: 'Lavandula angustifolia', category: 'medicinal' }
+                    ]
+                },
+                'specialty': {
+                    name: 'Specialty & Other Crops',
+                    description: 'Unique and specialized agricultural products',
+                    icon: '🍄',
+                    crops: [
+                        { name: 'Mushrooms', scientific: 'Pleurotus ostreatus', category: 'specialty' },
+                        { name: 'Bamboo Shoots', scientific: 'Bambusa vulgaris', category: 'specialty' },
+                        { name: 'Seaweed', scientific: 'Porphyra spp.', category: 'specialty' },
+                        { name: 'Quinoa', scientific: 'Chenopodium quinoa', category: 'specialty' },
+                        { name: 'Amaranth', scientific: 'Amaranthus spp.', category: 'specialty' },
+                        { name: 'Buckwheat', scientific: 'Fagopyrum esculentum', category: 'specialty' }
+                    ]
+                }
+            };
+
+            // Global Livestock Database
+            globalLivestockDatabase = {
+                'cattle': {
+                    name: 'Cattle',
+                    icon: '🐄',
+                    breeds: [
+                        'Holstein', 'Angus', 'Hereford', 'Simmental', 'Charolais', 'Limousin',
+                        'Brahman', 'Jersey', 'Guernsey', 'Brown Swiss', 'Shorthorn', 'Gelbvieh',
+                        'Belted Galloway', 'Highland', 'Texas Longhorn', 'Wagyu', 'Zebu', 'Ankole'
+                    ]
+                },
+                'pigs': {
+                    name: 'Pigs',
+                    icon: '🐷',
+                    breeds: [
+                        'Yorkshire', 'Hampshire', 'Duroc', 'Landrace', 'Berkshire', 'Tamworth',
+                        'Pietrain', 'Chester White', 'Poland China', 'Spotted', 'Gloucestershire Old Spot',
+                        'Mangalitsa', 'Kunekune', 'Vietnamese Pot-bellied', 'Meishan', 'Large Black'
+                    ]
+                },
+                'sheep': {
+                    name: 'Sheep',
+                    icon: '🐑',
+                    breeds: [
+                        'Merino', 'Suffolk', 'Dorset', 'Hampshire', 'Rambouillet', 'Columbia',
+                        'Targhee', 'Corriedale', 'Romney', 'Cheviot', 'Southdown', 'Shropshire',
+                        'Border Leicester', 'Texel', 'Katahdin', 'Dorper', 'St. Croix', 'Barbados Blackbelly'
+                    ]
+                },
+                'goats': {
+                    name: 'Goats',
+                    icon: '🐐',
+                    breeds: [
+                        'Boer', 'Nubian', 'Saanen', 'Alpine', 'Toggenburg', 'LaMancha',
+                        'Oberhasli', 'Nigerian Dwarf', 'Pygmy', 'Angora', 'Cashmere', 'Kiko',
+                        'Spanish', 'Myotonic', 'Fainting', 'Tennessee', 'Savanna', 'Kalahari Red'
+                    ]
+                },
+                'poultry': {
+                    name: 'Poultry',
+                    icon: '🐔',
+                    breeds: [
+                        'Rhode Island Red', 'Leghorn', 'Orpington', 'Sussex', 'Wyandotte',
+                        'Plymouth Rock', 'Australorp', 'Brahma', 'Cochin', 'Silkie', 'Polish',
+                        'Sebright', 'Ancona', 'Andalusian', 'Campine', 'Hamburg', 'Lakenvelder',
+                        'Minorca', 'New Hampshire', 'Welsummer', 'Araucana', 'Easter Egger'
+                    ]
+                },
+                'horses': {
+                    name: 'Horses',
+                    icon: '🐴',
+                    breeds: [
+                        'Thoroughbred', 'Quarter Horse', 'Arabian', 'Paint', 'Appaloosa',
+                        'Morgan', 'Tennessee Walking Horse', 'Standardbred', 'Mustang',
+                        'Friesian', 'Clydesdale', 'Percheron', 'Belgian', 'Shire', 'Fjord',
+                        'Icelandic', 'Welsh Pony', 'Shetland Pony', 'Miniature Horse'
+                    ]
+                },
+                'aquaculture': {
+                    name: 'Aquaculture',
+                    icon: '🐟',
+                    species: [
+                        'Tilapia', 'Catfish', 'Carp', 'Trout', 'Salmon', 'Barramundi',
+                        'Pangasius', 'Snakehead', 'Eel', 'Pacu', 'Gourami', 'Sea Bass',
+                        'Sea Bream', 'Cobia', 'Tuna', 'Flounder', 'Milkfish', 'Halibut',
+                        'Amberjack', 'Shrimp', 'Prawns', 'Crabs', 'Oysters', 'Mussels',
+                        'Clams', 'Scallops', 'Cockles'
+                    ]
+                },
+                'pets': {
+                    name: 'Pets & Companion Animals',
+                    icon: '🐶',
+                    species: [
+                        'Dogs', 'Cats', 'Rabbits', 'Guinea Pigs', 'Hamsters', 'Gerbils',
+                        'Mice', 'Rats', 'Ferrets', 'Birds', 'Fish', 'Turtles', 'Tortoises',
+                        'Lizards', 'Snakes', 'Frogs', 'Hedgehogs', 'Sugar Gliders', 'Capybaras'
+                    ]
+                }
+            };
+
+            // Global Aquaculture Database
+            globalAquacultureDatabase = {
+                'freshwater_fish': {
+                    name: 'Freshwater Fish',
+                    icon: '🌊',
+                    species: [
+                        { name: 'Tilapia', scientific: 'Oreochromis niloticus', notes: 'Most farmed globally, fast-growing' },
+                        { name: 'Catfish', scientific: 'Clarias spp.', notes: 'Hardy, high protein diet' },
+                        { name: 'Carp', scientific: 'Cyprinus carpio', notes: 'Common in Asia' },
+                        { name: 'Trout', scientific: 'Oncorhynchus mykiss', notes: 'Coldwater fish, high market demand' },
+                        { name: 'Barramundi', scientific: 'Lates calcarifer', notes: 'Also called Asian sea bass' },
+                        { name: 'Pangasius', scientific: 'Pangasianodon hypophthalmus', notes: 'Fast-growing, native to Southeast Asia' },
+                        { name: 'Snakehead Fish', scientific: 'Channa striata', notes: 'High value in Asian markets' },
+                        { name: 'Eel', scientific: 'Anguilla spp.', notes: 'High market value in Japan & Korea' },
+                        { name: 'Pacu', scientific: 'Piaractus mesopotamicus', notes: 'Related to piranha, farmed in South America' },
+                        { name: 'Gourami', scientific: 'Osphronemidae', notes: 'Hardy species, farmed at small scale' }
+                    ]
+                },
+                'marine_fish': {
+                    name: 'Marine Fish',
+                    icon: '🌊',
+                    species: [
+                        { name: 'Salmon', scientific: 'Salmo salar', notes: 'High-value export fish' },
+                        { name: 'Sea Bass', scientific: 'Dicentrarchus labrax', notes: 'Popular in Europe & Mediterranean' },
+                        { name: 'Sea Bream', scientific: 'Sparus aurata', notes: 'Grown in cages in the Mediterranean' },
+                        { name: 'Cobia', scientific: 'Rachycentron canadum', notes: 'Fast growth, farmed in tropical seas' },
+                        { name: 'Tuna', scientific: 'Thunnus spp.', notes: 'Not bred yet, mostly fattened in captivity' },
+                        { name: 'Flounder', scientific: 'Paralichthys spp.', notes: 'Flatfish, good for export' },
+                        { name: 'Milkfish', scientific: 'Chanos chanos', notes: 'Very common in Southeast Asia' },
+                        { name: 'Halibut', scientific: 'Hippoglossus hippoglossus', notes: 'Cold water species, high market value' },
+                        { name: 'Amberjack', scientific: 'Seriola spp.', notes: 'High growth rate in offshore cages' }
+                    ]
+                },
+                'shellfish': {
+                    name: 'Shellfish & Bivalves',
+                    icon: '🐚',
+                    species: [
+                        { name: 'Pacific Oyster', scientific: 'Crassostrea gigas', notes: 'Most farmed oyster globally' },
+                        { name: 'Blue Mussel', scientific: 'Mytilus edulis', notes: 'Easy to grow on ropes' },
+                        { name: 'Manila Clam', scientific: 'Ruditapes philippinarum', notes: 'Widely farmed in Asia & Europe' },
+                        { name: 'Japanese Scallop', scientific: 'Patinopecten yessoensis', notes: 'Popular in Asia' },
+                        { name: 'Green-lipped Mussel', scientific: 'Perna canaliculus', notes: 'Farmed mainly in New Zealand' },
+                        { name: 'Eastern Oyster', scientific: 'Crassostrea virginica', notes: 'Common in US East Coast' }
+                    ]
+                },
+                'crustaceans': {
+                    name: 'Crustaceans',
+                    icon: '🦐',
+                    species: [
+                        { name: 'Whiteleg Shrimp', scientific: 'Litopenaeus vannamei', notes: 'Most widely farmed shrimp' },
+                        { name: 'Giant Tiger Prawn', scientific: 'Penaeus monodon', notes: 'Large commercial species' },
+                        { name: 'Freshwater Prawn', scientific: 'Macrobrachium rosenbergii', notes: 'Freshwater alternative' },
+                        { name: 'Mud Crab', scientific: 'Scylla serrata', notes: 'High-value crustacean' },
+                        { name: 'Blue Swimming Crab', scientific: 'Portunus pelagicus', notes: 'Popular in Asian markets' }
+                    ]
+                }
+            };
+
+            console.log('Global agricultural database initialized successfully');
+        }
+
         // Initialize dashboard
         document.addEventListener('DOMContentLoaded', function() {
+            initializeGlobalDatabase();
             initializeDashboard();
             updateLastUpdated();
             setInterval(updateLastUpdated, 60000); // Update every minute
@@ -6447,6 +6811,423 @@ INVENTORY SUMMARY:
         document.addEventListener('DOMContentLoaded', function() {
             initializeFeedMixSystem();
         });
+
+        // Global Crop Database Functions
+        function showGlobalCropDatabase() {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-xl modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-primary text-white border-0">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    <i class="fas fa-globe fa-2x"></i>
+                                </div>
+                                <div>
+                                    <h4 class="modal-title mb-0 fw-bold">Global Crop Database</h4>
+                                    <small class="opacity-75">Comprehensive agricultural species from around the world</small>
+                                </div>
+                            </div>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body p-4">
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                        <input type="text" class="form-control" id="cropSearch" placeholder="Search crops..." onkeyup="filterCrops()">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <select class="form-select" id="categoryFilter" onchange="filterCrops()">
+                                        <option value="">All Categories</option>
+                                        ${Object.keys(globalCropDatabase).map(key => 
+                                            `<option value="${key}">${globalCropDatabase[key].icon} ${globalCropDatabase[key].name}</option>`
+                                        ).join('')}
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div id="cropCategories">
+                                ${Object.keys(globalCropDatabase).map(categoryKey => {
+                                    const category = globalCropDatabase[categoryKey];
+                                    return `
+                                        <div class="crop-category mb-4" data-category="${categoryKey}">
+                                            <div class="category-header mb-3">
+                                                <h5 class="text-primary">
+                                                    ${category.icon} ${category.name}
+                                                </h5>
+                                                <p class="text-muted mb-0">${category.description}</p>
+                                            </div>
+                                            <div class="row">
+                                                ${category.crops.map(crop => `
+                                                    <div class="col-md-4 col-lg-3 mb-3">
+                                                        <div class="crop-card" data-crop="${crop.name.toLowerCase()}" data-category="${categoryKey}">
+                                                            <div class="card h-100 border-0 shadow-sm">
+                                                                <div class="card-body p-3">
+                                                                    <h6 class="card-title mb-1">${crop.name}</h6>
+                                                                    <small class="text-muted">${crop.scientific}</small>
+                                                                    <div class="mt-2">
+                                                                        <button class="btn btn-sm btn-outline-primary" onclick="addCropFromDatabase('${crop.name}', '${crop.scientific}', '${categoryKey}')">
+                                                                            <i class="fas fa-plus me-1"></i>Add to Farm
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                `).join('')}
+                                            </div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                        <div class="modal-footer bg-light border-0">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                                <i class="fas fa-times me-1"></i>Close
+                            </button>
+                            <button type="button" class="btn btn-primary" onclick="exportCropDatabase()">
+                                <i class="fas fa-download me-1"></i>Export Database
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Add custom styles
+            const style = document.createElement('style');
+            style.textContent = `
+                .crop-card {
+                    transition: transform 0.2s ease, box-shadow 0.2s ease;
+                }
+                .crop-card:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+                }
+                .category-header {
+                    border-bottom: 2px solid #e9ecef;
+                    padding-bottom: 0.5rem;
+                }
+                .crop-category.hidden {
+                    display: none;
+                }
+            `;
+            document.head.appendChild(style);
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+                document.head.removeChild(style);
+            });
+        }
+
+        function filterCrops() {
+            const searchTerm = document.getElementById('cropSearch').value.toLowerCase();
+            const categoryFilter = document.getElementById('categoryFilter').value;
+            const categories = document.querySelectorAll('.crop-category');
+            
+            categories.forEach(category => {
+                const categoryKey = category.getAttribute('data-category');
+                const shouldShowCategory = !categoryFilter || categoryKey === categoryFilter;
+                
+                if (!shouldShowCategory) {
+                    category.classList.add('hidden');
+                    return;
+                }
+                
+                const cropCards = category.querySelectorAll('.crop-card');
+                let hasVisibleCrops = false;
+                
+                cropCards.forEach(card => {
+                    const cropName = card.getAttribute('data-crop');
+                    const shouldShowCrop = !searchTerm || cropName.includes(searchTerm);
+                    
+                    if (shouldShowCrop) {
+                        card.parentElement.style.display = 'block';
+                        hasVisibleCrops = true;
+                    } else {
+                        card.parentElement.style.display = 'none';
+                    }
+                });
+                
+                if (hasVisibleCrops) {
+                    category.classList.remove('hidden');
+                } else {
+                    category.classList.add('hidden');
+                }
+            });
+        }
+
+        function addCropFromDatabase(cropName, scientificName, category) {
+            // Close the modal first
+            const modal = document.querySelector('.modal');
+            if (modal) {
+                const bsModal = bootstrap.Modal.getInstance(modal);
+                bsModal.hide();
+            }
+            
+            // Pre-fill the add crop form
+            setTimeout(() => {
+                const addCropModal = document.querySelector('#addCropModal');
+                if (addCropModal) {
+                    const bsModal = new bootstrap.Modal(addCropModal);
+                    bsModal.show();
+                    
+                    // Pre-fill form fields
+                    document.getElementById('cropName').value = cropName;
+                    document.getElementById('cropScientific').value = scientificName;
+                    document.getElementById('cropCategory').value = category;
+                } else {
+                    // If no modal exists, create a simple form
+                    addNewCropWithData(cropName, scientificName, category);
+                }
+            }, 300);
+        }
+
+        function addNewCropWithData(cropName, scientificName, category) {
+            const newCrop = {
+                id: Date.now(),
+                name: cropName,
+                scientific: scientificName,
+                category: category,
+                variety: '',
+                plantingDate: new Date().toISOString().split('T')[0],
+                expectedHarvest: '',
+                field: 'Field A',
+                area: 1,
+                status: 'Growing',
+                notes: `Added from global database - ${globalCropDatabase[category].name}`
+            };
+            
+            crops.push(newCrop);
+            saveCropData();
+            renderCropTable();
+            updateCropMetrics();
+            
+            // Show success notification
+            showNotification(`Successfully added ${cropName} to your farm!`, 'success');
+        }
+
+        function exportCropDatabase() {
+            const dataStr = JSON.stringify(globalCropDatabase, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'global-crop-database.json';
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+            notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; max-width: 400px;';
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'} me-2"></i>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 5000);
+        }
+
+        // Global Livestock Database Functions
+        function showGlobalLivestockDatabase() {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-xl modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-success text-white border-0">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    <i class="fas fa-paw fa-2x"></i>
+                                </div>
+                                <div>
+                                    <h4 class="modal-title mb-0 fw-bold">Global Livestock Database</h4>
+                                    <small class="opacity-75">Comprehensive livestock and aquaculture species worldwide</small>
+                                </div>
+                            </div>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body p-4">
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                        <input type="text" class="form-control" id="livestockSearch" placeholder="Search livestock..." onkeyup="filterLivestock()">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <select class="form-select" id="livestockCategoryFilter" onchange="filterLivestock()">
+                                        <option value="">All Categories</option>
+                                        ${Object.keys(globalLivestockDatabase).map(key => 
+                                            `<option value="${key}">${globalLivestockDatabase[key].icon} ${globalLivestockDatabase[key].name}</option>`
+                                        ).join('')}
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div id="livestockCategories">
+                                ${Object.keys(globalLivestockDatabase).map(categoryKey => {
+                                    const category = globalLivestockDatabase[categoryKey];
+                                    return `
+                                        <div class="livestock-category mb-4" data-category="${categoryKey}">
+                                            <div class="category-header mb-3">
+                                                <h5 class="text-success">
+                                                    ${category.icon} ${category.name}
+                                                </h5>
+                                            </div>
+                                            <div class="row">
+                                                ${category.breeds ? category.breeds.map(breed => `
+                                                    <div class="col-md-4 col-lg-3 mb-3">
+                                                        <div class="livestock-card" data-livestock="${breed.toLowerCase()}" data-category="${categoryKey}">
+                                                            <div class="card h-100 border-0 shadow-sm">
+                                                                <div class="card-body p-3">
+                                                                    <h6 class="card-title mb-1">${breed}</h6>
+                                                                    <small class="text-muted">${category.name}</small>
+                                                                    <div class="mt-2">
+                                                                        <button class="btn btn-sm btn-outline-success" onclick="addLivestockFromDatabase('${breed}', '${categoryKey}')">
+                                                                            <i class="fas fa-plus me-1"></i>Add to Farm
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                `).join('') : category.species ? category.species.map(species => `
+                                                    <div class="col-md-4 col-lg-3 mb-3">
+                                                        <div class="livestock-card" data-livestock="${species.toLowerCase()}" data-category="${categoryKey}">
+                                                            <div class="card h-100 border-0 shadow-sm">
+                                                                <div class="card-body p-3">
+                                                                    <h6 class="card-title mb-1">${species}</h6>
+                                                                    <small class="text-muted">${category.name}</small>
+                                                                    <div class="mt-2">
+                                                                        <button class="btn btn-sm btn-outline-success" onclick="addLivestockFromDatabase('${species}', '${categoryKey}')">
+                                                                            <i class="fas fa-plus me-1"></i>Add to Farm
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                `).join('') : ''}
+                                            </div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                        <div class="modal-footer bg-light border-0">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                                <i class="fas fa-times me-1"></i>Close
+                            </button>
+                            <button type="button" class="btn btn-success" onclick="exportLivestockDatabase()">
+                                <i class="fas fa-download me-1"></i>Export Database
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        function filterLivestock() {
+            const searchTerm = document.getElementById('livestockSearch').value.toLowerCase();
+            const categoryFilter = document.getElementById('livestockCategoryFilter').value;
+            const categories = document.querySelectorAll('.livestock-category');
+            
+            categories.forEach(category => {
+                const categoryKey = category.getAttribute('data-category');
+                const shouldShowCategory = !categoryFilter || categoryKey === categoryFilter;
+                
+                if (!shouldShowCategory) {
+                    category.classList.add('hidden');
+                    return;
+                }
+                
+                const livestockCards = category.querySelectorAll('.livestock-card');
+                let hasVisibleLivestock = false;
+                
+                livestockCards.forEach(card => {
+                    const livestockName = card.getAttribute('data-livestock');
+                    const shouldShowLivestock = !searchTerm || livestockName.includes(searchTerm);
+                    
+                    if (shouldShowLivestock) {
+                        card.parentElement.style.display = 'block';
+                        hasVisibleLivestock = true;
+                    } else {
+                        card.parentElement.style.display = 'none';
+                    }
+                });
+                
+                if (hasVisibleLivestock) {
+                    category.classList.remove('hidden');
+                } else {
+                    category.classList.add('hidden');
+                }
+            });
+        }
+
+        function addLivestockFromDatabase(livestockName, category) {
+            // Close the modal first
+            const modal = document.querySelector('.modal');
+            if (modal) {
+                const bsModal = bootstrap.Modal.getInstance(modal);
+                bsModal.hide();
+            }
+            
+            // Add livestock directly
+            const newLivestock = {
+                id: Date.now(),
+                type: category,
+                breed: livestockName,
+                quantity: 1,
+                earTags: `ET${Date.now()}`,
+                location: 'Barn A',
+                gps: '0.0000, 0.0000',
+                lastWeight: 0,
+                status: 'Healthy',
+                healthNotes: `Added from global database - ${globalLivestockDatabase[category].name}`
+            };
+            
+            livestock.push(newLivestock);
+            saveLivestockData();
+            renderLivestockTable();
+            updateLivestockMetrics();
+            
+            showNotification(`Successfully added ${livestockName} to your farm!`, 'success');
+        }
+
+        function exportLivestockDatabase() {
+            const dataStr = JSON.stringify(globalLivestockDatabase, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'global-livestock-database.json';
+            link.click();
+            URL.revokeObjectURL(url);
+        }
     </script>
 </body>
 </html>
