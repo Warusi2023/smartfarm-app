@@ -1015,7 +1015,9 @@
                 doc.setFontSize(fontSize);
                 doc.setTextColor(...color);
                 doc.setFont('helvetica', fontStyle);
-                doc.text(text, x, y, { align });
+                // Ensure text is always a string
+                const textString = text !== null && text !== undefined ? String(text) : '';
+                doc.text(textString, x, y, { align });
             };
             
             // Helper function to add a line
@@ -1092,7 +1094,7 @@
                 addRect(x, y, metricWidth, metricHeight, lightGray, [200, 200, 200]);
                 
                 // Metric value
-                addText(metric.value, x + 10, y + 15, { 
+                addText(String(metric.value), x + 10, y + 15, { 
                     fontSize: 16, 
                     color: primaryColor, 
                     fontStyle: 'bold' 
@@ -1200,12 +1202,12 @@
                 
                 // Prepare table data
                 const tableData = partners.map(partner => [
-                    partner.name || 'N/A',
-                    partner.storeType || 'N/A',
-                    partner.contactPerson || 'N/A',
-                    partner.email || 'N/A',
-                    partner.status || 'N/A',
-                    partner.dateAdded || 'N/A'
+                    String(partner.name || 'N/A'),
+                    String(partner.storeType || 'N/A'),
+                    String(partner.contactPerson || 'N/A'),
+                    String(partner.email || 'N/A'),
+                    String(partner.status || 'N/A'),
+                    String(partner.dateAdded || 'N/A')
                 ]);
                 
                 // Add table using autoTable
