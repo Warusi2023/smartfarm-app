@@ -7561,9 +7561,243 @@ INVENTORY SUMMARY:
 
         // PDF Export Functions
         function exportToPDF(type) {
-            showSuccessMessage('PDF export functionality requires a PDF library. CSV export is available for now.');
-            // For now, we'll export as CSV since PDF generation requires additional libraries
-            exportToCSV('all');
+            try {
+                // Check if jsPDF is available
+                if (typeof jsPDF === 'undefined') {
+                    showErrorMessage('PDF library not loaded. Please refresh the page and try again.');
+                    return;
+                }
+
+                const doc = new jsPDF();
+                const pageWidth = doc.internal.pageSize.getWidth();
+                const pageHeight = doc.internal.pageSize.getHeight();
+                let yPosition = 20;
+                const lineHeight = 7;
+                const margin = 20;
+
+                // Add title
+                doc.setFontSize(20);
+                doc.setFont(undefined, 'bold');
+                doc.text('SmartFarm Report', margin, yPosition);
+                yPosition += 15;
+
+                // Add report type and date
+                doc.setFontSize(12);
+                doc.setFont(undefined, 'normal');
+                doc.text(`Report Type: ${type.charAt(0).toUpperCase() + type.slice(1)} Report`, margin, yPosition);
+                yPosition += lineHeight;
+                doc.text(`Generated: ${new Date().toLocaleString()}`, margin, yPosition);
+                yPosition += 20;
+
+                // Generate content based on type
+                switch(type) {
+                    case 'summary':
+                        generateSummaryPDFContent(doc, yPosition, lineHeight, margin, pageWidth);
+                        break;
+                    case 'detailed':
+                        generateDetailedPDFContent(doc, yPosition, lineHeight, margin, pageWidth);
+                        break;
+                    case 'financial':
+                        generateFinancialPDFContent(doc, yPosition, lineHeight, margin, pageWidth);
+                        break;
+                    default:
+                        generateSummaryPDFContent(doc, yPosition, lineHeight, margin, pageWidth);
+                }
+
+                // Save the PDF
+                const fileName = `SmartFarm_${type}_Report_${new Date().toISOString().split('T')[0]}.pdf`;
+                doc.save(fileName);
+
+                showSuccessMessage(`PDF ${type} report generated successfully! File: ${fileName}`);
+            } catch (error) {
+                console.error('Error generating PDF:', error);
+                showErrorMessage('Error generating PDF report. Please try again.');
+            }
+        }
+
+        function generateSummaryPDFContent(doc, yPosition, lineHeight, margin, pageWidth) {
+            // Farm Overview
+            doc.setFontSize(14);
+            doc.setFont(undefined, 'bold');
+            doc.text('Farm Overview', margin, yPosition);
+            yPosition += lineHeight + 5;
+
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'normal');
+            
+            // Get farm data
+            const farmData = JSON.parse(localStorage.getItem('farmData') || '{}');
+            const crops = JSON.parse(localStorage.getItem('crops') || '[]');
+            const livestock = JSON.parse(localStorage.getItem('livestock') || '[]');
+            const inventory = JSON.parse(localStorage.getItem('inventory') || '[]');
+
+            const summaryData = [
+                `Farm Name: ${farmData.farmName || 'SmartFarm'}`,
+                `Location: ${farmData.location || 'Not specified'}`,
+                `Total Crops: ${crops.length}`,
+                `Total Livestock: ${livestock.length}`,
+                `Inventory Items: ${inventory.length}`,
+                `Report Date: ${new Date().toLocaleDateString()}`
+            ];
+
+            summaryData.forEach(line => {
+                if (yPosition > 280) {
+                    doc.addPage();
+                    yPosition = 20;
+                }
+                doc.text(line, margin, yPosition);
+                yPosition += lineHeight;
+            });
+
+            // Crops Summary
+            yPosition += 10;
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'bold');
+            doc.text('Crops Summary', margin, yPosition);
+            yPosition += lineHeight + 5;
+
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'normal');
+            
+            if (crops.length > 0) {
+                crops.slice(0, 10).forEach(crop => {
+                    if (yPosition > 280) {
+                        doc.addPage();
+                        yPosition = 20;
+                    }
+                    doc.text(`• ${crop.name} - ${crop.variety} (${crop.area} acres)`, margin + 5, yPosition);
+                    yPosition += lineHeight;
+                });
+                if (crops.length > 10) {
+                    doc.text(`... and ${crops.length - 10} more crops`, margin + 5, yPosition);
+                }
+            } else {
+                doc.text('No crops data available', margin + 5, yPosition);
+            }
+        }
+
+        function generateDetailedPDFContent(doc, yPosition, lineHeight, margin, pageWidth) {
+            // Detailed Farm Report
+            doc.setFontSize(14);
+            doc.setFont(undefined, 'bold');
+            doc.text('Detailed Farm Report', margin, yPosition);
+            yPosition += lineHeight + 5;
+
+            // Get all data
+            const farmData = JSON.parse(localStorage.getItem('farmData') || '{}');
+            const crops = JSON.parse(localStorage.getItem('crops') || '[]');
+            const livestock = JSON.parse(localStorage.getItem('livestock') || '[]');
+            const inventory = JSON.parse(localStorage.getItem('inventory') || '[]');
+
+            // Crops Details
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'bold');
+            doc.text('Crops Details', margin, yPosition);
+            yPosition += lineHeight + 5;
+
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'normal');
+            
+            crops.forEach(crop => {
+                if (yPosition > 280) {
+                    doc.addPage();
+                    yPosition = 20;
+                }
+                
+                doc.text(`${crop.name} (${crop.variety})`, margin, yPosition);
+                yPosition += lineHeight;
+                doc.text(`  Area: ${crop.area} acres | Status: ${crop.status} | Yield: ${crop.yield || 'N/A'}`, margin + 5, yPosition);
+                yPosition += lineHeight + 2;
+            });
+
+            // Livestock Details
+            yPosition += 10;
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'bold');
+            doc.text('Livestock Details', margin, yPosition);
+            yPosition += lineHeight + 5;
+
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'normal');
+            
+            livestock.forEach(animal => {
+                if (yPosition > 280) {
+                    doc.addPage();
+                    yPosition = 20;
+                }
+                
+                doc.text(`${animal.type} - ${animal.breed}`, margin, yPosition);
+                yPosition += lineHeight;
+                doc.text(`  Age: ${animal.age} | Weight: ${animal.weight} | Status: ${animal.status}`, margin + 5, yPosition);
+                yPosition += lineHeight + 2;
+            });
+        }
+
+        function generateFinancialPDFContent(doc, yPosition, lineHeight, margin, pageWidth) {
+            // Financial Report
+            doc.setFontSize(14);
+            doc.setFont(undefined, 'bold');
+            doc.text('Financial Report', margin, yPosition);
+            yPosition += lineHeight + 5;
+
+            // Get financial data
+            const farmData = JSON.parse(localStorage.getItem('farmData') || '{}');
+            const crops = JSON.parse(localStorage.getItem('crops') || '[]');
+            const livestock = JSON.parse(localStorage.getItem('livestock') || '[]');
+            const inventory = JSON.parse(localStorage.getItem('inventory') || '[]');
+
+            // Calculate totals
+            const totalCropValue = crops.reduce((sum, crop) => sum + (parseFloat(crop.value) || 0), 0);
+            const totalLivestockValue = livestock.reduce((sum, animal) => sum + (parseFloat(animal.value) || 0), 0);
+            const totalInventoryValue = inventory.reduce((sum, item) => sum + (parseFloat(item.value) || 0), 0);
+            const totalFarmValue = totalCropValue + totalLivestockValue + totalInventoryValue;
+
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'normal');
+            
+            const financialData = [
+                `Total Crop Value: $${totalCropValue.toFixed(2)}`,
+                `Total Livestock Value: $${totalLivestockValue.toFixed(2)}`,
+                `Total Inventory Value: $${totalInventoryValue.toFixed(2)}`,
+                `Total Farm Value: $${totalFarmValue.toFixed(2)}`,
+                `Number of Crops: ${crops.length}`,
+                `Number of Livestock: ${livestock.length}`,
+                `Inventory Items: ${inventory.length}`
+            ];
+
+            financialData.forEach(line => {
+                if (yPosition > 280) {
+                    doc.addPage();
+                    yPosition = 20;
+                }
+                doc.text(line, margin, yPosition);
+                yPosition += lineHeight;
+            });
+
+            // Revenue Breakdown
+            yPosition += 10;
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'bold');
+            doc.text('Revenue Breakdown', margin, yPosition);
+            yPosition += lineHeight + 5;
+
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'normal');
+            
+            const revenueBreakdown = [
+                `Crops Revenue: $${totalCropValue.toFixed(2)} (${((totalCropValue/totalFarmValue)*100).toFixed(1)}%)`,
+                `Livestock Revenue: $${totalLivestockValue.toFixed(2)} (${((totalLivestockValue/totalFarmValue)*100).toFixed(1)}%)`,
+                `Inventory Value: $${totalInventoryValue.toFixed(2)} (${((totalInventoryValue/totalFarmValue)*100).toFixed(1)}%)`
+            ];
+
+            revenueBreakdown.forEach(line => {
+                if (yPosition > 280) {
+                    doc.addPage();
+                    yPosition = 20;
+                }
+                doc.text(line, margin, yPosition);
+                yPosition += lineHeight;
+            });
         }
 
         // JSON Export Functions
