@@ -198,6 +198,18 @@
             margin-bottom: 8px;
         }
 
+        .clickable-alert {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+
+        .clickable-alert:hover {
+            transform: translateX(5px);
+            border-left-color: #ffc107;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
         .alert-warning {
             background: #fff3cd;
             color: #856404;
@@ -2353,30 +2365,359 @@
             
             if (weatherData.rainfall > 15) {
                 alertsContainer.innerHTML += `
-                    <div class="weather-alert alert-warning">
+                    <div class="weather-alert alert-warning clickable-alert" onclick="showWeatherAdvice('heavy-rain')">
                         <i class="fas fa-exclamation-triangle me-2"></i>
-                        Heavy rain expected - Consider protecting crops
+                        Heavy rain expected - Click for protection advice
+                        <i class="fas fa-chevron-right float-end"></i>
                     </div>
                 `;
             }
             
             if (weatherData.temperature > 35) {
                 alertsContainer.innerHTML += `
-                    <div class="weather-alert alert-warning">
+                    <div class="weather-alert alert-warning clickable-alert" onclick="showWeatherAdvice('high-temperature')">
                         <i class="fas fa-thermometer-full me-2"></i>
-                        High temperature - Ensure adequate water supply
+                        High temperature - Click for heat protection advice
+                        <i class="fas fa-chevron-right float-end"></i>
                     </div>
                 `;
             }
             
             if (weatherData.windSpeed > 20) {
                 alertsContainer.innerHTML += `
-                    <div class="weather-alert alert-info">
+                    <div class="weather-alert alert-info clickable-alert" onclick="showWeatherAdvice('strong-winds')">
                         <i class="fas fa-wind me-2"></i>
-                        Strong winds - Secure equipment and structures
+                        Strong winds - Click for safety advice
+                        <i class="fas fa-chevron-right float-end"></i>
                     </div>
                 `;
             }
+            
+            if (weatherData.humidity > 90) {
+                alertsContainer.innerHTML += `
+                    <div class="weather-alert alert-info clickable-alert" onclick="showWeatherAdvice('high-humidity')">
+                        <i class="fas fa-tint me-2"></i>
+                        High humidity - Click for disease prevention advice
+                        <i class="fas fa-chevron-right float-end"></i>
+                    </div>
+                `;
+            }
+            
+            if (weatherData.uvIndex > 8) {
+                alertsContainer.innerHTML += `
+                    <div class="weather-alert alert-warning clickable-alert" onclick="showWeatherAdvice('high-uv')">
+                        <i class="fas fa-sun me-2"></i>
+                        High UV index - Click for sun protection advice
+                        <i class="fas fa-chevron-right float-end"></i>
+                    </div>
+                `;
+            }
+        }
+
+        // Weather Advice System
+        function showWeatherAdvice(alertType) {
+            const adviceData = getWeatherAdvice(alertType);
+            showWeatherAdviceModal(adviceData);
+        }
+
+        function getWeatherAdvice(alertType) {
+            const adviceDatabase = {
+                'heavy-rain': {
+                    title: 'Heavy Rain Protection Advice',
+                    icon: 'fas fa-cloud-rain',
+                    color: 'warning',
+                    severity: 'High',
+                    crops: [
+                        'Cover sensitive crops with plastic sheets or row covers',
+                        'Ensure proper drainage in fields to prevent waterlogging',
+                        'Harvest mature crops before heavy rain if possible',
+                        'Move potted plants to sheltered areas',
+                        'Check and repair greenhouse structures',
+                        'Apply fungicides preventively to avoid fungal diseases'
+                    ],
+                    livestock: [
+                        'Move livestock to covered shelters or barns',
+                        'Ensure adequate bedding to keep animals dry',
+                        'Check for leaks in barn roofs and walls',
+                        'Provide extra feed as animals may be stressed',
+                        'Monitor for signs of respiratory issues',
+                        'Keep water troughs clean and filled'
+                    ],
+                    equipment: [
+                        'Secure or move farm equipment to covered areas',
+                        'Cover exposed machinery with tarps',
+                        'Check drainage around equipment storage areas',
+                        'Ensure fuel tanks are properly sealed',
+                        'Move electrical equipment away from water'
+                    ],
+                    general: [
+                        'Monitor weather updates regularly',
+                        'Have emergency contact numbers ready',
+                        'Check insurance coverage for weather damage',
+                        'Document any damage for insurance claims',
+                        'Prepare for potential power outages'
+                    ]
+                },
+                'high-temperature': {
+                    title: 'High Temperature Protection Advice',
+                    icon: 'fas fa-thermometer-full',
+                    color: 'danger',
+                    severity: 'High',
+                    crops: [
+                        'Increase irrigation frequency during early morning or evening',
+                        'Apply mulch to retain soil moisture',
+                        'Use shade cloths for sensitive crops',
+                        'Harvest crops early in the morning when temperatures are cooler',
+                        'Consider temporary shade structures',
+                        'Monitor soil moisture levels more frequently'
+                    ],
+                    livestock: [
+                        'Provide ample shade and ventilation in barns',
+                        'Ensure continuous access to fresh, cool water',
+                        'Use fans or misting systems in livestock areas',
+                        'Reduce handling and transportation during peak heat',
+                        'Monitor for signs of heat stress',
+                        'Consider adjusting feeding times to cooler periods'
+                    ],
+                    equipment: [
+                        'Check cooling systems on tractors and machinery',
+                        'Store equipment in shaded areas when possible',
+                        'Monitor tire pressure as heat can cause expansion',
+                        'Keep fuel tanks less than full to allow for expansion',
+                        'Check hydraulic fluid levels and condition'
+                    ],
+                    general: [
+                        'Schedule outdoor work for early morning or evening',
+                        'Stay hydrated and take frequent breaks',
+                        'Wear appropriate protective clothing and sunscreen',
+                        'Monitor weather forecasts for heat wave duration',
+                        'Have emergency cooling plans ready'
+                    ]
+                },
+                'strong-winds': {
+                    title: 'Strong Wind Safety Advice',
+                    icon: 'fas fa-wind',
+                    color: 'info',
+                    severity: 'Medium',
+                    crops: [
+                        'Stake or tie down tall crops and plants',
+                        'Harvest or secure loose fruits and vegetables',
+                        'Check and reinforce greenhouse structures',
+                        'Use windbreaks or temporary barriers',
+                        'Avoid planting or transplanting during high winds',
+                        'Monitor for wind damage to crops'
+                    ],
+                    livestock: [
+                        'Ensure all gates and fences are secure',
+                        'Move livestock to more protected areas if possible',
+                        'Check barn doors and windows are properly secured',
+                        'Monitor for signs of stress in animals',
+                        'Keep emergency contact information handy',
+                        'Have backup power sources ready'
+                    ],
+                    equipment: [
+                        'Secure all loose equipment and tools',
+                        'Lower or secure any raised equipment',
+                        'Check and reinforce equipment storage structures',
+                        'Move vehicles to sheltered areas',
+                        'Secure tarps and covers with additional weights',
+                        'Check electrical connections for safety'
+                    ],
+                    general: [
+                        'Avoid working in open areas during high winds',
+                        'Wear appropriate safety gear',
+                        'Monitor weather updates for wind speed changes',
+                        'Have emergency plans ready for power outages',
+                        'Check for fallen branches or debris after winds'
+                    ]
+                },
+                'high-humidity': {
+                    title: 'High Humidity Disease Prevention',
+                    icon: 'fas fa-tint',
+                    color: 'info',
+                    severity: 'Medium',
+                    crops: [
+                        'Improve air circulation around plants',
+                        'Apply fungicides preventively',
+                        'Avoid overhead watering to reduce leaf wetness',
+                        'Prune plants to improve air flow',
+                        'Monitor for early signs of fungal diseases',
+                        'Consider using resistant crop varieties'
+                    ],
+                    livestock: [
+                        'Ensure good ventilation in barns and shelters',
+                        'Keep bedding dry and change frequently',
+                        'Monitor for respiratory issues in animals',
+                        'Provide adequate space to prevent overcrowding',
+                        'Check for signs of fungal infections',
+                        'Maintain clean water sources'
+                    ],
+                    equipment: [
+                        'Check for moisture damage to equipment',
+                        'Ensure electrical connections are dry and safe',
+                        'Store tools in dry, well-ventilated areas',
+                        'Check for rust or corrosion on metal equipment',
+                        'Maintain proper humidity levels in storage areas'
+                    ],
+                    general: [
+                        'Monitor humidity levels regularly',
+                        'Use dehumidifiers in critical areas if needed',
+                        'Check weather forecasts for humidity changes',
+                        'Maintain good hygiene practices',
+                        'Have disease treatment plans ready'
+                    ]
+                },
+                'high-uv': {
+                    title: 'High UV Index Protection Advice',
+                    icon: 'fas fa-sun',
+                    color: 'warning',
+                    severity: 'Medium',
+                    crops: [
+                        'Use shade cloths for sensitive crops',
+                        'Apply sunscreen or protective coatings to fruit',
+                        'Harvest during early morning or late afternoon',
+                        'Consider UV-resistant crop varieties',
+                        'Monitor for sunburn damage on plants',
+                        'Provide adequate water to prevent stress'
+                    ],
+                    livestock: [
+                        'Ensure adequate shade for all animals',
+                        'Provide extra water to prevent dehydration',
+                        'Monitor for signs of heat stress',
+                        'Use fans or misting systems if available',
+                        'Avoid handling animals during peak UV hours',
+                        'Check for sunburn on light-colored animals'
+                    ],
+                    equipment: [
+                        'Store equipment in shaded areas when possible',
+                        'Use UV-resistant covers for sensitive equipment',
+                        'Check plastic components for UV damage',
+                        'Apply protective coatings to exposed surfaces',
+                        'Monitor tire condition as UV can cause cracking'
+                    ],
+                    general: [
+                        'Wear protective clothing and sunscreen',
+                        'Work during early morning or late afternoon',
+                        'Take frequent breaks in shaded areas',
+                        'Stay hydrated throughout the day',
+                        'Monitor UV index levels regularly'
+                    ]
+                }
+            };
+
+            return adviceDatabase[alertType] || {
+                title: 'Weather Alert',
+                icon: 'fas fa-exclamation-triangle',
+                color: 'info',
+                severity: 'Unknown',
+                crops: ['No specific advice available'],
+                livestock: ['No specific advice available'],
+                equipment: ['No specific advice available'],
+                general: ['Monitor conditions and take appropriate precautions']
+            };
+        }
+
+        function showWeatherAdviceModal(advice) {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-${advice.color} text-white">
+                            <h5 class="modal-title">
+                                <i class="${advice.icon} me-2"></i>${advice.title}
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="alert alert-${advice.color} mb-0">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        <strong>Severity:</strong> ${advice.severity}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="alert alert-info mb-0">
+                                        <i class="fas fa-clock me-2"></i>
+                                        <strong>Time:</strong> ${new Date().toLocaleString()}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="advice-section">
+                                        <h6 class="text-success mb-3">
+                                            <i class="fas fa-seedling me-2"></i>Crop Protection
+                                        </h6>
+                                        <ul class="list-group list-group-flush">
+                                            ${advice.crops.map(item => `<li class="list-group-item">${item}</li>`).join('')}
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="advice-section">
+                                        <h6 class="text-primary mb-3">
+                                            <i class="fas fa-paw me-2"></i>Livestock Care
+                                        </h6>
+                                        <ul class="list-group list-group-flush">
+                                            ${advice.livestock.map(item => `<li class="list-group-item">${item}</li>`).join('')}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row mt-3">
+                                <div class="col-md-6">
+                                    <div class="advice-section">
+                                        <h6 class="text-warning mb-3">
+                                            <i class="fas fa-tools me-2"></i>Equipment Safety
+                                        </h6>
+                                        <ul class="list-group list-group-flush">
+                                            ${advice.equipment.map(item => `<li class="list-group-item">${item}</li>`).join('')}
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="advice-section">
+                                        <h6 class="text-info mb-3">
+                                            <i class="fas fa-clipboard-list me-2"></i>General Safety
+                                        </h6>
+                                        <ul class="list-group list-group-flush">
+                                            ${advice.general.map(item => `<li class="list-group-item">${item}</li>`).join('')}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-light mt-3">
+                                <i class="fas fa-lightbulb me-2"></i>
+                                <strong>Pro Tip:</strong> Always monitor weather conditions and adjust your farming practices accordingly. 
+                                Consider investing in weather monitoring equipment for better preparedness.
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-${advice.color}" onclick="printWeatherAdvice('${advice.title}')">
+                                <i class="fas fa-print me-1"></i>Print Advice
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        function printWeatherAdvice(title) {
+            window.print();
         }
 
         // Financial Analytics
