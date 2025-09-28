@@ -771,23 +771,758 @@
         }
 
         function addNewRetailPartner() {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-success text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-plus me-2"></i>Add New Retail Partner
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="addPartnerForm">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="partnerName" class="form-label">Partner Name *</label>
+                                            <input type="text" class="form-control" id="partnerName" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="storeType" class="form-label">Store Type *</label>
+                                            <select class="form-select" id="storeType" required>
+                                                <option value="">Select Store Type</option>
+                                                <option value="Supermarket">Supermarket</option>
+                                                <option value="Specialty Store">Specialty Store</option>
+                                                <option value="Farmers Market">Farmers Market</option>
+                                                <option value="Restaurant">Restaurant</option>
+                                                <option value="Wholesale">Wholesale</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="contactPerson" class="form-label">Contact Person *</label>
+                                            <input type="text" class="form-control" id="contactPerson" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="email" class="form-label">Email *</label>
+                                            <input type="email" class="form-control" id="email" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="phone" class="form-label">Phone *</label>
+                                            <input type="tel" class="form-control" id="phone" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="address" class="form-label">Address *</label>
+                                            <textarea class="form-control" id="address" rows="3" required></textarea>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="coverageArea" class="form-label">Coverage Area</label>
+                                            <input type="text" class="form-control" id="coverageArea" placeholder="e.g., Suva, Nadi, Lautoka">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="partnershipTerms" class="form-label">Partnership Terms</label>
+                                            <select class="form-select" id="partnershipTerms">
+                                                <option value="Standard">Standard (30 days payment)</option>
+                                                <option value="Premium">Premium (15 days payment)</option>
+                                                <option value="Exclusive">Exclusive (7 days payment)</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="deliverySchedule" class="form-label">Preferred Delivery Schedule</label>
+                                    <select class="form-select" id="deliverySchedule">
+                                        <option value="Daily">Daily</option>
+                                        <option value="3x Weekly">3x Weekly (Mon, Wed, Fri)</option>
+                                        <option value="2x Weekly">2x Weekly (Tue, Thu)</option>
+                                        <option value="Weekly">Weekly</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="qualityStandards" class="form-label">Quality Standards</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="organicCertified" value="organic">
+                                        <label class="form-check-label" for="organicCertified">Organic Certified</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="gmpCertified" value="gmp">
+                                        <label class="form-check-label" for="gmpCertified">GMP Certified</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="haccpCertified" value="haccp">
+                                        <label class="form-check-label" for="haccpCertified">HACCP Certified</label>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="notes" class="form-label">Additional Notes</label>
+                                    <textarea class="form-control" id="notes" rows="3" placeholder="Any additional information..."></textarea>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-success" onclick="saveNewRetailPartner()">
+                                <i class="fas fa-save me-2"></i>Add Partner
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        function saveNewRetailPartner() {
+            const form = document.getElementById('addPartnerForm');
+            const formData = new FormData(form);
+            
+            // Get form values
+            const partnerData = {
+                id: Date.now(),
+                name: document.getElementById('partnerName').value,
+                storeType: document.getElementById('storeType').value,
+                contactPerson: document.getElementById('contactPerson').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                address: document.getElementById('address').value,
+                coverageArea: document.getElementById('coverageArea').value,
+                partnershipTerms: document.getElementById('partnershipTerms').value,
+                deliverySchedule: document.getElementById('deliverySchedule').value,
+                qualityStandards: [],
+                notes: document.getElementById('notes').value,
+                status: 'Pending',
+                dateAdded: new Date().toISOString().split('T')[0]
+            };
+            
+            // Get quality standards
+            if (document.getElementById('organicCertified').checked) partnerData.qualityStandards.push('Organic Certified');
+            if (document.getElementById('gmpCertified').checked) partnerData.qualityStandards.push('GMP Certified');
+            if (document.getElementById('haccpCertified').checked) partnerData.qualityStandards.push('HACCP Certified');
+            
+            // Validate required fields
+            if (!partnerData.name || !partnerData.storeType || !partnerData.contactPerson || !partnerData.email || !partnerData.phone || !partnerData.address) {
+                showInfoDialog('Validation Error', 'Please fill in all required fields', 'OK');
+                return;
+            }
+            
+            // Save to localStorage
+            let partners = JSON.parse(localStorage.getItem('retailPartners') || '[]');
+            partners.push(partnerData);
+            localStorage.setItem('retailPartners', JSON.stringify(partners));
+            
+            // Close modal
+            const modal = document.querySelector('.modal');
+            if (modal) {
+                const bsModal = bootstrap.Modal.getInstance(modal);
+                if (bsModal) {
+                    bsModal.hide();
+                }
+            }
+            
+            // Show success message
             showInfoDialog(
-                '🏪 Add New Retail Partner',
-                'To add a new retail partner:\n\n1. Contact Information\n2. Store Type (Supermarket, Specialty, Farmers Market)\n3. Location and Coverage Area\n4. Partnership Terms\n5. Delivery Schedule\n6. Quality Standards\n\nOur team will review the application and set up the partnership within 48 hours.\n\nContact: partnerships@smartfarm.com'
+                'Partner Added Successfully!',
+                `New retail partner "${partnerData.name}" has been added successfully.\n\nStatus: ${partnerData.status}\nOur team will review the application and contact you within 48 hours.\n\nReference ID: PART${partnerData.id}`
             );
+            
+            // Refresh the page to show new partner
+            setTimeout(() => {
+                location.reload();
+            }, 2000);
         }
 
         function generateSupplyChainReport() {
+            // Show loading dialog
             showInfoDialog(
                 '📄 Generating Supply Chain Report...',
-                'This comprehensive report includes:\n\n• Complete farm-to-table journey analysis\n• Farm-to-counter distribution metrics\n• Retail partner performance data\n• Cold chain integrity statistics\n• Delivery time optimization\n• Quality assurance metrics\n• Environmental impact assessment\n• Cost analysis and ROI\n\nReport will be available for download shortly!'
+                'Please wait while we generate your comprehensive supply chain report...'
+            );
+            
+            // Simulate report generation delay
+            setTimeout(() => {
+                generateActualReport();
+            }, 2000);
+        }
+
+        function generateActualReport() {
+            // Get data from localStorage
+            const partners = JSON.parse(localStorage.getItem('retailPartners') || '[]');
+            const currentDate = new Date().toLocaleDateString();
+            
+            // Generate report data
+            const reportData = {
+                title: 'SmartFarm Supply Chain Report',
+                generatedDate: currentDate,
+                summary: {
+                    totalPartners: partners.length,
+                    activePartners: partners.filter(p => p.status === 'Active').length,
+                    pendingPartners: partners.filter(p => p.status === 'Pending').length,
+                    totalSales: '$45,230',
+                    averageDeliveryTime: '2.3 hours',
+                    customerSatisfaction: '94%'
+                },
+                partners: partners,
+                metrics: {
+                    farmToTable: {
+                        averageTime: '24-48 hours',
+                        freshnessScore: '98%',
+                        customerSatisfaction: '96%'
+                    },
+                    farmToCounter: {
+                        averageTime: '3-5 days',
+                        distributionEfficiency: '92%',
+                        retailSatisfaction: '91%'
+                    },
+                    coldChain: {
+                        temperatureCompliance: '99.2%',
+                        qualityRetention: '97%',
+                        energyEfficiency: '85%'
+                    },
+                    optimization: {
+                        routeEfficiency: '94%',
+                        fuelSavings: '18%',
+                        carbonReduction: '12%',
+                        costSavings: '$2,340/month'
+                    }
+                }
+            };
+            
+            // Create HTML report
+            const reportHTML = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>${reportData.title}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 20px; }
+                        .header { text-align: center; color: #2e7d32; border-bottom: 2px solid #2e7d32; padding-bottom: 20px; }
+                        .section { margin: 20px 0; }
+                        .metric { display: inline-block; margin: 10px; padding: 15px; background: #f8f9fa; border-radius: 8px; min-width: 200px; }
+                        .metric-value { font-size: 24px; font-weight: bold; color: #2e7d32; }
+                        .metric-label { font-size: 14px; color: #666; }
+                        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+                        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+                        th { background-color: #2e7d32; color: white; }
+                        .footer { text-align: center; margin-top: 40px; color: #666; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>${reportData.title}</h1>
+                        <p>Generated on: ${reportData.generatedDate}</p>
+                    </div>
+                    
+                    <div class="section">
+                        <h2>Executive Summary</h2>
+                        <div class="metric">
+                            <div class="metric-value">${reportData.summary.totalPartners}</div>
+                            <div class="metric-label">Total Partners</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">${reportData.summary.activePartners}</div>
+                            <div class="metric-label">Active Partners</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">${reportData.summary.totalSales}</div>
+                            <div class="metric-label">Total Sales</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">${reportData.summary.customerSatisfaction}</div>
+                            <div class="metric-label">Customer Satisfaction</div>
+                        </div>
+                    </div>
+                    
+                    <div class="section">
+                        <h2>Supply Chain Performance</h2>
+                        <h3>Farm-to-Table Journey</h3>
+                        <p><strong>Average Delivery Time:</strong> ${reportData.metrics.farmToTable.averageTime}</p>
+                        <p><strong>Freshness Score:</strong> ${reportData.metrics.farmToTable.freshnessScore}</p>
+                        <p><strong>Customer Satisfaction:</strong> ${reportData.metrics.farmToTable.customerSatisfaction}</p>
+                        
+                        <h3>Farm-to-Counter Journey</h3>
+                        <p><strong>Average Delivery Time:</strong> ${reportData.metrics.farmToCounter.averageTime}</p>
+                        <p><strong>Distribution Efficiency:</strong> ${reportData.metrics.farmToCounter.distributionEfficiency}</p>
+                        <p><strong>Retail Satisfaction:</strong> ${reportData.metrics.farmToCounter.retailSatisfaction}</p>
+                        
+                        <h3>Cold Chain Integrity</h3>
+                        <p><strong>Temperature Compliance:</strong> ${reportData.metrics.coldChain.temperatureCompliance}</p>
+                        <p><strong>Quality Retention:</strong> ${reportData.metrics.coldChain.qualityRetention}</p>
+                        <p><strong>Energy Efficiency:</strong> ${reportData.metrics.coldChain.energyEfficiency}</p>
+                        
+                        <h3>Route Optimization</h3>
+                        <p><strong>Route Efficiency:</strong> ${reportData.metrics.optimization.routeEfficiency}</p>
+                        <p><strong>Fuel Savings:</strong> ${reportData.metrics.optimization.fuelSavings}</p>
+                        <p><strong>Carbon Reduction:</strong> ${reportData.metrics.optimization.carbonReduction}</p>
+                        <p><strong>Monthly Cost Savings:</strong> ${reportData.metrics.optimization.costSavings}</p>
+                    </div>
+                    
+                    ${partners.length > 0 ? `
+                    <div class="section">
+                        <h2>Retail Partners</h2>
+                        <table>
+                            <tr>
+                                <th>Partner Name</th>
+                                <th>Store Type</th>
+                                <th>Contact Person</th>
+                                <th>Email</th>
+                                <th>Status</th>
+                                <th>Date Added</th>
+                            </tr>
+                            ${partners.map(partner => `
+                                <tr>
+                                    <td>${partner.name}</td>
+                                    <td>${partner.storeType}</td>
+                                    <td>${partner.contactPerson}</td>
+                                    <td>${partner.email}</td>
+                                    <td>${partner.status}</td>
+                                    <td>${partner.dateAdded}</td>
+                                </tr>
+                            `).join('')}
+                        </table>
+                    </div>
+                    ` : ''}
+                    
+                    <div class="footer">
+                        <p>This report was generated by SmartFarm Supply Chain Management System</p>
+                        <p>For questions or support, contact: support@smartfarm.com</p>
+                    </div>
+                </body>
+                </html>
+            `;
+            
+            // Create and download the report
+            const blob = new Blob([reportHTML], { type: 'text/html' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `SupplyChainReport_${new Date().toISOString().split('T')[0]}.html`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            // Show success message
+            showInfoDialog(
+                '📄 Report Generated Successfully!',
+                `Your supply chain report has been generated and downloaded.\n\nFile: SupplyChainReport_${new Date().toISOString().split('T')[0]}.html\n\nThe report includes:\n• Executive summary with key metrics\n• Supply chain performance analysis\n• Cold chain integrity statistics\n• Route optimization results\n• Complete partner directory\n\nYou can open the HTML file in any web browser to view the full report.`
             );
         }
 
         function optimizeSupplyChain() {
+            // Show optimization modal
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-route me-2"></i>Route Optimization
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>Current Route Analysis</h6>
+                                    <div class="mb-3">
+                                        <label class="form-label">Total Routes:</label>
+                                        <input type="text" class="form-control" value="47" readonly>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Average Distance:</label>
+                                        <input type="text" class="form-control" value="45.2 km" readonly>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Average Delivery Time:</label>
+                                        <input type="text" class="form-control" value="3.2 hours" readonly>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Fuel Consumption:</label>
+                                        <input type="text" class="form-control" value="180L/day" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>Optimization Settings</h6>
+                                    <div class="mb-3">
+                                        <label class="form-label">Priority Level:</label>
+                                        <select class="form-select" id="priorityLevel">
+                                            <option value="balanced">Balanced (Time & Cost)</option>
+                                            <option value="time">Time Priority</option>
+                                            <option value="cost">Cost Priority</option>
+                                            <option value="environmental">Environmental Priority</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Vehicle Type:</label>
+                                        <select class="form-select" id="vehicleType">
+                                            <option value="mixed">Mixed Fleet</option>
+                                            <option value="electric">Electric Vehicles</option>
+                                            <option value="hybrid">Hybrid Vehicles</option>
+                                            <option value="diesel">Diesel Vehicles</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Time Window:</label>
+                                        <select class="form-select" id="timeWindow">
+                                            <option value="flexible">Flexible (6 AM - 8 PM)</option>
+                                            <option value="morning">Morning (6 AM - 12 PM)</option>
+                                            <option value="afternoon">Afternoon (12 PM - 6 PM)</option>
+                                            <option value="evening">Evening (6 PM - 8 PM)</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Weather Consideration:</label>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="weatherCheck" checked>
+                                            <label class="form-check-label" for="weatherCheck">Include weather forecast</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Note:</strong> Route optimization will analyze current delivery patterns, traffic conditions, and weather forecasts to suggest the most efficient routes.
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-primary" onclick="runOptimization()">
+                                <i class="fas fa-play me-2"></i>Run Optimization
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        function runOptimization() {
+            // Close the settings modal
+            const modal = document.querySelector('.modal');
+            if (modal) {
+                const bsModal = bootstrap.Modal.getInstance(modal);
+                if (bsModal) {
+                    bsModal.hide();
+                }
+            }
+            
+            // Show optimization progress
             showInfoDialog(
-                '🚀 Optimizing Supply Chain Routes...',
-                'Optimization Results:\n\n• Reduced delivery time by 23%\n• Decreased fuel consumption by 18%\n• Improved cold chain efficiency by 15%\n• Optimized 47 delivery routes\n• Reduced carbon footprint by 12%\n\nNew optimized routes are now active!\n\nEstimated savings: $2,340/month'
+                '🚀 Running Route Optimization...',
+                'Please wait while we analyze your delivery routes and optimize them for maximum efficiency...\n\nThis may take a few moments.'
+            );
+            
+            // Simulate optimization process
+            setTimeout(() => {
+                showOptimizationResults();
+            }, 3000);
+        }
+
+        function showOptimizationResults() {
+            // Get optimization settings
+            const priorityLevel = document.getElementById('priorityLevel')?.value || 'balanced';
+            const vehicleType = document.getElementById('vehicleType')?.value || 'mixed';
+            const timeWindow = document.getElementById('timeWindow')?.value || 'flexible';
+            const weatherConsideration = document.getElementById('weatherCheck')?.checked || false;
+            
+            // Calculate optimization results based on settings
+            const results = calculateOptimizationResults(priorityLevel, vehicleType, timeWindow, weatherConsideration);
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-success text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-check-circle me-2"></i>Optimization Complete!
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6 class="text-success">Optimization Results</h6>
+                                    <div class="card mb-3">
+                                        <div class="card-body">
+                                            <h6 class="card-title">Route Efficiency</h6>
+                                            <div class="d-flex justify-content-between">
+                                                <span>Before:</span>
+                                                <span class="text-muted">78%</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <span>After:</span>
+                                                <span class="text-success fw-bold">${results.routeEfficiency}%</span>
+                                            </div>
+                                            <div class="progress mt-2">
+                                                <div class="progress-bar bg-success" style="width: ${results.routeEfficiency}%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="card mb-3">
+                                        <div class="card-body">
+                                            <h6 class="card-title">Delivery Time</h6>
+                                            <div class="d-flex justify-content-between">
+                                                <span>Before:</span>
+                                                <span class="text-muted">3.2 hours</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <span>After:</span>
+                                                <span class="text-success fw-bold">${results.deliveryTime} hours</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <span>Improvement:</span>
+                                                <span class="text-success fw-bold">${results.timeImprovement}%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="card mb-3">
+                                        <div class="card-body">
+                                            <h6 class="card-title">Fuel Consumption</h6>
+                                            <div class="d-flex justify-content-between">
+                                                <span>Before:</span>
+                                                <span class="text-muted">180L/day</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <span>After:</span>
+                                                <span class="text-success fw-bold">${results.fuelConsumption}L/day</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <span>Savings:</span>
+                                                <span class="text-success fw-bold">${results.fuelSavings}%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <h6 class="text-success">Environmental Impact</h6>
+                                    <div class="card mb-3">
+                                        <div class="card-body">
+                                            <h6 class="card-title">Carbon Footprint</h6>
+                                            <div class="d-flex justify-content-between">
+                                                <span>Before:</span>
+                                                <span class="text-muted">45.2 kg CO₂/day</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <span>After:</span>
+                                                <span class="text-success fw-bold">${results.carbonFootprint} kg CO₂/day</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <span>Reduction:</span>
+                                                <span class="text-success fw-bold">${results.carbonReduction}%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="card mb-3">
+                                        <div class="card-body">
+                                            <h6 class="card-title">Cost Savings</h6>
+                                            <div class="d-flex justify-content-between">
+                                                <span>Daily:</span>
+                                                <span class="text-success fw-bold">$${results.dailySavings}</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <span>Monthly:</span>
+                                                <span class="text-success fw-bold">$${results.monthlySavings}</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <span>Annual:</span>
+                                                <span class="text-success fw-bold">$${results.annualSavings}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="card mb-3">
+                                        <div class="card-body">
+                                            <h6 class="card-title">Optimized Routes</h6>
+                                            <div class="d-flex justify-content-between">
+                                                <span>Total Routes:</span>
+                                                <span class="fw-bold">${results.totalRoutes}</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <span>Optimized:</span>
+                                                <span class="text-success fw-bold">${results.optimizedRoutes}</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <span>New Routes:</span>
+                                                <span class="text-primary fw-bold">${results.newRoutes}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-success">
+                                <h6><i class="fas fa-lightbulb me-2"></i>Key Improvements:</h6>
+                                <ul class="mb-0">
+                                    <li>Reduced average delivery time by ${results.timeImprovement}%</li>
+                                    <li>Decreased fuel consumption by ${results.fuelSavings}%</li>
+                                    <li>Improved route efficiency to ${results.routeEfficiency}%</li>
+                                    <li>Reduced carbon footprint by ${results.carbonReduction}%</li>
+                                    <li>Generated $${results.monthlySavings} in monthly savings</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="alert alert-info">
+                                <h6><i class="fas fa-info-circle me-2"></i>Next Steps:</h6>
+                                <ul class="mb-0">
+                                    <li>Review the optimized routes in your delivery dashboard</li>
+                                    <li>Update your delivery schedule to use the new routes</li>
+                                    <li>Monitor performance and adjust as needed</li>
+                                    <li>Consider implementing electric vehicles for further environmental benefits</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-success" onclick="applyOptimization()">
+                                <i class="fas fa-check me-2"></i>Apply Optimization
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        function calculateOptimizationResults(priorityLevel, vehicleType, timeWindow, weatherConsideration) {
+            // Base optimization results
+            let results = {
+                routeEfficiency: 78,
+                deliveryTime: 3.2,
+                timeImprovement: 0,
+                fuelConsumption: 180,
+                fuelSavings: 0,
+                carbonFootprint: 45.2,
+                carbonReduction: 0,
+                dailySavings: 0,
+                monthlySavings: 0,
+                annualSavings: 0,
+                totalRoutes: 47,
+                optimizedRoutes: 0,
+                newRoutes: 0
+            };
+            
+            // Apply optimizations based on settings
+            if (priorityLevel === 'time') {
+                results.timeImprovement = 25;
+                results.routeEfficiency = 89;
+                results.deliveryTime = 2.4;
+            } else if (priorityLevel === 'cost') {
+                results.fuelSavings = 22;
+                results.routeEfficiency = 85;
+                results.deliveryTime = 2.8;
+            } else if (priorityLevel === 'environmental') {
+                results.carbonReduction = 18;
+                results.fuelSavings = 15;
+                results.routeEfficiency = 82;
+            } else { // balanced
+                results.timeImprovement = 18;
+                results.fuelSavings = 16;
+                results.carbonReduction = 12;
+                results.routeEfficiency = 87;
+                results.deliveryTime = 2.6;
+            }
+            
+            // Apply vehicle type optimizations
+            if (vehicleType === 'electric') {
+                results.carbonReduction += 35;
+                results.fuelSavings = 100; // No fuel
+                results.fuelConsumption = 0;
+                results.carbonFootprint = results.carbonFootprint * 0.65;
+            } else if (vehicleType === 'hybrid') {
+                results.fuelSavings += 8;
+                results.carbonReduction += 12;
+                results.fuelConsumption = results.fuelConsumption * 0.92;
+            }
+            
+            // Apply time window optimizations
+            if (timeWindow === 'morning') {
+                results.timeImprovement += 5;
+                results.routeEfficiency += 3;
+            } else if (timeWindow === 'afternoon') {
+                results.timeImprovement += 3;
+                results.routeEfficiency += 2;
+            }
+            
+            // Apply weather consideration
+            if (weatherConsideration) {
+                results.timeImprovement += 2;
+                results.routeEfficiency += 1;
+            }
+            
+            // Calculate derived values
+            results.deliveryTime = (results.deliveryTime * (100 - results.timeImprovement) / 100).toFixed(1);
+            results.fuelConsumption = Math.round(results.fuelConsumption * (100 - results.fuelSavings) / 100);
+            results.carbonFootprint = (results.carbonFootprint * (100 - results.carbonReduction) / 100).toFixed(1);
+            results.optimizedRoutes = Math.round(results.totalRoutes * 0.85);
+            results.newRoutes = Math.round(results.totalRoutes * 0.15);
+            
+            // Calculate savings
+            const baseDailyCost = 450; // Base daily operational cost
+            results.dailySavings = Math.round(baseDailyCost * (results.fuelSavings + results.timeImprovement) / 200);
+            results.monthlySavings = results.dailySavings * 30;
+            results.annualSavings = results.monthlySavings * 12;
+            
+            return results;
+        }
+
+        function applyOptimization() {
+            // Save optimization results to localStorage
+            const optimizationData = {
+                appliedDate: new Date().toISOString(),
+                status: 'Applied',
+                settings: {
+                    priorityLevel: document.getElementById('priorityLevel')?.value || 'balanced',
+                    vehicleType: document.getElementById('vehicleType')?.value || 'mixed',
+                    timeWindow: document.getElementById('timeWindow')?.value || 'flexible',
+                    weatherConsideration: document.getElementById('weatherCheck')?.checked || false
+                }
+            };
+            
+            localStorage.setItem('routeOptimization', JSON.stringify(optimizationData));
+            
+            // Close modal
+            const modal = document.querySelector('.modal');
+            if (modal) {
+                const bsModal = bootstrap.Modal.getInstance(modal);
+                if (bsModal) {
+                    bsModal.hide();
+                }
+            }
+            
+            // Show success message
+            showInfoDialog(
+                '✅ Optimization Applied Successfully!',
+                'Your route optimization has been applied and is now active.\n\n• New optimized routes are now in effect\n• Delivery schedules have been updated\n• Cost savings will be reflected in your next billing cycle\n• You can monitor performance in the delivery dashboard\n\nOptimization ID: OPT' + Date.now()
             );
         }
 
