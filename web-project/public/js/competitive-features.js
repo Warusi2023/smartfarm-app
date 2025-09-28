@@ -680,31 +680,300 @@ class SmartFarmCompetitive {
         // Show progress
         progressContainer.style.display = 'block';
         
-        // Simulate download progress
-        let progress = 0;
-        const interval = setInterval(() => {
-            progress += Math.random() * 15;
-            if (progress > 100) progress = 100;
-            
-            progressBar.style.width = progress + '%';
-            
-            if (progress < 30) {
-                progressText.textContent = 'Generating QR codes...';
-            } else if (progress < 60) {
-                progressText.textContent = 'Creating product labels...';
-            } else if (progress < 90) {
-                progressText.textContent = 'Compiling metadata...';
-            } else {
-                progressText.textContent = 'Finalizing ZIP file...';
+        // Generate actual QR codes and download
+        this.generateAndDownloadQRCodes(progressBar, progressText);
+    }
+
+    async generateAndDownloadQRCodes(progressBar, progressText) {
+        try {
+            // Check if QRCode library is available
+            if (typeof QRCode === 'undefined') {
+                throw new Error('QR Code library not loaded');
             }
+
+            progressText.textContent = 'Generating QR codes...';
+            progressBar.style.width = '20%';
+
+            // Generate QR codes for all products
+            const qrCodes = [];
+            const products = this.blockchainData || [];
             
-            if (progress >= 100) {
-                clearInterval(interval);
+            for (let i = 0; i < products.length; i++) {
+                const product = products[i];
+                const traceabilityURL = `${window.location.origin}/traceability.html?id=${product.productId}`;
+                
+                // Generate QR code as data URL
+                const qrCodeDataURL = await new Promise((resolve, reject) => {
+                    QRCode.toDataURL(traceabilityURL, {
+                        width: 300,
+                        height: 300,
+                        margin: 2,
+                        color: {
+                            dark: '#000000',
+                            light: '#FFFFFF'
+                        }
+                    }, (err, url) => {
+                        if (err) reject(err);
+                        else resolve(url);
+                    });
+                });
+
+                qrCodes.push({
+                    product: product,
+                    qrCode: qrCodeDataURL,
+                    url: traceabilityURL
+                });
+
+                // Update progress
+                const progress = 20 + ((i + 1) / products.length) * 40;
+                progressBar.style.width = progress + '%';
+                progressText.textContent = `Generating QR code ${i + 1} of ${products.length}...`;
+                
+                // Small delay to show progress
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+
+            progressText.textContent = 'Creating product labels...';
+            progressBar.style.width = '70%';
+
+            // Create downloadable files
+            const files = await this.createDownloadableFiles(qrCodes);
+
+            progressText.textContent = 'Compiling ZIP file...';
+            progressBar.style.width = '90%';
+
+            // Create and download ZIP file
+            await this.downloadZIPFile(files);
+
+            progressText.textContent = 'Download complete!';
+            progressBar.style.width = '100%';
+
+            setTimeout(() => {
+                this.completeQRDownload();
+            }, 500);
+
+        } catch (error) {
+            console.error('Error generating QR codes:', error);
+            this.showDownloadError(error.message);
+        }
+    }
+
+    async createDownloadableFiles(qrCodes) {
+        const files = [];
+        
+        // Create QR code images
+        qrCodes.forEach((item, index) => {
+            // Convert data URL to blob
+            const base64Data = item.qrCode.split(',')[1];
+            const byteCharacters = atob(base64Data);
+            const byteNumbers = new Array(byteCharacters.length);
+            for (let i = 0; i < byteCharacters.length; i++) {
+                byteNumbers[i] = byteCharacters.charCodeAt(i);
+            }
+            const byteArray = new Uint8Array(byteNumbers);
+            const blob = new Blob([byteArray], { type: 'image/png' });
+            
+            files.push({
+                name: `qr-codes/${item.product.productName.replace(/\s+/g, '-').toLowerCase()}-${item.product.batchNumber}.png`,
+                blob: blob
+            });
+        });
+
+        // Create product labels (HTML files)
+        qrCodes.forEach((item, index) => {
+            const labelHTML = this.generateProductLabelHTML(item);
+            const blob = new Blob([labelHTML], { type: 'text/html' });
+            files.push({
+                name: `labels/${item.product.productName.replace(/\s+/g, '-').toLowerCase()}-label.html`,
+                blob: blob
+            });
+        });
+
+        // Create metadata file
+        const metadata = {
+            generatedAt: new Date().toISOString(),
+            products: qrCodes.map(item => ({
+                productName: item.product.productName,
+                batchNumber: item.product.batchNumber,
+                traceabilityURL: item.url,
+                qrCodeFile: `qr-codes/${item.product.productName.replace(/\s+/g, '-').toLowerCase()}-${item.product.batchNumber}.png`
+            }))
+        };
+
+        const metadataBlob = new Blob([JSON.stringify(metadata, null, 2)], { type: 'application/json' });
+        files.push({
+            name: 'metadata.json',
+            blob: metadataBlob
+        });
+
+        // Create instructions file
+        const instructions = this.generateInstructionsHTML(qrCodes);
+        const instructionsBlob = new Blob([instructions], { type: 'text/html' });
+        files.push({
+            name: 'instructions.html',
+            blob: instructionsBlob
+        });
+
+        return files;
+    }
+
+    generateProductLabelHTML(item) {
+        return `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Product Label - ${item.product.productName}</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+        .label { width: 4in; height: 6in; border: 2px solid #000; padding: 10px; text-align: center; }
+        .qr-code { width: 200px; height: 200px; margin: 10px auto; }
+        .product-name { font-size: 24px; font-weight: bold; margin: 10px 0; }
+        .batch-info { font-size: 14px; margin: 5px 0; }
+        .scan-text { font-size: 12px; color: #666; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="label">
+        <div class="product-name">${item.product.productName}</div>
+        <div class="batch-info">Batch: ${item.product.batchNumber}</div>
+        <div class="batch-info">Harvest: ${item.product.harvestDate || 'N/A'}</div>
+        <img src="${item.qrCode}" class="qr-code" alt="QR Code">
+        <div class="scan-text">Scan QR code for complete traceability</div>
+        <div class="scan-text">www.smartfarm-app.com</div>
+    </div>
+</body>
+</html>`;
+    }
+
+    generateInstructionsHTML(qrCodes) {
+        return `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>QR Code Instructions</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+        .header { background: #2e7d32; color: white; padding: 20px; text-align: center; }
+        .content { margin: 20px 0; }
+        .product-list { margin: 20px 0; }
+        .product-item { border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>QR Code Traceability Instructions</h1>
+        <p>Complete guide for using your product QR codes</p>
+    </div>
+    
+    <div class="content">
+        <h2>What's Included</h2>
+        <ul>
+            <li><strong>QR Code Images:</strong> High-resolution PNG files for each product</li>
+            <li><strong>Product Labels:</strong> Ready-to-print HTML labels with QR codes</li>
+            <li><strong>Metadata:</strong> Complete product information in JSON format</li>
+            <li><strong>Instructions:</strong> This guide for using the QR codes</li>
+        </ul>
+
+        <h2>How to Use</h2>
+        <ol>
+            <li><strong>Print Labels:</strong> Open the HTML label files in your browser and print them</li>
+            <li><strong>Attach to Products:</strong> Place the printed labels on your product packaging</li>
+            <li><strong>Test QR Codes:</strong> Scan the QR codes with any smartphone camera</li>
+            <li><strong>Share Traceability:</strong> Consumers can scan to view complete product journey</li>
+        </ol>
+
+        <h2>Your Products</h2>
+        <div class="product-list">
+            ${qrCodes.map(item => `
+                <div class="product-item">
+                    <h3>${item.product.productName}</h3>
+                    <p><strong>Batch:</strong> ${item.product.batchNumber}</p>
+                    <p><strong>Traceability URL:</strong> <a href="${item.url}" target="_blank">${item.url}</a></p>
+                </div>
+            `).join('')}
+        </div>
+
+        <h2>Support</h2>
+        <p>For technical support or questions about QR code traceability, contact:</p>
+        <ul>
+            <li>Email: support@smartfarm-app.com</li>
+            <li>Phone: +1 (555) 123-4567</li>
+            <li>Website: www.smartfarm-app.com</li>
+        </ul>
+    </div>
+</body>
+</html>`;
+    }
+
+    async downloadZIPFile(files) {
+        // Use JSZip library if available, otherwise create individual downloads
+        if (typeof JSZip !== 'undefined') {
+            const zip = new JSZip();
+            
+            files.forEach(file => {
+                zip.file(file.name, file.blob);
+            });
+
+            const zipBlob = await zip.generateAsync({ type: 'blob' });
+            this.downloadFile(zipBlob, 'qr-codes-traceability.zip');
+        } else {
+            // Fallback: download files individually
+            files.forEach((file, index) => {
                 setTimeout(() => {
-                    this.completeQRDownload();
-                }, 500);
-            }
-        }, 200);
+                    this.downloadFile(file.blob, file.name.split('/').pop());
+                }, index * 100);
+            });
+        }
+    }
+
+    downloadFile(blob, filename) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    showDownloadError(message) {
+        const modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.innerHTML = `
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title">
+                            <i class="fas fa-exclamation-circle me-2"></i>Download Error
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <i class="fas fa-exclamation-triangle fa-4x text-danger mb-3"></i>
+                        <h5>Download Failed</h5>
+                        <p class="text-muted">${message}</p>
+                        <div class="alert alert-warning mt-3">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Please refresh the page and try again, or contact support if the issue persists.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">OK</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        const bsModal = new bootstrap.Modal(modal);
+        bsModal.show();
+        
+        modal.addEventListener('hidden.bs.modal', () => {
+            document.body.removeChild(modal);
+        });
     }
 
     completeQRDownload() {
