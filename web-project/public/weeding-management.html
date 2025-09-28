@@ -459,8 +459,14 @@
             <button class="btn btn-weeding me-3" onclick="scheduleWeeding()">
                 <i class="fas fa-calendar-plus me-2"></i>Schedule Weeding
             </button>
-            <button class="btn btn-weeding" onclick="generateWeedingReport()">
+            <button class="btn btn-weeding me-3" onclick="generateWeedingReport()">
                 <i class="fas fa-file-pdf me-2"></i>Generate Report
+            </button>
+            <button class="btn btn-outline-info me-3" onclick="viewCompletedTasks()">
+                <i class="fas fa-check-circle me-2"></i>View Completed
+            </button>
+            <button class="btn btn-outline-warning" onclick="resetAllTasks()">
+                <i class="fas fa-undo me-2"></i>Reset Tasks
             </button>
         </div>
     </div>
@@ -720,8 +726,12 @@
             const container = document.getElementById('weedingTasksContainer');
             if (!container) return;
 
+            // Get completed tasks from localStorage
+            const completedTasks = JSON.parse(localStorage.getItem('completedWeedingTasks') || '[]');
+            const completedTaskIds = completedTasks.map(task => task.taskId);
+
             // Sample weeding tasks
-            const tasks = [
+            const allTasks = [
                 {
                     id: 'task1',
                     cropName: 'Tomatoes',
@@ -772,8 +782,25 @@
                 }
             ];
 
+            // Filter out completed tasks
+            const activeTasks = allTasks.filter(task => !completedTaskIds.includes(task.id));
+
             container.innerHTML = '';
-            tasks.forEach(task => {
+
+            if (activeTasks.length === 0) {
+                container.innerHTML = `
+                    <div class="col-12">
+                        <div class="alert alert-success text-center">
+                            <i class="fas fa-check-circle fa-3x mb-3"></i>
+                            <h4>All Tasks Completed! 🎉</h4>
+                            <p class="mb-0">Great job! All weeding tasks have been completed. Check back later for new tasks or add new ones.</p>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            activeTasks.forEach(task => {
                 const taskCard = document.createElement('div');
                 taskCard.className = `task-card ${task.urgency}`;
                 taskCard.innerHTML = `
@@ -803,6 +830,41 @@
                 `;
                 container.appendChild(taskCard);
             });
+
+            // Update urgent alerts count
+            updateUrgentAlertsCount(activeTasks);
+        }
+
+        function updateUrgentAlertsCount(activeTasks) {
+            const criticalTasks = activeTasks.filter(task => task.urgency === 'critical').length;
+            const urgentTasks = activeTasks.filter(task => task.urgency === 'urgent').length;
+            const totalUrgent = criticalTasks + urgentTasks;
+
+            // Update the urgent alerts section
+            const alertContent = document.querySelector('.alert-content');
+            if (alertContent) {
+                if (totalUrgent === 0) {
+                    alertContent.innerHTML = `
+                        <p class="mb-2">✅ <strong>No Urgent Tasks</strong> - All critical and urgent weeding tasks have been completed!</p>
+                        <p class="mb-3">Your farm is in great condition. Check back later for new tasks.</p>
+                        <button class="btn btn-light" onclick="viewUrgentTasks()">
+                            <i class="fas fa-eye me-2"></i>View All Tasks
+                        </button>
+                    `;
+                } else {
+                    alertContent.innerHTML = `
+                        <p class="mb-2">🚨 <strong>${totalUrgent} Urgent Task${totalUrgent > 1 ? 's' : ''}</strong> require${totalUrgent === 1 ? 's' : ''} immediate attention:</p>
+                        <ul class="mb-3">
+                            ${activeTasks.filter(task => task.urgency === 'critical' || task.urgency === 'urgent')
+                                .map(task => `<li>${task.cropName} - ${task.location} (${task.urgency.toUpperCase()})</li>`)
+                                .join('')}
+                        </ul>
+                        <button class="btn btn-light" onclick="viewUrgentTasks()">
+                            <i class="fas fa-eye me-2"></i>View Urgent Tasks
+                        </button>
+                    `;
+                }
+            }
         }
 
         function executeTask(taskId) {
@@ -1025,14 +1087,25 @@
         }
 
         function markTaskAsCompleted(taskId) {
-            // In a real application, this would update the database
-            // For now, we'll just refresh the tasks list to simulate removal
-            console.log(`Task ${taskId} marked as completed`);
+            // Get completed tasks from localStorage or initialize empty array
+            let completedTasks = JSON.parse(localStorage.getItem('completedWeedingTasks') || '[]');
             
-            // Refresh the tasks list (in a real app, this would filter out completed tasks)
+            // Add the completed task to the list
+            completedTasks.push({
+                taskId: taskId,
+                completedAt: new Date().toISOString(),
+                completedBy: 'User'
+            });
+            
+            // Save completed tasks to localStorage
+            localStorage.setItem('completedWeedingTasks', JSON.stringify(completedTasks));
+            
+            console.log(`Task ${taskId} marked as completed and saved to localStorage`);
+            
+            // Refresh the tasks list to show updated status
             setTimeout(() => {
                 populateWeedingTasks();
-            }, 2000);
+            }, 1000);
         }
 
         function viewTaskDetails(taskId) {
@@ -1160,6 +1233,44 @@
             showInfoDialog(
                 '📄 Generating Weeding Report...',
                 `Report includes:\n• Task completion summary\n• Cost analysis\n• Weather impact assessment\n• Effectiveness metrics\n• Environmental impact\n• Recommendations for future\n\nReport is ready for download!`
+            );
+        }
+
+        function viewCompletedTasks() {
+            const completedTasks = JSON.parse(localStorage.getItem('completedWeedingTasks') || '[]');
+            
+            if (completedTasks.length === 0) {
+                showInfoDialog(
+                    '📋 Completed Tasks',
+                    'No tasks have been completed yet. Complete some weeding tasks to see them here!'
+                );
+                return;
+            }
+
+            let completedList = 'Completed Weeding Tasks:\n\n';
+            completedTasks.forEach((task, index) => {
+                const completedDate = new Date(task.completedAt).toLocaleDateString();
+                const completedTime = new Date(task.completedAt).toLocaleTimeString();
+                completedList += `${index + 1}. Task ${task.taskId}\n`;
+                completedList += `   • Completed: ${completedDate} at ${completedTime}\n`;
+                completedList += `   • Completed by: ${task.completedBy}\n\n`;
+            });
+
+            showInfoDialog('📋 Completed Tasks', completedList);
+        }
+
+        function resetAllTasks() {
+            showConfirmDialog(
+                'Reset All Tasks',
+                'Are you sure you want to reset all completed tasks? This will bring back all weeding tasks to the active list.\n\nThis action cannot be undone.',
+                function() {
+                    localStorage.removeItem('completedWeedingTasks');
+                    populateWeedingTasks();
+                    showSuccessDialog(
+                        '✅ Tasks Reset Successfully',
+                        'All completed tasks have been reset and are now back in the active tasks list.'
+                    );
+                }
             );
         }
 
