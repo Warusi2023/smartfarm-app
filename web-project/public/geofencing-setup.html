@@ -597,6 +597,13 @@
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
+                
+                // Check if response is JSON
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('Response is not JSON. Server may be returning an error page.');
+                }
+                
                 return response.json();
             })
             .then(data => {
@@ -624,7 +631,18 @@
             })
             .catch(error => {
                 console.error('Error loading farms:', error);
-                showAlert('Using demo mode - backend not available. You can still test the setup process.', 'info');
+                
+                // Provide more specific error messages
+                let errorMessage = 'Using demo mode - backend not available. You can still test the setup process.';
+                if (error.message.includes('Response is not JSON')) {
+                    errorMessage = 'Server returned an error page instead of data. Using demo mode.';
+                } else if (error.message.includes('HTTP error')) {
+                    errorMessage = `Server error (${error.message}). Using demo mode.`;
+                } else if (error.message.includes('Failed to fetch')) {
+                    errorMessage = 'Cannot connect to server. Using demo mode.';
+                }
+                
+                showAlert(errorMessage, 'info');
                 document.getElementById('demoModeIndicator').style.display = 'block';
                 
                 // Add demo farms
@@ -922,6 +940,13 @@
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
+                
+                // Check if response is JSON
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('Response is not JSON. Server may be returning an error page.');
+                }
+                
                 return response.json();
             })
             .then(data => {
@@ -995,7 +1020,19 @@
                     status: 'active'
                 })
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                // Check if response is JSON
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('Response is not JSON. Server may be returning an error page.');
+                }
+                
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
                     // Add new farm to select dropdown
