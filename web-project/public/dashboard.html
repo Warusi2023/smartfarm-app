@@ -7844,6 +7844,12 @@
         }
 
         function generateReport(type) {
+            // Check if jsPDF is available first
+            if (typeof window.jspdf === 'undefined') {
+                showErrorDialog('PDF Library Error', 'PDF library not loaded. Please refresh the page and try again.');
+                return;
+            }
+            
             showInfoDialog(
                 '📄 Generating Report',
                 `Generating ${type.charAt(0).toUpperCase() + type.slice(1)} Report...\n\nPlease wait while we compile your farm data and create a comprehensive report.`
@@ -7851,34 +7857,45 @@
             
             // Simulate report generation delay
             setTimeout(() => {
-                switch(type) {
-                    case 'summary':
-                        generateSummaryReportPDF();
-                        break;
-                    case 'crops':
-                        generateCropReportPDF();
-                        break;
-                    case 'livestock':
-                        generateLivestockReportPDF();
-                        break;
-                    case 'inventory':
-                        generateInventoryReportPDF();
-                        break;
-                    case 'financial':
-                        generateFinancialReportPDF();
-                        break;
-                    case 'tasks':
-                        generateTasksReportPDF();
-                        break;
-                    default:
-                        showErrorDialog('Report Error', 'Report type not implemented yet');
+                try {
+                    switch(type) {
+                        case 'summary':
+                            generateSummaryReportPDF();
+                            break;
+                        case 'crops':
+                            generateCropReportPDF();
+                            break;
+                        case 'livestock':
+                            generateLivestockReportPDF();
+                            break;
+                        case 'inventory':
+                            generateInventoryReportPDF();
+                            break;
+                        case 'financial':
+                            generateFinancialReportPDF();
+                            break;
+                        case 'tasks':
+                            generateTasksReportPDF();
+                            break;
+                        default:
+                            showErrorDialog('Report Error', 'Report type not implemented yet');
+                    }
+                } catch (error) {
+                    console.error('Error in generateReport:', error);
+                    showErrorDialog('Report Generation Error', 'An error occurred while generating the report. Please try again.');
                 }
             }, 2000);
         }
 
         function generateSummaryReportPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
+            try {
+                if (typeof window.jspdf === 'undefined') {
+                    showErrorMessage('PDF library not loaded. Please refresh the page and try again.');
+                    return;
+                }
+                
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
             
             // Set up colors
             const primaryColor = [46, 125, 50];
@@ -8012,11 +8029,21 @@
                 '📄 Report Generated Successfully',
                 `Your farm summary report has been generated and downloaded as a PDF.\n\nFile: ${fileName}\n\nThe report includes:\n• Farm information overview\n• Crop summary statistics\n• Livestock summary statistics\n• Complete farm data analysis\n\nYou can open the PDF file in any PDF viewer to view the full report.`
             );
+            } catch (error) {
+                console.error('Error generating summary PDF:', error);
+                showErrorMessage('Error generating PDF report. Please try again.');
+            }
         }
 
         function generateCropReportPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
+            try {
+                if (typeof window.jspdf === 'undefined') {
+                    showErrorMessage('PDF library not loaded. Please refresh the page and try again.');
+                    return;
+                }
+                
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
             
             // Set up colors
             const primaryColor = [46, 125, 50];
@@ -8080,11 +8107,21 @@
                 '📄 Crop Report Generated',
                 `Your crop management report has been generated and downloaded as a PDF.\n\nFile: ${fileName}\n\nThe report includes detailed information about all your crops.`
             );
+            } catch (error) {
+                console.error('Error generating crop PDF:', error);
+                showErrorMessage('Error generating PDF report. Please try again.');
+            }
         }
 
         function generateTasksReportPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
+            try {
+                if (typeof window.jspdf === 'undefined') {
+                    showErrorMessage('PDF library not loaded. Please refresh the page and try again.');
+                    return;
+                }
+                
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
             
             // Set up colors
             const primaryColor = [46, 125, 50];
@@ -8149,11 +8186,21 @@
                 '📄 Tasks Report Generated',
                 `Your task management report has been generated and downloaded as a PDF.\n\nFile: ${fileName}\n\nThe report includes detailed information about all your tasks.`
             );
+            } catch (error) {
+                console.error('Error generating tasks PDF:', error);
+                showErrorMessage('Error generating PDF report. Please try again.');
+            }
         }
 
         function generateLivestockReportPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
+            try {
+                if (typeof window.jspdf === 'undefined') {
+                    showErrorMessage('PDF library not loaded. Please refresh the page and try again.');
+                    return;
+                }
+                
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
             
             // Set up colors
             const primaryColor = [46, 125, 50];
@@ -8218,11 +8265,21 @@
                 '📄 Livestock Report Generated',
                 `Your livestock management report has been generated and downloaded as a PDF.\n\nFile: ${fileName}\n\nThe report includes detailed information about all your livestock.`
             );
+            } catch (error) {
+                console.error('Error generating livestock PDF:', error);
+                showErrorMessage('Error generating PDF report. Please try again.');
+            }
         }
 
         function generateInventoryReportPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
+            try {
+                if (typeof window.jspdf === 'undefined') {
+                    showErrorMessage('PDF library not loaded. Please refresh the page and try again.');
+                    return;
+                }
+                
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
             
             // Set up colors
             const primaryColor = [46, 125, 50];
@@ -8287,6 +8344,131 @@
                 '📄 Inventory Report Generated',
                 `Your inventory management report has been generated and downloaded as a PDF.\n\nFile: ${fileName}\n\nThe report includes detailed information about all your inventory items.`
             );
+            } catch (error) {
+                console.error('Error generating inventory PDF:', error);
+                showErrorMessage('Error generating PDF report. Please try again.');
+            }
+        }
+
+        function generateFinancialReportPDF() {
+            try {
+                if (typeof window.jspdf === 'undefined') {
+                    showErrorMessage('PDF library not loaded. Please refresh the page and try again.');
+                    return;
+                }
+                
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                // Set up colors
+                const primaryColor = [46, 125, 50];
+                const textColor = [33, 37, 41];
+                
+                let yPosition = 20;
+                const pageWidth = doc.internal.pageSize.width;
+                const margin = 20;
+                
+                // Helper functions
+                const addText = (text, x, y, options = {}) => {
+                    doc.setFontSize(options.fontSize || 12);
+                    doc.setTextColor(...(options.color || textColor));
+                    if (options.fontStyle) doc.setFont(undefined, options.fontStyle);
+                    doc.text(text, x, y, { align: options.align || 'left' });
+                };
+                
+                // Header
+                addText('FINANCIAL REPORT', pageWidth / 2, yPosition, {
+                    fontSize: 24,
+                    color: primaryColor,
+                    fontStyle: 'bold',
+                    align: 'center'
+                });
+                yPosition += 10;
+                addText(`Generated on: ${new Date().toLocaleDateString()}`, pageWidth / 2, yPosition, {
+                    fontSize: 12,
+                    color: textColor,
+                    align: 'center'
+                });
+                yPosition += 20;
+                
+                // Financial Summary
+                addText('Financial Summary', margin, yPosition, {
+                    fontSize: 16,
+                    fontStyle: 'bold'
+                });
+                yPosition += 15;
+                
+                // Get financial data
+                const financialData = JSON.parse(localStorage.getItem('financialData') || '{}');
+                const income = financialData.totalIncome || 0;
+                const expenses = financialData.totalExpenses || 0;
+                const profit = income - expenses;
+                
+                const financialSummary = [
+                    `Total Income: FJD ${income.toFixed(2)}`,
+                    `Total Expenses: FJD ${expenses.toFixed(2)}`,
+                    `Net Profit: FJD ${profit.toFixed(2)}`,
+                    `Profit Margin: ${income > 0 ? ((profit / income) * 100).toFixed(1) : 0}%`
+                ];
+                
+                financialSummary.forEach(line => {
+                    addText(line, margin, yPosition);
+                    yPosition += 10;
+                });
+                
+                yPosition += 10;
+                
+                // Income Sources
+                addText('Income Sources', margin, yPosition, {
+                    fontSize: 14,
+                    fontStyle: 'bold'
+                });
+                yPosition += 10;
+                
+                const incomeSources = financialData.incomeSources || [
+                    { source: 'Crop Sales', amount: income * 0.6 },
+                    { source: 'Livestock Sales', amount: income * 0.3 },
+                    { source: 'Other Income', amount: income * 0.1 }
+                ];
+                
+                incomeSources.forEach(source => {
+                    addText(`${source.source}: FJD ${source.amount.toFixed(2)}`, margin + 10, yPosition);
+                    yPosition += 8;
+                });
+                
+                yPosition += 10;
+                
+                // Expense Categories
+                addText('Expense Categories', margin, yPosition, {
+                    fontSize: 14,
+                    fontStyle: 'bold'
+                });
+                yPosition += 10;
+                
+                const expenseCategories = financialData.expenseCategories || [
+                    { category: 'Feed & Supplies', amount: expenses * 0.4 },
+                    { category: 'Equipment', amount: expenses * 0.2 },
+                    { category: 'Labor', amount: expenses * 0.3 },
+                    { category: 'Other Expenses', amount: expenses * 0.1 }
+                ];
+                
+                expenseCategories.forEach(expense => {
+                    addText(`${expense.category}: FJD ${expense.amount.toFixed(2)}`, margin + 10, yPosition);
+                    yPosition += 8;
+                });
+                
+                // Save the PDF
+                const fileName = `FinancialReport_${new Date().toISOString().split('T')[0]}.pdf`;
+                doc.save(fileName);
+                
+                showSuccessDialog(
+                    '📄 Financial Report Generated',
+                    `Your financial report has been generated and downloaded as a PDF.\n\nFile: ${fileName}\n\nThe report includes detailed financial analysis and summaries.`
+                );
+            } catch (error) {
+                console.error('Error generating financial PDF:', error);
+                showErrorMessage('Error generating PDF report. Please try again.');
+            }
         }
 
         function generateSummaryReport() {
@@ -8489,11 +8671,12 @@ INVENTORY SUMMARY:
         function exportToPDF(type) {
             try {
                 // Check if jsPDF is available
-                if (typeof jsPDF === 'undefined') {
+                if (typeof window.jspdf === 'undefined') {
                     showErrorMessage('PDF library not loaded. Please refresh the page and try again.');
                     return;
                 }
 
+                const { jsPDF } = window.jspdf;
                 const doc = new jsPDF();
                 const pageWidth = doc.internal.pageSize.getWidth();
                 const pageHeight = doc.internal.pageSize.getHeight();
