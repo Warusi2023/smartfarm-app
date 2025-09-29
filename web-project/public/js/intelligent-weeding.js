@@ -1399,6 +1399,20 @@ class IntelligentWeedingSystem {
         }, 3000);
     }
 
+    // Utility function to safely parse user data
+    getCurrentUser() {
+        let user = {};
+        try {
+            const userData = localStorage.getItem('smartfarm_user') || sessionStorage.getItem('smartfarm_user') || '{}';
+            user = JSON.parse(userData);
+        } catch (error) {
+            console.warn('Error parsing user data:', error);
+            // Fallback to empty user object
+            user = {};
+        }
+        return user;
+    }
+
     updateWeedingStatistics() {
         // Update the urgency counters in the dashboard
         const criticalCount = this.weedingTasks.filter(task => task.urgency.level === 'critical' && task.status !== 'completed').length;
@@ -1682,7 +1696,9 @@ class IntelligentWeedingSystem {
         // Mark task as pending approval
         task.status = 'pending_approval';
         task.pendingApprovalDate = new Date().toISOString();
-        task.requestedBy = JSON.parse(localStorage.getItem('smartfarm_user') || sessionStorage.getItem('smartfarm_user') || '{}').email || 'Unknown';
+        
+        const user = this.getCurrentUser();
+        task.requestedBy = user.email || 'Unknown';
 
         // Show notification to admin users
         this.showAdminNotification(task);
@@ -1808,7 +1824,8 @@ class IntelligentWeedingSystem {
         }
 
         // Check if user has admin privileges
-        const user = JSON.parse(localStorage.getItem('smartfarm_user') || sessionStorage.getItem('smartfarm_user') || '{}');
+        const user = this.getCurrentUser();
+        
         if (user.role !== 'admin' && user.role !== 'group') {
             this.showAdminConfirmationRequired(taskId);
             return;
