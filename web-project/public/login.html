@@ -532,7 +532,11 @@
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
+                    console.log('=== LOGIN SUCCESS DEBUG START ===');
+                    console.log('Login response data:', data);
+                    
                     // Clear any existing authentication data first
+                    console.log('Clearing existing auth data...');
                     clearAllAuthData();
                     
                     showAlert('Login successful! Redirecting to dashboard...', 'success');
@@ -578,13 +582,22 @@
                     const storedUser = rememberMe ? localStorage.getItem('smartfarm_user') : sessionStorage.getItem('smartfarm_user');
                     const storedToken = rememberMe ? localStorage.getItem('smartfarm_token') : sessionStorage.getItem('smartfarm_token');
                     
+                    console.log('Verification - storedUser:', storedUser);
+                    console.log('Verification - storedToken:', storedToken ? 'Present' : 'Missing');
+                    console.log('Verification - rememberMe:', rememberMe);
+                    console.log('Verification - storage type:', rememberMe ? 'localStorage' : 'sessionStorage');
+                    
                     if (storedUser && storedToken) {
-                        console.log('Authentication data stored successfully');
+                        console.log('✅ Authentication data stored successfully');
+                        console.log('=== LOGIN SUCCESS DEBUG END ===');
                         // Redirect to dashboard
                         setTimeout(() => {
+                            console.log('Redirecting to dashboard...');
                             window.location.href = 'dashboard.html';
                         }, 1500);
                     } else {
+                        console.log('❌ Error storing authentication data');
+                        console.log('=== LOGIN SUCCESS DEBUG END ===');
                         showAlert('Error storing authentication data. Please try again.', 'danger');
                         btnText.style.display = 'inline';
                         loading.classList.remove('show');
@@ -677,27 +690,162 @@
 
         // Debug function to check authentication state
         function debugAuthState() {
+            const debugOutput = document.getElementById('debugOutput');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            const authData = {
+                localStorage: {
+                    user: localStorage.getItem('smartfarm_user'),
+                    token: localStorage.getItem('smartfarm_token'),
+                    userData: localStorage.getItem('smartfarm_userData'),
+                    remember: localStorage.getItem('smartfarm_remember'),
+                    loginTime: localStorage.getItem('smartfarm_loginTime')
+                },
+                sessionStorage: {
+                    user: sessionStorage.getItem('smartfarm_user'),
+                    token: sessionStorage.getItem('smartfarm_token'),
+                    userData: sessionStorage.getItem('smartfarm_userData'),
+                    loginTime: sessionStorage.getItem('smartfarm_loginTime')
+                }
+            };
+            
+            let debugInfo = `<strong>Auth State (${timestamp}):</strong><br>`;
+            
+            // Check localStorage
+            debugInfo += `<strong>localStorage:</strong><br>`;
+            debugInfo += `• User: ${authData.localStorage.user || '❌ None'}<br>`;
+            debugInfo += `• Token: ${authData.localStorage.token ? '✅ Present' : '❌ None'}<br>`;
+            debugInfo += `• Remember: ${authData.localStorage.remember || '❌ None'}<br>`;
+            debugInfo += `• Login Time: ${authData.localStorage.loginTime || '❌ None'}<br><br>`;
+            
+            // Check sessionStorage
+            debugInfo += `<strong>sessionStorage:</strong><br>`;
+            debugInfo += `• User: ${authData.sessionStorage.user || '❌ None'}<br>`;
+            debugInfo += `• Token: ${authData.sessionStorage.token ? '✅ Present' : '❌ None'}<br>`;
+            debugInfo += `• Login Time: ${authData.sessionStorage.loginTime || '❌ None'}<br><br>`;
+            
+            // Check for issues
+            const hasLocalUser = !!authData.localStorage.user;
+            const hasLocalToken = !!authData.localStorage.token;
+            const hasSessionUser = !!authData.sessionStorage.user;
+            const hasSessionToken = !!authData.sessionStorage.token;
+            
+            debugInfo += `<strong>Issues:</strong><br>`;
+            if (hasLocalUser && !hasLocalToken) {
+                debugInfo += `⚠️ localStorage has user but no token<br>`;
+            }
+            if (!hasLocalUser && hasLocalToken) {
+                debugInfo += `⚠️ localStorage has token but no user<br>`;
+            }
+            if (hasSessionUser && !hasSessionToken) {
+                debugInfo += `⚠️ sessionStorage has user but no token<br>`;
+            }
+            if (!hasSessionUser && hasSessionToken) {
+                debugInfo += `⚠️ sessionStorage has token but no user<br>`;
+            }
+            if (hasLocalUser && hasSessionUser) {
+                debugInfo += `⚠️ Both storages have user data (conflict)<br>`;
+            }
+            if (!hasLocalUser && !hasSessionUser) {
+                debugInfo += `✅ No authentication data found<br>`;
+            }
+            
+            if (debugOutput) {
+                debugOutput.innerHTML = debugInfo;
+            }
+            
+            // Also log to console
             console.log('=== Authentication Debug Info ===');
-            console.log('localStorage user:', localStorage.getItem('smartfarm_user'));
-            console.log('localStorage token:', localStorage.getItem('smartfarm_token'));
-            console.log('localStorage userData:', localStorage.getItem('smartfarm_userData'));
-            console.log('localStorage remember:', localStorage.getItem('smartfarm_remember'));
-            console.log('sessionStorage user:', sessionStorage.getItem('smartfarm_user'));
-            console.log('sessionStorage token:', sessionStorage.getItem('smartfarm_token'));
-            console.log('sessionStorage userData:', sessionStorage.getItem('smartfarm_userData'));
+            console.log('localStorage:', authData.localStorage);
+            console.log('sessionStorage:', authData.sessionStorage);
             console.log('================================');
         }
 
-        // Add debug button for testing (remove in production)
+        // Add comprehensive debug panel for testing
         if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
             document.addEventListener('DOMContentLoaded', function() {
-                const debugBtn = document.createElement('button');
-                debugBtn.textContent = 'Debug Auth';
-                debugBtn.className = 'btn btn-warning btn-sm position-fixed';
-                debugBtn.style.cssText = 'top: 10px; right: 10px; z-index: 9999;';
-                debugBtn.onclick = debugAuthState;
-                document.body.appendChild(debugBtn);
+                createDebugPanel();
             });
+        }
+
+        function createDebugPanel() {
+            const debugPanel = document.createElement('div');
+            debugPanel.id = 'debugPanel';
+            debugPanel.style.cssText = `
+                position: fixed;
+                top: 10px;
+                right: 10px;
+                background: #f8f9fa;
+                border: 2px solid #dee2e6;
+                border-radius: 8px;
+                padding: 15px;
+                z-index: 9999;
+                max-width: 300px;
+                font-size: 12px;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            `;
+            
+            debugPanel.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="mb-0">Auth Debug</h6>
+                    <button class="btn btn-sm btn-outline-danger" onclick="clearDebugPanel()">×</button>
+                </div>
+                <div id="debugContent">
+                    <button class="btn btn-warning btn-sm w-100 mb-2" onclick="debugAuthState()">Check Auth State</button>
+                    <button class="btn btn-danger btn-sm w-100 mb-2" onclick="clearAllAuthData()">Clear All Auth</button>
+                    <button class="btn btn-info btn-sm w-100 mb-2" onclick="testLogin()">Test Login</button>
+                    <div id="debugOutput" style="background: #e9ecef; padding: 8px; border-radius: 4px; margin-top: 10px; max-height: 200px; overflow-y: auto;"></div>
+                </div>
+            `;
+            
+            document.body.appendChild(debugPanel);
+            debugAuthState(); // Initial check
+        }
+
+        function clearDebugPanel() {
+            const panel = document.getElementById('debugPanel');
+            if (panel) {
+                panel.remove();
+            }
+        }
+
+        function testLogin() {
+            const debugOutput = document.getElementById('debugOutput');
+            if (debugOutput) {
+                debugOutput.innerHTML += '<br><strong>Testing Login Process:</strong><br>';
+            }
+            
+            // Simulate a test login
+            const testEmail = 'test@smartfarm.com';
+            const testPassword = 'test123';
+            
+            console.log('Testing login with:', testEmail);
+            
+            // Clear any existing data first
+            clearAllAuthData();
+            
+            // Simulate successful login
+            localStorage.setItem('smartfarm_user', testEmail);
+            localStorage.setItem('smartfarm_token', 'test-token-123');
+            localStorage.setItem('smartfarm_userData', JSON.stringify({
+                email: testEmail,
+                username: 'test',
+                country: 'Fiji'
+            }));
+            localStorage.setItem('smartfarm_remember', 'true');
+            localStorage.setItem('smartfarm_loginTime', new Date().toISOString());
+            
+            if (debugOutput) {
+                debugOutput.innerHTML += '✅ Test login data stored<br>';
+            }
+            
+            // Check if we can access dashboard
+            setTimeout(() => {
+                debugAuthState();
+                if (debugOutput) {
+                    debugOutput.innerHTML += '✅ Test login completed. Check auth state above.<br>';
+                }
+            }, 500);
         }
 
         // Real-time validation
