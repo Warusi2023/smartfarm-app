@@ -11781,6 +11781,61 @@ INVENTORY SUMMARY:
         }
 
         // Professional Dialog System
+        function showAlert(message, type = 'info', duration = 3000) {
+            // Remove any existing alerts
+            const existingAlerts = document.querySelectorAll('.custom-alert');
+            existingAlerts.forEach(alert => alert.remove());
+            
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `custom-alert alert alert-${type} alert-dismissible fade show`;
+            alertDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 9999;
+                min-width: 300px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                border: none;
+                border-radius: 8px;
+            `;
+            
+            alertDiv.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-${getAlertIcon(type)} me-2"></i>
+                    <span>${message}</span>
+                    <button type="button" class="btn-close ms-auto" onclick="this.parentElement.parentElement.remove()"></button>
+                </div>
+            `;
+            
+            document.body.appendChild(alertDiv);
+            
+            // Auto remove after duration
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, duration);
+        }
+
+        function getAlertIcon(type) {
+            const icons = {
+                'success': 'check-circle',
+                'danger': 'exclamation-triangle',
+                'warning': 'exclamation-circle',
+                'info': 'info-circle',
+                'primary': 'info-circle'
+            };
+            return icons[type] || 'info-circle';
+        }
+
+        function showErrorMessage(message, duration = 5000) {
+            showAlert(message, 'danger', duration);
+        }
+
+        function showSuccessMessage(message, duration = 3000) {
+            showAlert(message, 'success', duration);
+        }
+
         function showConfirmDialog(title, message, confirmText = 'Yes', cancelText = 'No', confirmCallback, cancelCallback = null) {
             const modal = document.createElement('div');
             modal.className = 'modal fade';
