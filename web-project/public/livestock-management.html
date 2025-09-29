@@ -204,6 +204,66 @@
             color: white;
         }
 
+        /* Breed Suggestions Styling */
+        .breed-input-container {
+            position: relative;
+        }
+
+        .breed-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .breed-suggestion-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #f8f9fa;
+            transition: background-color 0.2s ease;
+        }
+
+        .breed-suggestion-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .breed-suggestion-item:last-child {
+            border-bottom: none;
+        }
+
+        .breed-suggestion-item.highlighted {
+            background-color: #e3f2fd;
+        }
+
+        .breed-category {
+            font-weight: bold;
+            color: #6c757d;
+            font-size: 0.85rem;
+            padding: 8px 15px 5px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .breed-name {
+            font-weight: 500;
+            color: #212529;
+        }
+
+        .breed-details {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-top: 2px;
+        }
+
         .navbar-custom {
             background: white !important;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -411,7 +471,12 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">Breed</label>
-                                    <input type="text" class="form-control form-control-custom" id="animalBreed" required>
+                                    <div class="breed-input-container">
+                                        <input type="text" class="form-control form-control-custom" id="animalBreed" 
+                                               placeholder="Type to search breeds..." 
+                                               autocomplete="off" required>
+                                        <div id="breedSuggestions" class="breed-suggestions"></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -573,7 +638,12 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">Breed</label>
-                                    <input type="text" class="form-control form-control-custom" id="editAnimalBreed" required>
+                                    <div class="breed-input-container">
+                                        <input type="text" class="form-control form-control-custom" id="editAnimalBreed" 
+                                               placeholder="Type to search breeds..." 
+                                               autocomplete="off" required>
+                                        <div id="editBreedSuggestions" class="breed-suggestions"></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -631,6 +701,236 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
+        // Comprehensive Dog Breeds Database
+        const dogBreedsDatabase = {
+            'Working Dogs': [
+                { name: 'German Shepherd', size: 'Large', temperament: 'Confident, Courageous', lifespan: '9-13 years', origin: 'Germany' },
+                { name: 'Rottweiler', size: 'Large', temperament: 'Loyal, Confident', lifespan: '9-10 years', origin: 'Germany' },
+                { name: 'Doberman Pinscher', size: 'Large', temperament: 'Loyal, Fearless', lifespan: '10-13 years', origin: 'Germany' },
+                { name: 'Boxer', size: 'Large', temperament: 'Playful, Devoted', lifespan: '10-12 years', origin: 'Germany' },
+                { name: 'Great Dane', size: 'Giant', temperament: 'Friendly, Patient', lifespan: '7-10 years', origin: 'Germany' },
+                { name: 'Mastiff', size: 'Giant', temperament: 'Courageous, Dignified', lifespan: '6-10 years', origin: 'England' },
+                { name: 'Saint Bernard', size: 'Giant', temperament: 'Gentle, Friendly', lifespan: '8-10 years', origin: 'Switzerland' },
+                { name: 'Bernese Mountain Dog', size: 'Large', temperament: 'Good-natured, Calm', lifespan: '7-10 years', origin: 'Switzerland' },
+                { name: 'Siberian Husky', size: 'Large', temperament: 'Loyal, Mischievous', lifespan: '12-14 years', origin: 'Siberia' },
+                { name: 'Alaskan Malamute', size: 'Large', temperament: 'Affectionate, Loyal', lifespan: '10-14 years', origin: 'Alaska' },
+                { name: 'Akita', size: 'Large', temperament: 'Dignified, Courageous', lifespan: '10-13 years', origin: 'Japan' },
+                { name: 'Shiba Inu', size: 'Medium', temperament: 'Alert, Active', lifespan: '13-16 years', origin: 'Japan' }
+            ],
+            'Sporting Dogs': [
+                { name: 'Golden Retriever', size: 'Large', temperament: 'Friendly, Intelligent', lifespan: '10-12 years', origin: 'Scotland' },
+                { name: 'Labrador Retriever', size: 'Large', temperament: 'Outgoing, Active', lifespan: '10-14 years', origin: 'Canada' },
+                { name: 'Cocker Spaniel', size: 'Medium', temperament: 'Gentle, Smart', lifespan: '12-15 years', origin: 'England' },
+                { name: 'English Springer Spaniel', size: 'Medium', temperament: 'Friendly, Eager', lifespan: '12-14 years', origin: 'England' },
+                { name: 'Brittany', size: 'Medium', temperament: 'Bright, Energetic', lifespan: '12-14 years', origin: 'France' },
+                { name: 'Pointer', size: 'Large', temperament: 'Even-tempered, Hard-working', lifespan: '12-15 years', origin: 'England' },
+                { name: 'Weimaraner', size: 'Large', temperament: 'Friendly, Fearless', lifespan: '10-13 years', origin: 'Germany' },
+                { name: 'Vizsla', size: 'Large', temperament: 'Affectionate, Energetic', lifespan: '12-14 years', origin: 'Hungary' },
+                { name: 'Irish Setter', size: 'Large', temperament: 'Outgoing, Sweet-natured', lifespan: '12-15 years', origin: 'Ireland' },
+                { name: 'German Shorthaired Pointer', size: 'Large', temperament: 'Friendly, Intelligent', lifespan: '12-14 years', origin: 'Germany' }
+            ],
+            'Hound Dogs': [
+                { name: 'Beagle', size: 'Medium', temperament: 'Friendly, Curious', lifespan: '13-16 years', origin: 'England' },
+                { name: 'Bloodhound', size: 'Large', temperament: 'Stubborn, Affectionate', lifespan: '10-12 years', origin: 'Belgium' },
+                { name: 'Basset Hound', size: 'Medium', temperament: 'Charming, Patient', lifespan: '12-13 years', origin: 'France' },
+                { name: 'Dachshund', size: 'Small', temperament: 'Spunky, Clever', lifespan: '12-16 years', origin: 'Germany' },
+                { name: 'Greyhound', size: 'Large', temperament: 'Gentle, Independent', lifespan: '10-13 years', origin: 'Egypt' },
+                { name: 'Whippet', size: 'Medium', temperament: 'Calm, Affectionate', lifespan: '12-15 years', origin: 'England' },
+                { name: 'Afghan Hound', size: 'Large', temperament: 'Independent, Dignified', lifespan: '12-18 years', origin: 'Afghanistan' },
+                { name: 'Saluki', size: 'Large', temperament: 'Gentle, Dignified', lifespan: '12-14 years', origin: 'Middle East' },
+                { name: 'Rhodesian Ridgeback', size: 'Large', temperament: 'Loyal, Independent', lifespan: '10-12 years', origin: 'South Africa' }
+            ],
+            'Terrier Dogs': [
+                { name: 'Jack Russell Terrier', size: 'Small', temperament: 'Stubborn, Fearless', lifespan: '13-16 years', origin: 'England' },
+                { name: 'Bull Terrier', size: 'Medium', temperament: 'Playful, Charming', lifespan: '12-13 years', origin: 'England' },
+                { name: 'Staffordshire Bull Terrier', size: 'Medium', temperament: 'Fearless, Affectionate', lifespan: '12-14 years', origin: 'England' },
+                { name: 'Scottish Terrier', size: 'Small', temperament: 'Independent, Confident', lifespan: '12-15 years', origin: 'Scotland' },
+                { name: 'West Highland White Terrier', size: 'Small', temperament: 'Hardy, Self-confident', lifespan: '13-15 years', origin: 'Scotland' },
+                { name: 'Border Terrier', size: 'Small', temperament: 'Obedient, Good-natured', lifespan: '12-15 years', origin: 'England' },
+                { name: 'Airedale Terrier', size: 'Large', temperament: 'Friendly, Courageous', lifespan: '11-14 years', origin: 'England' },
+                { name: 'Cairn Terrier', size: 'Small', temperament: 'Alert, Cheerful', lifespan: '13-15 years', origin: 'Scotland' }
+            ],
+            'Toy Dogs': [
+                { name: 'Chihuahua', size: 'Small', temperament: 'Graceful, Alert', lifespan: '14-16 years', origin: 'Mexico' },
+                { name: 'Pomeranian', size: 'Small', temperament: 'Inquisitive, Bold', lifespan: '12-16 years', origin: 'Germany' },
+                { name: 'Yorkshire Terrier', size: 'Small', temperament: 'Bold, Confident', lifespan: '11-15 years', origin: 'England' },
+                { name: 'Maltese', size: 'Small', temperament: 'Gentle, Playful', lifespan: '12-15 years', origin: 'Malta' },
+                { name: 'Shih Tzu', size: 'Small', temperament: 'Affectionate, Playful', lifespan: '10-18 years', origin: 'China' },
+                { name: 'Pug', size: 'Small', temperament: 'Charming, Mischievous', lifespan: '13-15 years', origin: 'China' },
+                { name: 'Boston Terrier', size: 'Small', temperament: 'Friendly, Bright', lifespan: '11-13 years', origin: 'USA' },
+                { name: 'French Bulldog', size: 'Small', temperament: 'Adaptable, Playful', lifespan: '10-12 years', origin: 'France' },
+                { name: 'Cavalier King Charles Spaniel', size: 'Small', temperament: 'Affectionate, Gentle', lifespan: '9-14 years', origin: 'England' },
+                { name: 'Papillon', size: 'Small', temperament: 'Happy, Alert', lifespan: '13-16 years', origin: 'France' }
+            ],
+            'Non-Sporting Dogs': [
+                { name: 'Poodle', size: 'Medium', temperament: 'Active, Alert', lifespan: '12-15 years', origin: 'Germany' },
+                { name: 'Bulldog', size: 'Medium', temperament: 'Calm, Friendly', lifespan: '8-10 years', origin: 'England' },
+                { name: 'Dalmatian', size: 'Large', temperament: 'Energetic, Playful', lifespan: '11-13 years', origin: 'Croatia' },
+                { name: 'Schnauzer', size: 'Medium', temperament: 'Obedient, Alert', lifespan: '12-15 years', origin: 'Germany' },
+                { name: 'Bichon Frise', size: 'Small', temperament: 'Cheerful, Curious', lifespan: '12-15 years', origin: 'France' },
+                { name: 'Lhasa Apso', size: 'Small', temperament: 'Confident, Smart', lifespan: '12-15 years', origin: 'Tibet' },
+                { name: 'Tibetan Spaniel', size: 'Small', temperament: 'Self-confident, Reserved', lifespan: '12-15 years', origin: 'Tibet' },
+                { name: 'Chinese Crested', size: 'Small', temperament: 'Alert, Lively', lifespan: '13-18 years', origin: 'China' }
+            ],
+            'Herding Dogs': [
+                { name: 'Border Collie', size: 'Medium', temperament: 'Tenacious, Keen', lifespan: '12-15 years', origin: 'Scotland' },
+                { name: 'Australian Shepherd', size: 'Medium', temperament: 'Smart, Work-focused', lifespan: '12-13 years', origin: 'USA' },
+                { name: 'Collie', size: 'Large', temperament: 'Graceful, Devoted', lifespan: '12-14 years', origin: 'Scotland' },
+                { name: 'Shetland Sheepdog', size: 'Small', temperament: 'Playful, Energetic', lifespan: '12-13 years', origin: 'Scotland' },
+                { name: 'Welsh Corgi', size: 'Small', temperament: 'Alert, Affectionate', lifespan: '12-15 years', origin: 'Wales' },
+                { name: 'Old English Sheepdog', size: 'Large', temperament: 'Adaptable, Intelligent', lifespan: '10-12 years', origin: 'England' },
+                { name: 'Belgian Malinois', size: 'Large', temperament: 'Confident, Hard-working', lifespan: '14-16 years', origin: 'Belgium' },
+                { name: 'German Shepherd', size: 'Large', temperament: 'Confident, Courageous', lifespan: '9-13 years', origin: 'Germany' }
+            ]
+        };
+
+        // Other Animal Breeds Database
+        const otherBreedsDatabase = {
+            'Cattle': [
+                'Holstein', 'Jersey', 'Guernsey', 'Ayrshire', 'Brown Swiss', 'Angus', 'Hereford', 'Charolais', 
+                'Limousin', 'Simmental', 'Brahman', 'Shorthorn', 'Devon', 'South Devon', 'Normande', 'Highland',
+                'Belted Galloway', 'Texas Longhorn', 'Chianina', 'Maine-Anjou'
+            ],
+            'Goats': [
+                'Nubian', 'Saanen', 'Toggenburg', 'Alpine', 'Oberhasli', 'LaMancha', 'Boer', 'Kiko', 'Spanish',
+                'Pygmy', 'Angora', 'Cashmere', 'Fainting', 'Nigerian Dwarf', 'Kinder', 'Oberhasli'
+            ],
+            'Sheep': [
+                'Dorset', 'Suffolk', 'Hampshire', 'Rambouillet', 'Merino', 'Cheviot', 'Columbia', 'Corriedale',
+                'Finn', 'Romney', 'Southdown', 'Targhee', 'Border Leicester', 'Jacob', 'Katahdin'
+            ],
+            'Pigs': [
+                'Yorkshire', 'Hampshire', 'Duroc', 'Berkshire', 'Chester White', 'Poland China', 'Spotted',
+                'Tamworth', 'Gloucestershire Old Spot', 'Large Black', 'Mangalitsa', 'Kunekune'
+            ],
+            'Horses': [
+                'Quarter Horse', 'Thoroughbred', 'Arabian', 'Paint Horse', 'Appaloosa', 'Morgan', 'Tennessee Walking Horse',
+                'Standardbred', 'Mustang', 'Friesian', 'Clydesdale', 'Percheron', 'Belgian', 'Shire', 'Welsh Pony'
+            ],
+            'Chickens': [
+                'Rhode Island Red', 'Leghorn', 'Plymouth Rock', 'Wyandotte', 'Orpington', 'Sussex', 'Australorp',
+                'Brahma', 'Cochin', 'Silkie', 'Polish', 'Frizzle', 'Easter Egger', 'Marans', 'Welsummer'
+            ],
+            'Ducks': [
+                'Pekin', 'Rouen', 'Khaki Campbell', 'Indian Runner', 'Muscovy', 'Cayuga', 'Buff', 'Saxony',
+                'Welsh Harlequin', 'Ancona', 'Magpie', 'Swedish Blue'
+            ],
+            'Geese': [
+                'Embden', 'Toulouse', 'Chinese', 'African', 'Sebastopol', 'Pilgrim', 'Roman', 'Buff'
+            ],
+            'Turkeys': [
+                'Broad Breasted White', 'Broad Breasted Bronze', 'Narragansett', 'Bourbon Red', 'Royal Palm',
+                'Slate', 'Black', 'White Holland'
+            ],
+            'Cats': [
+                'Persian', 'Maine Coon', 'Siamese', 'Ragdoll', 'British Shorthair', 'Scottish Fold', 'Sphynx',
+                'Abyssinian', 'American Shorthair', 'Bengal', 'Birman', 'Bombay', 'Burmese', 'Devon Rex',
+                'Himalayan', 'Manx', 'Norwegian Forest Cat', 'Oriental Shorthair', 'Russian Blue', 'Siberian'
+            ],
+            'Rabbits': [
+                'Holland Lop', 'Netherland Dwarf', 'Mini Rex', 'Lionhead', 'Flemish Giant', 'English Lop',
+                'French Lop', 'American Fuzzy Lop', 'Jersey Wooly', 'Mini Lop', 'Polish', 'Rex', 'Satin'
+            ]
+        };
+
+        // Breed suggestion functionality
+        function initializeBreedSuggestions() {
+            const breedInputs = ['animalBreed', 'editAnimalBreed'];
+            
+            breedInputs.forEach(inputId => {
+                const input = document.getElementById(inputId);
+                const suggestionsContainer = document.getElementById(inputId === 'animalBreed' ? 'breedSuggestions' : 'editBreedSuggestions');
+                
+                if (input && suggestionsContainer) {
+                    input.addEventListener('input', (e) => {
+                        const query = e.target.value.toLowerCase();
+                        if (query.length >= 2) {
+                            showBreedSuggestions(query, suggestionsContainer, input);
+                        } else {
+                            hideBreedSuggestions(suggestionsContainer);
+                        }
+                    });
+                    
+                    input.addEventListener('blur', () => {
+                        setTimeout(() => hideBreedSuggestions(suggestionsContainer), 200);
+                    });
+                    
+                    input.addEventListener('focus', (e) => {
+                        if (e.target.value.length >= 2) {
+                            showBreedSuggestions(e.target.value.toLowerCase(), suggestionsContainer, input);
+                        }
+                    });
+                }
+            });
+        }
+
+        function showBreedSuggestions(query, container, input) {
+            const suggestions = [];
+            
+            // Search in dog breeds
+            Object.entries(dogBreedsDatabase).forEach(([category, breeds]) => {
+                breeds.forEach(breed => {
+                    if (breed.name.toLowerCase().includes(query)) {
+                        suggestions.push({
+                            name: breed.name,
+                            category: category,
+                            size: breed.size,
+                            temperament: breed.temperament,
+                            lifespan: breed.lifespan,
+                            origin: breed.origin
+                        });
+                    }
+                });
+            });
+            
+            // Search in other animal breeds
+            Object.entries(otherBreedsDatabase).forEach(([species, breeds]) => {
+                breeds.forEach(breed => {
+                    if (breed.toLowerCase().includes(query)) {
+                        suggestions.push({
+                            name: breed,
+                            category: species,
+                            size: '',
+                            temperament: '',
+                            lifespan: '',
+                            origin: ''
+                        });
+                    }
+                });
+            });
+            
+            // Limit to 10 suggestions
+            const limitedSuggestions = suggestions.slice(0, 10);
+            
+            if (limitedSuggestions.length > 0) {
+                container.innerHTML = limitedSuggestions.map(suggestion => `
+                    <div class="breed-suggestion-item" onclick="selectBreed('${suggestion.name}', '${input.id}')">
+                        <div class="breed-name">${suggestion.name}</div>
+                        <div class="breed-details">
+                            ${suggestion.category}${suggestion.size ? ' • ' + suggestion.size : ''}${suggestion.temperament ? ' • ' + suggestion.temperament : ''}
+                        </div>
+                    </div>
+                `).join('');
+                container.style.display = 'block';
+            } else {
+                hideBreedSuggestions(container);
+            }
+        }
+
+        function hideBreedSuggestions(container) {
+            container.style.display = 'none';
+        }
+
+        function selectBreed(breedName, inputId) {
+            const input = document.getElementById(inputId);
+            const suggestionsContainer = document.getElementById(inputId === 'animalBreed' ? 'breedSuggestions' : 'editBreedSuggestions');
+            
+            if (input) {
+                input.value = breedName;
+                hideBreedSuggestions(suggestionsContainer);
+            }
+        }
+
         // Sample livestock data
         let livestock = [
             {
@@ -925,6 +1225,7 @@
             checkAuthentication();
             loadLivestock();
             updateStatistics();
+            initializeBreedSuggestions();
         });
 
         function checkAuthentication() {
