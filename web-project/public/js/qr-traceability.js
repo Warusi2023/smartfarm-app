@@ -21,7 +21,7 @@ class QRTraceability {
         
         // Wait for the library to load from the HTML head
         let attempts = 0;
-        const maxAttempts = 50; // 5 seconds total
+        const maxAttempts = 30; // 3 seconds total
         
         const checkLibrary = () => {
             attempts++;
@@ -35,22 +35,47 @@ class QRTraceability {
             if (attempts < maxAttempts) {
                 setTimeout(checkLibrary, 100);
             } else {
-                console.log('QR Code library not found in HTML head, loading dynamically...');
-                const script = document.createElement('script');
-                script.src = this.qrCodeLibrary;
-                script.onload = () => {
-                    console.log('QR Code library loaded successfully');
-                    this.initializeQRSystem();
-                };
-                script.onerror = () => {
-                    console.error('Failed to load QR Code library');
-                    this.initializeQRSystemWithFallback();
-                };
-                document.head.appendChild(script);
+                console.log('QR Code library not found in HTML head, trying multiple CDN sources...');
+                this.loadQRCodeFromMultipleSources();
             }
         };
         
         checkLibrary();
+    }
+
+    loadQRCodeFromMultipleSources() {
+        const cdnSources = [
+            'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js',
+            'https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js'
+        ];
+        
+        let currentSource = 0;
+        
+        const tryNextSource = () => {
+            if (currentSource >= cdnSources.length) {
+                console.error('All QR Code library sources failed, using fallback');
+                this.initializeQRSystemWithFallback();
+                return;
+            }
+            
+            const script = document.createElement('script');
+            script.src = cdnSources[currentSource];
+            script.onload = () => {
+                console.log(`QR Code library loaded successfully from source ${currentSource + 1}`);
+                this.initializeQRSystem();
+            };
+            script.onerror = () => {
+                console.warn(`Failed to load QR Code library from source ${currentSource + 1}: ${cdnSources[currentSource]}`);
+                currentSource++;
+                setTimeout(tryNextSource, 500);
+            };
+            
+            console.log(`Trying QR Code library source ${currentSource + 1}: ${cdnSources[currentSource]}`);
+            document.head.appendChild(script);
+        };
+        
+        tryNextSource();
     }
 
     initializeQRSystemWithFallback() {
@@ -283,7 +308,7 @@ class QRTraceability {
             
             // Wait for the library to load with timeout
             let attempts = 0;
-            const maxAttempts = 30; // 3 seconds
+            const maxAttempts = 20; // 2 seconds
             
             const checkLibrary = () => {
                 attempts++;
@@ -294,6 +319,7 @@ class QRTraceability {
                 } else if (attempts < maxAttempts) {
                     setTimeout(checkLibrary, 100);
                 } else {
+                    console.log('QR Code library still not available, using fallback');
                     this.showQRCodeFallback(product, traceabilityURL);
                 }
             };
@@ -397,12 +423,26 @@ class QRTraceability {
         const qrContainer = document.getElementById('qrCodeDisplay');
         if (!qrContainer) return;
         
-        qrContainer.innerHTML = `
+        // Try to generate a simple QR code using a different method
+        this.generateSimpleQRCode(product, traceabilityURL, qrContainer);
+    }
+
+    generateSimpleQRCode(product, traceabilityURL, container) {
+        // Create a simple QR code using a web service or fallback method
+        const qrServiceURL = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(traceabilityURL)}`;
+        
+        container.innerHTML = `
             <div class="qr-code-result">
-                <div class="qr-placeholder" style="width: 200px; height: 200px; background: #f8f9fa; border: 2px dashed #dee2e6; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
-                    <div class="text-center">
-                        <i class="fas fa-qrcode fa-3x text-muted mb-2"></i>
-                        <p class="text-muted">QR Code Placeholder</p>
+                <div class="qr-image-container" style="text-align: center; margin-bottom: 15px;">
+                    <img src="${qrServiceURL}" 
+                         alt="QR Code for ${product.name}" 
+                         style="max-width: 200px; height: auto; border: 1px solid #dee2e6; border-radius: 8px;"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <div style="display: none; width: 200px; height: 200px; background: #f8f9fa; border: 2px dashed #dee2e6; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                        <div class="text-center">
+                            <i class="fas fa-qrcode fa-3x text-muted mb-2"></i>
+                            <p class="text-muted">QR Code Placeholder</p>
+                        </div>
                     </div>
                 </div>
                 <h6>${product.name}</h6>
@@ -411,17 +451,38 @@ class QRTraceability {
                     <button class="btn btn-sm btn-outline-primary me-2" onclick="window.open('${traceabilityURL}', '_blank')">
                         <i class="fas fa-external-link-alt me-1"></i>View Traceability
                     </button>
-                    <button class="btn btn-sm btn-outline-success" onclick="navigator.clipboard.writeText('${traceabilityURL}')">
+                    <button class="btn btn-sm btn-outline-success me-2" onclick="navigator.clipboard.writeText('${traceabilityURL}').then(() => alert('URL copied to clipboard!'))">
                         <i class="fas fa-copy me-1"></i>Copy URL
+                    </button>
+                    <button class="btn btn-sm btn-outline-info" onclick="qrTraceability.retryQRGeneration('${product.id}')">
+                        <i class="fas fa-redo me-1"></i>Retry QR
                     </button>
                 </div>
                 <div class="mt-3">
-                    <small class="text-muted">QR Code library not available. You can still access the traceability page directly.</small>
+                    <small class="text-muted">Using fallback QR generation. Scan the code above or use the buttons below.</small>
                     <br>
                     <small class="text-muted">URL: ${traceabilityURL}</small>
                 </div>
             </div>
         `;
+    }
+
+    retryQRGeneration(productId) {
+        console.log('Retrying QR generation for product:', productId);
+        
+        // Clear the current display
+        const qrContainer = document.getElementById('qrCodeDisplay');
+        if (qrContainer) {
+            qrContainer.innerHTML = '<div class="spinner-border" role="status"></div><p>Retrying QR generation...</p>';
+        }
+        
+        // Try to reload the QR library
+        this.loadQRCodeFromMultipleSources();
+        
+        // After a delay, try to generate the QR code again
+        setTimeout(() => {
+            this.generateQRCode();
+        }, 2000);
     }
 
     // Download QR Code
@@ -652,8 +713,37 @@ class QRTraceability {
     }
 }
 
-// Initialize QR Traceability System
+    // Debug function for QR Code library issues
+    debugQRLibrary() {
+        console.log('=== QR CODE LIBRARY DEBUG ===');
+        console.log('QRCode available:', typeof QRCode !== 'undefined');
+        console.log('QRCode type:', typeof QRCode);
+        console.log('Window.QRCode:', typeof window.QRCode);
+        console.log('Global QRCode:', typeof globalThis.QRCode);
+        
+        // Check if any QR code libraries are loaded
+        const possibleQRCodeVars = ['QRCode', 'qrcode', 'QRCodeGenerator', 'qrCode'];
+        possibleQRCodeVars.forEach(varName => {
+            if (typeof window[varName] !== 'undefined') {
+                console.log(`Found QR library: window.${varName}`, typeof window[varName]);
+            }
+        });
+        
+        // Check script tags
+        const scripts = document.querySelectorAll('script[src*="qrcode"]');
+        console.log('QR Code script tags found:', scripts.length);
+        scripts.forEach((script, index) => {
+            console.log(`Script ${index + 1}:`, script.src, 'Loaded:', script.readyState);
+        });
+        
+        console.log('=== END QR DEBUG ===');
+    }
+
+    // Initialize QR Traceability System
 const qrTraceability = new QRTraceability();
+
+// Add debug function to global scope for testing
+window.debugQRLibrary = () => qrTraceability.debugQRLibrary();
 
 // Add CSS styles for QR components
 const qrStyles = `
