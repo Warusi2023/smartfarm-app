@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geofencing Setup - SmartFarm</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        :root {
+            --primary-color: #2e7d32;
+            --secondary-color: #4caf50;
+            --accent-color: #8bc34a;
+            --danger-color: #f44336;
+            --warning-color: #ff9800;
+            --info-color: #2196f3;
+            --dark-color: #424242;
+            --light-color: #f5f5f5;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 40px 0;
+            margin-bottom: 30px;
+        }
+
+        .card-custom {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .card-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-custom {
+            background: var(--accent-color);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-custom:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        #map {
+            height: 400px;
+            width: 100%;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .form-control-custom {
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 12px 15px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control-custom:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(46, 125, 50, 0.25);
+        }
+
+        .geofence-type-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .geofence-type-btn {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .geofence-type-btn.active {
+            border-color: var(--primary-color);
+            background: linear-gradient(135deg, #f8fff8, #e8f5e8);
+        }
+
+        .geofence-type-btn:hover {
+            border-color: var(--secondary-color);
+        }
+
+        .coordinate-display {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-connected { background: #28a745; }
+        .status-disconnected { background: #dc3545; }
+        .status-unknown { background: #6c757d; }
+
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+
+        .step {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            position: relative;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            color: #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            font-weight: bold;
+        }
+
+        .step.active .step-number {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .step.completed .step-number {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        .step-title {
+            font-weight: 500;
+            color: #666;
+        }
+
+        .step.active .step-title {
+            color: var(--primary-color);
+        }
+
+        .step.completed .step-title {
+            color: var(--secondary-color);
+        }
+    </style>
+</head>
+<body>
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="mb-2">
+                        <i class="fas fa-map-marked-alt me-3"></i>Geofencing Setup
+                    </h1>
+                    <p class="mb-0">Configure your farm's location and geofencing settings</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <a href="dashboard.html" class="back-btn">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Step Indicator -->
+        <div class="step-indicator">
+            <div class="step active" id="step1">
+                <div class="step-number">1</div>
+                <div class="step-title">Select Farm</div>
+            </div>
+            <div class="step" id="step2">
+                <div class="step-number">2</div>
+                <div class="step-title">Set Location</div>
+            </div>
+            <div class="step" id="step3">
+                <div class="step-title">Configure Geofence</div>
+            </div>
+            <div class="step" id="step4">
+                <div class="step-number">4</div>
+                <div class="step-title">Review & Save</div>
+            </div>
+        </div>
+
+        <!-- Step 1: Select Farm -->
+        <div class="card-custom" id="step1Content">
+            <h5 class="mb-3">
+                <i class="fas fa-tractor me-2"></i>Select Farm to Configure
+            </h5>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Choose Farm</label>
+                        <select class="form-select form-control-custom" id="farmSelect">
+                            <option value="">Select a farm...</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Or Create New Farm</label>
+                        <button class="btn btn-outline-primary w-100" onclick="showCreateFarmModal()">
+                            <i class="fas fa-plus me-2"></i>Create New Farm
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="text-end">
+                <button class="btn btn-custom" onclick="nextStep(2)" disabled id="nextStep1">
+                    Next: Set Location <i class="fas fa-arrow-right ms-2"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Step 2: Set Location -->
+        <div class="card-custom" id="step2Content" style="display: none;">
+            <h5 class="mb-3">
+                <i class="fas fa-map-marker-alt me-2"></i>Set Farm Location
+            </h5>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Address</label>
+                        <input type="text" class="form-control form-control-custom" id="farmAddress" placeholder="Enter farm address">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">City</label>
+                                <input type="text" class="form-control form-control-custom" id="farmCity" placeholder="City">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">State/Province</label>
+                                <input type="text" class="form-control form-control-custom" id="farmState" placeholder="State">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Postal Code</label>
+                                <input type="text" class="form-control form-control-custom" id="farmPostalCode" placeholder="Postal Code">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Country</label>
+                                <select class="form-select form-control-custom" id="farmCountry">
+                                    <option value="Fiji" selected>Fiji</option>
+                                    <option value="Australia">Australia</option>
+                                    <option value="New Zealand">New Zealand</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-primary" onclick="getCurrentLocationForFarm()">
+                            <i class="fas fa-location-arrow me-2"></i>Use My Location
+                        </button>
+                        <button class="btn btn-outline-secondary" onclick="searchAddress()">
+                            <i class="fas fa-search me-2"></i>Search Address
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div id="map"></div>
+                    <div class="coordinate-display">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="form-label">Latitude</label>
+                                <input type="number" class="form-control form-control-custom" id="farmLatitude" step="0.0000001" placeholder="0.000000">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Longitude</label>
+                                <input type="number" class="form-control form-control-custom" id="farmLongitude" step="0.0000001" placeholder="0.000000">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex justify-content-between">
+                <button class="btn btn-outline-secondary" onclick="prevStep(1)">
+                    <i class="fas fa-arrow-left me-2"></i>Previous
+                </button>
+                <button class="btn btn-custom" onclick="nextStep(3)" disabled id="nextStep2">
+                    Next: Configure Geofence <i class="fas fa-arrow-right ms-2"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Step 3: Configure Geofence -->
+        <div class="card-custom" id="step3Content" style="display: none;">
+            <h5 class="mb-3">
+                <i class="fas fa-shield-alt me-2"></i>Configure Geofence
+            </h5>
+            
+            <!-- Geofence Type Selection -->
+            <div class="geofence-type-selector">
+                <div class="geofence-type-btn active" onclick="selectGeofenceType('circular')" id="circularBtn">
+                    <i class="fas fa-circle fa-2x mb-2"></i>
+                    <div><strong>Circular</strong></div>
+                    <small>Simple radius-based geofence</small>
+                </div>
+                <div class="geofence-type-btn" onclick="selectGeofenceType('polygon')" id="polygonBtn">
+                    <i class="fas fa-draw-polygon fa-2x mb-2"></i>
+                    <div><strong>Polygon</strong></div>
+                    <small>Custom shape geofence</small>
+                </div>
+            </div>
+
+            <!-- Circular Geofence Settings -->
+            <div id="circularSettings">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Geofence Radius (meters)</label>
+                            <input type="number" class="form-control form-control-custom" id="geofenceRadius" value="100" min="10" max="10000">
+                            <div class="form-text">Recommended: 50-500 meters</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Radius Preview</label>
+                            <div class="coordinate-display">
+                                <div id="radiusPreview">Radius: 100m</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Polygon Geofence Settings -->
+            <div id="polygonSettings" style="display: none;">
+                <div class="mb-3">
+                    <label class="form-label">Draw Geofence Polygon</label>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Click on the map to create polygon points. Click the first point again to close the polygon.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Farm Visibility Settings -->
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="isPublicFarm">
+                            <label class="form-check-label" for="isPublicFarm">
+                                <strong>Make farm publicly visible</strong>
+                                <div class="form-text">Allow other users to find your farm in search results</div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="allowVisitors">
+                            <label class="form-check-label" for="allowVisitors">
+                                <strong>Allow visitors</strong>
+                                <div class="form-text">Permit visitors to check in to your farm</div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visitor Instructions -->
+            <div class="mb-3">
+                <label class="form-label">Visitor Instructions</label>
+                <textarea class="form-control form-control-custom" id="visitorInstructions" rows="3" placeholder="Enter any special instructions for visitors..."></textarea>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <button class="btn btn-outline-secondary" onclick="prevStep(2)">
+                    <i class="fas fa-arrow-left me-2"></i>Previous
+                </button>
+                <button class="btn btn-custom" onclick="nextStep(4)">
+                    Next: Review & Save <i class="fas fa-arrow-right ms-2"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Step 4: Review & Save -->
+        <div class="card-custom" id="step4Content" style="display: none;">
+            <h5 class="mb-3">
+                <i class="fas fa-check-circle me-2"></i>Review & Save Configuration
+            </h5>
+            
+            <div id="reviewContent">
+                <!-- Review content will be populated here -->
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <button class="btn btn-outline-secondary" onclick="prevStep(3)">
+                    <i class="fas fa-arrow-left me-2"></i>Previous
+                </button>
+                <button class="btn btn-success" onclick="saveGeofenceConfiguration()">
+                    <i class="fas fa-save me-2"></i>Save Configuration
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script>
+        // Global variables
+        let map;
+        let selectedFarm = null;
+        let currentStep = 1;
+        let geofenceType = 'circular';
+        let farmMarker = null;
+        let geofenceLayer = null;
+        let polygonPoints = [];
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuthentication();
+            initializeMap();
+            loadFarms();
+            setupEventListeners();
+        });
+
+        function checkAuthentication() {
+            const user = localStorage.getItem('smartfarm_user') || sessionStorage.getItem('smartfarm_user');
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+        }
+
+        function initializeMap() {
+            // Initialize map centered on Fiji
+            map = L.map('map').setView([-18.1248, 178.4501], 10);
+
+            // Add OpenStreetMap tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            // Add click handler for map
+            map.on('click', function(e) {
+                if (currentStep === 2) {
+                    setFarmLocation(e.latlng.lat, e.latlng.lng);
+                } else if (currentStep === 3 && geofenceType === 'polygon') {
+                    addPolygonPoint(e.latlng.lat, e.latlng.lng);
+                }
+            });
+        }
+
+        function setupEventListeners() {
+            // Farm selection
+            document.getElementById('farmSelect').addEventListener('change', function() {
+                const farmId = this.value;
+                if (farmId) {
+                    selectedFarm = { id: farmId };
+                    document.getElementById('nextStep1').disabled = false;
+                } else {
+                    document.getElementById('nextStep1').disabled = true;
+                }
+            });
+
+            // Coordinate inputs
+            document.getElementById('farmLatitude').addEventListener('input', updateMapFromCoordinates);
+            document.getElementById('farmLongitude').addEventListener('input', updateMapFromCoordinates);
+
+            // Geofence radius
+            document.getElementById('geofenceRadius').addEventListener('input', updateGeofencePreview);
+        }
+
+        function loadFarms() {
+            const token = localStorage.getItem('smartfarm_token') || sessionStorage.getItem('smartfarm_token');
+            
+            fetch('/api/farms', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const farmSelect = document.getElementById('farmSelect');
+                    farmSelect.innerHTML = '<option value="">Select a farm...</option>';
+                    
+                    data.data.forEach(farm => {
+                        const option = document.createElement('option');
+                        option.value = farm.id;
+                        option.textContent = farm.name;
+                        farmSelect.appendChild(option);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error loading farms:', error);
+                showAlert('Error loading farms. Please try again.', 'danger');
+            });
+        }
+
+        function nextStep(step) {
+            // Hide current step
+            document.getElementById(`step${currentStep}Content`).style.display = 'none';
+            document.getElementById(`step${currentStep}`).classList.remove('active');
+            document.getElementById(`step${currentStep}`).classList.add('completed');
+
+            // Show next step
+            currentStep = step;
+            document.getElementById(`step${currentStep}Content`).style.display = 'block';
+            document.getElementById(`step${currentStep}`).classList.add('active');
+
+            // Step-specific actions
+            if (step === 3) {
+                updateGeofencePreview();
+            } else if (step === 4) {
+                generateReviewContent();
+            }
+        }
+
+        function prevStep(step) {
+            // Hide current step
+            document.getElementById(`step${currentStep}Content`).style.display = 'none';
+            document.getElementById(`step${currentStep}`).classList.remove('active');
+
+            // Show previous step
+            currentStep = step;
+            document.getElementById(`step${currentStep}Content`).style.display = 'block';
+            document.getElementById(`step${currentStep}`).classList.add('active');
+        }
+
+        function getCurrentLocationForFarm() {
+            if (!navigator.geolocation) {
+                showAlert('Geolocation is not supported by this browser.', 'warning');
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    setFarmLocation(position.coords.latitude, position.coords.longitude);
+                },
+                function(error) {
+                    console.error('Error getting location:', error);
+                    showAlert('Unable to get your location. Please try again.', 'danger');
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 300000
+                }
+            );
+        }
+
+        function setFarmLocation(lat, lng) {
+            document.getElementById('farmLatitude').value = lat;
+            document.getElementById('farmLongitude').value = lng;
+            
+            // Update map
+            map.setView([lat, lng], 15);
+            
+            // Add/update farm marker
+            if (farmMarker) {
+                map.removeLayer(farmMarker);
+            }
+            farmMarker = L.marker([lat, lng])
+                .addTo(map)
+                .bindPopup('Farm Location')
+                .openPopup();
+
+            // Enable next step
+            document.getElementById('nextStep2').disabled = false;
+        }
+
+        function updateMapFromCoordinates() {
+            const lat = parseFloat(document.getElementById('farmLatitude').value);
+            const lng = parseFloat(document.getElementById('farmLongitude').value);
+            
+            if (!isNaN(lat) && !isNaN(lng)) {
+                setFarmLocation(lat, lng);
+            }
+        }
+
+        function selectGeofenceType(type) {
+            geofenceType = type;
+            
+            // Update UI
+            document.querySelectorAll('.geofence-type-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(`${type}Btn`).classList.add('active');
+            
+            // Show/hide settings
+            document.getElementById('circularSettings').style.display = type === 'circular' ? 'block' : 'none';
+            document.getElementById('polygonSettings').style.display = type === 'polygon' ? 'block' : 'none';
+            
+            // Clear polygon points if switching to circular
+            if (type === 'circular') {
+                clearPolygonPoints();
+            }
+        }
+
+        function addPolygonPoint(lat, lng) {
+            polygonPoints.push([lat, lng]);
+            
+            // Update map
+            if (geofenceLayer) {
+                map.removeLayer(geofenceLayer);
+            }
+            
+            if (polygonPoints.length > 1) {
+                geofenceLayer = L.polyline(polygonPoints, { color: 'red', weight: 3 }).addTo(map);
+            }
+        }
+
+        function clearPolygonPoints() {
+            polygonPoints = [];
+            if (geofenceLayer) {
+                map.removeLayer(geofenceLayer);
+                geofenceLayer = null;
+            }
+        }
+
+        function updateGeofencePreview() {
+            const radius = document.getElementById('geofenceRadius').value;
+            document.getElementById('radiusPreview').textContent = `Radius: ${radius}m`;
+            
+            // Update map if we have a farm location
+            const lat = parseFloat(document.getElementById('farmLatitude').value);
+            const lng = parseFloat(document.getElementById('farmLongitude').value);
+            
+            if (!isNaN(lat) && !isNaN(lng)) {
+                // Remove existing geofence layer
+                if (geofenceLayer) {
+                    map.removeLayer(geofenceLayer);
+                }
+                
+                // Add circular geofence
+                geofenceLayer = L.circle([lat, lng], {
+                    radius: parseInt(radius),
+                    color: 'blue',
+                    weight: 2,
+                    fillOpacity: 0.1
+                }).addTo(map);
+            }
+        }
+
+        function generateReviewContent() {
+            const reviewContent = document.getElementById('reviewContent');
+            
+            const farmName = document.getElementById('farmSelect').selectedOptions[0]?.textContent || 'New Farm';
+            const address = document.getElementById('farmAddress').value;
+            const city = document.getElementById('farmCity').value;
+            const state = document.getElementById('farmState').value;
+            const country = document.getElementById('farmCountry').value;
+            const lat = document.getElementById('farmLatitude').value;
+            const lng = document.getElementById('farmLongitude').value;
+            const radius = document.getElementById('geofenceRadius').value;
+            const isPublic = document.getElementById('isPublicFarm').checked;
+            const allowVisitors = document.getElementById('allowVisitors').checked;
+            const instructions = document.getElementById('visitorInstructions').value;
+
+            reviewContent.innerHTML = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Farm Information</h6>
+                        <p><strong>Name:</strong> ${farmName}</p>
+                        <p><strong>Address:</strong> ${address || 'Not specified'}</p>
+                        <p><strong>Location:</strong> ${city}, ${state}, ${country}</p>
+                        <p><strong>Coordinates:</strong> ${lat}, ${lng}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Geofence Settings</h6>
+                        <p><strong>Type:</strong> ${geofenceType.charAt(0).toUpperCase() + geofenceType.slice(1)}</p>
+                        ${geofenceType === 'circular' ? `<p><strong>Radius:</strong> ${radius} meters</p>` : ''}
+                        <p><strong>Public:</strong> ${isPublic ? 'Yes' : 'No'}</p>
+                        <p><strong>Allow Visitors:</strong> ${allowVisitors ? 'Yes' : 'No'}</p>
+                        ${instructions ? `<p><strong>Instructions:</strong> ${instructions}</p>` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        function saveGeofenceConfiguration() {
+            const farmId = document.getElementById('farmSelect').value;
+            const latitude = parseFloat(document.getElementById('farmLatitude').value);
+            const longitude = parseFloat(document.getElementById('farmLongitude').value);
+            const geofenceRadius = parseInt(document.getElementById('geofenceRadius').value);
+            const isPublic = document.getElementById('isPublicFarm').checked;
+            const allowVisitors = document.getElementById('allowVisitors').checked;
+            const visitorInstructions = document.getElementById('visitorInstructions').value;
+
+            if (!farmId) {
+                showAlert('Please select a farm.', 'warning');
+                return;
+            }
+
+            if (isNaN(latitude) || isNaN(longitude)) {
+                showAlert('Please set valid coordinates.', 'warning');
+                return;
+            }
+
+            const token = localStorage.getItem('smartfarm_token') || sessionStorage.getItem('smartfarm_token');
+            
+            const requestData = {
+                latitude,
+                longitude,
+                geofenceRadius,
+                isPublic,
+                allowVisitors,
+                visitorInstructions
+            };
+
+            // Add polygon data if applicable
+            if (geofenceType === 'polygon' && polygonPoints.length > 2) {
+                requestData.geofencePolygon = polygonPoints;
+            }
+
+            fetch(`/api/geofencing/${farmId}/geofence`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('Geofence configuration saved successfully!', 'success');
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 2000);
+                } else {
+                    showAlert(data.error || 'Failed to save configuration', 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Error saving configuration:', error);
+                showAlert('Error saving configuration. Please try again.', 'danger');
+            });
+        }
+
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            const container = document.querySelector('.container');
+            container.insertBefore(alertDiv, container.firstChild);
+            
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        }
+
+        function showCreateFarmModal() {
+            // This would open a modal to create a new farm
+            showAlert('Farm creation feature coming soon!', 'info');
+        }
+    </script>
+</body>
+</html>

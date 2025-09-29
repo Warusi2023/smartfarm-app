@@ -115,6 +115,59 @@ const Farm = sequelize.define('Farm', {
   managerId: {
     type: DataTypes.UUID,
     allowNull: true
+  },
+  // Geofencing and Location Data
+  latitude: {
+    type: DataTypes.DECIMAL(10, 8),
+    allowNull: true
+  },
+  longitude: {
+    type: DataTypes.DECIMAL(11, 8),
+    allowNull: true
+  },
+  geofenceRadius: {
+    type: DataTypes.DECIMAL(8, 2), // in meters
+    allowNull: true,
+    defaultValue: 100
+  },
+  geofencePolygon: {
+    type: DataTypes.TEXT, // JSON string of polygon coordinates
+    allowNull: true
+  },
+  address: {
+    type: DataTypes.TEXT,
+    allowNull: true
+  },
+  city: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  state: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  country: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    defaultValue: 'Fiji'
+  },
+  postalCode: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  isPublic: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false
+  },
+  allowVisitors: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false
+  },
+  visitorInstructions: {
+    type: DataTypes.TEXT,
+    allowNull: true
   }
 }, {
   tableName: 'farms',
