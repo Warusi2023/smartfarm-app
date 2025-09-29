@@ -515,7 +515,9 @@
                 config: window.SmartFarmConfig,
                 farmsUrl: window.SmartFarmConfig.getApiUrl('/farms'),
                 geofencingUrl: window.SmartFarmConfig.getApiUrl('/geofencing'),
-                currentDomain: window.location.origin
+                geofenceUpdateUrl: window.SmartFarmConfig.getApiUrl('/geofencing/demo-farm-1/geofence'),
+                currentDomain: window.location.origin,
+                VITE_API_URL: window.VITE_API_URL
             });
         }
         
@@ -602,7 +604,9 @@
                 return;
             }
             
-            fetch(window.SmartFarmConfig.getApiUrl('/farms'), {
+            const farmsUrl = window.SmartFarmConfig.getApiUrl('/farms');
+            console.log('Loading farms from URL:', farmsUrl);
+            fetch(farmsUrl, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -944,7 +948,9 @@
                 requestData.geofencePolygon = polygonPoints;
             }
 
-            fetch(window.SmartFarmConfig.getApiUrl(`/geofencing/${farmId}/geofence`), {
+            const geofenceUrl = window.SmartFarmConfig.getApiUrl(`/geofencing/${farmId}/geofence`);
+            console.log('Updating geofence at URL:', geofenceUrl);
+            fetch(geofenceUrl, {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${token}`,
