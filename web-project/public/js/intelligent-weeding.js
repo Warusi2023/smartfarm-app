@@ -1218,14 +1218,14 @@ class IntelligentWeedingSystem {
     }
 
     showWeedingAlert(tasks) {
-        // Create or update alert notification
+        // Create or update compact notification
         let alertElement = document.getElementById('weedingAlert');
         
         if (!alertElement) {
             alertElement = document.createElement('div');
             alertElement.id = 'weedingAlert';
-            alertElement.className = 'alert alert-danger alert-dismissible fade show position-fixed';
-            alertElement.style.cssText = 'top: 20px; right: 20px; z-index: 9999; max-width: 400px;';
+            alertElement.className = 'weeding-notification position-fixed';
+            alertElement.style.cssText = 'top: 20px; right: 20px; z-index: 1000; max-width: 300px;';
             
             if (document.body) {
                 document.body.appendChild(alertElement);
@@ -1235,17 +1235,244 @@ class IntelligentWeedingSystem {
             }
         }
         
+        const criticalCount = tasks.filter(task => task.urgency.level === 'critical').length;
+        const urgentCount = tasks.filter(task => task.urgency.level === 'urgent').length;
+        
         alertElement.innerHTML = `
-            <h6><i class="fas fa-exclamation-triangle me-2"></i>Urgent Weeding Required!</h6>
-            <p class="mb-2">${tasks.length} crop${tasks.length > 1 ? 's' : ''} require immediate attention:</p>
-            <ul class="mb-2">
-                ${tasks.slice(0, 3).map(task => `<li>${task.cropName} - ${task.location}</li>`).join('')}
-            </ul>
-            <button type="button" class="btn btn-sm btn-danger" onclick="intelligentWeeding.viewUrgentTasks()">
-                View Tasks
-            </button>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <div class="notification-card" onclick="intelligentWeeding.toggleAlertDetails()">
+                <div class="notification-header">
+                    <div class="notification-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="notification-figures">
+                        <div class="figure-item critical">
+                            <span class="figure-number">${criticalCount}</span>
+                            <span class="figure-label">Critical</span>
+                        </div>
+                        <div class="figure-item urgent">
+                            <span class="figure-number">${urgentCount}</span>
+                            <span class="figure-label">Urgent</span>
+                        </div>
+                    </div>
+                    <div class="notification-arrow">
+                        <i class="fas fa-chevron-down" id="alertArrow"></i>
+                    </div>
+                </div>
+                <div class="notification-details" id="alertDetails" style="display: none;">
+                    <div class="details-content">
+                        <p class="mb-2"><strong>${tasks.length} crop${tasks.length > 1 ? 's' : ''} require immediate attention:</strong></p>
+                        <ul class="mb-3">
+                            ${tasks.slice(0, 5).map(task => `
+                                <li class="task-item ${task.urgency.level}">
+                                    <span class="crop-name">${task.cropName}</span>
+                                    <span class="crop-location">- ${task.location}</span>
+                                </li>
+                            `).join('')}
+                            ${tasks.length > 5 ? `<li class="more-tasks">... and ${tasks.length - 5} more</li>` : ''}
+                        </ul>
+                        <div class="details-actions">
+                            <button type="button" class="btn btn-sm btn-danger" onclick="intelligentWeeding.viewUrgentTasks(); event.stopPropagation();">
+                                <i class="fas fa-eye me-1"></i>View All Tasks
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="intelligentWeeding.dismissAlert(); event.stopPropagation();">
+                                <i class="fas fa-times me-1"></i>Dismiss
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         `;
+        
+        // Add CSS styles if not already added
+        this.addNotificationStyles();
+    }
+    
+    toggleAlertDetails() {
+        const details = document.getElementById('alertDetails');
+        const arrow = document.getElementById('alertArrow');
+        
+        if (details && arrow) {
+            if (details.style.display === 'none') {
+                details.style.display = 'block';
+                arrow.classList.remove('fa-chevron-down');
+                arrow.classList.add('fa-chevron-up');
+            } else {
+                details.style.display = 'none';
+                arrow.classList.remove('fa-chevron-up');
+                arrow.classList.add('fa-chevron-down');
+            }
+        }
+    }
+    
+    dismissAlert() {
+        const alertElement = document.getElementById('weedingAlert');
+        if (alertElement) {
+            alertElement.remove();
+        }
+    }
+    
+    addNotificationStyles() {
+        // Check if styles already added
+        if (document.getElementById('weedingNotificationStyles')) return;
+        
+        const style = document.createElement('style');
+        style.id = 'weedingNotificationStyles';
+        style.textContent = `
+            .weeding-notification {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            }
+            
+            .notification-card {
+                background: white;
+                border-radius: 12px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+                border: 1px solid #e9ecef;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                overflow: hidden;
+            }
+            
+            .notification-card:hover {
+                box-shadow: 0 6px 25px rgba(0, 0, 0, 0.2);
+                transform: translateY(-2px);
+            }
+            
+            .notification-header {
+                display: flex;
+                align-items: center;
+                padding: 16px;
+                background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+                color: white;
+            }
+            
+            .notification-icon {
+                font-size: 20px;
+                margin-right: 12px;
+                animation: pulse 2s infinite;
+            }
+            
+            @keyframes pulse {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.1); }
+                100% { transform: scale(1); }
+            }
+            
+            .notification-figures {
+                display: flex;
+                gap: 16px;
+                flex: 1;
+            }
+            
+            .figure-item {
+                text-align: center;
+                padding: 8px 12px;
+                border-radius: 8px;
+                background: rgba(255, 255, 255, 0.2);
+                backdrop-filter: blur(10px);
+                min-width: 60px;
+            }
+            
+            .figure-item.critical {
+                background: rgba(220, 53, 69, 0.3);
+                border: 1px solid rgba(255, 255, 255, 0.3);
+            }
+            
+            .figure-item.urgent {
+                background: rgba(255, 193, 7, 0.3);
+                border: 1px solid rgba(255, 255, 255, 0.3);
+            }
+            
+            .figure-number {
+                display: block;
+                font-size: 24px;
+                font-weight: bold;
+                line-height: 1;
+            }
+            
+            .figure-label {
+                display: block;
+                font-size: 11px;
+                font-weight: 500;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                margin-top: 2px;
+            }
+            
+            .notification-arrow {
+                font-size: 14px;
+                opacity: 0.8;
+                transition: transform 0.3s ease;
+            }
+            
+            .notification-details {
+                background: #f8f9fa;
+                border-top: 1px solid #e9ecef;
+            }
+            
+            .details-content {
+                padding: 16px;
+            }
+            
+            .details-content p {
+                margin: 0;
+                color: #495057;
+                font-size: 14px;
+            }
+            
+            .details-content ul {
+                margin: 8px 0;
+                padding-left: 20px;
+                list-style: none;
+            }
+            
+            .task-item {
+                padding: 6px 0;
+                border-bottom: 1px solid #e9ecef;
+                font-size: 13px;
+            }
+            
+            .task-item:last-child {
+                border-bottom: none;
+            }
+            
+            .task-item.critical {
+                border-left: 3px solid #dc3545;
+                padding-left: 8px;
+            }
+            
+            .task-item.urgent {
+                border-left: 3px solid #ffc107;
+                padding-left: 8px;
+            }
+            
+            .crop-name {
+                font-weight: 600;
+                color: #212529;
+            }
+            
+            .crop-location {
+                color: #6c757d;
+            }
+            
+            .more-tasks {
+                font-style: italic;
+                color: #6c757d;
+                font-size: 12px;
+            }
+            
+            .details-actions {
+                display: flex;
+                gap: 8px;
+                margin-top: 12px;
+            }
+            
+            .details-actions .btn {
+                font-size: 12px;
+                padding: 6px 12px;
+            }
+        `;
+        
+        document.head.appendChild(style);
     }
 
     // Task execution and management methods
