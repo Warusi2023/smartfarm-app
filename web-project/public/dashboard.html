@@ -10720,9 +10720,34 @@ INVENTORY SUMMARY:
                 'Yes, Logout',
                 'Cancel',
                 () => {
+                    // Clear all authentication data from localStorage
                     localStorage.removeItem('smartfarm_user');
+                    localStorage.removeItem('smartfarm_token');
+                    localStorage.removeItem('smartfarm_userData');
+                    localStorage.removeItem('smartfarm_loginTime');
+                    localStorage.removeItem('smartfarm_remember');
+                    
+                    // Clear all authentication data from sessionStorage
                     sessionStorage.removeItem('smartfarm_user');
-                    window.location.href = 'login.html';
+                    sessionStorage.removeItem('smartfarm_token');
+                    sessionStorage.removeItem('smartfarm_userData');
+                    sessionStorage.removeItem('smartfarm_loginTime');
+                    
+                    // Clear any other app-specific data
+                    localStorage.removeItem('farmData');
+                    localStorage.removeItem('crops');
+                    localStorage.removeItem('livestock');
+                    localStorage.removeItem('inventory');
+                    localStorage.removeItem('financialData');
+                    localStorage.removeItem('farmTasks');
+                    
+                    // Show logout confirmation
+                    showAlert('You have been logged out successfully.', 'success');
+                    
+                    // Redirect to login page
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 1000);
                 }
             );
         }

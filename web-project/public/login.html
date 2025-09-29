@@ -532,6 +532,9 @@
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
+                    // Clear any existing authentication data first
+                    clearAllAuthData();
+                    
                     showAlert('Login successful! Redirecting to dashboard...', 'success');
                     
                     // Store login state and token
@@ -550,7 +553,8 @@
 
                     // Store user data with country for currency
                     if (data.data) {
-                        localStorage.setItem('smartfarm_userData', JSON.stringify(data.data));
+                        const storage = rememberMe ? localStorage : sessionStorage;
+                        storage.setItem('smartfarm_userData', JSON.stringify(data.data));
                     } else {
                         // If no user data from API, create basic user data with country
                         const userData = {
@@ -558,7 +562,8 @@
                             username: email.split('@')[0], // Use email prefix as username
                             country: 'Fiji' // Default to Fiji, can be updated later
                         };
-                        localStorage.setItem('smartfarm_userData', JSON.stringify(userData));
+                        const storage = rememberMe ? localStorage : sessionStorage;
+                        storage.setItem('smartfarm_userData', JSON.stringify(userData));
                     }
 
                     // Store login timestamp
@@ -569,10 +574,21 @@
                         sessionStorage.setItem('smartfarm_loginTime', loginTime);
                     }
 
-                    // Redirect to dashboard
-                    setTimeout(() => {
-                        window.location.href = 'dashboard.html';
-                    }, 1500);
+                    // Verify authentication data was stored correctly
+                    const storedUser = rememberMe ? localStorage.getItem('smartfarm_user') : sessionStorage.getItem('smartfarm_user');
+                    const storedToken = rememberMe ? localStorage.getItem('smartfarm_token') : sessionStorage.getItem('smartfarm_token');
+                    
+                    if (storedUser && storedToken) {
+                        console.log('Authentication data stored successfully');
+                        // Redirect to dashboard
+                        setTimeout(() => {
+                            window.location.href = 'dashboard.html';
+                        }, 1500);
+                    } else {
+                        showAlert('Error storing authentication data. Please try again.', 'danger');
+                        btnText.style.display = 'inline';
+                        loading.classList.remove('show');
+                    }
                 } else {
                     showAlert(data.message || 'Invalid email or password. Please try again.', 'danger');
                     btnText.style.display = 'inline';
@@ -620,12 +636,69 @@
 
         // Check for remembered user
         document.addEventListener('DOMContentLoaded', function() {
+            // Clear any partial authentication data that might cause issues
+            clearPartialAuthData();
+            
             const rememberedUser = localStorage.getItem('smartfarm_user') || sessionStorage.getItem('smartfarm_user');
             if (rememberedUser) {
                 document.getElementById('email').value = rememberedUser;
                 document.getElementById('rememberMe').checked = true;
             }
         });
+
+        function clearPartialAuthData() {
+            // Clear any incomplete authentication data that might prevent login
+            const user = localStorage.getItem('smartfarm_user') || sessionStorage.getItem('smartfarm_user');
+            const token = localStorage.getItem('smartfarm_token') || sessionStorage.getItem('smartfarm_token');
+            
+            // If we have user but no token, or token but no user, clear everything
+            if ((user && !token) || (!user && token)) {
+                console.log('Clearing partial authentication data');
+                clearAllAuthData();
+            }
+        }
+
+        function clearAllAuthData() {
+            // Clear all authentication data from localStorage
+            localStorage.removeItem('smartfarm_user');
+            localStorage.removeItem('smartfarm_token');
+            localStorage.removeItem('smartfarm_userData');
+            localStorage.removeItem('smartfarm_loginTime');
+            localStorage.removeItem('smartfarm_remember');
+            
+            // Clear all authentication data from sessionStorage
+            sessionStorage.removeItem('smartfarm_user');
+            sessionStorage.removeItem('smartfarm_token');
+            sessionStorage.removeItem('smartfarm_userData');
+            sessionStorage.removeItem('smartfarm_loginTime');
+            
+            console.log('All authentication data cleared');
+        }
+
+        // Debug function to check authentication state
+        function debugAuthState() {
+            console.log('=== Authentication Debug Info ===');
+            console.log('localStorage user:', localStorage.getItem('smartfarm_user'));
+            console.log('localStorage token:', localStorage.getItem('smartfarm_token'));
+            console.log('localStorage userData:', localStorage.getItem('smartfarm_userData'));
+            console.log('localStorage remember:', localStorage.getItem('smartfarm_remember'));
+            console.log('sessionStorage user:', sessionStorage.getItem('smartfarm_user'));
+            console.log('sessionStorage token:', sessionStorage.getItem('smartfarm_token'));
+            console.log('sessionStorage userData:', sessionStorage.getItem('smartfarm_userData'));
+            console.log('================================');
+        }
+
+        // Add debug button for testing (remove in production)
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            document.addEventListener('DOMContentLoaded', function() {
+                const debugBtn = document.createElement('button');
+                debugBtn.textContent = 'Debug Auth';
+                debugBtn.className = 'btn btn-warning btn-sm position-fixed';
+                debugBtn.style.cssText = 'top: 10px; right: 10px; z-index: 9999;';
+                debugBtn.onclick = debugAuthState;
+                document.body.appendChild(debugBtn);
+            });
+        }
 
         // Real-time validation
         document.getElementById('email').addEventListener('blur', function() {
