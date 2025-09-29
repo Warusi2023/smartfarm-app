@@ -38,6 +38,7 @@ app.use('/api/analytics', authenticateToken, require('./routes/analytics'));
 app.use('/api/documents', authenticateToken, require('./routes/documents'));
 app.use('/api/watering', authenticateToken, require('./routes/watering'));
 app.use('/api/geofencing', authenticateToken, require('./routes/geofencing'));
+app.use('/api/subscriptions', authenticateToken, require('./routes/subscriptions').router);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
