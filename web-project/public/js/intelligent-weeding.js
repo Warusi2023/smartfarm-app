@@ -1398,6 +1398,34 @@ class IntelligentWeedingSystem {
             }
         }, 3000);
     }
+
+    updateWeedingStatistics() {
+        // Update the urgency counters in the dashboard
+        const criticalCount = this.weedingTasks.filter(task => task.urgency.level === 'critical' && task.status !== 'completed').length;
+        const urgentCount = this.weedingTasks.filter(task => task.urgency.level === 'urgent' && task.status !== 'completed').length;
+        
+        // Update critical count display
+        const criticalElement = document.querySelector('.urgency-critical .urgency-count');
+        if (criticalElement) {
+            criticalElement.textContent = criticalCount;
+        }
+        
+        // Update urgent count display
+        const urgentElement = document.querySelector('.urgency-urgent .urgency-count');
+        if (urgentElement) {
+            urgentElement.textContent = urgentCount;
+        }
+        
+        // Update the notification if it exists
+        if (criticalCount === 0 && urgentCount === 0) {
+            const alertElement = document.getElementById('weedingAlert');
+            if (alertElement) {
+                alertElement.remove();
+            }
+        } else {
+            this.checkForAlerts();
+        }
+    }
     
     addNotificationStyles() {
         // Check if styles already added
@@ -1604,6 +1632,101 @@ class IntelligentWeedingSystem {
         document.head.appendChild(style);
     }
 
+    showAdminConfirmationRequired(taskId) {
+        const modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.innerHTML = `
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg">
+                    <div class="modal-header bg-warning text-dark">
+                        <h5 class="modal-title">
+                            <i class="fas fa-shield-alt me-2"></i>Admin Confirmation Required
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <div class="mb-4">
+                            <i class="fas fa-user-shield fa-3x text-warning mb-3"></i>
+                            <h6>Task Execution Requires Admin Approval</h6>
+                            <p class="text-muted">Only admin or group users can execute weeding tasks. Please contact an administrator to complete this task.</p>
+                        </div>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Task ID:</strong> ${taskId}<br>
+                            <strong>Status:</strong> Pending Admin Approval
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" onclick="intelligentWeeding.requestAdminApproval('${taskId}')">
+                            <i class="fas fa-paper-plane me-2"></i>Request Admin Approval
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        const bsModal = new bootstrap.Modal(modal);
+        bsModal.show();
+        
+        modal.addEventListener('hidden.bs.modal', () => {
+            document.body.removeChild(modal);
+        });
+    }
+
+    requestAdminApproval(taskId) {
+        const task = this.weedingTasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        // Mark task as pending approval
+        task.status = 'pending_approval';
+        task.pendingApprovalDate = new Date().toISOString();
+        task.requestedBy = JSON.parse(localStorage.getItem('smartfarm_user') || sessionStorage.getItem('smartfarm_user') || '{}').email || 'Unknown';
+
+        // Show notification to admin users
+        this.showAdminNotification(task);
+
+        // Show success message
+        this.showSuccessMessage('Task approval request sent to administrators');
+
+        // Refresh display
+        this.displayWeedingTasks();
+        this.updateWeedingStatistics();
+        this.saveData();
+
+        // Close modal
+        const modal = document.querySelector('.modal.show');
+        if (modal) {
+            const bsModal = bootstrap.Modal.getInstance(modal);
+            if (bsModal) {
+                bsModal.hide();
+            }
+        }
+    }
+
+    showAdminNotification(task) {
+        // Create admin notification
+        const notification = document.createElement('div');
+        notification.className = 'alert alert-warning alert-dismissible fade show position-fixed';
+        notification.style.cssText = 'top: 20px; left: 20px; z-index: 9999; max-width: 400px;';
+        notification.innerHTML = `
+            <i class="fas fa-bell me-2"></i>
+            <strong>Weeding Task Approval Required</strong><br>
+            <small>${task.cropName} - ${task.location} (${task.urgency.level.toUpperCase()})</small>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Auto remove after 10 seconds
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 10000);
+    }
+
     // Task execution and management methods
     executeWeedingTask(taskId) {
         const task = this.weedingTasks.find(t => t.id === taskId);
@@ -1684,6 +1807,13 @@ class IntelligentWeedingSystem {
             return;
         }
 
+        // Check if user has admin privileges
+        const user = JSON.parse(localStorage.getItem('smartfarm_user') || sessionStorage.getItem('smartfarm_user') || '{}');
+        if (user.role !== 'admin' && user.role !== 'group') {
+            this.showAdminConfirmationRequired(taskId);
+            return;
+        }
+
         // Safely get form values with null checks
         const methodElement = document.getElementById('weedingMethod');
         const chemicalElement = document.getElementById('chemicalSelect');
@@ -1693,12 +1823,16 @@ class IntelligentWeedingSystem {
         const chemical = chemicalElement ? chemicalElement.value : null;
         const notes = notesElement ? notesElement.value : '';
 
-        // Update task status
+        // Mark task as completed and remove from active tasks
         task.status = 'completed';
         task.executionMethod = method;
         task.executionChemical = chemical;
         task.executionNotes = notes;
         task.completedDate = new Date().toISOString();
+        task.completedBy = user.email || 'Unknown';
+
+        // Remove task from active weeding tasks (it will be moved to completed tasks)
+        this.weedingTasks = this.weedingTasks.filter(t => t.id !== taskId);
 
         // Update crop data
         const crop = this.cropData.find(c => c.id === task.cropId);
@@ -1708,11 +1842,11 @@ class IntelligentWeedingSystem {
         }
 
         // Show success message
-        this.showSuccessMessage(`Weeding task completed successfully for ${task.cropName}`);
+        this.showSuccessMessage(`Weeding task completed and removed by ${user.email || 'Admin'}`);
         
         // Refresh the display
         this.displayWeedingTasks();
-        this.updateStatistics();
+        this.updateWeedingStatistics();
 
         // Save data
         this.saveData();
