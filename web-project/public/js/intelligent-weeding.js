@@ -1379,6 +1379,26 @@ class IntelligentWeedingSystem {
     
     // Removed dismissAlert function - notification cannot be deleted
     
+    showSuccessMessage(message) {
+        // Create a temporary success message
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-success alert-dismissible fade show position-fixed';
+        alertDiv.style.cssText = 'top: 80px; right: 20px; z-index: 9999; max-width: 400px;';
+        alertDiv.innerHTML = `
+            <i class="fas fa-check-circle me-2"></i>${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        document.body.appendChild(alertDiv);
+        
+        // Auto remove after 3 seconds
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.remove();
+            }
+        }, 3000);
+    }
+    
     addNotificationStyles() {
         // Check if styles already added
         if (document.getElementById('weedingNotificationStyles')) return;
@@ -1659,9 +1679,19 @@ class IntelligentWeedingSystem {
 
     confirmTaskExecution(taskId) {
         const task = this.weedingTasks.find(t => t.id === taskId);
-        const method = document.getElementById('weedingMethod').value;
-        const chemical = document.getElementById('chemicalSelect')?.value;
-        const notes = document.getElementById('notes').value;
+        if (!task) {
+            console.error('Task not found:', taskId);
+            return;
+        }
+
+        // Safely get form values with null checks
+        const methodElement = document.getElementById('weedingMethod');
+        const chemicalElement = document.getElementById('chemicalSelect');
+        const notesElement = document.getElementById('taskNotes');
+        
+        const method = methodElement ? methodElement.value : 'manual';
+        const chemical = chemicalElement ? chemicalElement.value : null;
+        const notes = notesElement ? notesElement.value : '';
 
         // Update task status
         task.status = 'completed';
@@ -1676,6 +1706,13 @@ class IntelligentWeedingSystem {
             crop.lastWeeding = new Date().toISOString();
             crop.weedPressure = method === 'chemical' ? 'Low' : 'Medium';
         }
+
+        // Show success message
+        this.showSuccessMessage(`Weeding task completed successfully for ${task.cropName}`);
+        
+        // Refresh the display
+        this.displayWeedingTasks();
+        this.updateStatistics();
 
         // Save data
         this.saveData();
