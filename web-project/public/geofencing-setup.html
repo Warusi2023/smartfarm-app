@@ -597,10 +597,27 @@
             const token = localStorage.getItem('smartfarm_token') || sessionStorage.getItem('smartfarm_token');
             
             if (!token) {
-                showAlert('Authentication required. Please log in again.', 'danger');
-                setTimeout(() => {
-                    window.location.href = 'login.html';
-                }, 2000);
+                console.log('No authentication token found, using demo mode');
+                showAlert('Using demo mode - no authentication token found. You can still test the setup process.', 'info');
+                document.getElementById('demoModeIndicator').style.display = 'block';
+                
+                // Add demo farms
+                const farmSelect = document.getElementById('farmSelect');
+                farmSelect.innerHTML = '<option value="">Select a farm...</option>';
+                
+                const demoFarms = [
+                    { id: 'demo-farm-1', name: 'Demo Farm 1' },
+                    { id: 'demo-farm-2', name: 'Demo Farm 2' },
+                    { id: 'demo-farm-3', name: 'Demo Farm 3' }
+                ];
+                
+                demoFarms.forEach(farm => {
+                    const option = document.createElement('option');
+                    option.value = farm.id;
+                    option.textContent = farm.name;
+                    farmSelect.appendChild(option);
+                });
+                
                 return;
             }
             
@@ -656,6 +673,10 @@
                 let errorMessage = 'Using demo mode - backend not available. You can still test the setup process.';
                 if (error.message.includes('Response is not JSON')) {
                     errorMessage = 'Server returned an error page instead of data. Using demo mode.';
+                } else if (error.message.includes('HTTP error! status: 403')) {
+                    errorMessage = 'Authentication failed (403 Forbidden). Using demo mode.';
+                } else if (error.message.includes('HTTP error! status: 401')) {
+                    errorMessage = 'Unauthorized access (401). Using demo mode.';
                 } else if (error.message.includes('HTTP error')) {
                     errorMessage = `Server error (${error.message}). Using demo mode.`;
                 } else if (error.message.includes('Failed to fetch')) {
@@ -918,6 +939,15 @@
                 return;
             }
 
+            // Check if this is a demo farm
+            if (farmId.startsWith('demo-farm-')) {
+                showAlert('Demo mode: Geofence configuration saved locally. In production, this would be saved to the server.', 'success');
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 2000);
+                return;
+            }
+
             const token = localStorage.getItem('smartfarm_token') || sessionStorage.getItem('smartfarm_token');
             
             if (!token) {
@@ -1028,6 +1058,18 @@
 
         function createNewFarm(farmName) {
             const token = localStorage.getItem('smartfarm_token') || sessionStorage.getItem('smartfarm_token');
+            
+            if (!token) {
+                showAlert('Demo mode: Cannot create real farms without authentication. Using demo farm instead.', 'info');
+                // Add demo farm to select
+                const farmSelect = document.getElementById('farmSelect');
+                const option = document.createElement('option');
+                option.value = `demo-farm-${Date.now()}`;
+                option.textContent = farmName;
+                farmSelect.appendChild(option);
+                farmSelect.value = option.value;
+                return;
+            }
             
             fetch(window.SmartFarmConfig.getApiUrl('/farms'), {
                 method: 'POST',
