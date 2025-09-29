@@ -1218,17 +1218,18 @@ class IntelligentWeedingSystem {
     }
 
     showWeedingAlert(tasks) {
-        // Create or update compact notification
+        // Create or update draggable notification
         let alertElement = document.getElementById('weedingAlert');
         
         if (!alertElement) {
             alertElement = document.createElement('div');
             alertElement.id = 'weedingAlert';
-            alertElement.className = 'weeding-notification position-fixed';
-            alertElement.style.cssText = 'top: 20px; right: 20px; z-index: 1000; max-width: 300px;';
+            alertElement.className = 'weeding-notification position-fixed draggable';
+            alertElement.style.cssText = 'top: 20px; right: 20px; z-index: 1000; max-width: 300px; cursor: move;';
             
             if (document.body) {
                 document.body.appendChild(alertElement);
+                this.initializeDragging(alertElement);
             } else {
                 console.warn('Document body not available for weeding alert');
                 return;
@@ -1239,8 +1240,8 @@ class IntelligentWeedingSystem {
         const urgentCount = tasks.filter(task => task.urgency.level === 'urgent').length;
         
         alertElement.innerHTML = `
-            <div class="notification-card" onclick="intelligentWeeding.toggleAlertDetails()">
-                <div class="notification-header">
+            <div class="notification-card">
+                <div class="notification-header" onclick="intelligentWeeding.toggleAlertDetails()">
                     <div class="notification-icon">
                         <i class="fas fa-exclamation-triangle"></i>
                     </div>
@@ -1274,17 +1275,89 @@ class IntelligentWeedingSystem {
                             <button type="button" class="btn btn-sm btn-danger" onclick="intelligentWeeding.viewUrgentTasks(); event.stopPropagation();">
                                 <i class="fas fa-eye me-1"></i>View All Tasks
                             </button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="intelligentWeeding.dismissAlert(); event.stopPropagation();">
-                                <i class="fas fa-times me-1"></i>Dismiss
-                            </button>
                         </div>
                     </div>
+                </div>
+                <div class="drag-handle">
+                    <i class="fas fa-grip-vertical"></i>
                 </div>
             </div>
         `;
         
+        // Re-initialize dragging after content update
+        this.initializeDragging(alertElement);
+        
         // Add CSS styles if not already added
         this.addNotificationStyles();
+    }
+    
+    initializeDragging(element) {
+        let isDragging = false;
+        let currentX;
+        let currentY;
+        let initialX;
+        let initialY;
+        let xOffset = 0;
+        let yOffset = 0;
+        
+        // Get initial position from style or default
+        const rect = element.getBoundingClientRect();
+        xOffset = rect.left;
+        yOffset = rect.top;
+        
+        element.addEventListener('mousedown', dragStart);
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('mouseup', dragEnd);
+        
+        function dragStart(e) {
+            // Only start dragging if clicking on the drag handle or header
+            if (!e.target.closest('.drag-handle') && !e.target.closest('.notification-header')) {
+                return;
+            }
+            
+            // Don't start dragging if clicking on buttons or interactive elements
+            if (e.target.closest('button') || e.target.closest('.notification-arrow')) {
+                return;
+            }
+            
+            initialX = e.clientX - xOffset;
+            initialY = e.clientY - yOffset;
+            
+            if (e.target === element || element.contains(e.target)) {
+                isDragging = true;
+                element.classList.add('dragging');
+            }
+        }
+        
+        function drag(e) {
+            if (isDragging) {
+                e.preventDefault();
+                currentX = e.clientX - initialX;
+                currentY = e.clientY - initialY;
+                
+                // Keep within viewport bounds
+                const maxX = window.innerWidth - element.offsetWidth;
+                const maxY = window.innerHeight - element.offsetHeight;
+                
+                currentX = Math.max(0, Math.min(currentX, maxX));
+                currentY = Math.max(0, Math.min(currentY, maxY));
+                
+                xOffset = currentX;
+                yOffset = currentY;
+                
+                element.style.transform = `translate(${currentX}px, ${currentY}px)`;
+                element.style.left = '0';
+                element.style.top = '0';
+                element.style.right = 'auto';
+            }
+        }
+        
+        function dragEnd(e) {
+            initialX = currentX;
+            initialY = currentY;
+            isDragging = false;
+            element.classList.remove('dragging');
+        }
     }
     
     toggleAlertDetails() {
@@ -1304,12 +1377,7 @@ class IntelligentWeedingSystem {
         }
     }
     
-    dismissAlert() {
-        const alertElement = document.getElementById('weedingAlert');
-        if (alertElement) {
-            alertElement.remove();
-        }
-    }
+    // Removed dismissAlert function - notification cannot be deleted
     
     addNotificationStyles() {
         // Check if styles already added
@@ -1327,14 +1395,29 @@ class IntelligentWeedingSystem {
                 border-radius: 12px;
                 box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
                 border: 1px solid #e9ecef;
-                cursor: pointer;
                 transition: all 0.3s ease;
                 overflow: hidden;
+                position: relative;
             }
             
             .notification-card:hover {
                 box-shadow: 0 6px 25px rgba(0, 0, 0, 0.2);
                 transform: translateY(-2px);
+            }
+            
+            .draggable.dragging .notification-card {
+                box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+                transform: rotate(2deg) scale(1.02);
+                cursor: grabbing;
+            }
+            
+            .draggable {
+                cursor: move;
+                user-select: none;
+            }
+            
+            .draggable.dragging {
+                cursor: grabbing;
             }
             
             .notification-header {
@@ -1469,6 +1552,32 @@ class IntelligentWeedingSystem {
             .details-actions .btn {
                 font-size: 12px;
                 padding: 6px 12px;
+            }
+            
+            .drag-handle {
+                position: absolute;
+                top: 50%;
+                right: 8px;
+                transform: translateY(-50%);
+                color: rgba(255, 255, 255, 0.7);
+                font-size: 12px;
+                padding: 4px;
+                cursor: grab;
+                transition: color 0.2s ease;
+                z-index: 10;
+            }
+            
+            .drag-handle:hover {
+                color: rgba(255, 255, 255, 1);
+            }
+            
+            .draggable.dragging .drag-handle {
+                cursor: grabbing;
+                color: rgba(255, 255, 255, 1);
+            }
+            
+            .notification-header {
+                padding-right: 40px; /* Make room for drag handle */
             }
         `;
         
