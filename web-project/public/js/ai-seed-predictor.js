@@ -74,6 +74,21 @@ class AISeedPredictor {
                     plantingDepth: '2cm',
                     spacing: '40cm apart',
                     waterNeeds: 'Moderate watering, drought tolerant'
+                },
+                {
+                    name: 'Kava',
+                    variety: 'Noble Kava',
+                    optimalTemp: { min: 24, max: 30 },
+                    optimalHumidity: { min: 70, max: 90 },
+                    optimalRainfall: { min: 100, max: 200 },
+                    growingDays: 1095, // 3 years for root maturity
+                    harvestSeason: 'Year-round',
+                    yield: 'Medium',
+                    marketPrice: 45.00,
+                    description: 'Traditional Pacific Island medicinal plant, requires tropical climate and high humidity.',
+                    plantingDepth: '5-10cm',
+                    spacing: '2-3m apart',
+                    waterNeeds: 'High humidity, well-drained soil, partial shade'
                 }
             ],
 

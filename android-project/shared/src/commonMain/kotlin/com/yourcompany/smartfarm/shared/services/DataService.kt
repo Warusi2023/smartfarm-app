@@ -136,6 +136,17 @@ open class DataService {
             expectedHarvestDate = "2024-07-01",
             area = 0.3,
             status = CropStatus.GROWING
+        ),
+        Crop(
+            id = 11,
+            name = "Kava",
+            variety = "Noble Kava",
+            farmId = 1,
+            plantedDate = "2022-01-15",
+            expectedHarvestDate = "2025-01-15",
+            area = 0.2,
+            status = CropStatus.GROWING,
+            notes = "Traditional Pacific Island medicinal plant, requires 3-year growth cycle"
         )
     )
     

@@ -32,7 +32,7 @@ object CategoryConfig {
         val VERTICAL = listOf("vertical", "tower", "stacked", "multi-level")
         val AEROPONIC = listOf("aeroponic", "aeroponics", "air-grown", "mist-grown")
         val MICROGREENS = listOf("microgreen", "microgreens", "sprout", "baby green")
-        val MEDICINAL = listOf("medicinal", "herbal", "therapeutic", "healing")
+        val MEDICINAL = listOf("medicinal", "herbal", "therapeutic", "healing", "kava")
         val SPICE = listOf("spice", "seasoning", "condiment", "flavoring")
         val TEA = listOf("tea", "camellia", "herbal tea", "infusion")
         val COFFEE = listOf("coffee", "arabica", "robusta", "coffee bean")

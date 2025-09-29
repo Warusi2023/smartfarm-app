@@ -16,6 +16,13 @@ data class Livestock(
     val status: LivestockStatus,
     val health: LivestockHealth,
     val location: String? = null,
+    val lifecycleStage: CattleLifecycleStage? = null, // For cattle lifecycle tracking
+    val productionPurpose: ProductionPurpose? = null, // Dairy, beef, breeding, etc.
+    val parentMaleId: String? = null, // Sire
+    val parentFemaleId: String? = null, // Dam
+    val firstCalvingDate: Long? = null, // For cows
+    val lastCalvingDate: Long? = null, // For cows
+    val breedingStatus: BreedingStatus? = null,
     val createdAt: Long,
     val updatedAt: Long
 )
@@ -72,6 +79,26 @@ enum class Gender {
 }
 
 @Serializable
+enum class CattleLifecycleStage {
+    CALF,           // 0-12 months
+    HEIFER,         // 12-24 months (female, not yet calved)
+    COW,            // 24+ months (female, has calved)
+    BULL,           // 12+ months (male, intact)
+    STEER,          // 12+ months (male, castrated)
+    BULLOCK         // 12-24 months (young male)
+}
+
+@Serializable
+enum class ProductionPurpose {
+    DAIRY,          // For milk production
+    BEEF,           // For meat production
+    BREEDING,       // For reproduction
+    DUAL_PURPOSE,   // Both dairy and beef
+    WORKING,        // For farm work
+    PET             // Companion animal
+}
+
+@Serializable
 enum class LivestockStatus {
     ACTIVE,
     SICK,
@@ -88,4 +115,15 @@ enum class HealthStatus {
     FAIR,
     POOR,
     CRITICAL
+}
+
+@Serializable
+enum class BreedingStatus {
+    OPEN,           // Not pregnant, available for breeding
+    BRED,           // Recently bred, pregnancy not confirmed
+    PREGNANT,       // Confirmed pregnant
+    DRY,            // Not lactating (between lactations)
+    LACTATING,      // Currently producing milk
+    INFERTILE,      // Cannot reproduce
+    RETIRED         // No longer used for breeding
 }

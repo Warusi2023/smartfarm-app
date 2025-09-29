@@ -36,6 +36,7 @@ app.use('/api/financial', authenticateToken, require('./routes/financial'));
 app.use('/api/tasks', authenticateToken, require('./routes/tasks'));
 app.use('/api/analytics', authenticateToken, require('./routes/analytics'));
 app.use('/api/documents', authenticateToken, require('./routes/documents'));
+app.use('/api/watering', authenticateToken, require('./routes/watering'));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

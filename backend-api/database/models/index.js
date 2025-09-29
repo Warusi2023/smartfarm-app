@@ -134,6 +134,13 @@ const Livestock = sequelize.define('Livestock', {
     type: DataTypes.UUID,
     allowNull: false
   },
+  tagNumber: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  name: {
+    type: DataTypes.STRING
+  },
   type: {
     type: DataTypes.STRING,
     allowNull: false
@@ -141,23 +148,54 @@ const Livestock = sequelize.define('Livestock', {
   breed: {
     type: DataTypes.STRING
   },
-  quantity: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    defaultValue: 0
+  birthDate: {
+    type: DataTypes.DATEONLY
   },
-  healthStatus: {
-    type: DataTypes.ENUM('healthy', 'sick', 'injured', 'quarantine'),
-    defaultValue: 'healthy'
+  gender: {
+    type: DataTypes.ENUM('male', 'female', 'neutered'),
+    allowNull: false
   },
   weight: {
     type: DataTypes.DECIMAL(8, 2)
   },
-  age: {
-    type: DataTypes.DECIMAL(5, 2)
+  status: {
+    type: DataTypes.ENUM('active', 'sick', 'pregnant', 'sold', 'deceased', 'quarantined'),
+    defaultValue: 'active'
   },
-  gender: {
-    type: DataTypes.ENUM('male', 'female', 'mixed')
+  healthStatus: {
+    type: DataTypes.ENUM('excellent', 'good', 'fair', 'poor', 'critical'),
+    defaultValue: 'good'
+  },
+  location: {
+    type: DataTypes.STRING
+  },
+  lifecycleStage: {
+    type: DataTypes.ENUM('calf', 'heifer', 'cow', 'bull', 'steer', 'bullock'),
+    allowNull: true
+  },
+  productionPurpose: {
+    type: DataTypes.ENUM('dairy', 'beef', 'breeding', 'dual_purpose', 'working', 'pet'),
+    allowNull: true
+  },
+  parentMaleId: {
+    type: DataTypes.UUID,
+    allowNull: true
+  },
+  parentFemaleId: {
+    type: DataTypes.UUID,
+    allowNull: true
+  },
+  firstCalvingDate: {
+    type: DataTypes.DATEONLY,
+    allowNull: true
+  },
+  lastCalvingDate: {
+    type: DataTypes.DATEONLY,
+    allowNull: true
+  },
+  breedingStatus: {
+    type: DataTypes.ENUM('open', 'bred', 'pregnant', 'dry', 'lactating', 'infertile', 'retired'),
+    allowNull: true
   },
   notes: {
     type: DataTypes.TEXT

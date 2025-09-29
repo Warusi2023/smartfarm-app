@@ -35,7 +35,8 @@ enum class CropType {
     LEGUME,
     ROOT,
     HERB,
-    SPICE
+    SPICE,
+    MEDICINAL
 }
 
 @Serializable

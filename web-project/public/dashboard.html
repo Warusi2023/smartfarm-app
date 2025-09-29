@@ -605,6 +605,11 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link" href="watering-management.html">
+                                <i class="fas fa-tint me-2"></i>Watering Management
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" href="#" onclick="showLivestockManagement(); return false;">
                                 <i class="fas fa-cow me-2"></i>Livestock
                             </a>
@@ -1912,6 +1917,9 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
+    <!-- Watering Timing System -->
+    <script src="js/watering-timing-system.js"></script>
+    
     <script>
         // Data arrays for crops, livestock, pets, and inventory
         let crops = [];
@@ -2114,7 +2122,8 @@
                         { name: 'Ashwagandha', scientific: 'Withania somnifera', category: 'medicinal' },
                         { name: 'Turmeric', scientific: 'Curcuma longa', category: 'medicinal' },
                         { name: 'Moringa', scientific: 'Moringa oleifera', category: 'medicinal' },
-                        { name: 'Lavender', scientific: 'Lavandula angustifolia', category: 'medicinal' }
+                        { name: 'Lavender', scientific: 'Lavandula angustifolia', category: 'medicinal' },
+                        { name: 'Kava', scientific: 'Piper methysticum', category: 'medicinal' }
                     ]
                 },
                 'specialty': {
