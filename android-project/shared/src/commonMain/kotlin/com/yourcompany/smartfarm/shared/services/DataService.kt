@@ -2,6 +2,8 @@ package com.yourcompany.smartfarm.shared.services
 
 import com.yourcompany.smartfarm.shared.models.*
 import com.yourcompany.smartfarm.shared.config.CategoryConfig
+import com.smartfarm.shared.services.ByproductsService
+import com.smartfarm.shared.domain.model.*
 import kotlinx.coroutines.delay
 
 open class DataService {
@@ -965,7 +967,86 @@ open class DataService {
             "growthRate" to growthRate
         )
     }
+    
+    // Byproducts operations
+    private val byproductsService = ByproductsService()
+    
+    open suspend fun getCropByproducts(cropName: String): List<Byproduct> {
+        delay(400)
+        return byproductsService.getCropByproducts(cropName).getOrElse { emptyList() }
+    }
+    
+    open suspend fun getLivestockByproducts(animalType: String): List<Byproduct> {
+        delay(400)
+        return byproductsService.getLivestockByproducts(animalType).getOrElse { emptyList() }
+    }
+    
+    open suspend fun getAllByproducts(): List<Byproduct> {
+        delay(400)
+        return byproductsService.getAllByproducts().getOrElse { emptyList() }
+    }
+    
+    open suspend fun getByproductsByCategory(category: String): List<Byproduct> {
+        delay(400)
+        return byproductsService.getByproductsByCategory(category).getOrElse { emptyList() }
+    }
+    
+    open suspend fun getMarketPrices(): List<MarketPrice> {
+        delay(400)
+        return byproductsService.getMarketPrices().getOrElse { emptyList() }
+    }
+    
+    open suspend fun getProcessingEquipment(): List<ProcessingEquipment> {
+        delay(400)
+        return byproductsService.getProcessingEquipment().getOrElse { emptyList() }
+    }
+    
+    open suspend fun getProcessingPlans(): List<ProcessingPlan> {
+        delay(400)
+        return byproductsService.getProcessingPlans().getOrElse { emptyList() }
+    }
+    
+    open suspend fun createProcessingPlan(plan: ProcessingPlan): ProcessingPlan {
+        delay(500)
+        return byproductsService.createProcessingPlan(plan).getOrElse { plan }
+    }
+    
+    open suspend fun updateProcessingPlan(planId: String, plan: ProcessingPlan): ProcessingPlan {
+        delay(300)
+        return byproductsService.updateProcessingPlan(planId, plan).getOrElse { plan }
+    }
+    
+    open suspend fun deleteProcessingPlan(planId: String): Boolean {
+        delay(300)
+        return byproductsService.deleteProcessingPlan(planId).getOrElse { false }
+    }
+    
+    open suspend fun getSalesRecords(): List<SalesRecord> {
+        delay(400)
+        return byproductsService.getSalesRecords().getOrElse { emptyList() }
+    }
+    
+    open suspend fun createSalesRecord(record: SalesRecord): SalesRecord {
+        delay(500)
+        return byproductsService.createSalesRecord(record).getOrElse { record }
+    }
+    
+    open suspend fun getRevenueAnalytics(): Map<String, Any> {
+        delay(600)
+        return byproductsService.getRevenueAnalytics().getOrElse { emptyMap() }
+    }
+    
+    open suspend fun calculatePotentialRevenue(byproduct: Byproduct, quantity: Double): Double {
+        delay(200)
+        return byproductsService.calculatePotentialRevenue(byproduct, quantity).getOrElse { 0.0 }
+    }
+    
+    open suspend fun getTopByproductsByRevenue(limit: Int = 5): List<Pair<String, Double>> {
+        delay(400)
+        return byproductsService.getTopByproductsByRevenue(limit).getOrElse { emptyList() }
+    }
 }
 
 // Platform-agnostic time function
+
 expect fun getCurrentTimeMillis(): Long

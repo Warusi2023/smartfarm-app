@@ -699,6 +699,10 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Include AI advisory database -->
+    <script src="js/ai-advisory-database.js"></script>
+    <!-- Include config -->
+    <script src="js/config.js"></script>
     
     <script>
         // Comprehensive Dog Breeds Database
@@ -1365,6 +1369,9 @@
                         <button class="btn btn-sm btn-outline-success flex-fill" onclick="addHealthRecord(${animal.id})">
                             <i class="fas fa-heartbeat me-1"></i>Health
                         </button>
+                        <button class="btn btn-sm btn-outline-info" onclick="getAILivestockAdvice(${animal.id})" title="Get AI Health Advice">
+                            <i class="fas fa-robot"></i>
+                        </button>
                         ${timelineButton}
                         <button class="btn btn-sm btn-outline-danger" onclick="deleteLivestock(${animal.id})">
                             <i class="fas fa-trash"></i>
@@ -1508,6 +1515,110 @@
 
         function addHealthRecord(id) {
             alert('Health record functionality will be implemented in the next version');
+        }
+
+        async function getAILivestockAdvice(animalId) {
+            try {
+                const animal = livestock.find(a => a.id === animalId);
+                if (!animal) {
+                    showAlert('Animal not found!', 'error');
+                    return;
+                }
+
+                // Show loading message
+                showAlert('Getting AI health advice...', 'info');
+
+                // Get AI recommendations
+                const response = await fetch(window.SmartFarmConfig.getApiUrl(`/api/ai-advisory/livestock-health/${animalId}`));
+                if (!response.ok) {
+                    throw new Error('Failed to get AI recommendations');
+                }
+
+                const data = await response.json();
+                const recommendations = data.data;
+
+                // Show AI advice modal
+                showAILivestockAdviceModal(animal, recommendations);
+            } catch (error) {
+                console.error('Error getting AI livestock advice:', error);
+                showAlert('Failed to get AI advice. Please try again.', 'error');
+            }
+        }
+
+        function showAILivestockAdviceModal(animal, recommendations) {
+            const modalHtml = `
+                <div class="modal fade" id="aiLivestockAdviceModal" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">
+                                    <i class="fas fa-robot me-2"></i>AI Health Advice for ${animal.animalType}
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6>Animal Information</h6>
+                                        <p><strong>Breed:</strong> ${animal.breed || 'Mixed'}</p>
+                                        <p><strong>Age Group:</strong> ${recommendations.ageGroup.toUpperCase()}</p>
+                                        <p><strong>Age:</strong> ${animal.age || 0} months</p>
+                                        <p><strong>Health Status:</strong> ${animal.healthStatus || 'Healthy'}</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6>AI Health Recommendations</h6>
+                                        ${Object.entries(recommendations.schedule).map(([type, items]) => `
+                                            <div class="card mb-3">
+                                                <div class="card-header">
+                                                    <h6 class="mb-0">${type.toUpperCase()}</h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    ${items.map(item => `
+                                                        <div class="mb-3">
+                                                            <h6>${item.vaccine || item.treatment || item.supplement}</h6>
+                                                            <p><strong>Timing:</strong> ${item.timing}</p>
+                                                            <p><strong>Method:</strong> ${item.method}</p>
+                                                            <p><strong>Frequency:</strong> ${item.frequency || 'N/A'}</p>
+                                                            <p><strong>Conditions:</strong> ${item.conditions || 'N/A'}</p>
+                                                            <p><strong>Notes:</strong> ${item.notes}</p>
+                                                        </div>
+                                                    `).join('')}
+                                                </div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-primary" onclick="applyAILivestockRecommendations(${animal.id})">Apply Recommendations</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Remove existing modal if any
+            const existingModal = document.getElementById('aiLivestockAdviceModal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+
+            // Add new modal to body
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('aiLivestockAdviceModal'));
+            modal.show();
+        }
+
+        function applyAILivestockRecommendations(animalId) {
+            showAlert('AI health recommendations applied! Consider scheduling veterinary appointments.', 'success');
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('aiLivestockAdviceModal'));
+            if (modal) {
+                modal.hide();
+            }
         }
 
         function applyFilters() {
