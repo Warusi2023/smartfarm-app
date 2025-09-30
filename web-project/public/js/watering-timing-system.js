@@ -121,27 +121,77 @@ class WateringTimingSystem {
     }
 
     async fetchCurrentWeather() {
-        // Simulate weather data (in production, this would come from a real weather API)
+        // Use the centralized weather service
+        if (window.WeatherService) {
+            // Subscribe to weather updates
+            window.WeatherService.subscribe((weatherData) => {
+                this.weatherData = this.convertWeatherServiceData(weatherData);
+                this.generateWateringRecommendations();
+            });
+            
+            // Get current weather data immediately
+            const weatherData = window.WeatherService.weatherData;
+            if (weatherData) {
+                this.weatherData = this.convertWeatherServiceData(weatherData);
+            } else {
+                // Fallback to demo data if weather service not ready
+                this.useDemoWeatherData();
+            }
+        } else {
+            // Fallback to demo data
+            this.useDemoWeatherData();
+        }
+    }
+
+    convertWeatherServiceData(weatherData) {
+        return {
+            temperature: weatherData.current.temperature,
+            humidity: weatherData.current.humidity,
+            rainfall: weatherData.current.rainfall,
+            windSpeed: weatherData.current.windSpeed,
+            uvIndex: weatherData.current.uvIndex,
+            cloudCover: weatherData.current.cloudCover,
+            description: weatherData.current.description,
+            forecast: {
+                next7Days: weatherData.forecast.map(day => ({
+                    day: day.day,
+                    temp: day.temp,
+                    humidity: day.humidity,
+                    rain: day.rainfall,
+                    wind: day.windSpeed,
+                    description: day.description
+                }))
+            },
+            season: weatherData.season,
+            location: weatherData.location.name,
+            isRealData: weatherData.source === 'OpenWeatherMap'
+        };
+    }
+
+    useDemoWeatherData() {
+        // Fallback demo data
         this.weatherData = {
-            temperature: 28, // Celsius
-            humidity: 75,    // Percentage
-            rainfall: 0,     // mm in last 24 hours
-            windSpeed: 12,   // km/h
-            uvIndex: 8,      // UV index
-            cloudCover: 30,  // Percentage
+            temperature: 28,
+            humidity: 75,
+            rainfall: 0,
+            windSpeed: 12,
+            uvIndex: 8,
+            cloudCover: 30,
+            description: 'Partly Cloudy',
             forecast: {
                 next7Days: [
-                    { day: 'Today', temp: 28, humidity: 75, rain: 0, wind: 12 },
-                    { day: 'Tomorrow', temp: 30, humidity: 70, rain: 5, wind: 15 },
-                    { day: 'Day 3', temp: 32, humidity: 65, rain: 0, wind: 18 },
-                    { day: 'Day 4', temp: 29, humidity: 80, rain: 20, wind: 10 },
-                    { day: 'Day 5', temp: 27, humidity: 85, rain: 15, wind: 8 },
-                    { day: 'Day 6', temp: 26, humidity: 88, rain: 25, wind: 6 },
-                    { day: 'Day 7', temp: 24, humidity: 90, rain: 30, wind: 5 }
+                    { day: 'Today', temp: 28, humidity: 75, rain: 0, wind: 12, description: 'Partly Cloudy' },
+                    { day: 'Tomorrow', temp: 30, humidity: 70, rain: 5, wind: 15, description: 'Sunny' },
+                    { day: 'Day 3', temp: 32, humidity: 65, rain: 0, wind: 18, description: 'Clear' },
+                    { day: 'Day 4', temp: 29, humidity: 80, rain: 20, wind: 10, description: 'Light Rain' },
+                    { day: 'Day 5', temp: 27, humidity: 85, rain: 15, wind: 8, description: 'Rain' },
+                    { day: 'Day 6', temp: 26, humidity: 88, rain: 25, wind: 6, description: 'Heavy Rain' },
+                    { day: 'Day 7', temp: 24, humidity: 90, rain: 30, wind: 5, description: 'Heavy Rain' }
                 ]
             },
             season: this.getCurrentSeason(),
-            location: 'Fiji'
+            location: 'Fiji',
+            isRealData: false
         };
     }
 

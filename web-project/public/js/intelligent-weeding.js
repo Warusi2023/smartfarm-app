@@ -701,7 +701,77 @@ class IntelligentWeedingSystem {
     }
 
     async fetchWeatherData() {
-        // Simulate weather data (in production, this would come from a real weather API)
+        // Use the centralized weather service
+        if (window.WeatherService) {
+            // Subscribe to weather updates
+            window.WeatherService.subscribe((weatherData) => {
+                this.weatherData = this.convertWeatherServiceData(weatherData);
+                this.generateWeedingTasks();
+                this.updateWeedingAlerts();
+            });
+            
+            // Get current weather data immediately
+            const weatherData = window.WeatherService.weatherData;
+            if (weatherData) {
+                this.weatherData = this.convertWeatherServiceData(weatherData);
+            } else {
+                // Fallback to demo data if weather service not ready
+                this.useDemoWeatherData();
+            }
+        } else {
+            // Fallback to demo data
+            this.useDemoWeatherData();
+        }
+    }
+
+    convertWeatherServiceData(weatherData) {
+        return {
+            temperature: weatherData.current.temperature,
+            humidity: weatherData.current.humidity,
+            rainfall: weatherData.current.rainfall,
+            windSpeed: weatherData.current.windSpeed,
+            pressure: weatherData.current.pressure,
+            uvIndex: weatherData.current.uvIndex,
+            cloudCover: weatherData.current.cloudCover,
+            description: weatherData.current.description,
+            soilMoisture: this.calculateSoilMoisture(weatherData.current),
+            sunlightHours: this.calculateSunlightHours(weatherData.current),
+            forecast: {
+                next7Days: weatherData.forecast.map((day, index) => ({
+                    day: index,
+                    temp: day.temp,
+                    humidity: day.humidity,
+                    rain: day.rainfall,
+                    wind: day.windSpeed,
+                    description: day.description
+                }))
+            },
+            lastUpdate: weatherData.lastUpdate,
+            isRealData: weatherData.source === 'OpenWeatherMap'
+        };
+    }
+
+    calculateSoilMoisture(currentWeather) {
+        // Calculate soil moisture based on recent rainfall and humidity
+        const baseMoisture = 50;
+        const rainfallFactor = Math.min(currentWeather.rainfall * 2, 30);
+        const humidityFactor = (currentWeather.humidity - 50) * 0.4;
+        return Math.max(0, Math.min(100, baseMoisture + rainfallFactor + humidityFactor));
+    }
+
+    calculateSunlightHours(currentWeather) {
+        // Calculate sunlight hours based on cloud cover and time of day
+        const hour = new Date().getHours();
+        const cloudFactor = (100 - currentWeather.cloudCover) / 100;
+        
+        if (hour >= 6 && hour <= 18) {
+            return Math.round(12 * cloudFactor);
+        }
+        return 0;
+    }
+
+    useDemoWeatherData() {
+        // Fallback demo data
         this.weatherData = {
             temperature: 28,
             humidity: 75,
@@ -709,20 +779,23 @@ class IntelligentWeedingSystem {
             windSpeed: 12,
             pressure: 1013,
             uvIndex: 8,
+            cloudCover: 30,
+            description: 'Partly Cloudy',
             soilMoisture: 70,
             sunlightHours: 10,
             forecast: {
                 next7Days: [
-                    { day: 0, temp: 28, humidity: 75, rain: 15, wind: 12 },
-                    { day: 1, temp: 30, humidity: 80, rain: 5, wind: 8 },
-                    { day: 2, temp: 32, humidity: 70, rain: 0, wind: 15 },
-                    { day: 3, temp: 29, humidity: 78, rain: 20, wind: 10 },
-                    { day: 4, temp: 27, humidity: 82, rain: 25, wind: 6 },
-                    { day: 5, temp: 26, humidity: 85, rain: 30, wind: 4 },
-                    { day: 6, temp: 24, humidity: 88, rain: 35, wind: 2 }
+                    { day: 0, temp: 28, humidity: 75, rain: 15, wind: 12, description: 'Partly Cloudy' },
+                    { day: 1, temp: 30, humidity: 80, rain: 5, wind: 8, description: 'Sunny' },
+                    { day: 2, temp: 32, humidity: 70, rain: 0, wind: 15, description: 'Clear' },
+                    { day: 3, temp: 29, humidity: 78, rain: 20, wind: 10, description: 'Light Rain' },
+                    { day: 4, temp: 27, humidity: 82, rain: 25, wind: 6, description: 'Rain' },
+                    { day: 5, temp: 26, humidity: 85, rain: 30, wind: 4, description: 'Heavy Rain' },
+                    { day: 6, temp: 24, humidity: 88, rain: 35, wind: 2, description: 'Heavy Rain' }
                 ]
             },
-            lastUpdate: new Date().toISOString()
+            lastUpdate: new Date().toISOString(),
+            isRealData: false
         };
     }
 

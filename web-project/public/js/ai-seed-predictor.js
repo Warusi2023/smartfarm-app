@@ -230,28 +230,104 @@ class AISeedPredictor {
     }
 
     async fetchCurrentWeather() {
-        // Simulate weather data (in production, this would come from a real weather API)
+        // Use the centralized weather service
+        if (window.WeatherService) {
+            // Subscribe to weather updates
+            window.WeatherService.subscribe((weatherData) => {
+                this.weatherData = this.convertWeatherServiceData(weatherData);
+                this.updateWeatherDisplay();
+                this.generateSeedRecommendations();
+            });
+            
+            // Get current weather data immediately
+            const weatherData = window.WeatherService.weatherData;
+            if (weatherData) {
+                this.weatherData = this.convertWeatherServiceData(weatherData);
+            } else {
+                // Fallback to demo data if weather service not ready
+                this.useDemoWeatherData();
+            }
+        } else {
+            // Fallback to demo data
+            this.useDemoWeatherData();
+        }
+    }
+
+    convertWeatherServiceData(weatherData) {
+        return {
+            temperature: weatherData.current.temperature,
+            humidity: weatherData.current.humidity,
+            rainfall: weatherData.current.rainfall,
+            windSpeed: weatherData.current.windSpeed,
+            pressure: weatherData.current.pressure,
+            uvIndex: weatherData.current.uvIndex,
+            cloudCover: weatherData.current.cloudCover,
+            description: weatherData.current.description,
+            forecast: {
+                next7Days: weatherData.forecast.map(day => ({
+                    day: day.day,
+                    temp: day.temp,
+                    humidity: day.humidity,
+                    rain: day.rainfall,
+                    wind: day.windSpeed,
+                    description: day.description
+                }))
+            },
+            season: weatherData.season,
+            location: weatherData.location.name,
+            isRealData: weatherData.source === 'OpenWeatherMap'
+        };
+    }
+
+    useDemoWeatherData() {
+        // Fallback demo data
         this.weatherData = {
-            temperature: 28, // Current temperature in Celsius
-            humidity: 75,    // Current humidity percentage
-            rainfall: 85,    // Monthly rainfall in mm
-            windSpeed: 12,   // Wind speed in km/h
-            pressure: 1013,  // Atmospheric pressure in hPa
-            uvIndex: 8,      // UV index
+            temperature: 28,
+            humidity: 75,
+            rainfall: 85,
+            windSpeed: 12,
+            pressure: 1013,
+            uvIndex: 8,
+            cloudCover: 30,
+            description: 'Partly Cloudy',
             forecast: {
                 next7Days: [
-                    { day: 'Today', temp: 28, humidity: 75, rain: 15 },
-                    { day: 'Tomorrow', temp: 30, humidity: 80, rain: 5 },
-                    { day: 'Day 3', temp: 32, humidity: 70, rain: 0 },
-                    { day: 'Day 4', temp: 29, humidity: 78, rain: 20 },
-                    { day: 'Day 5', temp: 27, humidity: 82, rain: 25 },
-                    { day: 'Day 6', temp: 26, humidity: 85, rain: 30 },
-                    { day: 'Day 7', temp: 24, humidity: 88, rain: 35 }
+                    { day: 'Today', temp: 28, humidity: 75, rain: 15, wind: 12, description: 'Partly Cloudy' },
+                    { day: 'Tomorrow', temp: 30, humidity: 80, rain: 5, wind: 8, description: 'Sunny' },
+                    { day: 'Day 3', temp: 32, humidity: 70, rain: 0, wind: 15, description: 'Clear' },
+                    { day: 'Day 4', temp: 29, humidity: 78, rain: 20, wind: 10, description: 'Light Rain' },
+                    { day: 'Day 5', temp: 27, humidity: 82, rain: 25, wind: 6, description: 'Rain' },
+                    { day: 'Day 6', temp: 26, humidity: 85, rain: 30, wind: 4, description: 'Heavy Rain' },
+                    { day: 'Day 7', temp: 24, humidity: 88, rain: 35, wind: 2, description: 'Heavy Rain' }
                 ]
             },
             season: this.getCurrentSeason(),
-            location: 'Fiji'
+            location: 'Fiji',
+            isRealData: false
         };
+    }
+
+    updateWeatherDisplay() {
+        // Update the weather display in the UI
+        const tempElement = document.getElementById('currentTemp');
+        const humidityElement = document.getElementById('currentHumidity');
+        const rainfallElement = document.getElementById('currentRainfall');
+        const locationElement = document.getElementById('currentLocation');
+        
+        if (tempElement) tempElement.textContent = `${this.weatherData.temperature}°C`;
+        if (humidityElement) humidityElement.textContent = `${this.weatherData.humidity}%`;
+        if (rainfallElement) rainfallElement.textContent = `${this.weatherData.rainfall}mm`;
+        if (locationElement) locationElement.textContent = this.weatherData.location;
+        
+        // Add indicator for real vs demo data
+        const weatherIndicator = document.querySelector('.weather-indicator');
+        if (weatherIndicator) {
+            if (this.weatherData.isRealData) {
+                weatherIndicator.innerHTML += '<span class="badge bg-success ms-2"><i class="fas fa-satellite me-1"></i>Live</span>';
+            } else {
+                weatherIndicator.innerHTML += '<span class="badge bg-warning ms-2"><i class="fas fa-flask me-1"></i>Demo</span>';
+            }
+        }
     }
 
     getCurrentSeason() {

@@ -23,6 +23,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="js/currency-config.js"></script>
     <script src="js/currency-selector.js"></script>
+    <script src="js/weather-service.js"></script>
+    <script src="js/location-selector.js"></script>
     <script src="js/ai-seed-predictor.js"></script>
     <script src="js/intelligent-weeding.js"></script>
     <script src="js/qr-traceability.js"></script>
@@ -629,6 +631,10 @@
                 <img src="images/logo/logo.png" alt="SmartFarm Logo" style="height: 30px; width: auto; margin-right: 8px;">SmartFarm Dashboard
             </a>
             <div class="navbar-nav ms-auto">
+                <button class="btn btn-outline-info me-3" onclick="locationSelector.show()" title="Change Location">
+                    <i class="fas fa-map-marker-alt me-2"></i>
+                    <span id="currentLocationDisplay">Loading...</span>
+                </button>
                 <div class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
                         <div class="user-avatar me-2" id="userAvatar">F</div>
@@ -2016,6 +2022,9 @@
         let livestock = [];
         let pets = [];
         let inventory = [];
+        
+        // Weather service
+        let weatherService = null;
 
         // Global Agricultural Database
         let globalCropDatabase = {};
@@ -2456,10 +2465,49 @@
             console.log('Global agricultural database initialized successfully');
         }
 
+        // Initialize weather service
+        function initializeWeatherService() {
+            if (window.WeatherService) {
+                weatherService = window.WeatherService;
+                
+                // Subscribe to weather updates
+                weatherService.subscribe((weatherData) => {
+                    updateLocationDisplay(weatherData);
+                });
+                
+                // Update location display immediately if data is available
+                if (weatherService.weatherData) {
+                    updateLocationDisplay(weatherService.weatherData);
+                }
+                
+                console.log('✅ Weather Service initialized');
+            } else {
+                console.warn('⚠️ Weather Service not available');
+                updateLocationDisplay({ location: { name: 'Fiji' }, source: 'Demo' });
+            }
+        }
+
+        // Update location display in navbar
+        function updateLocationDisplay(weatherData) {
+            const locationDisplay = document.getElementById('currentLocationDisplay');
+            if (locationDisplay && weatherData) {
+                const locationName = weatherData.location?.name || 'Unknown';
+                const isRealData = weatherData.source === 'OpenWeatherMap';
+                
+                locationDisplay.innerHTML = `
+                    ${locationName}
+                    <span class="badge ${isRealData ? 'bg-success' : 'bg-warning'} ms-1" style="font-size: 0.7rem;">
+                        ${isRealData ? 'Live' : 'Demo'}
+                    </span>
+                `;
+            }
+        }
+
         // Initialize dashboard
         document.addEventListener('DOMContentLoaded', function() {
             initializeGlobalDatabase();
             initializeDashboard();
+            initializeWeatherService();
             updateLastUpdated();
             setInterval(updateLastUpdated, 60000); // Update every minute
             
