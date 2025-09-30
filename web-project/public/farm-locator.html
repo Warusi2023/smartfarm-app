@@ -4,6 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Farm Locator - SmartFarm</title>
+    
+    <!-- Permissions Policy for Geolocation -->
+    <meta http-equiv="Permissions-Policy" content="geolocation=(self)">
+    <meta http-equiv="Feature-Policy" content="geolocation 'self'">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="images/favicon/favicon.ico">
+    <link rel="icon" type="image/png" sizes="16x16" href="images/favicon/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="images/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="64x64" href="images/favicon/favicon-64x64.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="images/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="images/favicon/android-chrome-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="images/favicon/android-chrome-512x512.png">
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -284,6 +298,9 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
+    <!-- SmartFarm Configuration -->
+    <script src="js/config.js"></script>
+    
     <script>
         // Global variables
         let map;
@@ -381,6 +398,9 @@
                             break;
                     }
                     showAlert(message, 'danger');
+                    
+                    // Show manual location input as fallback
+                    showManualLocationInput();
                 },
                 {
                     enableHighAccuracy: true,
@@ -409,7 +429,7 @@
             const farmType = document.getElementById('farmType').value;
 
             // Build API URL
-            let apiUrl = `/api/geofencing/nearby?latitude=${lat}&longitude=${lng}&radius=${radius}`;
+            let apiUrl = window.SmartFarmConfig.getApiUrl(`/geofencing/nearby?latitude=${lat}&longitude=${lng}&radius=${radius}`);
             if (farmType) {
                 apiUrl += `&type=${farmType}`;
             }
@@ -424,7 +444,19 @@
                     'Content-Type': 'application/json'
                 }
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                // Check if response is JSON
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('Response is not JSON. Server may be returning an error page.');
+                }
+                
+                return response.json();
+            })
             .then(data => {
                 loadingSpinner.style.display = 'none';
                 
@@ -580,14 +612,26 @@
 
             const token = localStorage.getItem('smartfarm_token') || sessionStorage.getItem('smartfarm_token');
 
-            fetch(`/api/geofencing/directions/${farmId}?latitude=${currentLocation.latitude}&longitude=${currentLocation.longitude}`, {
+            fetch(window.SmartFarmConfig.getApiUrl(`/geofencing/directions/${farmId}?latitude=${currentLocation.latitude}&longitude=${currentLocation.longitude}`), {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 }
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                // Check if response is JSON
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('Response is not JSON. Server may be returning an error page.');
+                }
+                
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
                     showDirections(data.data);
@@ -638,7 +682,7 @@
 
             const token = localStorage.getItem('smartfarm_token') || sessionStorage.getItem('smartfarm_token');
 
-            fetch('/api/geofencing/check-location', {
+            fetch(window.SmartFarmConfig.getApiUrl('/geofencing/check-location'), {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -650,7 +694,19 @@
                     longitude: currentLocation.longitude
                 })
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                // Check if response is JSON
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('Response is not JSON. Server may be returning an error page.');
+                }
+                
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
                     if (data.data.isWithinGeofence) {
@@ -690,6 +746,13 @@
                     alertDiv.remove();
                 }
             }, 5000);
+        }
+
+        function showManualLocationInput() {
+            const manualInput = document.getElementById('manualLocationInput');
+            if (manualInput) {
+                manualInput.style.display = 'block';
+            }
         }
     </script>
 </body>
