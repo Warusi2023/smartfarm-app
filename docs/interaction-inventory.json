@@ -1,0 +1,107 @@
+{
+  "meta": {
+    "projectName": "SmartFarm",
+    "generatedAt": "2025-10-01",
+    "totalInteractions": 0,
+    "scannedFiles": [
+      "web-project/public/dashboard.html",
+      "web-project/public/crop-management.html",
+      "web-project/public/livestock-management.html",
+      "web-project/public/watering-management.html",
+      "web-project/public/geofencing-setup.html",
+      "web-project/public/farm-locator.html"
+    ],
+    "note": "This is a static HTML/JS project with extensive inline JavaScript. Full interaction scanning requires runtime DOM analysis."
+  },
+  "dashboard": {
+    "weatherAlerts": {
+      "selector": ".weather-card button",
+      "handler": "Built-in (weather-service.js)",
+      "status": "implemented",
+      "route": "/api/weather"
+    },
+    "financialDetails": {
+      "selector": "#viewFinancialDetails",
+      "handler": "needs_implementation",
+      "status": "missing",
+      "intendedAction": "Show detailed financial breakdown"
+    },
+    "qrGeneration": {
+      "selector": "#generateQRCode",
+      "handler": "qrTraceability.generateQRCode()",
+      "status": "implemented",
+      "file": "js/qr-traceability.js"
+    },
+    "identifyCrop": {
+      "selector": "#identifyCropBtn",
+      "handler": "startCropIdentification()",
+      "status": "implemented",
+      "file": "js/identification-diagnosis.js"
+    },
+    "diagnose Livestock": {
+      "selector": "#diagnoseLivestockBtn",
+      "handler": "startLivestockDiagnosis()",
+      "status": "implemented",
+      "file": "js/identification-diagnosis.js"
+    },
+    "watering": {
+      "selector": ".watering-btn",
+      "handler": "WateringTimingSystem methods",
+      "status": "implemented",
+      "file": "js/watering-timing-system.js"
+    },
+    "weeding": {
+      "selector": ".weeding-btn",
+      "handler": "IntelligentWeedingSystem methods",
+      "status": "implemented",
+      "file": "js/intelligent-weeding.js"
+    }
+  },
+  "geofencing": {
+    "farmLocator": {
+      "selector": ".farm-locator-btn",
+      "handler": "searchFarmsAtLocation()",
+      "status": "partial",
+      "file": "farm-locator.html",
+      "issues": ["Needs better error handling", "Map integration incomplete"]
+    },
+    "geofencingSetup": {
+      "selector": ".geofence-setup",
+      "handler": "saveGeofenceConfiguration()",
+      "status": "partial",
+      "file": "geofencing-setup.html",
+      "issues": ["Backend API incomplete", "Persistence not fully tested"]
+    }
+  },
+  "navigation": {
+    "sidebar": {
+      "links": [
+        {"text": "Dashboard", "href": "#", "handler": "showView('dashboard')", "status": "working"},
+        {"text": "Farm Management", "href": "farm-management.html", "status": "needs_check"},
+        {"text": "Crop Management", "href": "crop-management.html", "status": "working"},
+        {"text": "Livestock Management", "href": "livestock-management.html", "status": "working"},
+        {"text": "Watering Management", "href": "watering-management.html", "status": "working"},
+        {"text": "Farm Locator", "href": "farm-locator.html", "status": "partial"},
+        {"text": "Geofencing Setup", "href": "geofencing-setup.html", "status": "partial"},
+        {"text": "AI Advisory", "href": "ai-advisory.html", "status": "working"},
+        {"text": "Subscription", "href": "subscription-management.html", "status": "working"}
+      ]
+    }
+  },
+  "missingHandlers": [
+    "handleOpenFinancialDetails",
+    "handleGenerateAllQRCodes (batch)",
+    "handleOpenIoTTile (if IoT not implemented)",
+    "handleOpenMarketTile (market intelligence details)",
+    "geofencing zone CRUD completeness",
+    "geofencing enter/exit events"
+  ],
+  "recommendations": [
+    "Complete geofencing backend API endpoints",
+    "Add loading states to all async operations",
+    "Implement missing financial details modal",
+    "Add comprehensive error handling",
+    "Create E2E tests for critical user flows"
+  ]
+}
+

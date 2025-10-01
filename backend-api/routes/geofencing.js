@@ -459,4 +459,386 @@ router.get('/:farmId/analytics', async (req, res) => {
     }
 });
 
+// ===========================================
+// ZONE MANAGEMENT ENDPOINTS
+// ===========================================
+
+// Get all geofence zones for the authenticated user
+router.get('/zones', async (req, res) => {
+    try {
+        const userId = req.user.id;
+        
+        const zonesQuery = `
+            SELECT gz.*, f.name as farmName
+            FROM geofence_zones gz
+            LEFT JOIN farms f ON gz.farmId = f.id
+            WHERE f.ownerId = ? OR gz.createdBy = ?
+            ORDER BY gz.createdAt DESC
+        `;
+        
+        const zones = await db.all(zonesQuery, [userId, userId]);
+        
+        // Parse JSON geometry for each zone
+        const zonesWithGeometry = zones.map(zone => ({
+            ...zone,
+            geometry: zone.geometry ? JSON.parse(zone.geometry) : null,
+            metadata: zone.metadata ? JSON.parse(zone.metadata) : null
+        }));
+        
+        res.json({
+            success: true,
+            data: zonesWithGeometry
+        });
+    } catch (error) {
+        console.error('Error fetching zones:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch geofence zones'
+        });
+    }
+});
+
+// Get a specific zone by ID
+router.get('/zones/:id', async (req, res) => {
+    try {
+        const zoneId = req.params.id;
+        const userId = req.user.id;
+        
+        const zoneQuery = `
+            SELECT gz.*, f.name as farmName
+            FROM geofence_zones gz
+            LEFT JOIN farms f ON gz.farmId = f.id
+            WHERE gz.id = ? AND (f.ownerId = ? OR gz.createdBy = ?)
+        `;
+        
+        const zone = await db.get(zoneQuery, [zoneId, userId, userId]);
+        
+        if (!zone) {
+            return res.status(404).json({
+                success: false,
+                error: 'Zone not found or access denied'
+            });
+        }
+        
+        // Parse JSON geometry
+        zone.geometry = zone.geometry ? JSON.parse(zone.geometry) : null;
+        zone.metadata = zone.metadata ? JSON.parse(zone.metadata) : null;
+        
+        res.json({
+            success: true,
+            data: zone
+        });
+    } catch (error) {
+        console.error('Error fetching zone:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch zone'
+        });
+    }
+});
+
+// Create a new geofence zone
+router.post('/zones', async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { farmId, name, type, color, geometry, metadata } = req.body;
+        
+        // Validate required fields
+        if (!farmId || !name || !geometry) {
+            return res.status(400).json({
+                success: false,
+                error: 'farmId, name, and geometry are required'
+            });
+        }
+        
+        // Validate geometry is a valid polygon
+        if (!geometry.type || geometry.type !== 'Polygon' || !geometry.coordinates) {
+            return res.status(400).json({
+                success: false,
+                error: 'Invalid geometry format. Must be a GeoJSON Polygon'
+            });
+        }
+        
+        // Check if user owns the farm
+        const farm = await db.get(
+            'SELECT id FROM farms WHERE id = ? AND ownerId = ?',
+            [farmId, userId]
+        );
+        
+        if (!farm) {
+            return res.status(403).json({
+                success: false,
+                error: 'Farm not found or access denied'
+            });
+        }
+        
+        const zoneId = uuidv4();
+        
+        const insertQuery = `
+            INSERT INTO geofence_zones (
+                id, farmId, name, type, color, geometry, metadata, createdBy, createdAt, updatedAt
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+        `;
+        
+        await db.run(insertQuery, [
+            zoneId,
+            farmId,
+            name,
+            type || 'custom',
+            color || '#4CAF50',
+            JSON.stringify(geometry),
+            metadata ? JSON.stringify(metadata) : null,
+            userId
+        ]);
+        
+        // Fetch the created zone
+        const createdZone = await db.get(
+            'SELECT * FROM geofence_zones WHERE id = ?',
+            [zoneId]
+        );
+        
+        createdZone.geometry = JSON.parse(createdZone.geometry);
+        if (createdZone.metadata) {
+            createdZone.metadata = JSON.parse(createdZone.metadata);
+        }
+        
+        res.status(201).json({
+            success: true,
+            data: createdZone
+        });
+    } catch (error) {
+        console.error('Error creating zone:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to create geofence zone'
+        });
+    }
+});
+
+// Update a geofence zone
+router.put('/zones/:id', async (req, res) => {
+    try {
+        const zoneId = req.params.id;
+        const userId = req.user.id;
+        const { name, type, color, geometry, metadata } = req.body;
+        
+        // Check if zone exists and user has access
+        const existingZone = await db.get(`
+            SELECT gz.id FROM geofence_zones gz
+            LEFT JOIN farms f ON gz.farmId = f.id
+            WHERE gz.id = ? AND (f.ownerId = ? OR gz.createdBy = ?)
+        `, [zoneId, userId, userId]);
+        
+        if (!existingZone) {
+            return res.status(404).json({
+                success: false,
+                error: 'Zone not found or access denied'
+            });
+        }
+        
+        // Validate geometry if provided
+        if (geometry && (!geometry.type || geometry.type !== 'Polygon' || !geometry.coordinates)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Invalid geometry format. Must be a GeoJSON Polygon'
+            });
+        }
+        
+        // Build update query dynamically
+        const updates = [];
+        const params = [];
+        
+        if (name !== undefined) {
+            updates.push('name = ?');
+            params.push(name);
+        }
+        if (type !== undefined) {
+            updates.push('type = ?');
+            params.push(type);
+        }
+        if (color !== undefined) {
+            updates.push('color = ?');
+            params.push(color);
+        }
+        if (geometry !== undefined) {
+            updates.push('geometry = ?');
+            params.push(JSON.stringify(geometry));
+        }
+        if (metadata !== undefined) {
+            updates.push('metadata = ?');
+            params.push(JSON.stringify(metadata));
+        }
+        
+        updates.push("updatedAt = datetime('now')");
+        params.push(zoneId);
+        
+        if (updates.length > 1) {
+            await db.run(
+                `UPDATE geofence_zones SET ${updates.join(', ')} WHERE id = ?`,
+                params
+            );
+        }
+        
+        // Fetch updated zone
+        const updatedZone = await db.get(
+            'SELECT * FROM geofence_zones WHERE id = ?',
+            [zoneId]
+        );
+        
+        updatedZone.geometry = JSON.parse(updatedZone.geometry);
+        if (updatedZone.metadata) {
+            updatedZone.metadata = JSON.parse(updatedZone.metadata);
+        }
+        
+        res.json({
+            success: true,
+            data: updatedZone
+        });
+    } catch (error) {
+        console.error('Error updating zone:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to update geofence zone'
+        });
+    }
+});
+
+// Delete a geofence zone
+router.delete('/zones/:id', async (req, res) => {
+    try {
+        const zoneId = req.params.id;
+        const userId = req.user.id;
+        
+        // Check if zone exists and user has access
+        const zone = await db.get(`
+            SELECT gz.id FROM geofence_zones gz
+            LEFT JOIN farms f ON gz.farmId = f.id
+            WHERE gz.id = ? AND (f.ownerId = ? OR gz.createdBy = ?)
+        `, [zoneId, userId, userId]);
+        
+        if (!zone) {
+            return res.status(404).json({
+                success: false,
+                error: 'Zone not found or access denied'
+            });
+        }
+        
+        await db.run('DELETE FROM geofence_zones WHERE id = ?', [zoneId]);
+        
+        res.json({
+            success: true,
+            message: 'Zone deleted successfully'
+        });
+    } catch (error) {
+        console.error('Error deleting zone:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to delete geofence zone'
+        });
+    }
+});
+
+// Log a geofence event (enter/exit)
+router.post('/events', async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { zoneId, eventType, latitude, longitude, timestamp } = req.body;
+        
+        // Validate required fields
+        if (!zoneId || !eventType || !latitude || !longitude) {
+            return res.status(400).json({
+                success: false,
+                error: 'zoneId, eventType, latitude, and longitude are required'
+            });
+        }
+        
+        // Validate event type
+        if (!['enter', 'exit'].includes(eventType)) {
+            return res.status(400).json({
+                success: false,
+                error: 'eventType must be either "enter" or "exit"'
+            });
+        }
+        
+        const eventId = uuidv4();
+        
+        const insertQuery = `
+            INSERT INTO visitor_logs (
+                id, farmId, userId, eventType, latitude, longitude, timestamp, createdAt
+            ) VALUES (?, (SELECT farmId FROM geofence_zones WHERE id = ?), ?, ?, ?, ?, ?, datetime('now'))
+        `;
+        
+        await db.run(insertQuery, [
+            eventId,
+            zoneId,
+            userId,
+            eventType,
+            latitude,
+            longitude,
+            timestamp || new Date().toISOString()
+        ]);
+        
+        res.status(201).json({
+            success: true,
+            data: {
+                eventId,
+                zoneId,
+                eventType,
+                timestamp: timestamp || new Date().toISOString()
+            }
+        });
+    } catch (error) {
+        console.error('Error logging geofence event:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to log geofence event'
+        });
+    }
+});
+
+// Get geofence events for a zone
+router.get('/zones/:id/events', async (req, res) => {
+    try {
+        const zoneId = req.params.id;
+        const userId = req.user.id;
+        const { limit = 50, offset = 0 } = req.query;
+        
+        // Check if user has access to this zone
+        const zone = await db.get(`
+            SELECT gz.id FROM geofence_zones gz
+            LEFT JOIN farms f ON gz.farmId = f.id
+            WHERE gz.id = ? AND (f.ownerId = ? OR gz.createdBy = ?)
+        `, [zoneId, userId, userId]);
+        
+        if (!zone) {
+            return res.status(404).json({
+                success: false,
+                error: 'Zone not found or access denied'
+            });
+        }
+        
+        const eventsQuery = `
+            SELECT vl.*, u.name as userName, u.email as userEmail
+            FROM visitor_logs vl
+            LEFT JOIN users u ON vl.userId = u.id
+            WHERE vl.farmId = (SELECT farmId FROM geofence_zones WHERE id = ?)
+            ORDER BY vl.timestamp DESC
+            LIMIT ? OFFSET ?
+        `;
+        
+        const events = await db.all(eventsQuery, [zoneId, parseInt(limit), parseInt(offset)]);
+        
+        res.json({
+            success: true,
+            data: events
+        });
+    } catch (error) {
+        console.error('Error fetching zone events:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch zone events'
+        });
+    }
+});
+
 module.exports = router;
