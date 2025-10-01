@@ -102,14 +102,21 @@ class WeatherService {
 
     async getLocationName(lat, lng) {
         try {
-            const response = await fetch(
-                `https://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lng}&limit=1&appid=${this.apiKey}`
-            );
-            const data = await response.json();
+            // Get API base URL from config
+            const apiBaseUrl = window.SmartFarmConfig?.getApiUrl('') || 'https://smartfarm-app-production.up.railway.app';
             
-            if (data && data.length > 0) {
-                const location = data[0];
-                return `${location.name}, ${location.country}`;
+            const response = await fetch(
+                `${apiBaseUrl}/api/weather/location?lat=${lat}&lng=${lng}`
+            );
+            
+            if (!response.ok) {
+                return 'Unknown Location';
+            }
+            
+            const result = await response.json();
+            
+            if (result.success && result.data) {
+                return result.data.fullName || 'Unknown Location';
             }
             return 'Unknown Location';
         } catch (error) {
@@ -122,41 +129,95 @@ class WeatherService {
         try {
             console.log(`🌤️ Fetching weather for ${location.name}...`);
             
-            // Fetch current weather
+            // Get API base URL from config
+            const apiBaseUrl = window.SmartFarmConfig?.getApiUrl('') || 'https://smartfarm-app-production.up.railway.app';
+            
+            // Fetch current weather from backend
             const currentWeatherResponse = await fetch(
-                `https://api.openweathermap.org/data/2.5/weather?lat=${location.lat}&lon=${location.lng}&appid=${this.apiKey}&units=metric`
+                `${apiBaseUrl}/api/weather/current?lat=${location.lat}&lng=${location.lng}`
             );
             
             if (!currentWeatherResponse.ok) {
+                const errorData = await currentWeatherResponse.json();
+                if (errorData.useDemo) {
+                    console.warn('⚠️ Backend weather API not configured, using demo data');
+                    this.useDemoData();
+                    return;
+                }
                 throw new Error(`Weather API error: ${currentWeatherResponse.status}`);
             }
             
-            const currentWeather = await currentWeatherResponse.json();
+            const currentWeatherData = await currentWeatherResponse.json();
+            if (!currentWeatherData.success) {
+                throw new Error(currentWeatherData.error || 'Failed to fetch current weather');
+            }
             
-            // Fetch 7-day forecast
+            const currentWeather = currentWeatherData.data;
+            
+            // Fetch 7-day forecast from backend
             const forecastResponse = await fetch(
-                `https://api.openweathermap.org/data/2.5/forecast?lat=${location.lat}&lon=${location.lng}&appid=${this.apiKey}&units=metric`
+                `${apiBaseUrl}/api/weather/forecast?lat=${location.lat}&lng=${location.lng}&days=7`
             );
             
             if (!forecastResponse.ok) {
+                const errorData = await forecastResponse.json();
+                if (errorData.useDemo) {
+                    console.warn('⚠️ Backend weather API not configured, using demo data');
+                    this.useDemoData();
+                    return;
+                }
                 throw new Error(`Forecast API error: ${forecastResponse.status}`);
             }
             
-            const forecast = await forecastResponse.json();
+            const forecastData = await forecastResponse.json();
+            if (!forecastData.success) {
+                throw new Error(forecastData.error || 'Failed to fetch forecast');
+            }
+            
+            const forecast = forecastData.data;
             
             // Process and store weather data
-            this.weatherData = this.processWeatherData(currentWeather, forecast, location);
+            this.weatherData = this.processBackendWeatherData(currentWeather, forecast, location);
             this.lastUpdate = new Date();
             
             // Notify all subscribers
             this.notifySubscribers();
             
-            console.log('✅ Weather data updated successfully');
+            console.log('✅ Weather data updated successfully from backend');
             
         } catch (error) {
             console.error('Error fetching weather data:', error);
             this.useDemoData();
         }
+    }
+
+    processBackendWeatherData(currentWeather, forecast, location) {
+        // Backend already processes the data, just need to format it
+        const current = {
+            temperature: currentWeather.temperature,
+            humidity: currentWeather.humidity,
+            rainfall: currentWeather.rainfall,
+            windSpeed: currentWeather.windSpeed,
+            pressure: currentWeather.pressure,
+            uvIndex: this.calculateUVIndex({ clouds: { all: currentWeather.cloudCover } }),
+            cloudCover: currentWeather.cloudCover,
+            description: currentWeather.description,
+            icon: currentWeather.icon,
+            visibility: currentWeather.visibility,
+            feelsLike: currentWeather.feelsLike
+        };
+
+        // Determine season based on location and date
+        const season = this.getSeason(location.lat, new Date());
+        
+        return {
+            location: location,
+            current: current,
+            forecast: forecast,
+            season: season,
+            lastUpdate: this.lastUpdate,
+            source: 'OpenWeatherMap'
+        };
     }
 
     processWeatherData(currentWeather, forecast, location) {

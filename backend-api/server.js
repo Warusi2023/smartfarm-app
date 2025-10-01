@@ -41,6 +41,7 @@ app.use('/api/geofencing', authenticateToken, require('./routes/geofencing'));
 app.use('/api/subscriptions', authenticateToken, require('./routes/subscriptions').router);
 app.use('/api/byproducts', authenticateToken, require('./routes/byproducts'));
 app.use('/api/ai-advisory', authenticateToken, require('./routes/ai-advisory'));
+app.use('/api/weather', require('./routes/weather')); // Public endpoint, no auth required
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

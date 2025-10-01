@@ -121,22 +121,36 @@ class LocationSelector {
         }
 
         try {
-            // Use OpenWeatherMap Geocoding API
-            const apiKey = window.WeatherService?.apiKey;
-            if (!apiKey) {
-                this.showSearchError('Weather API not configured');
-                return;
-            }
-
+            // Get API base URL from config
+            const apiBaseUrl = window.SmartFarmConfig?.getApiUrl('') || 'https://smartfarm-app-production.up.railway.app';
+            
             const response = await fetch(
-                `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(query)}&limit=5&appid=${apiKey}`
+                `${apiBaseUrl}/api/weather/search?q=${encodeURIComponent(query)}`
             );
 
             if (!response.ok) {
+                const errorData = await response.json();
+                if (errorData.useDemo) {
+                    this.showSearchError('Weather API not configured on server');
+                    return;
+                }
                 throw new Error(`Search API error: ${response.status}`);
             }
 
-            const results = await response.json();
+            const result = await response.json();
+            if (!result.success) {
+                throw new Error(result.error || 'Search failed');
+            }
+
+            // Convert backend format to display format
+            const results = result.data.map(loc => ({
+                name: loc.name,
+                state: loc.state,
+                country: loc.country,
+                lat: loc.lat,
+                lon: loc.lng
+            }));
+
             this.displaySearchResults(results);
 
         } catch (error) {
@@ -255,19 +269,18 @@ class LocationSelector {
 
     async getLocationName(lat, lng) {
         try {
-            const apiKey = window.WeatherService?.apiKey;
-            if (!apiKey) return 'Unknown Location';
-
+            // Get API base URL from config
+            const apiBaseUrl = window.SmartFarmConfig?.getApiUrl('') || 'https://smartfarm-app-production.up.railway.app';
+            
             const response = await fetch(
-                `https://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lng}&limit=1&appid=${apiKey}`
+                `${apiBaseUrl}/api/weather/location?lat=${lat}&lng=${lng}`
             );
 
             if (!response.ok) return 'Unknown Location';
 
-            const data = await response.json();
-            if (data && data.length > 0) {
-                const location = data[0];
-                return `${location.name}, ${location.country}`;
+            const result = await response.json();
+            if (result.success && result.data) {
+                return result.data.fullName || 'Unknown Location';
             }
 
             return 'Unknown Location';
