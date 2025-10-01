@@ -327,6 +327,30 @@ class WeatherService {
     useDemoData() {
         console.log('📊 Using demo weather data');
         
+        // Generate demo forecast with current dates
+        const generateDemoForecast = () => {
+            const forecast = [];
+            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            const today = new Date();
+            
+            for (let i = 0; i < 7; i++) {
+                const date = new Date(Date.now() + (i * 86400000));
+                const dayName = i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : days[date.getDay()];
+                
+                forecast.push({
+                    day: dayName,
+                    date: date.toLocaleDateString(),
+                    temp: 28 - (i * 0.5), // Gradually decreasing temp
+                    humidity: 75 + (i * 2),
+                    rainfall: i * 5,
+                    windSpeed: 12 - (i * 1.5),
+                    description: i === 0 ? 'Partly Cloudy' : i <= 2 ? 'Sunny' : 'Light Rain'
+                });
+            }
+            
+            return forecast;
+        };
+        
         this.weatherData = {
             location: { lat: -18.1248, lng: 178.4501, name: 'Fiji' },
             current: {
@@ -342,15 +366,7 @@ class WeatherService {
                 visibility: 10,
                 feelsLike: 30
             },
-            forecast: [
-                { day: 'Today', date: new Date().toLocaleDateString(), temp: 28, humidity: 75, rainfall: 15, windSpeed: 12, description: 'Partly Cloudy' },
-                { day: 'Tomorrow', date: new Date(Date.now() + 86400000).toLocaleDateString(), temp: 30, humidity: 80, rainfall: 5, windSpeed: 8, description: 'Sunny' },
-                { day: 'Wed', date: new Date(Date.now() + 172800000).toLocaleDateString(), temp: 32, humidity: 70, rainfall: 0, windSpeed: 15, description: 'Clear' },
-                { day: 'Thu', date: new Date(Date.now() + 259200000).toLocaleDateString(), temp: 29, humidity: 78, rainfall: 20, windSpeed: 10, description: 'Light Rain' },
-                { day: 'Fri', date: new Date(Date.now() + 345600000).toLocaleDateString(), temp: 27, humidity: 82, rainfall: 25, windSpeed: 6, description: 'Rain' },
-                { day: 'Sat', date: new Date(Date.now() + 432000000).toLocaleDateString(), temp: 26, humidity: 85, rainfall: 30, windSpeed: 4, description: 'Heavy Rain' },
-                { day: 'Sun', date: new Date(Date.now() + 518400000).toLocaleDateString(), temp: 24, humidity: 88, rainfall: 35, windSpeed: 2, description: 'Heavy Rain' }
-            ],
+            forecast: generateDemoForecast(),
             season: this.getSeason(-18.1248, new Date()),
             lastUpdate: new Date(),
             source: 'Demo Data'

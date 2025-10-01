@@ -280,6 +280,28 @@ class AISeedPredictor {
     }
 
     useDemoWeatherData() {
+        // Generate demo forecast with current dates
+        const generateDemoForecast = () => {
+            const forecast = [];
+            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            
+            for (let i = 0; i < 7; i++) {
+                const date = new Date(Date.now() + (i * 86400000));
+                const dayName = i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : days[date.getDay()];
+                
+                forecast.push({
+                    day: dayName,
+                    temp: 28 - (i * 0.5),
+                    humidity: 75 + (i * 2),
+                    rain: i * 5,
+                    wind: 12 - (i * 1.5),
+                    description: i === 0 ? 'Partly Cloudy' : i <= 2 ? 'Sunny' : 'Light Rain'
+                });
+            }
+            
+            return forecast;
+        };
+        
         // Fallback demo data
         this.weatherData = {
             temperature: 28,
@@ -291,15 +313,7 @@ class AISeedPredictor {
             cloudCover: 30,
             description: 'Partly Cloudy',
             forecast: {
-                next7Days: [
-                    { day: 'Today', temp: 28, humidity: 75, rain: 15, wind: 12, description: 'Partly Cloudy' },
-                    { day: 'Tomorrow', temp: 30, humidity: 80, rain: 5, wind: 8, description: 'Sunny' },
-                    { day: 'Day 3', temp: 32, humidity: 70, rain: 0, wind: 15, description: 'Clear' },
-                    { day: 'Day 4', temp: 29, humidity: 78, rain: 20, wind: 10, description: 'Light Rain' },
-                    { day: 'Day 5', temp: 27, humidity: 82, rain: 25, wind: 6, description: 'Rain' },
-                    { day: 'Day 6', temp: 26, humidity: 85, rain: 30, wind: 4, description: 'Heavy Rain' },
-                    { day: 'Day 7', temp: 24, humidity: 88, rain: 35, wind: 2, description: 'Heavy Rain' }
-                ]
+                next7Days: generateDemoForecast()
             },
             season: this.getCurrentSeason(),
             location: 'Fiji',
