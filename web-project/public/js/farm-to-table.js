@@ -534,8 +534,91 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Global functions for onclick handlers
 function showCreatePlanModal() {
+    // Setup source type change handler
+    const sourceTypeSelect = document.getElementById('planSourceType');
+    const sourceSelect = document.getElementById('planSourceId');
+    
+    // Clear and disable source select initially
+    sourceSelect.innerHTML = '<option value="">Select Source</option>';
+    sourceSelect.disabled = true;
+    
+    // Add event listener for source type changes
+    sourceTypeSelect.addEventListener('change', function() {
+        populateSourceDropdown(this.value);
+    });
+    
     const modal = new bootstrap.Modal(document.getElementById('createPlanModal'));
     modal.show();
+}
+
+function populateSourceDropdown(sourceType) {
+    const sourceSelect = document.getElementById('planSourceId');
+    sourceSelect.innerHTML = '<option value="">Select Source</option>';
+    
+    if (!sourceType) {
+        sourceSelect.disabled = true;
+        return;
+    }
+    
+    sourceSelect.disabled = false;
+    
+    if (sourceType === 'crop') {
+        // Get crops from localStorage or global variable
+        const crops = JSON.parse(localStorage.getItem('crops') || '[]');
+        
+        if (crops.length === 0) {
+            // Add demo crops if none exist
+            const demoCrops = [
+                { id: 'crop-1', name: 'Tomatoes', variety: 'Cherry' },
+                { id: 'crop-2', name: 'Cassava', variety: 'Sweet' },
+                { id: 'crop-3', name: 'Taro', variety: 'Giant' },
+                { id: 'crop-4', name: 'Kava', variety: 'Noble' },
+                { id: 'crop-5', name: 'Coconut', variety: 'Tall' }
+            ];
+            
+            demoCrops.forEach(crop => {
+                const option = document.createElement('option');
+                option.value = crop.id;
+                option.textContent = `${crop.name} - ${crop.variety}`;
+                sourceSelect.appendChild(option);
+            });
+        } else {
+            crops.forEach(crop => {
+                const option = document.createElement('option');
+                option.value = crop.id;
+                option.textContent = `${crop.name}${crop.variety ? ' - ' + crop.variety : ''}`;
+                sourceSelect.appendChild(option);
+            });
+        }
+    } else if (sourceType === 'livestock') {
+        // Get livestock from localStorage or global variable
+        const livestock = JSON.parse(localStorage.getItem('livestock') || '[]');
+        
+        if (livestock.length === 0) {
+            // Add demo livestock if none exist
+            const demoLivestock = [
+                { id: 'livestock-1', type: 'Cattle', breed: 'Holstein', name: 'Bessie' },
+                { id: 'livestock-2', type: 'Goat', breed: 'Boer', name: 'Billy' },
+                { id: 'livestock-3', type: 'Chicken', breed: 'Rhode Island Red', name: 'Flock 1' },
+                { id: 'livestock-4', type: 'Pig', breed: 'Yorkshire', name: 'Porky' },
+                { id: 'livestock-5', type: 'Sheep', breed: 'Merino', name: 'Fluffy' }
+            ];
+            
+            demoLivestock.forEach(animal => {
+                const option = document.createElement('option');
+                option.value = animal.id;
+                option.textContent = `${animal.type} - ${animal.breed}${animal.name ? ' (' + animal.name + ')' : ''}`;
+                sourceSelect.appendChild(option);
+            });
+        } else {
+            livestock.forEach(animal => {
+                const option = document.createElement('option');
+                option.value = animal.id;
+                option.textContent = `${animal.type} - ${animal.breed}${animal.name ? ' (' + animal.name + ')' : ''}`;
+                sourceSelect.appendChild(option);
+            });
+        }
+    }
 }
 
 function createProcessingPlan() {
