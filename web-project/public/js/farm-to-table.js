@@ -55,14 +55,33 @@ class FarmToTableSystem {
     
     async loadProcessingPlans() {
         try {
-            const response = await fetch(window.SmartFarmConfig.getApiUrl('/api/byproducts/processing-plans'));
+            const token = localStorage.getItem('smartfarm_token') || sessionStorage.getItem('smartfarm_token');
+            const response = await fetch(window.SmartFarmConfig.getApiUrl('/byproducts/processing-plans'), {
+                headers: {
+                    'Authorization': token ? `Bearer ${token}` : ''
+                }
+            });
+            
             if (!response.ok) throw new Error('Failed to load processing plans');
             
             const data = await response.json();
             this.processingPlans = data.data || [];
         } catch (error) {
-            console.error('Error loading processing plans:', error);
-            this.processingPlans = [];
+            console.error('Error loading processing plans from API:', error);
+            
+            // Fallback to localStorage
+            const localPlans = localStorage.getItem('processingPlans');
+            if (localPlans) {
+                try {
+                    this.processingPlans = JSON.parse(localPlans);
+                    console.log('Loaded processing plans from localStorage');
+                } catch (parseError) {
+                    console.error('Error parsing local plans:', parseError);
+                    this.processingPlans = [];
+                }
+            } else {
+                this.processingPlans = [];
+            }
         }
     }
     
@@ -402,35 +421,74 @@ class FarmToTableSystem {
     
     async createProcessingPlanFromForm() {
         try {
+            // Validate form
+            const sourceType = document.getElementById('planSourceType').value;
+            const sourceId = document.getElementById('planSourceId').value;
+            const byproductName = document.getElementById('planByproductName').value;
+            const quantity = document.getElementById('planQuantity').value;
+            const processingMethod = document.getElementById('planProcessingMethod').value;
+            
+            if (!sourceType || !sourceId || !byproductName || !quantity || !processingMethod) {
+                this.showError('Please fill in all required fields');
+                return;
+            }
+            
             const formData = {
-                sourceType: document.getElementById('planSourceType').value,
-                sourceId: document.getElementById('planSourceId').value,
-                byproductName: document.getElementById('planByproductName').value,
-                quantity: parseFloat(document.getElementById('planQuantity').value),
-                processingMethod: document.getElementById('planProcessingMethod').value,
+                id: 'plan-' + Date.now(),
+                sourceType: sourceType,
+                sourceId: sourceId,
+                byproductName: byproductName,
+                quantity: parseFloat(quantity),
+                processingMethod: processingMethod,
                 equipment: document.getElementById('planEquipment').value,
                 targetMarket: document.getElementById('planTargetMarket').value,
                 expectedRevenue: parseFloat(document.getElementById('planExpectedRevenue').value) || 0,
-                processingDate: document.getElementById('planProcessingDate').value,
-                notes: document.getElementById('planNotes').value
+                processingDate: document.getElementById('planProcessingDate').value || new Date().toISOString().split('T')[0],
+                notes: document.getElementById('planNotes').value,
+                status: 'planned',
+                createdAt: new Date().toISOString()
             };
             
-            const response = await fetch(window.SmartFarmConfig.getApiUrl('/api/byproducts/processing-plans'), {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData)
-            });
-            
-            if (!response.ok) throw new Error('Failed to create processing plan');
-            
-            const data = await response.json();
-            this.showSuccess('Processing plan created successfully!');
+            // Try to save to backend
+            try {
+                const token = localStorage.getItem('smartfarm_token') || sessionStorage.getItem('smartfarm_token');
+                const response = await fetch(window.SmartFarmConfig.getApiUrl('/byproducts/processing-plans'), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': token ? `Bearer ${token}` : ''
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    this.showSuccess('Processing plan created and saved to server!');
+                } else {
+                    throw new Error('API not available');
+                }
+            } catch (apiError) {
+                // Fallback to local storage if API fails
+                console.warn('API not available, saving locally:', apiError);
+                
+                // Save to localStorage
+                let plans = JSON.parse(localStorage.getItem('processingPlans') || '[]');
+                plans.push(formData);
+                localStorage.setItem('processingPlans', JSON.stringify(plans));
+                
+                this.showSuccess('Processing plan created (saved locally)!');
+            }
             
             // Close modal
             const modal = bootstrap.Modal.getInstance(document.getElementById('createPlanModal'));
-            modal.hide();
+            if (modal) {
+                modal.hide();
+            }
+            
+            // Clear form
+            document.getElementById('createPlanForm').reset();
+            document.getElementById('planSourceId').innerHTML = '<option value="">Select Source</option>';
+            document.getElementById('planSourceId').disabled = true;
             
             // Refresh data
             await this.loadProcessingPlans();
@@ -438,7 +496,7 @@ class FarmToTableSystem {
             
         } catch (error) {
             console.error('Error creating processing plan:', error);
-            this.showError('Failed to create processing plan');
+            this.showError('Failed to create processing plan: ' + error.message);
         }
     }
     
