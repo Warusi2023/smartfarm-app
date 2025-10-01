@@ -36,6 +36,17 @@ SmartFarm is a comprehensive agricultural management platform that combines mode
 - Node.js 16+ and npm
 - Android Studio (for Android development)
 - Git
+- Railway account (for backend deployment)
+- Netlify account (for frontend deployment)
+
+### 📖 Documentation
+
+**Complete documentation available in `docs/` folder:**
+- **[Deployment Guide](docs/DEPLOYMENT_GUIDE.md)** - Railway + Netlify deployment
+- **[Implementation Plan](docs/IMPLEMENTATION_PLAN.md)** - Architecture & strategy
+- **[Implementation Complete](docs/IMPLEMENTATION_COMPLETE.md)** - Status summary
+- **[Interaction Audit](docs/interaction-audit.md)** - Feature analysis
+- **[Follow-ups](docs/followups.md)** - Remaining tasks
 
 ### Installation
 
@@ -47,12 +58,11 @@ SmartFarm is a comprehensive agricultural management platform that combines mode
 
 2. **Install dependencies**
    ```bash
-   # Web application
-   cd web-project
+   # Backend API
+   cd backend-api
    npm install
    
-   # Backend API
-   cd ../railway-minimal
+   # Frontend (no build step, static files)
    npm install
    ```
 

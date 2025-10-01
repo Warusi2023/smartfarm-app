@@ -1,17 +1,23 @@
 const express = require('express');
-const cors = require('cors');
 const helmet = require('helmet');
-const morgan = require('morgan');
 const path = require('path');
-require('dotenv').config();
+
+// Load environment and logger
+const environment = require('./config/environment');
+const logger = require('./lib/logger');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = environment.PORT;
 
-// Middleware
-app.use(helmet());
-app.use(cors());
-app.use(morgan('combined'));
+// Custom Middleware
+const corsMiddleware = require('./middleware/cors');
+const requestIdMiddleware = require('./middleware/request-id');
+
+// Apply middleware in correct order
+app.use(requestIdMiddleware);  // Add request ID first
+app.use(helmet());              // Security headers
+app.use(corsMiddleware);        // CORS with validation
+app.use(logger.logRequest.bind(logger));  // Request logging
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -45,24 +51,39 @@ app.use('/api/weather', require('./routes/weather')); // Public endpoint, no aut
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
+    const uptime = process.uptime();
+    const memoryUsage = process.memoryUsage();
+    
     res.json({
         status: 'OK',
         timestamp: new Date().toISOString(),
         version: '1.0.0',
-        environment: process.env.NODE_ENV || 'development',
-        database: 'SQLite',
-        features: [
-            'User Authentication (JWT)',
-            'Farm Management',
-            'Livestock Tracking',
-            'Crop Management',
-            'Weather Data',
-            'Inventory Management',
-            'Employee Management',
-            'Financial Records',
-            'Advanced Analytics',
-            'Document Management'
-        ]
+        environment: environment.NODE_ENV,
+        uptime: {
+            seconds: Math.floor(uptime),
+            formatted: `${Math.floor(uptime / 3600)}h ${Math.floor((uptime % 3600) / 60)}m ${Math.floor(uptime % 60)}s`
+        },
+        memory: {
+            heapUsed: `${Math.round(memoryUsage.heapUsed / 1024 / 1024)}MB`,
+            heapTotal: `${Math.round(memoryUsage.heapTotal / 1024 / 1024)}MB`
+        },
+        database: {
+            type: environment.DB_TYPE,
+            connected: true
+        },
+        apis: {
+            weather: !!environment.WEATHER_API_KEY,
+            maps: !!environment.MAPS_API_KEY
+        },
+        features: {
+            geofencing: environment.FEATURE_GEOFENCING,
+            aiAdvisory: environment.FEATURE_AI_ADVISORY,
+            byproducts: environment.FEATURE_BYPRODUCTS,
+            subscriptions: environment.FEATURE_SUBSCRIPTIONS
+        },
+        cors: {
+            allowedOrigins: environment.CORS_ORIGIN
+        }
     });
 });
 
