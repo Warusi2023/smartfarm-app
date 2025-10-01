@@ -317,17 +317,31 @@ class AISeedPredictor {
         if (tempElement) tempElement.textContent = `${this.weatherData.temperature}°C`;
         if (humidityElement) humidityElement.textContent = `${this.weatherData.humidity}%`;
         if (rainfallElement) rainfallElement.textContent = `${this.weatherData.rainfall}mm`;
-        if (locationElement) locationElement.textContent = this.weatherData.location;
+        
+        if (locationElement) {
+            const locationText = this.weatherData.location || 'Unknown';
+            const season = this.weatherData.season || 'Unknown';
+            const description = this.weatherData.description || '';
+            
+            locationElement.innerHTML = `
+                ${locationText}
+                ${description ? `<span class="text-muted"> • ${description}</span>` : ''}
+                <span class="badge bg-secondary ms-1">${season}</span>
+            `;
+        }
         
         // Add indicator for real vs demo data
         const weatherIndicator = document.querySelector('.weather-indicator');
-        if (weatherIndicator) {
+        if (weatherIndicator && !weatherIndicator.querySelector('.badge.bg-success, .badge.bg-warning')) {
             if (this.weatherData.isRealData) {
-                weatherIndicator.innerHTML += '<span class="badge bg-success ms-2"><i class="fas fa-satellite me-1"></i>Live</span>';
+                weatherIndicator.innerHTML += '<span class="badge bg-success"><i class="fas fa-satellite me-1"></i>Live</span>';
             } else {
-                weatherIndicator.innerHTML += '<span class="badge bg-warning ms-2"><i class="fas fa-flask me-1"></i>Demo</span>';
+                weatherIndicator.innerHTML += '<span class="badge bg-warning"><i class="fas fa-flask me-1"></i>Demo</span>';
             }
         }
+        
+        // Update forecast display
+        this.populateWeatherForecast();
     }
 
     getCurrentSeason() {
@@ -347,7 +361,13 @@ class AISeedPredictor {
         seedPredictionCard.className = 'dashboard-card mt-4';
         seedPredictionCard.innerHTML = `
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5>🤖 AI Seed Prediction</h5>
+                <div>
+                    <h5 class="mb-1">🤖 AI Seed Prediction</h5>
+                    <small class="text-muted">
+                        <i class="fas fa-map-marker-alt me-1"></i>
+                        <span id="currentLocation">${this.weatherData.location || 'Loading...'}</span>
+                    </small>
+                </div>
                 <div class="weather-indicator">
                     <span class="badge bg-info me-2">
                         <i class="fas fa-thermometer-half me-1"></i>
@@ -357,7 +377,7 @@ class AISeedPredictor {
                         <i class="fas fa-tint me-1"></i>
                         <span id="currentHumidity">${this.weatherData.humidity}%</span>
                     </span>
-                    <span class="badge bg-success">
+                    <span class="badge bg-success me-2">
                         <i class="fas fa-cloud-rain me-1"></i>
                         <span id="currentRainfall">${this.weatherData.rainfall}mm</span>
                     </span>
