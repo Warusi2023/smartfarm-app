@@ -364,6 +364,93 @@ const preventSQLInjection = (req, res, next) => {
     next();
 };
 
+// User Management validation
+const validateUserManagement = {
+    create: [
+        body('email')
+            .isEmail()
+            .normalizeEmail()
+            .withMessage('Valid email is required'),
+        body('password')
+            .isLength({ min: 8 })
+            .withMessage('Password must be at least 8 characters long')
+            .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/)
+            .withMessage('Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'),
+        body('firstName')
+            .trim()
+            .isLength({ min: 2, max: 50 })
+            .withMessage('First name must be between 2 and 50 characters'),
+        body('lastName')
+            .trim()
+            .isLength({ min: 2, max: 50 })
+            .withMessage('Last name must be between 2 and 50 characters'),
+        body('role')
+            .optional()
+            .isIn(['farmer', 'manager', 'admin'])
+            .withMessage('Role must be farmer, manager, or admin'),
+        body('phone')
+            .optional()
+            .isMobilePhone()
+            .withMessage('Valid phone number is required'),
+        body('permissions')
+            .optional()
+            .isArray()
+            .withMessage('Permissions must be an array'),
+        handleValidationErrors
+    ],
+    updateRole: [
+        body('role')
+            .isIn(['farmer', 'manager', 'admin'])
+            .withMessage('Role must be farmer, manager, or admin'),
+        body('permissions')
+            .optional()
+            .isArray()
+            .withMessage('Permissions must be an array'),
+        body('status')
+            .optional()
+            .isIn(['active', 'inactive', 'suspended'])
+            .withMessage('Status must be active, inactive, or suspended'),
+        handleValidationErrors
+    ],
+    updateProfile: [
+        body('firstName')
+            .trim()
+            .isLength({ min: 2, max: 50 })
+            .withMessage('First name must be between 2 and 50 characters'),
+        body('lastName')
+            .trim()
+            .isLength({ min: 2, max: 50 })
+            .withMessage('Last name must be between 2 and 50 characters'),
+        body('phone')
+            .optional()
+            .isMobilePhone()
+            .withMessage('Valid phone number is required'),
+        body('notificationPreferences')
+            .optional()
+            .isObject()
+            .withMessage('Notification preferences must be an object'),
+        handleValidationErrors
+    ],
+    changePassword: [
+        body('currentPassword')
+            .notEmpty()
+            .withMessage('Current password is required'),
+        body('newPassword')
+            .isLength({ min: 8 })
+            .withMessage('New password must be at least 8 characters long')
+            .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/)
+            .withMessage('New password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'),
+        body('confirmPassword')
+            .custom((value, { req }) => {
+                if (value !== req.body.newPassword) {
+                    throw new Error('Password confirmation does not match');
+                }
+                return true;
+            }),
+        handleValidationErrors
+    ]
+};
+
 module.exports = {
     sanitizeInput,
     handleValidationErrors,
@@ -375,5 +462,6 @@ module.exports = {
     validateFinancial,
     validateTask,
     validateQuery,
-    validateRateLimit
+    validateRateLimit,
+    validateUserManagement
 };

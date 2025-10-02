@@ -36,6 +36,7 @@ app.use('/api/health', require('./routes/health'));
 
 // Protected routes (authentication required)
 app.use('/api/users', require('./routes/users'));
+app.use('/api/user-management', require('./routes/user-management'));
 app.use('/api/farms', authenticateToken, require('./routes/farms'));
 app.use('/api/livestock', authenticateToken, require('./routes/livestock'));
 app.use('/api/crops', authenticateToken, require('./routes/crops'));
