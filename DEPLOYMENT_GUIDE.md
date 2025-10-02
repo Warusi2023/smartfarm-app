@@ -1,524 +1,276 @@
-# SmartFarm Web Application - Deployment & Usage Guide
+# SmartFarm Deployment Guide
 
-## 🚀 Overview
+## Overview
+This guide covers the complete deployment process for SmartFarm from development to production using GitHub Actions, Railway (backend), and Netlify (frontend).
 
-SmartFarm is a comprehensive farm management web application built with Kotlin Multiplatform and Compose for Web. This guide covers deployment, configuration, and usage instructions.
+## Prerequisites
 
-## 📋 Table of Contents
+### 1. GitHub Repository Setup
+- Repository must be public or have GitHub Actions enabled
+- Required secrets must be configured (see Secrets Configuration section)
 
-1. [Prerequisites](#prerequisites)
-2. [Local Development](#local-development)
-3. [Production Deployment](#production-deployment)
-4. [Configuration](#configuration)
-5. [Usage Guide](#usage-guide)
-6. [Troubleshooting](#troubleshooting)
-7. [API Integration](#api-integration)
-8. [Mobile Optimization](#mobile-optimization)
+### 2. Railway Account Setup
+- Create account at [railway.app](https://railway.app)
+- Create new project for SmartFarm backend
+- Generate Railway token for API access
 
-## 🔧 Prerequisites
+### 3. Netlify Account Setup
+- Create account at [netlify.com](https://netlify.com)
+- Create new site for SmartFarm frontend
+- Generate Netlify auth token
 
-### Required Software
-- **Java 17** or higher
-- **Node.js 16** or higher
-- **Git** for version control
-- **Modern web browser** (Chrome, Firefox, Safari, Edge)
+## Secrets Configuration
 
-### Optional Software
-- **IntelliJ IDEA** or **Android Studio** for development
-- **Docker** for containerized deployment
-- **PostgreSQL** for production database
+### GitHub Secrets Required
 
-## 🏠 Local Development
-
-### 1. Clone the Repository
-```bash
-git clone https://github.com/your-username/smartfarm.git
-cd smartfarm
+#### Backend Secrets
+```
+RAILWAY_TOKEN=your_railway_token_here
+RAILWAY_PRODUCTION_URL=https://your-backend.railway.app
+RAILWAY_MIGRATION_TOKEN=your_migration_token_here
 ```
 
-### 2. Build the Application
-```bash
-# Build the web application
-./gradlew :web:build
-
-# Or use the deployment script
-powershell -ExecutionPolicy Bypass -File "deploy-web.ps1" -Platform "local" -BuildOnly
+#### Frontend Secrets
+```
+NETLIFY_AUTH_TOKEN=your_netlify_token_here
+NETLIFY_SITE_ID=your_site_id_here
+NETLIFY_SITE_ID_STAGING=your_staging_site_id_here
+NETLIFY_PRODUCTION_URL=https://your-site.netlify.app
 ```
 
-### 3. Start Development Server
-```bash
-# Start local development server
-powershell -ExecutionPolicy Bypass -File "deploy-web.ps1" -Platform "local"
-
-# Or manually
-./gradlew :web:run
+#### Optional Secrets
+```
+SNYK_TOKEN=your_snyk_token_here (for security scanning)
+SLACK_WEBHOOK=your_slack_webhook_url (for notifications)
 ```
 
-The application will be available at: **http://localhost:8080**
+## Deployment Process
 
-## 🌐 Production Deployment
+### 1. Backend Deployment (Railway)
 
-### Option 1: Netlify Deployment
+#### Staging Environment
+- Triggered on push to `develop` branch
+- Deploys to Railway staging service
+- Runs all tests before deployment
+- Includes security scanning
 
-1. **Build for Production**
-```bash
-./gradlew :web:build
+#### Production Environment
+- Triggered on push to `main` branch
+- Deploys to Railway production service
+- Runs database migrations
+- Performs health checks
+
+### 2. Frontend Deployment (Netlify)
+
+#### Staging Environment
+- Triggered on push to `develop` branch
+- Deploys to Netlify staging site
+- Runs E2E tests and accessibility checks
+- Includes performance testing
+
+#### Production Environment
+- Triggered on push to `main` branch
+- Deploys to Netlify production site
+- Runs Lighthouse audits
+- Optimizes images automatically
+
+## Environment Variables
+
+### Backend Environment Variables (Railway)
+```
+NODE_ENV=production
+DATABASE_URL=postgresql://user:password@host:port/database
+JWT_SECRET=your_jwt_secret_here
+PORT=3000
+CORS_ORIGIN=https://your-frontend.netlify.app
 ```
 
-2. **Deploy to Netlify**
-```bash
-# Using the deployment script
-powershell -ExecutionPolicy Bypass -File "deploy-web.ps1" -Platform "netlify"
-
-# Or manually upload the build folder
-# The build output is in: web/build/distributions/
+### Frontend Environment Variables (Netlify)
+```
+VITE_API_BASE_URL=https://your-backend.railway.app/api
+VITE_OPENWEATHER_API_KEY=your_openweather_api_key
+VITE_APP_VERSION=1.0.0
+VITE_ENVIRONMENT=production
 ```
 
-3. **Configure Netlify**
-- Build command: `./gradlew :web:build`
-- Publish directory: `web/build/distributions/`
-- Environment variables: Set in Netlify dashboard
-
-### Option 2: Vercel Deployment
-
-1. **Deploy to Vercel**
-```bash
-# Using the deployment script
-powershell -ExecutionPolicy Bypass -File "deploy-web.ps1" -Platform "vercel"
-
-# Or using Vercel CLI
-vercel --prod
-```
-
-2. **Configure Vercel**
-- Framework preset: Other
-- Build command: `./gradlew :web:build`
-- Output directory: `web/build/distributions/`
-
-### Option 3: GitHub Pages
-
-1. **Deploy to GitHub Pages**
-```bash
-# Using the deployment script
-powershell -ExecutionPolicy Bypass -File "deploy-web.ps1" -Platform "github-pages"
-```
-
-2. **Configure GitHub Actions**
-The repository includes a GitHub Actions workflow for automatic deployment.
-
-### Option 4: Docker Deployment
-
-1. **Build Docker Image**
-```bash
-docker build -t smartfarm-web .
-```
-
-2. **Run Container**
-```bash
-docker run -p 8080:8080 smartfarm-web
-```
-
-## ⚙️ Configuration
-
-### Environment Variables
-
-Create a `.env` file in the project root:
-
-```env
-# API Configuration
-GOOGLE_MAPS_API_KEY=your_google_maps_api_key
-OPENWEATHER_API_KEY=your_openweather_api_key
-OPENAI_API_KEY=your_openai_api_key
-
-# Database Configuration (if using)
-DATABASE_URL=postgresql://username:password@localhost:5432/smartfarm
-DATABASE_USERNAME=your_db_username
-DATABASE_PASSWORD=your_db_password
-
-# Application Configuration
-APP_ENV=production
-APP_DEBUG=false
-APP_URL=https://your-domain.com
-```
-
-### API Keys Setup
-
-1. **Google Maps API**
-   - Visit [Google Cloud Console](https://console.cloud.google.com/)
-   - Enable Maps JavaScript API
-   - Create API key with appropriate restrictions
-
-2. **OpenWeather API**
-   - Sign up at [OpenWeatherMap](https://openweathermap.org/api)
-   - Get your API key from the dashboard
-
-3. **OpenAI API**
-   - Sign up at [OpenAI](https://platform.openai.com/)
-   - Generate API key in your account settings
-
-### Configuration Script
-
-Run the configuration script to set up API keys:
-
-```bash
-powershell -ExecutionPolicy Bypass -File "setup-api-keys.ps1"
-```
-
-## 📖 Usage Guide
-
-### 🏠 Home Dashboard
-
-The home screen provides an overview of your farm operations:
-
-- **Quick Stats**: View key metrics at a glance
-- **Recent Activity**: See latest farm activities
-- **Weather Widget**: Current weather conditions
-- **Quick Actions**: Access frequently used features
-
-### 🐄 Livestock Management
-
-Track and manage your livestock:
-
-1. **Add New Animal**
-   - Click "Add Animal" button
-   - Fill in animal details (ID, type, breed, etc.)
-   - Set health status and notes
-
-2. **View Animal Details**
-   - Click on any animal card
-   - View detailed information
-   - Update health records
-
-3. **Health Monitoring**
-   - Track vaccinations
-   - Monitor weight changes
-   - Record medical treatments
-
-### 🌾 Crop Management
-
-Manage your crop operations:
-
-1. **Add New Crop**
-   - Select crop type
-   - Set planting date
-   - Define field location
-
-2. **Track Growth**
-   - Monitor growth stages
-   - Record harvest dates
-   - Track yields
-
-3. **Field Management**
-   - View field status
-   - Plan crop rotation
-   - Monitor soil health
-
-### 📦 Inventory Management
-
-Manage farm supplies and equipment:
-
-1. **Add Inventory Item**
-   - Click "Add Item" button
-   - Select category (supplies, equipment, tools, machinery)
-   - Set quantity and location
-
-2. **Track Stock Levels**
-   - Monitor low stock items
-   - Set reorder points
-   - Track usage patterns
-
-3. **Equipment Management**
-   - Record equipment status
-   - Schedule maintenance
-   - Track utilization
-
-### 👥 Employee Management
-
-Manage your farm workforce:
-
-1. **Add Employee**
-   - Fill in personal details
-   - Assign role and department
-   - Set hire date
-
-2. **Schedule Management**
-   - View weekly schedules
-   - Assign shifts
-   - Track attendance
-
-3. **Role Management**
-   - Define job responsibilities
-   - Set salary ranges
-   - Manage permissions
-
-### 📈 Market Price Tracking
-
-Monitor market conditions:
-
-1. **View Price Trends**
-   - Select product category
-   - Choose timeframe
-   - Analyze price movements
-
-2. **Set Price Alerts**
-   - Create price thresholds
-   - Receive notifications
-   - Track market news
-
-3. **AI Predictions**
-   - View price forecasts
-   - Check confidence levels
-   - Plan sales strategy
-
-### 📄 Document Management
-
-Organize farm records:
-
-1. **Upload Documents**
-   - Drag and drop files
-   - Categorize documents
-   - Add descriptions
-
-2. **Search and Filter**
-   - Search by name or content
-   - Filter by category
-   - Sort by date or size
-
-3. **Document Organization**
-   - Mark important documents
-   - Share with team members
-   - Track document versions
-
-### 💰 Financial Management
-
-Track farm finances:
-
-1. **Income Tracking**
-   - Record sales
-   - Track revenue sources
-   - Monitor cash flow
-
-2. **Expense Management**
-   - Log expenses
-   - Categorize costs
-   - Track budgets
-
-3. **Financial Reports**
-   - Generate profit/loss statements
-   - View cash flow reports
-   - Analyze trends
-
-### ✅ Task Management
-
-Organize farm tasks:
-
-1. **Create Tasks**
-   - Set task title and description
-   - Assign priority and due date
-   - Assign to team members
-
-2. **Track Progress**
-   - Update task status
-   - Add comments
-   - Mark as complete
-
-3. **Task Categories**
-   - Organize by type
-   - Set recurring tasks
-   - Track completion rates
-
-### 🤖 Expert Chat
-
-Get AI-powered farm advice:
-
-1. **Ask Questions**
-   - Type your farm-related questions
-   - Get instant expert advice
-   - Access best practices
-
-2. **Upload Images**
-   - Share photos of crops or animals
-   - Get visual analysis
-   - Identify issues
-
-3. **Save Conversations**
-   - Keep track of advice
-   - Reference previous solutions
-   - Build knowledge base
-
-## 🔧 Troubleshooting
+## Database Setup
+
+### Production Database
+1. Create PostgreSQL database on Railway
+2. Update `DATABASE_URL` environment variable
+3. Run migrations: `npm run migrate`
+4. Seed initial data: `npm run seed`
+
+### Database Migrations
+- Automatically run on production deployment
+- Manual migration endpoint: `POST /api/migrate`
+- Requires `RAILWAY_MIGRATION_TOKEN` for security
+
+## Monitoring and Health Checks
+
+### Health Check Endpoints
+- Backend: `GET /api/health`
+- Frontend: Root URL accessibility check
+
+### Monitoring Setup
+1. Railway provides built-in monitoring
+2. Netlify provides analytics and monitoring
+3. GitHub Actions provide deployment status
+4. Optional: Slack notifications for deployments
+
+## Rollback Procedures
+
+### Backend Rollback
+1. Revert to previous commit
+2. Push to `main` branch
+3. GitHub Actions will redeploy automatically
+
+### Frontend Rollback
+1. Revert to previous commit
+2. Push to `main` branch
+3. Netlify will redeploy automatically
+
+### Database Rollback
+1. Access Railway dashboard
+2. Restore from backup
+3. Or manually run rollback migrations
+
+## Security Considerations
+
+### API Security
+- JWT tokens for authentication
+- CORS configuration
+- Input validation and sanitization
+- SQL injection prevention
+- Rate limiting
+
+### Frontend Security
+- HTTPS enforcement
+- Content Security Policy
+- XSS protection
+- Secure headers
+
+## Performance Optimization
+
+### Backend Optimization
+- Database indexing
+- Query optimization
+- Caching strategies
+- Connection pooling
+
+### Frontend Optimization
+- Image optimization
+- Code splitting
+- Lazy loading
+- Service worker caching
+- CDN usage
+
+## Troubleshooting
 
 ### Common Issues
 
-#### Build Failures
-```bash
-# Clean and rebuild
-./gradlew clean
-./gradlew :web:build
+#### Deployment Failures
+1. Check GitHub Actions logs
+2. Verify secrets configuration
+3. Check environment variables
+4. Review error messages
 
-# Check Java version
-java -version
+#### Database Issues
+1. Check connection string
+2. Verify database permissions
+3. Check migration status
+4. Review database logs
 
-# Verify Node.js installation
-node --version
-```
+#### Frontend Issues
+1. Check build logs
+2. Verify environment variables
+3. Check browser console
+4. Review network requests
 
-#### API Integration Issues
-- Verify API keys are correctly set
-- Check API quotas and limits
-- Ensure proper CORS configuration
+### Support Channels
+- GitHub Issues for bug reports
+- Slack channel for team communication
+- Documentation for common questions
 
-#### Performance Issues
-- Enable browser caching
-- Optimize images
-- Use CDN for static assets
+## Maintenance
 
-### Error Logs
+### Regular Tasks
+- Monitor deployment status
+- Review performance metrics
+- Update dependencies
+- Backup database
+- Review security logs
 
-Check the browser console for JavaScript errors:
-1. Open Developer Tools (F12)
-2. Go to Console tab
-3. Look for error messages
+### Updates
+- Dependencies: Weekly
+- Security patches: Immediately
+- Feature updates: As needed
+- Database migrations: With deployments
 
-### Support
+## Backup and Recovery
 
-For additional support:
-- Check the [GitHub Issues](https://github.com/your-username/smartfarm/issues)
-- Review the [API Documentation](API_DOCUMENTATION.md)
-- Contact the development team
+### Database Backups
+- Automated daily backups on Railway
+- Manual backup before major changes
+- Test restore procedures regularly
 
-## 🔌 API Integration
+### Code Backups
+- Git repository serves as primary backup
+- GitHub provides repository backup
+- Local development copies
 
-### Available APIs
+## Scaling Considerations
 
-1. **Weather API**
-   - Current weather conditions
-   - 7-day forecast
-   - Weather alerts
+### Backend Scaling
+- Railway auto-scaling
+- Database connection pooling
+- Caching layer implementation
+- Load balancing
 
-2. **Google Maps API**
-   - Field mapping
-   - Location services
-   - Route planning
+### Frontend Scaling
+- Netlify CDN
+- Image optimization
+- Code splitting
+- Service worker caching
 
-3. **OpenAI API**
-   - Expert chat functionality
-   - Image analysis
-   - Predictive analytics
+## Cost Optimization
 
-### Custom API Development
+### Railway Costs
+- Monitor resource usage
+- Optimize database queries
+- Use appropriate instance sizes
+- Implement caching
 
-To add custom APIs:
+### Netlify Costs
+- Optimize build times
+- Use CDN effectively
+- Monitor bandwidth usage
+- Implement image optimization
 
-1. **Create API Endpoints**
-```kotlin
-// Example API endpoint
-@GET("/api/crops")
-suspend fun getCrops(): List<Crop>
-```
-
-2. **Add to Frontend**
-```kotlin
-// Example API call
-val crops = apiService.getCrops()
-```
-
-3. **Update UI Components**
-```kotlin
-// Example UI update
-crops.forEach { crop ->
-    CropCard(crop)
-}
-```
-
-## 📱 Mobile Optimization
-
-### PWA Features
-
-The application includes Progressive Web App (PWA) features:
-
-- **Offline Support**: Access core features without internet
-- **Install Prompt**: Install as native app
-- **Push Notifications**: Receive alerts and updates
-- **Responsive Design**: Optimized for all screen sizes
-
-### Mobile Usage
-
-1. **Install PWA**
-   - Visit the web app on mobile
-   - Tap "Add to Home Screen"
-   - Access like a native app
-
-2. **Offline Mode**
-   - Core data cached locally
-   - Sync when connection restored
-   - Work without internet
-
-3. **Touch Optimization**
-   - Large touch targets
-   - Swipe gestures
-   - Mobile-friendly navigation
-
-## 🔒 Security Considerations
+## Compliance and Security
 
 ### Data Protection
-- All data encrypted in transit
-- Secure API key storage
-- Regular security updates
-
-### Access Control
-- Role-based permissions
-- User authentication
-- Audit logging
-
-### Privacy
 - GDPR compliance
-- Data retention policies
-- User consent management
+- Data encryption
+- Secure data transmission
+- Access controls
 
-## 📈 Performance Optimization
+### Security Audits
+- Regular dependency updates
+- Security scanning
+- Penetration testing
+- Code reviews
 
-### Loading Speed
-- Code splitting
-- Lazy loading
-- Image optimization
+## Documentation Updates
 
-### Caching Strategy
-- Browser caching
-- Service worker caching
-- CDN distribution
+### Keeping Documentation Current
+- Update with each deployment
+- Document configuration changes
+- Maintain troubleshooting guides
+- Update API documentation
 
-### Monitoring
-- Performance metrics
-- Error tracking
-- User analytics
-
-## 🚀 Future Enhancements
-
-### Planned Features
-- [ ] Advanced analytics dashboard
-- [ ] IoT device integration
-- [ ] Machine learning predictions
-- [ ] Multi-language support
-- [ ] Advanced reporting
-- [ ] Mobile app versions
-
-### Contributing
-- Fork the repository
-- Create feature branch
-- Submit pull request
-- Follow coding standards
-
----
-
-## 📞 Support & Contact
-
-For questions, issues, or feature requests:
-
-- **GitHub Issues**: [Create an issue](https://github.com/your-username/smartfarm/issues)
-- **Email**: support@smartfarm.com
-- **Documentation**: [Full Documentation](https://docs.smartfarm.com)
-
----
-
-**SmartFarm Web Application** - Making farm management smarter, one field at a time! 🌾🚜 
+### Version Control
+- Document version changes
+- Maintain changelog
+- Tag releases
+- Document breaking changes

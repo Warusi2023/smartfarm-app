@@ -1,0 +1,276 @@
+name: SmartFarm Frontend CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'web-project/**'
+      - '.github/workflows/frontend-ci-cd.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'web-project/**'
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  test:
+    name: Test Frontend
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: web-project/package-lock.json
+        
+    - name: Install dependencies
+      working-directory: ./web-project
+      run: npm ci
+      
+    - name: Run linting
+      working-directory: ./web-project
+      run: npm run lint:check || echo "Linting not configured"
+      
+    - name: Check code formatting
+      working-directory: ./web-project
+      run: npm run format:check || echo "Formatting not configured"
+      
+    - name: Install Playwright browsers
+      working-directory: ./web-project
+      run: npx playwright install --with-deps
+      
+    - name: Run E2E tests
+      working-directory: ./web-project
+      run: npm run test
+      
+    - name: Upload test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: frontend-test-results
+        path: web-project/test-results/
+        
+    - name: Upload test report
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: frontend-test-report
+        path: web-project/playwright-report/
+
+  accessibility-test:
+    name: Accessibility Testing
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: web-project/package-lock.json
+        
+    - name: Install dependencies
+      working-directory: ./web-project
+      run: npm ci
+      
+    - name: Install Playwright browsers
+      working-directory: ./web-project
+      run: npx playwright install --with-deps
+      
+    - name: Run accessibility tests
+      working-directory: ./web-project
+      run: npx playwright test --grep="accessibility"
+      
+    - name: Upload accessibility report
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: accessibility-report
+        path: web-project/playwright-report/
+
+  performance-test:
+    name: Performance Testing
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: web-project/package-lock.json
+        
+    - name: Install dependencies
+      working-directory: ./web-project
+      run: npm ci
+      
+    - name: Install Playwright browsers
+      working-directory: ./web-project
+      run: npx playwright install --with-deps
+      
+    - name: Run performance tests
+      working-directory: ./web-project
+      run: npx playwright test --grep="performance"
+      
+    - name: Upload performance report
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: performance-report
+        path: web-project/playwright-report/
+
+  build:
+    name: Build Frontend
+    runs-on: ubuntu-latest
+    needs: [test, accessibility-test, performance-test]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: web-project/package-lock.json
+        
+    - name: Install dependencies
+      working-directory: ./web-project
+      run: npm ci
+      
+    - name: Build application
+      working-directory: ./web-project
+      run: npm run build
+      
+    - name: Optimize images
+      uses: calibreapp/image-actions@main
+      with:
+        githubToken: ${{ secrets.GITHUB_TOKEN }}
+        compress: true
+        path: web-project/public/images
+      
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: frontend-build
+        path: web-project/public/
+
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: github.ref == 'refs/heads/develop'
+    environment: staging
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Download build artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: frontend-build
+        
+    - name: Deploy to Netlify Staging
+      uses: nwtgck/actions-netlify@v2.0
+      with:
+        publish-dir: './web-project/public'
+        production-branch: develop
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        deploy-message: "Deploy from GitHub Actions - Staging"
+        enable-pull-request-comment: true
+        enable-commit-comment: true
+        overwrites-pull-request-comment: true
+      env:
+        NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID_STAGING }}
+
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Download build artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: frontend-build
+        
+    - name: Deploy to Netlify Production
+      uses: nwtgck/actions-netlify@v2.0
+      with:
+        publish-dir: './web-project/public'
+        production-branch: main
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        deploy-message: "Deploy from GitHub Actions - Production"
+        enable-pull-request-comment: true
+        enable-commit-comment: true
+        overwrites-pull-request-comment: true
+      env:
+        NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        
+    - name: Health check
+      run: |
+        sleep 30
+        curl -f "${{ secrets.NETLIFY_PRODUCTION_URL }}" || exit 1
+
+  lighthouse-audit:
+    name: Lighthouse Audit
+    runs-on: ubuntu-latest
+    needs: [deploy-production]
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        
+    - name: Run Lighthouse CI
+      uses: treosh/lighthouse-ci-action@v10
+      with:
+        urls: |
+          ${{ secrets.NETLIFY_PRODUCTION_URL }}
+          ${{ secrets.NETLIFY_PRODUCTION_URL }}/dashboard.html
+        configPath: './web-project/.lighthouserc.json'
+        uploadArtifacts: true
+        temporaryPublicStorage: true
+
+  notify:
+    name: Notify Deployment
+    runs-on: ubuntu-latest
+    needs: [deploy-staging, deploy-production, lighthouse-audit]
+    if: always()
+    
+    steps:
+    - name: Notify Slack
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        channel: '#smartfarm-deployments'
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+      if: always()
+      continue-on-error: true

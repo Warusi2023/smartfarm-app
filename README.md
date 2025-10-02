@@ -1,288 +1,379 @@
-# 🌱 SmartFarm - Complete Agricultural Management Platform
+# SmartFarm - Agricultural Management System
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Platform](https://img.shields.io/badge/Platform-Web%20%7C%20Android%20%7C%20iOS-blue.svg)](https://smartfarm.app)
-[![Version](https://img.shields.io/badge/Version-1.0.0-green.svg)](https://github.com/Warusi2023/smartfarm-app)
+![SmartFarm Logo](web-project/public/images/logo.png)
 
-## 📖 Overview
+A comprehensive agricultural management system that helps farmers manage their farms, crops, livestock, and analytics through an intuitive web interface.
 
-SmartFarm is a comprehensive agricultural management platform that combines modern technology with traditional farming practices. Our platform provides farmers with intelligent tools for crop management, weather monitoring, soil analysis, and market insights.
+## 🌟 Features
 
-## ✨ Features
+### Farm Management
+- **Farm Registration**: Register and manage multiple farms
+- **Location Tracking**: GPS-based farm location management
+- **Farm Analytics**: Comprehensive farm performance metrics
+- **Multi-farm Support**: Manage multiple farms from a single dashboard
 
-### 🌾 Core Features
-- **Crop Management** - Track and manage your crops with intelligent recommendations
-- **Weather Integration** - Real-time weather data and forecasts
-- **Soil Analysis** - Monitor soil health and nutrient levels
-- **Market Insights** - Get real-time market prices and trends
-- **AI Chat Assistant** - Expert agricultural advice powered by AI
-- **Blockchain Integration** - Secure and transparent supply chain tracking
+### Crop Management
+- **Crop Planning**: Plan and track crop planting schedules
+- **Growth Monitoring**: Monitor crop growth stages and health
+- **Harvest Tracking**: Track harvest dates and yields
+- **Crop Analytics**: Detailed crop performance analysis
+- **Global Crop Database**: Access to extensive crop information
 
-### 📱 Multi-Platform Support
-- **Web Application** - Progressive Web App (PWA) for desktop and mobile browsers
-- **Android App** - Native Android application with offline capabilities
-- **iOS App** - Native iOS application (coming soon)
+### Livestock Management
+- **Livestock Tracking**: Track individual animals and herds
+- **Health Monitoring**: Monitor livestock health and vaccinations
+- **Breeding Records**: Track breeding and birth records
+- **Weight Tracking**: Monitor livestock weight and growth
+- **Livestock Analytics**: Comprehensive livestock performance metrics
 
-### 🔧 Technical Features
-- **Real-time Data Sync** - Cloud synchronization across all devices
-- **Offline Support** - Work without internet connection
-- **Multi-language Support** - Available in multiple languages
-- **Accessibility** - WCAG 2.1 AA compliant
-- **Security** - End-to-end encryption and secure authentication
+### Weather Integration
+- **Real-time Weather**: Current weather conditions for farm locations
+- **Weather Forecasts**: 7-day weather forecasts
+- **Weather Alerts**: Important weather notifications
+- **Weather Analytics**: Historical weather data analysis
+
+### Analytics & Reporting
+- **Dashboard Analytics**: Comprehensive farm performance overview
+- **Custom Reports**: Generate custom reports and exports
+- **Data Visualization**: Interactive charts and graphs
+- **Performance Metrics**: Key performance indicators (KPIs)
+- **Trend Analysis**: Historical data analysis and trends
+
+### User Management
+- **User Authentication**: Secure user registration and login
+- **Role-based Access**: Different access levels for users
+- **Profile Management**: User profile and preferences
+- **Password Security**: Secure password management
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 16+ and npm
-- Android Studio (for Android development)
+- Node.js 18+ 
+- npm 8+
 - Git
-- Railway account (for backend deployment)
-- Netlify account (for frontend deployment)
-
-### 📖 Documentation
-
-**Complete documentation available in `docs/` folder:**
-- **[Deployment Guide](docs/DEPLOYMENT_GUIDE.md)** - Railway + Netlify deployment
-- **[Implementation Plan](docs/IMPLEMENTATION_PLAN.md)** - Architecture & strategy
-- **[Implementation Complete](docs/IMPLEMENTATION_COMPLETE.md)** - Status summary
-- **[Interaction Audit](docs/interaction-audit.md)** - Feature analysis
-- **[Follow-ups](docs/followups.md)** - Remaining tasks
 
 ### Installation
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/Warusi2023/smartfarm-app.git
-   cd smartfarm-app
+   git clone https://github.com/your-username/smartfarm.git
+   cd smartfarm
    ```
 
-2. **Install dependencies**
+2. **Install backend dependencies**
    ```bash
-   # Backend API
    cd backend-api
    npm install
-   
-   # Frontend (no build step, static files)
+   ```
+
+3. **Install frontend dependencies**
+   ```bash
+   cd ../web-project
    npm install
    ```
 
-3. **Run the development server**
+4. **Set up environment variables**
    ```bash
-   # Web application
-   cd web-project
-   npm run dev
+   # Backend
+   cp backend-api/env.example backend-api/.env
+   # Edit backend-api/.env with your configuration
    
-   # Backend API
-   cd ../railway-minimal
-   npm start
+   # Frontend
+   cp web-project/env.example web-project/.env
+   # Edit web-project/.env with your configuration
    ```
 
-4. **Access the application**
-   - Web App: http://localhost:3000
-   - API: http://localhost:3001
+5. **Initialize the database**
+   ```bash
+   cd backend-api
+   npm run setup-db
+   npm run migrate
+   npm run seed
+   ```
 
-## 🏗️ Project Structure
+6. **Start the development servers**
+   ```bash
+   # Terminal 1 - Backend
+   cd backend-api
+   npm run dev
+   
+   # Terminal 2 - Frontend
+   cd web-project
+   npm run dev
+   ```
 
-```
-SmartFarm/
-├── 📁 web-project/              # Progressive Web App
-│   ├── 📁 src/                  # Source code
-│   ├── 📁 public/               # Static assets
-│   └── 📄 package.json          # Web dependencies
-├── 📁 android-project/          # Android application
-│   ├── 📁 app/                  # Android app source
-│   └── 📄 build.gradle          # Android build config
-├── 📁 railway-minimal/           # Backend API (Railway)
-│   ├── 📄 index.js              # Main server file
-│   ├── 📄 package.json          # API dependencies
-│   └── 📄 environment-variables.txt
-├── 📁 backend-api/              # Alternative backend
-├── 📁 advanced-features/         # Advanced features
-├── 📁 app-store-assets/          # App store assets
-├── 📁 screenshots/              # App screenshots
-├── 📄 railway.json              # Railway configuration
-├── 📄 railway.toml              # Railway configuration
-├── 📄 .railwayignore            # Railway ignore file
-└── 📄 README.md                 # This file
-```
+7. **Access the application**
+   - Frontend: http://localhost:3000
+   - Backend API: http://localhost:3001
+   - Dashboard: http://localhost:3000/dashboard.html
 
-## 🛠️ Technology Stack
+## 🏗️ Architecture
 
 ### Frontend
-- **Kotlin Multiplatform** - Cross-platform mobile development
-- **Compose for Web** - Modern web UI framework
-- **Progressive Web App (PWA)** - Web app with native features
-- **Material Design 3** - Modern design system
+- **Technology**: HTML5, CSS3, JavaScript (ES6+)
+- **Framework**: Bootstrap 5.3.2
+- **Charts**: Chart.js
+- **Maps**: Leaflet
+- **PDF Generation**: jsPDF
+- **QR Codes**: QRCode.js
+- **Service Worker**: Custom implementation for caching
 
 ### Backend
-- **Node.js** - JavaScript runtime
-- **Express.js** - Web framework
-- **JWT Authentication** - Secure authentication
-- **Railway** - Cloud deployment platform
+- **Runtime**: Node.js
+- **Framework**: Express.js
+- **Database**: SQLite (development), PostgreSQL (production)
+- **ORM**: Sequelize
+- **Authentication**: JWT
+- **Validation**: express-validator
+- **Security**: Helmet, CORS, bcrypt
 
-### Database
-- **In-Memory Database** - Fast development and testing
-- **PostgreSQL** - Production database (optional)
+### Deployment
+- **Backend**: Railway
+- **Frontend**: Netlify
+- **CI/CD**: GitHub Actions
+- **Monitoring**: Built-in health checks
 
-### DevOps
-- **Railway** - Backend deployment
-- **Netlify** - Frontend deployment
-- **GitHub Actions** - CI/CD pipeline
+## 📁 Project Structure
 
-## 📱 Platform Support
-
-| Platform | Status | Features |
-|----------|--------|----------|
-| **Web (PWA)** | ✅ Ready | Full feature set, offline support |
-| **Android** | ✅ Ready | Native app, offline sync |
-| **iOS** | 🚧 Coming Soon | Native app, offline sync |
-
-## 🔧 Development
-
-### Web Development
-```bash
-cd web-project
-npm run dev          # Start development server
-npm run build        # Build for production
-npm run test         # Run tests
-npm run lint         # Run linter
+```
+smartfarm/
+├── backend-api/                 # Backend API server
+│   ├── routes/                  # API route handlers
+│   ├── middleware/              # Custom middleware
+│   ├── database/                # Database models and migrations
+│   ├── lib/                     # Utility libraries
+│   ├── tests/                   # Test files
+│   └── server.js                # Main server file
+├── web-project/                 # Frontend application
+│   ├── public/                  # Static files
+│   │   ├── css/                 # Stylesheets
+│   │   ├── js/                  # JavaScript files
+│   │   ├── images/              # Images and assets
+│   │   └── dashboard.html       # Main dashboard
+│   └── tests/                   # E2E tests
+├── docs/                        # Documentation
+├── .github/                     # GitHub Actions workflows
+└── README.md                    # This file
 ```
 
-### Android Development
-```bash
-cd android-project
-./gradlew assembleDebug    # Build debug APK
-./gradlew installDebug     # Install on device
-./gradlew test             # Run tests
-```
+## 🔧 Configuration
 
-### Backend Development
-```bash
-cd railway-minimal
-npm start              # Start development server
-npm test              # Run tests
-npm run lint          # Run linter
-```
+### Environment Variables
 
-## 🚀 Deployment
-
-### Backend (Railway)
-1. Push code to GitHub
-2. Railway automatically deploys
-3. Set environment variables in Railway dashboard
-4. Access your API at `https://your-app.railway.app`
-
-### Frontend (Netlify)
-1. Build the web project: `npm run build`
-2. Deploy to Netlify
-3. Configure environment variables
-4. Access your app at `https://your-app.netlify.app`
-
-## 🔐 Environment Variables
-
-### Backend (Railway)
-```bash
-NODE_ENV=production
-PORT=3000
+#### Backend (.env)
+```env
+NODE_ENV=development
+PORT=3001
+DATABASE_URL=sqlite:smartfarm.db
 JWT_SECRET=your-secret-key
-CORS_ORIGIN=https://your-frontend-domain.com
-DATABASE_TYPE=memory
-API_VERSION=1.0.0
-API_NAME=SmartFarm API
-LOG_LEVEL=info
-HEALTH_CHECK_ENABLED=true
+CORS_ORIGIN=http://localhost:3000
+OPENWEATHER_API_KEY=your-api-key
 ```
 
-### Frontend (Netlify)
-```bash
-VITE_API_URL=https://your-backend.railway.app
+#### Frontend (.env)
+```env
+VITE_API_BASE_URL=http://localhost:3001/api
+VITE_OPENWEATHER_API_KEY=your-api-key
 VITE_APP_NAME=SmartFarm
-VITE_APP_VERSION=1.0.0
+VITE_ENVIRONMENT=development
 ```
 
 ## 🧪 Testing
 
-### Run Tests
+### Backend Testing
 ```bash
-# Web application
-cd web-project
-npm test
-
-# Backend API
-cd railway-minimal
-npm test
-
-# Android
-cd android-project
-./gradlew test
+cd backend-api
+npm run test              # Run all tests
+npm run test:unit         # Run unit tests
+npm run test:integration  # Run integration tests
+npm run test:coverage     # Run tests with coverage
 ```
 
-### Test Coverage
-- **Web**: Jest + Testing Library
-- **Backend**: Jest + Supertest
-- **Android**: JUnit + Espresso
+### Frontend Testing
+```bash
+cd web-project
+npm run test              # Run E2E tests
+npm run test:ui           # Run tests with UI
+npm run test:headed       # Run tests in headed mode
+```
 
-## 📚 Documentation
+## 🚀 Deployment
 
-- [API Documentation](docs/API.md)
-- [Deployment Guide](docs/DEPLOYMENT.md)
-- [Contributing Guide](docs/CONTRIBUTING.md)
-- [User Manual](docs/USER_MANUAL.md)
-- [Developer Guide](docs/DEVELOPER_GUIDE.md)
+### Production Deployment
+
+The application is configured for automatic deployment using GitHub Actions:
+
+1. **Backend**: Deploys to Railway on push to `main` branch
+2. **Frontend**: Deploys to Netlify on push to `main` branch
+
+### Manual Deployment
+
+#### Backend (Railway)
+1. Connect your Railway account
+2. Create a new project
+3. Connect your GitHub repository
+4. Set environment variables
+5. Deploy automatically on push
+
+#### Frontend (Netlify)
+1. Connect your Netlify account
+2. Create a new site
+3. Connect your GitHub repository
+4. Set build settings
+5. Deploy automatically on push
+
+## 📊 API Documentation
+
+### Authentication Endpoints
+- `POST /api/auth/register` - Register new user
+- `POST /api/auth/login` - User login
+- `GET /api/auth/profile` - Get user profile
+- `POST /api/auth/change-password` - Change password
+
+### Farm Endpoints
+- `GET /api/farms` - Get all farms
+- `GET /api/farms/:id` - Get specific farm
+- `POST /api/farms` - Create new farm
+- `PUT /api/farms/:id` - Update farm
+- `DELETE /api/farms/:id` - Delete farm
+- `GET /api/farms/analytics` - Get farm analytics
+
+### Crop Endpoints
+- `GET /api/crops` - Get all crops
+- `GET /api/crops/:id` - Get specific crop
+- `POST /api/crops` - Create new crop
+- `PUT /api/crops/:id` - Update crop
+- `DELETE /api/crops/:id` - Delete crop
+- `GET /api/crops/analytics` - Get crop analytics
+
+### Livestock Endpoints
+- `GET /api/livestock` - Get all livestock
+- `GET /api/livestock/:id` - Get specific livestock
+- `POST /api/livestock` - Create new livestock
+- `PUT /api/livestock/:id` - Update livestock
+- `DELETE /api/livestock/:id` - Delete livestock
+- `GET /api/livestock/analytics` - Get livestock analytics
+
+### Health Check
+- `GET /api/health` - Application health status
+
+## 🔒 Security
+
+### Implemented Security Features
+- **Authentication**: JWT-based authentication
+- **Authorization**: Role-based access control
+- **Input Validation**: Comprehensive input validation and sanitization
+- **SQL Injection Prevention**: Parameterized queries and validation
+- **XSS Protection**: Input sanitization and CSP headers
+- **CSRF Protection**: CSRF tokens and same-site cookies
+- **Rate Limiting**: API rate limiting
+- **Security Headers**: Helmet.js security headers
+- **Password Security**: bcrypt password hashing
+
+### Security Best Practices
+- Regular dependency updates
+- Security scanning in CI/CD
+- Environment variable protection
+- Secure database connections
+- HTTPS enforcement
+
+## 🎨 UI/UX Features
+
+### Responsive Design
+- Mobile-first approach
+- Bootstrap 5 responsive grid
+- Touch-friendly interface
+- Adaptive layouts
+
+### Accessibility
+- ARIA labels and roles
+- Keyboard navigation
+- Screen reader support
+- High contrast support
+- Focus indicators
+
+### Performance
+- Lazy loading
+- Image optimization
+- Service worker caching
+- Code splitting
+- Performance monitoring
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see our [Contributing Guide](docs/CONTRIBUTING.md) for details.
-
-### Development Workflow
+### Development Setup
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Add tests
-5. Submit a pull request
+4. Add tests for new features
+5. Ensure all tests pass
+6. Submit a pull request
 
-## 📄 License
+### Code Standards
+- Follow ESLint configuration
+- Use Prettier for formatting
+- Write comprehensive tests
+- Document new features
+- Follow semantic versioning
+
+### Pull Request Process
+1. Update documentation
+2. Add tests for new features
+3. Ensure CI/CD passes
+4. Request code review
+5. Address feedback
+6. Merge when approved
+
+## 📝 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🆘 Support
-
-- **Documentation**: [docs/](docs/)
-- **Issues**: [GitHub Issues](https://github.com/Warusi2023/smartfarm-app/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/Warusi2023/smartfarm-app/discussions)
-- **Email**: support@smartfarm.app
-
-## 🗺️ Roadmap
-
-### Version 1.1 (Q2 2024)
-- [ ] iOS application
-- [ ] Advanced analytics dashboard
-- [ ] IoT device integration
-- [ ] Multi-tenant support
-
-### Version 1.2 (Q3 2024)
-- [ ] Machine learning recommendations
-- [ ] Advanced weather modeling
-- [ ] Supply chain optimization
-- [ ] Mobile offline sync improvements
-
 ## 🙏 Acknowledgments
 
-- **OpenWeather API** - Weather data
-- **Google Maps API** - Location services
-- **OpenAI API** - AI chat assistant
-- **Material Design** - UI components
-- **Railway** - Backend hosting
-- **Netlify** - Frontend hosting
+- Bootstrap team for the excellent CSS framework
+- Chart.js team for the powerful charting library
+- Leaflet team for the mapping functionality
+- All contributors and users of SmartFarm
 
-## 📊 Project Status
+## 📞 Support
 
-![Project Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen.svg)
-![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen.svg)
-![Test Coverage](https://img.shields.io/badge/Coverage-85%25-brightgreen.svg)
+### Getting Help
+- Check the [documentation](docs/)
+- Search [GitHub Issues](https://github.com/your-username/smartfarm/issues)
+- Join our [community discussions](https://github.com/your-username/smartfarm/discussions)
+
+### Reporting Issues
+- Use GitHub Issues for bug reports
+- Include steps to reproduce
+- Provide system information
+- Include error logs
+
+### Feature Requests
+- Use GitHub Discussions for feature requests
+- Describe the use case
+- Provide mockups if possible
+- Discuss implementation approach
+
+## 🔮 Roadmap
+
+### Upcoming Features
+- [ ] Mobile app (React Native)
+- [ ] IoT device integration
+- [ ] Advanced analytics and AI
+- [ ] Multi-language support
+- [ ] Offline functionality
+- [ ] Advanced reporting
+- [ ] Integration with agricultural APIs
+- [ ] Machine learning predictions
+
+### Version History
+- **v1.0.0** - Initial release with core features
+- **v1.1.0** - Performance optimizations and UX improvements
+- **v1.2.0** - Advanced analytics and reporting
+- **v2.0.0** - Mobile app and IoT integration (planned)
 
 ---
 
-**Made with ❤️ for farmers worldwide**
+**SmartFarm** - Empowering farmers with technology for better agricultural management.
 
-[🌐 Website](https://smartfarm.app) | [📱 Download](https://smartfarm.app/download) | [💬 Support](https://smartfarm.app/support)
+Made with ❤️ for the farming community.

@@ -1,60 +1,68 @@
 [build]
   publish = "public"
-  command = "echo 'Static site - no build needed'"
+  command = "echo 'Static build - no build step required'"
 
 [build.environment]
   NODE_VERSION = "18"
 
-# Headers for Content Security Policy and ads
-[[headers]]
-  for = "/*"
-  [headers.values]
-    Content-Security-Policy = """
-      default-src 'self';
-      img-src 'self' https://*.ggpht.com https://*.googleusercontent.com https://*.googlesyndication.com https://images.unsplash.com https://*.openstreetmap.org https://*.tile.openstreetmap.org data:;
-      script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagservices.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com;
-      frame-src https://*.google.com https://*.doubleclick.net https://*.googlesyndication.com;
-      connect-src 'self' https://smartfarm-app-production.up.railway.app https://api.openweathermap.org https://cdn.jsdelivr.net https://cdnjs.cloudflare.com;
-      style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com;
-      font-src 'self' https://cdnjs.cloudflare.com;
-    """
+[[redirects]]
+  from = "/api/*"
+  to = "https://smartfarm-backend.railway.app/api/:splat"
+  status = 200
+  force = true
 
-# Specific headers for HTML files
-[[headers]]
-  for = "*.html"
-  [headers.values]
-    X-Frame-Options = "DENY"
-    X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "strict-origin-when-cross-origin"
-
-# Cache static assets
-[[headers]]
-  for = "/js/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
-
-[[headers]]
-  for = "/css/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
-
-[[headers]]
-  for = "/images/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
-
-# Redirects for SPA routing
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
 
-# Environment-specific redirects
 [context.production]
   command = "echo 'Production build'"
 
-[context.deploy-preview]
-  command = "echo 'Preview build'"
+[context.staging]
+  command = "echo 'Staging build'"
 
-[context.branch-deploy]
-  command = "echo 'Branch deploy'"
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.openweathermap.org https://smartfarm-backend.railway.app;"
+
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+    Service-Worker-Allowed = "/"
+
+[[headers]]
+  for = "*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "*.png"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "*.jpg"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "*.svg"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[dev]
+  command = "npm run dev"
+  port = 3000
+  publish = "public"
