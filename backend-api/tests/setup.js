@@ -1,32 +1,84 @@
-// Jest Test Setup
-// Runs before all tests
+/**
+ * Jest Test Setup
+ * Configures the test environment for SmartFarm backend tests
+ */
 
-// Set test environment
-process.env.NODE_ENV = 'test';
-process.env.JWT_SECRET = 'test-secret-key-for-jest-testing-only';
-process.env.LOG_LEVEL = 'error'; // Reduce noise during tests
-process.env.DB_TYPE = 'sqlite';
-process.env.DB_PATH = ':memory:'; // Use in-memory database for tests
+const { initializeDatabase, closeDatabase } = require('../database/init');
 
-// Mock console methods to reduce noise
-global.console = {
-    ...console,
-    log: jest.fn(),
-    debug: jest.fn(),
-    info: jest.fn(),
-    warn: jest.fn(),
-    // Keep error for debugging
-    error: console.error,
-};
-
-// Global test timeout
-jest.setTimeout(30000);
+// Setup test database before all tests
+beforeAll(async () => {
+  // Set test environment
+  process.env.NODE_ENV = 'test';
+  process.env.DATABASE_URL = 'sqlite:test.db';
+  
+  try {
+    await initializeDatabase();
+    console.log('Test database initialized');
+  } catch (error) {
+    console.error('Failed to initialize test database:', error);
+    throw error;
+  }
+});
 
 // Cleanup after all tests
 afterAll(async () => {
-    // Close any open database connections
-    const db = require('../database/init');
-    if (db && db.close) {
-        await db.close();
-    }
+  try {
+    await closeDatabase();
+    console.log('Test database closed');
+  } catch (error) {
+    console.error('Failed to close test database:', error);
+  }
 });
+
+// Global test utilities
+global.testUtils = {
+  // Generate test data
+  createTestUser: () => ({
+    username: `testuser_${Date.now()}`,
+    email: `test_${Date.now()}@example.com`,
+    password: 'TestPassword123!',
+    firstName: 'Test',
+    lastName: 'User'
+  }),
+
+  createTestFarm: () => ({
+    name: `Test Farm ${Date.now()}`,
+    location: 'Test Location',
+    size: 100.5,
+    type: 'Mixed',
+    description: 'Test farm description'
+  }),
+
+  createTestCrop: (farmId) => ({
+    name: `Test Crop ${Date.now()}`,
+    type: 'Vegetable',
+    farmId: farmId,
+    plantedDate: new Date().toISOString().split('T')[0],
+    expectedHarvestDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    area: 10.5,
+    description: 'Test crop description'
+  }),
+
+  createTestLivestock: (farmId) => ({
+    name: `Test Livestock ${Date.now()}`,
+    type: 'Cattle',
+    farmId: farmId,
+    breed: 'Holstein',
+    birthDate: new Date().toISOString().split('T')[0],
+    weight: 500,
+    description: 'Test livestock description'
+  }),
+
+  // Wait for async operations
+  wait: (ms) => new Promise(resolve => setTimeout(resolve, ms)),
+
+  // Generate random string
+  randomString: (length = 10) => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  }
+};

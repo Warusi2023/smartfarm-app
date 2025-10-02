@@ -1,0 +1,19 @@
+{
+  "reporter": ["text", "html", "lcov"],
+  "report-dir": "coverage",
+  "temp-dir": ".nyc_output",
+  "all": true,
+  "check-coverage": true,
+  "lines": 70,
+  "functions": 70,
+  "branches": 70,
+  "statements": 70,
+  "exclude": [
+    "coverage/**",
+    "tests/**",
+    "node_modules/**",
+    "*.config.js",
+    "setup-*.js",
+    "railway-server.js"
+  ]
+}
