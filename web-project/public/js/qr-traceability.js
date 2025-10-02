@@ -54,7 +54,7 @@ class QRTraceability {
         
         const tryNextSource = () => {
             if (currentSource >= cdnSources.length) {
-                console.error('All QR Code library sources failed, using fallback');
+                console.warn('All QR Code library sources failed, using fallback');
                 this.initializeQRSystemWithFallback();
                 return;
             }

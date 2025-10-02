@@ -132,16 +132,20 @@ class SmartFarmLogger {
                     stack: args.find(arg => arg instanceof Error)?.stack
                 };
 
-                // Send to backend error tracking endpoint
-                const response = await fetch(window.SmartFarmConfig.getApiUrl('/errors'), {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(errorData)
-                });
-                
-                if (!response.ok) {
-                    // Silently fail if error tracking endpoint doesn't exist
-                    return;
+                // Send to backend error tracking endpoint (with error handling)
+                try {
+                    const response = await fetch(window.SmartFarmConfig.getApiUrl('/errors'), {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(errorData)
+                    });
+                    
+                    if (!response.ok) {
+                        console.warn('Error tracking endpoint not available:', response.status);
+                    }
+                } catch (error) {
+                    // Silently handle error tracking failures to avoid infinite loops
+                    console.warn('Error tracking failed:', error.message);
                 }
             }
         } catch (error) {
