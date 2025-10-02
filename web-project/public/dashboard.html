@@ -31,6 +31,7 @@
     <script src="js/user-roles.js"></script>
     <script src="js/log.js"></script>
     <script src="js/error-boundary.js"></script>
+    <script src="js/api-service.js"></script>
     <script src="js/ai-seed-predictor.js"></script>
     <script src="js/intelligent-weeding.js"></script>
     <script src="js/qr-traceability.js"></script>
@@ -2605,7 +2606,7 @@
         }
 
         // Initialize dashboard
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
             initializeGlobalDatabase();
             initializeDashboard();
             initializeWeatherService();
@@ -2614,6 +2615,11 @@
             
             // Initialize URL routing
             initializeURLRouting();
+            
+            // Load data from API
+            await loadFarmData();
+            await loadCropsData();
+            await loadLivestockData();
             
             // Initialize ads
             initializeAds();
@@ -5353,7 +5359,7 @@
         }
 
         // Data management functions
-        function saveFarmData() {
+        async function saveFarmData() {
             // Get form values
             const farmName = document.getElementById('farmName').value.trim();
             const farmLocation = document.getElementById('farmLocation').value.trim();
@@ -5389,55 +5395,157 @@
                 return;
             }
 
-            // Create farm data object
-            const farmData = {
-                name: farmName,
-                location: farmLocation,
-                area: parseFloat(farmArea),
-                type: farmType,
-                lastUpdated: new Date().toISOString()
-            };
-            
+            // Show loading state
+            const submitButton = document.querySelector('button[onclick="saveFarmData()"]');
+            const originalText = submitButton.innerHTML;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Saving...';
+            submitButton.disabled = true;
+
             try {
-                // Save to localStorage
-                localStorage.setItem('farmData', JSON.stringify(farmData));
-                
-                // Show success message
-                showSuccessMessage('Farm data saved successfully!');
-                
-                // Log the saved data
-                console.log('Farm data saved:', farmData);
-                
-                // Optional: Send to API if available
-                // saveFarmDataToAPI(farmData);
-                
+                // Create farm data object
+                const farmData = {
+                    name: farmName,
+                    location: farmLocation,
+                    size: parseFloat(farmArea),
+                    type: farmType,
+                    description: document.getElementById('farmDescription')?.value?.trim() || ''
+                };
+
+                // Call API to create farm
+                const response = await window.SmartFarmAPI.createFarm(farmData);
+
+                if (response.success) {
+                    // Success - update UI
+                    showSuccessMessage('Farm created successfully!');
+                    
+                    // Clear form
+                    document.getElementById('farmName').value = '';
+                    document.getElementById('farmLocation').value = '';
+                    document.getElementById('farmArea').value = '';
+                    document.getElementById('farmType').value = '';
+                    if (document.getElementById('farmDescription')) {
+                        document.getElementById('farmDescription').value = '';
+                    }
+
+                    // Refresh farm data
+                    await loadFarmData();
+                } else {
+                    showErrorMessage(response.error || 'Failed to create farm');
+                }
             } catch (error) {
                 console.error('Error saving farm data:', error);
-                showInfoDialog('Error', 'Error saving farm data. Please try again.', 'OK');
+                showErrorMessage('An error occurred while saving farm data');
+            } finally {
+                // Restore button state
+                submitButton.innerHTML = originalText;
+                submitButton.disabled = false;
             }
         }
 
+        // Helper functions for API integration
         function showSuccessMessage(message) {
-            // Create a more elegant success notification
-            const notification = document.createElement('div');
-            notification.className = 'alert alert-success alert-dismissible fade show';
-            notification.style.position = 'fixed';
-            notification.style.top = '20px';
-            notification.style.right = '20px';
-            notification.style.zIndex = '9999';
-            notification.innerHTML = `
-                <i class="fas fa-check-circle me-2"></i>${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            `;
-            
-            document.body.appendChild(notification);
-            
-            // Auto-remove after 3 seconds
-            setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.parentNode.removeChild(notification);
+            if (window.SmartFarmAPI && window.SmartFarmAPI.showSuccessMessage) {
+                window.SmartFarmAPI.showSuccessMessage(message);
+            } else {
+                // Fallback notification
+                const notification = document.createElement('div');
+                notification.className = 'alert alert-success alert-dismissible fade show';
+                notification.style.position = 'fixed';
+                notification.style.top = '20px';
+                notification.style.right = '20px';
+                notification.style.zIndex = '9999';
+                notification.innerHTML = `
+                    <i class="fas fa-check-circle me-2"></i>${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                
+                document.body.appendChild(notification);
+                
+                // Auto-remove after 3 seconds
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 3000);
+            }
+        }
+
+        function showErrorMessage(message) {
+            if (window.SmartFarmAPI && window.SmartFarmAPI.showErrorMessage) {
+                window.SmartFarmAPI.showErrorMessage(message);
+            } else {
+                // Fallback notification
+                const notification = document.createElement('div');
+                notification.className = 'alert alert-danger alert-dismissible fade show';
+                notification.style.position = 'fixed';
+                notification.style.top = '20px';
+                notification.style.right = '20px';
+                notification.style.zIndex = '9999';
+                notification.innerHTML = `
+                    <i class="fas fa-exclamation-circle me-2"></i>${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                
+                document.body.appendChild(notification);
+                
+                // Auto-remove after 5 seconds
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 5000);
+            }
+        }
+
+        // Load farm data from API
+        async function loadFarmData() {
+            try {
+                const response = await window.SmartFarmAPI.getFarms();
+                if (response.success) {
+                    // Update farm data in UI
+                    updateFarmDisplay(response.data);
+                } else {
+                    console.error('Failed to load farm data:', response.error);
                 }
-            }, 3000);
+            } catch (error) {
+                console.error('Error loading farm data:', error);
+            }
+        }
+
+        function updateFarmDisplay(farms) {
+            // Update farm statistics
+            const farmStats = document.querySelector('.farm-stats');
+            if (farmStats && farms.length > 0) {
+                const totalArea = farms.reduce((sum, farm) => sum + (farm.size || 0), 0);
+                farmStats.innerHTML = `
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="stat-card">
+                                <h3>${farms.length}</h3>
+                                <p>Total Farms</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card">
+                                <h3>${totalArea.toFixed(1)}</h3>
+                                <p>Total Area (acres)</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card">
+                                <h3>${farms.filter(f => f.status === 'active').length}</h3>
+                                <p>Active Farms</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card">
+                                <h3>${(totalArea / farms.length).toFixed(1)}</h3>
+                                <p>Avg Area (acres)</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
         }
 
         function updateAnalyticsCharts() {
@@ -6071,7 +6179,7 @@
             });
         }
 
-        function saveNewLivestock() {
+        async function saveNewLivestock() {
             const type = document.getElementById('livestockType').value;
             const breed = document.getElementById('livestockBreed').value;
             const quantity = parseInt(document.getElementById('livestockQuantity').value);
@@ -6087,46 +6195,72 @@
                 return;
             }
 
-            // Process ear tags
-            const earTags = earTagsText ? earTagsText.split(',').map(tag => tag.trim()).filter(tag => tag) : [];
+            // Show loading state
+            const submitButton = document.querySelector('button[onclick="saveNewLivestock()"]');
+            const originalText = submitButton.innerHTML;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Adding...';
+            submitButton.disabled = true;
 
-            // Create GPS location if coordinates provided
-            let gpsLocation = null;
-            if (gpsLat && gpsLng) {
-                gpsLocation = {
-                    lat: gpsLat,
-                    lng: gpsLng,
-                    lastUpdate: new Date().toISOString()
+            try {
+                // Get the first farm ID (in a real app, user would select farm)
+                const farmsResponse = await window.SmartFarmAPI.getFarms();
+                if (!farmsResponse.success || !farmsResponse.data.length) {
+                    showErrorMessage('Please create a farm first before adding livestock');
+                    return;
+                }
+
+                const farmId = farmsResponse.data[0].id;
+                const today = new Date().toISOString().split('T')[0];
+
+                // Process ear tags
+                const earTags = earTagsText ? earTagsText.split(',').map(tag => tag.trim()).filter(tag => tag) : [];
+
+                const livestockData = {
+                    name: `${breed} #${quantity}`,
+                    type: type,
+                    farmId: farmId,
+                    breed: breed,
+                    birthDate: today, // Default to today, user can edit later
+                    weight: null,
+                    description: healthNotes || 'No notes'
                 };
-            }
 
-            const newLivestock = {
-                id: Date.now(),
-                type: type,
-                breed: breed,
-                quantity: quantity,
-                location: location,
-                status: status,
-                earTags: earTags,
-                gpsLocation: gpsLocation,
-                weightRecords: [],
-                immunizations: [],
-                healthNotes: healthNotes || 'No notes'
-            };
-            
-            livestock.push(newLivestock);
-            saveLivestockData();
-            renderLivestockTable();
-            updateAnalyticsCharts(); // Update charts with new data
-            
-            // Close modal
-            const modal = document.querySelector('.modal');
-            if (modal) {
-                const bsModal = bootstrap.Modal.getInstance(modal);
-                bsModal.hide();
+                const response = await window.SmartFarmAPI.createLivestock(livestockData);
+
+                if (response.success) {
+                    showSuccessMessage('Livestock added successfully!');
+                    
+                    // Clear form
+                    document.getElementById('livestockType').value = '';
+                    document.getElementById('livestockBreed').value = '';
+                    document.getElementById('livestockQuantity').value = '';
+                    document.getElementById('livestockLocation').value = '';
+                    document.getElementById('livestockStatus').value = '';
+                    document.getElementById('earTags').value = '';
+                    document.getElementById('gpsLat').value = '';
+                    document.getElementById('gpsLng').value = '';
+                    document.getElementById('healthNotes').value = '';
+
+                    // Refresh livestock data
+                    await loadLivestockData();
+                } else {
+                    showErrorMessage(response.error || 'Failed to add livestock');
+                }
+            } catch (error) {
+                console.error('Error adding livestock:', error);
+                showErrorMessage('An error occurred while adding livestock');
+            } finally {
+                // Restore button state
+                submitButton.innerHTML = originalText;
+                submitButton.disabled = false;
+
+                // Close modal
+                const modal = document.querySelector('.modal');
+                if (modal) {
+                    const bsModal = bootstrap.Modal.getInstance(modal);
+                    bsModal.hide();
+                }
             }
-            
-            showSuccessMessage('Livestock added successfully!');
         }
 
         function editLivestock(id) {
@@ -11972,34 +12106,108 @@ INVENTORY SUMMARY:
             addNewCropWithData(cropName, scientificName, category);
         }
 
-        function addNewCropWithData(cropName, scientificName, category) {
+        async function addNewCropWithData(cropName, scientificName, category) {
             console.log('Adding new crop with data:', { cropName, scientificName, category });
             
             try {
-                const newCrop = {
-                    id: Date.now(),
+                // Get the first farm ID (in a real app, user would select farm)
+                const farmsResponse = await window.SmartFarmAPI.getFarms();
+                if (!farmsResponse.success || !farmsResponse.data.length) {
+                    showNotification('Please create a farm first before adding crops', 'warning');
+                    return;
+                }
+
+                const farmId = farmsResponse.data[0].id;
+                const today = new Date().toISOString().split('T')[0];
+                const harvestDate = new Date();
+                harvestDate.setMonth(harvestDate.getMonth() + 3); // Default 3 months harvest
+                const expectedHarvest = harvestDate.toISOString().split('T')[0];
+
+                const cropData = {
                     name: cropName,
-                    scientific: scientificName,
-                    category: category,
-                    variety: '',
-                    plantingDate: new Date().toISOString().split('T')[0],
-                    expectedHarvest: '',
-                    field: 'Field A',
+                    type: category,
+                    farmId: farmId,
+                    plantedDate: today,
+                    expectedHarvestDate: expectedHarvest,
                     area: 1,
-                    status: 'Growing',
-                    notes: `Added from global database - ${globalCropDatabase[category] ? globalCropDatabase[category].name : category}`
+                    description: `Added from global database - ${globalCropDatabase[category] ? globalCropDatabase[category].name : category}`
                 };
-                
-                crops.push(newCrop);
-                saveCropsData();
-                renderCropsTable();
-                updateAnalyticsCharts();
-                
-                // Show success notification
-                showNotification(`Successfully added ${cropName} to your farm!`, 'success');
+
+                const response = await window.SmartFarmAPI.createCrop(cropData);
+
+                if (response.success) {
+                    // Show success notification
+                    showNotification(`Successfully added ${cropName} to your farm!`, 'success');
+                    
+                    // Refresh crop data
+                    await loadCropsData();
+                } else {
+                    showNotification(`Error adding ${cropName}: ${response.error}`, 'danger');
+                }
             } catch (error) {
                 console.error('Error adding crop:', error);
                 showNotification(`Error adding ${cropName}: ${error.message}`, 'danger');
+            }
+        }
+
+        // Load crops data from API
+        async function loadCropsData() {
+            try {
+                const response = await window.SmartFarmAPI.getCrops();
+                if (response.success) {
+                    // Update crops array for backward compatibility
+                    crops = response.data.map(crop => ({
+                        id: crop.id,
+                        name: crop.name,
+                        type: crop.type,
+                        plantedDate: crop.plantedDate,
+                        harvestDate: crop.expectedHarvestDate,
+                        area: crop.area,
+                        status: crop.status,
+                        createdAt: crop.createdAt
+                    }));
+                    
+                    // Update UI
+                    renderCropsTable();
+                    updateAnalyticsCharts();
+                } else {
+                    console.error('Failed to load crops data:', response.error);
+                }
+            } catch (error) {
+                console.error('Error loading crops data:', error);
+            }
+        }
+
+        // Load livestock data from API
+        async function loadLivestockData() {
+            try {
+                const response = await window.SmartFarmAPI.getLivestock();
+                if (response.success) {
+                    // Update livestock array for backward compatibility
+                    livestock = response.data.map(item => ({
+                        id: item.id,
+                        name: item.name,
+                        type: item.type,
+                        breed: item.breed,
+                        quantity: 1, // API doesn't have quantity, default to 1
+                        location: 'Barn A', // Default location
+                        status: item.status,
+                        earTags: [`ET${item.id.slice(-6)}`], // Generate ear tag from ID
+                        gpsLocation: null,
+                        weightRecords: [],
+                        immunizations: [],
+                        healthNotes: item.description || 'No notes',
+                        createdAt: item.createdAt
+                    }));
+                    
+                    // Update UI
+                    renderLivestockTable();
+                    updateAnalyticsCharts();
+                } else {
+                    console.error('Failed to load livestock data:', response.error);
+                }
+            } catch (error) {
+                console.error('Error loading livestock data:', error);
             }
         }
 
@@ -12392,26 +12600,36 @@ INVENTORY SUMMARY:
                     }
                 }
                 
-                // Add livestock directly
-                const newLivestock = {
-                    id: Date.now(),
+                // Add livestock via API
+                const farmsResponse = await window.SmartFarmAPI.getFarms();
+                if (!farmsResponse.success || !farmsResponse.data.length) {
+                    showNotification('Please create a farm first before adding livestock', 'warning');
+                    return;
+                }
+
+                const farmId = farmsResponse.data[0].id;
+                const today = new Date().toISOString().split('T')[0];
+
+                const livestockData = {
+                    name: livestockName,
                     type: category,
+                    farmId: farmId,
                     breed: livestockName,
-                    quantity: 1,
-                    earTags: `ET${Date.now()}`,
-                    location: 'Barn A',
-                    gps: '0.0000, 0.0000',
-                    lastWeight: 0,
-                    status: 'Healthy',
-                    healthNotes: `Added from global database - ${globalLivestockDatabase[category] ? globalLivestockDatabase[category].name : category}`
+                    birthDate: today,
+                    weight: null,
+                    description: `Added from global database - ${globalLivestockDatabase[category] ? globalLivestockDatabase[category].name : category}`
                 };
-                
-                livestock.push(newLivestock);
-                saveLivestockData();
-                renderLivestockTable();
-                updateAnalyticsCharts();
-                
-                showNotification(`Successfully added ${livestockName} to your farm!`, 'success');
+
+                const response = await window.SmartFarmAPI.createLivestock(livestockData);
+
+                if (response.success) {
+                    showNotification(`Successfully added ${livestockName} to your farm!`, 'success');
+                    
+                    // Refresh livestock data
+                    await loadLivestockData();
+                } else {
+                    showNotification(`Error adding ${livestockName}: ${response.error}`, 'danger');
+                }
             } catch (error) {
                 console.error('Error adding livestock:', error);
                 showNotification(`Error adding ${livestockName}: ${error.message}`, 'danger');
