@@ -48,6 +48,13 @@ const environment = {
     FEATURE_AI_ADVISORY: process.env.FEATURE_AI_ADVISORY !== 'false',
     FEATURE_BYPRODUCTS: process.env.FEATURE_BYPRODUCTS !== 'false',
     FEATURE_SUBSCRIPTIONS: process.env.FEATURE_SUBSCRIPTIONS !== 'false',
+    FEATURE_ADS: process.env.FEATURE_ADS !== 'false',
+    
+    // Ads Configuration
+    ADSENSE_ENABLED: process.env.ADSENSE_ENABLED === 'true',
+    ADSENSE_CLIENT_ID: process.env.ADSENSE_CLIENT_ID,
+    AFFILIATE_ENABLED: process.env.AFFILIATE_ENABLED === 'true',
+    AFFILIATE_TAG: process.env.AFFILIATE_TAG,
     
     // Computed
     IS_PRODUCTION: process.env.NODE_ENV === 'production',

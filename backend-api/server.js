@@ -48,6 +48,7 @@ app.use('/api/subscriptions', authenticateToken, require('./routes/subscriptions
 app.use('/api/byproducts', authenticateToken, require('./routes/byproducts'));
 app.use('/api/ai-advisory', authenticateToken, require('./routes/ai-advisory'));
 app.use('/api/weather', require('./routes/weather')); // Public endpoint, no auth required
+app.use('/api/ads', require('./routes/ads')); // Public endpoint, no auth required
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
