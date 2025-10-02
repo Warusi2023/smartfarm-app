@@ -75,13 +75,17 @@ class LocationSelector {
             </div>
         `;
 
-        if (document.body) {
-            document.body.insertAdjacentHTML('beforeend', selectorHTML);
-        } else {
-            // Wait for DOM to be ready
+        // Ensure DOM is ready before inserting HTML
+        if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', () => {
-                document.body.insertAdjacentHTML('beforeend', selectorHTML);
+                if (document.body) {
+                    document.body.insertAdjacentHTML('beforeend', selectorHTML);
+                }
             });
+        } else {
+            if (document.body) {
+                document.body.insertAdjacentHTML('beforeend', selectorHTML);
+            }
         }
     }
 
@@ -358,7 +362,14 @@ class LocationSelector {
 }
 
 // Create global location selector instance
-window.locationSelector = new LocationSelector();
+// Initialize location selector when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        window.locationSelector = new LocationSelector();
+    });
+} else {
+    window.locationSelector = new LocationSelector();
+}
 
 // Add CSS styles
 const locationSelectorStyles = `

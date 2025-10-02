@@ -109,7 +109,7 @@ class SmartFarmEnvironment {
     }
 
     get isDevelopment() {
-        return this.config.IS_DEVELOPMENT;
+        return this.config && this.config.IS_DEVELOPMENT || false;
     }
 
     get isDemo() {

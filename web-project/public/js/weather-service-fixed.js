@@ -41,7 +41,6 @@ class WeatherService {
         // Try to get API key from various sources
         return window.VITE_OPENWEATHER_API_KEY || 
                window.OPENWEATHER_API_KEY || 
-               process.env.VITE_OPENWEATHER_API_KEY ||
                null;
     }
 

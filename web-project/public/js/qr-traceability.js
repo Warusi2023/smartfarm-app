@@ -966,3 +966,6 @@ const qrStyles = `
 
 // Inject styles
 document.head.insertAdjacentHTML('beforeend', qrStyles);
+
+// Close the QRTraceability class
+}

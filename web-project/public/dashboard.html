@@ -5347,7 +5347,7 @@
             }
             
             // Add active class to clicked nav link if event exists
-            if (event && event.target) {
+            if (event && event.target && event.target.classList) {
                 event.target.classList.add('active');
             }
         }
@@ -12624,12 +12624,7 @@ INVENTORY SUMMARY:
         window.showNotification = showNotification;
     </script>
 
-    <!-- SmartFarm Core Scripts -->
-    <script src="js/environment.js"></script>
-    <script src="js/config.js"></script>
-    <script src="js/log.js"></script>
-    <script src="js/error-boundary.js"></script>
-    <script src="js/api-utils.js"></script>
+    <!-- SmartFarm Core Scripts (duplicates removed) -->
     <link rel="stylesheet" href="css/utilities.css">
 </body>
 </html>

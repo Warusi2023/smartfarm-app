@@ -37,8 +37,22 @@ class UserRoleManager {
                 return { role: 'guest', isOwner: false };
             }
             
-            // Check if it's valid JSON
-            if (userData.startsWith('{') || userData.startsWith('[')) {
+            // Check for corrupted data patterns
+            if (userData.includes('tuimalabe27') && !userData.includes('{')) {
+                // This looks like corrupted data, clear it
+                localStorage.removeItem('smartfarm_user');
+                sessionStorage.removeItem('smartfarm_user');
+                return { role: 'guest', isOwner: false };
+            }
+            
+            // Check if it's valid JSON format
+            if (!userData.startsWith('{') && !userData.startsWith('[')) {
+                // Not valid JSON, clear corrupted data
+                localStorage.removeItem('smartfarm_user');
+                sessionStorage.removeItem('smartfarm_user');
+                return { role: 'guest', isOwner: false };
+            }
+                
                 const user = JSON.parse(userData);
                 
                 // Check if this is the project owner
