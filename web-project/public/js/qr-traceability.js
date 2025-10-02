@@ -711,6 +711,135 @@ class QRTraceability {
             this.saveProducts();
         }
     }
+
+    showOptions() {
+        const modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.id = 'qrOptionsModal';
+        modal.setAttribute('tabindex', '-1');
+        modal.setAttribute('aria-labelledby', 'qrOptionsModalLabel');
+        modal.setAttribute('aria-hidden', 'true');
+        
+        modal.innerHTML = `
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title" id="qrOptionsModalLabel">
+                            <i class="fas fa-cog me-2"></i>QR Code Options
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Quick Actions</h6>
+                                <div class="d-grid gap-2">
+                                    <button class="btn btn-primary" onclick="generateQRCode()">
+                                        <i class="fas fa-qrcode me-2"></i>Generate QR Code
+                                    </button>
+                                    <button class="btn btn-success" onclick="addNewProduct()">
+                                        <i class="fas fa-plus me-2"></i>Add New Product
+                                    </button>
+                                    <button class="btn btn-info" onclick="qrTraceability.generateAllQRCodes()">
+                                        <i class="fas fa-qrcode me-2"></i>Generate All QR Codes
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Product Management</h6>
+                                <div class="d-grid gap-2">
+                                    <button class="btn btn-outline-primary" onclick="qrTraceability.showProductList()">
+                                        <i class="fas fa-list me-2"></i>View All Products
+                                    </button>
+                                    <button class="btn btn-outline-warning" onclick="qrTraceability.exportTraceabilityData()">
+                                        <i class="fas fa-download me-2"></i>Export Data
+                                    </button>
+                                    <button class="btn btn-outline-info" onclick="qrTraceability.showTraceabilityMap()">
+                                        <i class="fas fa-map me-2"></i>Traceability Map
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        
+                        <div class="row">
+                            <div class="col-12">
+                                <h6>Settings</h6>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="autoGenerateQR" checked>
+                                    <label class="form-check-label" for="autoGenerateQR">
+                                        Auto-generate QR codes for new products
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="includeLocationData" checked>
+                                    <label class="form-check-label" for="includeLocationData">
+                                        Include location data in QR codes
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="enableNotifications">
+                                    <label class="form-check-label" for="enableNotifications">
+                                        Enable traceability notifications
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" onclick="qrTraceability.saveSettings()">Save Settings</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        const bsModal = new bootstrap.Modal(modal);
+        bsModal.show();
+        
+        // Remove modal from DOM when closed
+        modal.addEventListener('hidden.bs.modal', () => {
+            modal.remove();
+        });
+    }
+
+    showProductList() {
+        alert('Product list feature coming soon!');
+    }
+
+    exportTraceabilityData() {
+        alert('Export feature coming soon!');
+    }
+
+    showTraceabilityMap() {
+        alert('Traceability map feature coming soon!');
+    }
+
+    saveSettings() {
+        const autoGenerate = document.getElementById('autoGenerateQR').checked;
+        const includeLocation = document.getElementById('includeLocationData').checked;
+        const enableNotifications = document.getElementById('enableNotifications').checked;
+        
+        // Save settings to localStorage
+        const settings = {
+            autoGenerateQR: autoGenerate,
+            includeLocationData: includeLocation,
+            enableNotifications: enableNotifications
+        };
+        
+        localStorage.setItem('qrTraceabilitySettings', JSON.stringify(settings));
+        
+        // Close modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('qrOptionsModal'));
+        if (modal) {
+            modal.hide();
+        }
+        
+        alert('Settings saved successfully!');
+    }
 }
 
     // Debug function for QR Code library issues

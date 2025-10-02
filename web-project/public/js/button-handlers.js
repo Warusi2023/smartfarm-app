@@ -313,3 +313,27 @@ window.handleGenerateAllQRCodes = () => window.buttonHandlers.handleGenerateAllQ
 window.handleOpenMarketTile = (type) => window.buttonHandlers.handleOpenMarketTile(type);
 window.handleOpenIoTTile = (type) => window.buttonHandlers.handleOpenIoTTile(type);
 
+// Additional button handlers for dashboard
+window.showFinancialDetails = () => window.buttonHandlers.handleOpenFinancialDetails();
+window.generateQRCode = () => {
+    if (typeof qrTraceability !== 'undefined' && qrTraceability) {
+        qrTraceability.generateQRCode();
+    } else {
+        alert('QR Code system is not loaded. Please refresh the page.');
+    }
+};
+window.addNewProduct = () => {
+    if (typeof showAddProductModal === 'function') {
+        showAddProductModal();
+    } else {
+        alert('Product management system is not loaded. Please refresh the page.');
+    }
+};
+window.showQRCodeOptions = () => {
+    if (typeof qrTraceability !== 'undefined' && qrTraceability) {
+        qrTraceability.showOptions();
+    } else {
+        alert('QR Code system is not loaded. Please refresh the page.');
+    }
+};
+
