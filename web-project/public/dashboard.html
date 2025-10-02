@@ -2612,13 +2612,61 @@
             }
         }
 
+        // Global error handler
+        window.addEventListener('error', function(e) {
+            console.error('Global JavaScript Error:', e.error);
+            console.error('Error details:', {
+                message: e.message,
+                filename: e.filename,
+                lineno: e.lineno,
+                colno: e.colno,
+                stack: e.error ? e.error.stack : 'No stack trace'
+            });
+        });
+
+        // Function to verify all required functions are defined
+        function verifyRequiredFunctions() {
+            const requiredFunctions = [
+                'showView',
+                'setActiveNav',
+                'updateURL',
+                'showLivestockManagement',
+                'showCropManagement',
+                'showPetsManagement',
+                'showInventoryManagement'
+            ];
+            
+            const missingFunctions = [];
+            requiredFunctions.forEach(funcName => {
+                if (typeof window[funcName] !== 'function') {
+                    missingFunctions.push(funcName);
+                }
+            });
+            
+            if (missingFunctions.length > 0) {
+                console.error('Missing required functions:', missingFunctions);
+                return false;
+            } else {
+                console.log('All required functions are defined');
+                return true;
+            }
+        }
+
         // Initialize dashboard
         document.addEventListener('DOMContentLoaded', async function() {
-            initializeGlobalDatabase();
-            initializeDashboard();
-            initializeWeatherService();
-            updateLastUpdated();
-            setInterval(updateLastUpdated, 60000); // Update every minute
+            try {
+                // Verify all required functions are defined
+                verifyRequiredFunctions();
+                
+                initializeGlobalDatabase();
+                initializeDashboard();
+                initializeWeatherService();
+                updateLastUpdated();
+                setInterval(updateLastUpdated, 60000); // Update every minute
+                console.log('Dashboard initialized successfully');
+            } catch (error) {
+                console.error('Error initializing dashboard:', error);
+            }
             
             // Initialize URL routing
             initializeURLRouting();
@@ -5285,17 +5333,34 @@
         function showLivestockManagement() {
             console.log('Switching to Livestock Management...');
             try {
+                // Check if required functions exist
+                if (typeof showView !== 'function') {
+                    console.error('showView function not defined');
+                    throw new Error('showView function not defined');
+                }
+                if (typeof setActiveNav !== 'function') {
+                    console.error('setActiveNav function not defined');
+                    throw new Error('setActiveNav function not defined');
+                }
+                
                 showView('livestockManagementView');
                 setActiveNav('livestock');
                 updateURL('livestockManagementView');
                 // Load fresh livestock data when switching to this tab
-                loadLivestockData();
+                if (typeof loadLivestockData === 'function') {
+                    loadLivestockData();
+                }
                 console.log('Livestock data after loading:', livestock);
                 console.log('Successfully switched to Livestock Management');
             } catch (error) {
                 console.error('Error switching to Livestock Management:', error);
                 // Fallback: just show the view
-                document.getElementById('livestockManagementView').style.display = 'block';
+                const livestockView = document.getElementById('livestockManagementView');
+                if (livestockView) {
+                    livestockView.style.display = 'block';
+                } else {
+                    console.error('livestockManagementView element not found');
+                }
             }
         }
 
