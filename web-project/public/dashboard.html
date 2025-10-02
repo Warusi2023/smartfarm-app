@@ -811,6 +811,11 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link" href="user-management.html">
+                                <i class="fas fa-users-cog me-2"></i>User Management
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" href="ai-predictions.html">
                                 <i class="fas fa-brain me-2"></i>AI Predictions
                             </a>
@@ -5262,29 +5267,50 @@
 
         function showCropManagement() {
             console.log('Switching to Crop Management...');
-            showView('cropManagementView');
-            setActiveNav('crop');
-            updateURL('cropManagementView');
-            // Load fresh crop data when switching to this tab
-            loadCropsData();
-            console.log('Crops data after loading:', crops);
+            try {
+                showView('cropManagementView');
+                setActiveNav('crop');
+                updateURL('cropManagementView');
+                // Load fresh crop data when switching to this tab
+                loadCropsData();
+                console.log('Crops data after loading:', crops);
+                console.log('Successfully switched to Crop Management');
+            } catch (error) {
+                console.error('Error switching to Crop Management:', error);
+                // Fallback: just show the view
+                document.getElementById('cropManagementView').style.display = 'block';
+            }
         }
 
         function showLivestockManagement() {
             console.log('Switching to Livestock Management...');
-            showView('livestockManagementView');
-            setActiveNav('livestock');
-            updateURL('livestockManagementView');
-            // Load fresh livestock data when switching to this tab
-            loadLivestockData();
-            console.log('Livestock data after loading:', livestock);
+            try {
+                showView('livestockManagementView');
+                setActiveNav('livestock');
+                updateURL('livestockManagementView');
+                // Load fresh livestock data when switching to this tab
+                loadLivestockData();
+                console.log('Livestock data after loading:', livestock);
+                console.log('Successfully switched to Livestock Management');
+            } catch (error) {
+                console.error('Error switching to Livestock Management:', error);
+                // Fallback: just show the view
+                document.getElementById('livestockManagementView').style.display = 'block';
+            }
         }
 
         function showPetsManagement() {
             console.log('Switching to Pets Management...');
-            showView('petsManagementView');
-            setActiveNav('pets');
-            updateURL('petsManagementView');
+            try {
+                showView('petsManagementView');
+                setActiveNav('pets');
+                updateURL('petsManagementView');
+                console.log('Successfully switched to Pets Management');
+            } catch (error) {
+                console.error('Error switching to Pets Management:', error);
+                // Fallback: just show the view
+                document.getElementById('petsManagementView').style.display = 'block';
+            }
             // Load fresh pets data when switching to this tab
             loadPetsData();
             console.log('Pets data after loading:', pets);
@@ -5292,9 +5318,16 @@
 
         function showInventoryManagement() {
             console.log('Switching to Inventory Management...');
-            showView('inventoryManagementView');
-            setActiveNav('inventory');
-            updateURL('inventoryManagementView');
+            try {
+                showView('inventoryManagementView');
+                setActiveNav('inventory');
+                updateURL('inventoryManagementView');
+                console.log('Successfully switched to Inventory Management');
+            } catch (error) {
+                console.error('Error switching to Inventory Management:', error);
+                // Fallback: just show the view
+                document.getElementById('inventoryManagementView').style.display = 'block';
+            }
             // Load fresh inventory data when switching to this tab
             loadInventoryData();
             console.log('Inventory data after loading:', inventory);
@@ -5346,17 +5379,27 @@
         }
 
         function setActiveNav(navItem) {
-            // Remove active class from all nav links
-            const navLinks = document.querySelectorAll('.sidebar .nav-link');
-            if (navLinks && navLinks.length > 0) {
-                navLinks.forEach(link => {
-                    link.classList.remove('active');
-                });
-            }
-            
-            // Add active class to clicked nav link if event exists
-            if (event && event.target && event.target.classList) {
-                event.target.classList.add('active');
+            try {
+                // Remove active class from all nav links
+                const navLinks = document.querySelectorAll('.sidebar .nav-link');
+                if (navLinks && navLinks.length > 0) {
+                    navLinks.forEach(link => {
+                        link.classList.remove('active');
+                    });
+                }
+                
+                // Add active class to the corresponding nav link
+                const targetLink = document.querySelector(`[onclick*="${navItem}"]`);
+                if (targetLink) {
+                    targetLink.classList.add('active');
+                }
+                
+                // Also try to add active class to clicked nav link if event exists
+                if (event && event.target && event.target.classList) {
+                    event.target.classList.add('active');
+                }
+            } catch (error) {
+                console.error('Error setting active navigation:', error);
             }
         }
 
