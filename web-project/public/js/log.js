@@ -121,24 +121,32 @@ class SmartFarmLogger {
      */
     async sendToErrorTracking(level, args) {
         try {
-            const errorData = {
-                level,
-                message: args.join(' '),
-                url: window.location.href,
-                userAgent: navigator.userAgent,
-                timestamp: new Date().toISOString(),
-                stack: args.find(arg => arg instanceof Error)?.stack
-            };
+            // Only send errors in production and if API is available
+            if (!this.isDevelopment && window.SmartFarmConfig) {
+                const errorData = {
+                    level,
+                    message: args.join(' '),
+                    url: window.location.href,
+                    userAgent: navigator.userAgent,
+                    timestamp: new Date().toISOString(),
+                    stack: args.find(arg => arg instanceof Error)?.stack
+                };
 
-            // Send to backend error tracking endpoint
-            await fetch('/api/errors', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(errorData)
-            });
+                // Send to backend error tracking endpoint
+                const response = await fetch(window.SmartFarmConfig.getApiUrl('/errors'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(errorData)
+                });
+                
+                if (!response.ok) {
+                    // Silently fail if error tracking endpoint doesn't exist
+                    return;
+                }
+            }
         } catch (error) {
-            // Fallback to console if error tracking fails
-            console.error('Failed to send error to tracking service:', error);
+            // Silently fail - don't log error tracking failures
+            return;
         }
     }
 

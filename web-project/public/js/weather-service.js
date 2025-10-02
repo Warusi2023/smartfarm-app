@@ -14,29 +14,45 @@ class WeatherService {
     }
 
     async initializeWeatherService() {
-        console.log('🌤️ Initializing Weather Service...');
-        
-        // Get API key from environment or config
-        this.apiKey = this.getWeatherApiKey();
-        
-        if (!this.apiKey) {
-            console.warn('⚠️ Weather API key not found. Using demo data.');
-            this.useDemoData();
-            return;
+        if (window.SmartFarmLogger) {
+            window.SmartFarmLogger.info('🌤️ Initializing Weather Service...');
+        } else {
+            console.log('🌤️ Initializing Weather Service...');
         }
-
-        // Try to get user's location and fetch weather
-        await this.detectLocationAndFetchWeather();
         
-        // Set up periodic updates
-        this.setupPeriodicUpdates();
+        try {
+            // Get API key from environment or config
+            this.apiKey = this.getWeatherApiKey();
+            
+            if (!this.apiKey) {
+                if (window.SmartFarmLogger) {
+                    window.SmartFarmLogger.warn('⚠️ Weather API key not found. Using demo data.');
+                } else {
+                    console.warn('⚠️ Weather API key not found. Using demo data.');
+                }
+                this.useDemoData();
+                return;
+            }
+
+            // Try to get user's location and fetch weather
+            await this.detectLocationAndFetchWeather();
+            
+            // Set up periodic updates
+            this.setupPeriodicUpdates();
+        } catch (error) {
+            if (window.SmartFarmLogger) {
+                window.SmartFarmLogger.error('Error initializing weather service:', error);
+            } else {
+                console.error('Error initializing weather service:', error);
+            }
+            this.useDemoData();
+        }
     }
 
     getWeatherApiKey() {
         // Try to get API key from various sources
         return window.VITE_OPENWEATHER_API_KEY || 
                window.OPENWEATHER_API_KEY || 
-               process.env.VITE_OPENWEATHER_API_KEY ||
                null;
     }
 

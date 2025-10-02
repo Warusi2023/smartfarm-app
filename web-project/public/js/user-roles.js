@@ -31,17 +31,39 @@ class UserRoleManager {
     getCurrentUser() {
         try {
             const userData = localStorage.getItem('smartfarm_user') || sessionStorage.getItem('smartfarm_user') || '{}';
-            const user = JSON.parse(userData);
             
-            // Check if this is the project owner
-            if (this.isProjectOwner()) {
-                user.role = 'owner';
-                user.isOwner = true;
+            // Validate JSON before parsing
+            if (userData === '{}' || userData === 'null' || userData === 'undefined') {
+                return { role: 'guest', isOwner: false };
             }
             
-            return user;
+            // Check if it's valid JSON
+            if (userData.startsWith('{') || userData.startsWith('[')) {
+                const user = JSON.parse(userData);
+                
+                // Check if this is the project owner
+                if (this.isProjectOwner()) {
+                    user.role = 'owner';
+                    user.isOwner = true;
+                }
+                
+                return user;
+            } else {
+                // Invalid data, clear it
+                localStorage.removeItem('smartfarm_user');
+                sessionStorage.removeItem('smartfarm_user');
+                return { role: 'guest', isOwner: false };
+            }
         } catch (error) {
-            console.warn('Error parsing user data:', error);
+            if (window.SmartFarmLogger) {
+                window.SmartFarmLogger.warn('Error parsing user data:', error);
+            } else {
+                console.warn('Error parsing user data:', error);
+            }
+            
+            // Clear invalid data
+            localStorage.removeItem('smartfarm_user');
+            sessionStorage.removeItem('smartfarm_user');
             return { role: 'guest', isOwner: false };
         }
     }

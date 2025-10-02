@@ -102,7 +102,11 @@ class SmartFarmCompetitive {
             }
             
             if (typeof value !== 'number') {
-                console.warn(`Invalid sensor data for ${sensorName}:`, data);
+                if (window.SmartFarmLogger) {
+                    window.SmartFarmLogger.warn(`Invalid sensor data for ${sensorName}:`, data);
+                } else {
+                    console.warn(`Invalid sensor data for ${sensorName}:`, data);
+                }
                 return;
             }
             

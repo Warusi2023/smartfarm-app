@@ -840,7 +840,6 @@ class QRTraceability {
         
         alert('Settings saved successfully!');
     }
-}
 
     // Debug function for QR Code library issues
     debugQRLibrary() {

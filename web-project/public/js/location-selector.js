@@ -75,7 +75,14 @@ class LocationSelector {
             </div>
         `;
 
-        document.body.insertAdjacentHTML('beforeend', selectorHTML);
+        if (document.body) {
+            document.body.insertAdjacentHTML('beforeend', selectorHTML);
+        } else {
+            // Wait for DOM to be ready
+            document.addEventListener('DOMContentLoaded', () => {
+                document.body.insertAdjacentHTML('beforeend', selectorHTML);
+            });
+        }
     }
 
     setupEventListeners() {
