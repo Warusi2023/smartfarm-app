@@ -8,6 +8,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="js/ads-provider.js"></script>
     <script src="js/button-handlers.js"></script>
+    <script src="js/user-roles.js"></script>
     <script src="js/ai-seed-predictor.js"></script>
     <script src="js/intelligent-weeding.js"></script>
     <script src="js/qr-traceability.js"></script>
@@ -79,6 +80,15 @@
     <div class="container mt-4">
         <h1><i class="fas fa-bug me-2"></i>SmartFarm Button Debugger</h1>
         <p class="lead">Test and debug all buttons across the SmartFarm application</p>
+        
+        <!-- Access Control Notice -->
+        <div id="accessNotice" class="alert alert-warning" style="display: none;">
+            <i class="fas fa-lock me-2"></i>
+            <strong>Access Restricted:</strong> This tool is only available to project owners. 
+            <button class="btn btn-sm btn-outline-primary ms-2" onclick="enableOwnerMode()">
+                Enable Owner Mode (Development)
+            </button>
+        </div>
 
         <!-- Global Status -->
         <div class="debug-section">
@@ -199,10 +209,39 @@
 
         // Initialize debugger
         document.addEventListener('DOMContentLoaded', function() {
+            // Check access permissions
+            checkAccessPermissions();
             console.log('🔧 Button Debugger initialized');
             scanAllButtons();
             checkSystemInfo();
         });
+
+        // Check if user has access to debug tools
+        function checkAccessPermissions() {
+            const roleInfo = getRoleInfo();
+            const accessNotice = document.getElementById('accessNotice');
+            const mainContent = document.querySelector('.container');
+            
+            if (!roleInfo.isOwner) {
+                // Hide main content and show access notice
+                if (mainContent) {
+                    mainContent.style.display = 'none';
+                }
+                if (accessNotice) {
+                    accessNotice.style.display = 'block';
+                }
+                console.log('🔒 Access denied: Owner role required');
+            } else {
+                // Show main content and hide access notice
+                if (mainContent) {
+                    mainContent.style.display = 'block';
+                }
+                if (accessNotice) {
+                    accessNotice.style.display = 'none';
+                }
+                console.log('🔓 Access granted: Owner role confirmed');
+            }
+        }
 
         // Scan all buttons on the page
         function scanAllButtons() {
