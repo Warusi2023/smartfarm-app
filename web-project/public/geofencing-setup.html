@@ -1117,7 +1117,24 @@
             })
             .catch(error => {
                 console.error('Error creating farm:', error);
-                showAlert('Error creating farm. Please try again.', 'danger');
+                
+                // Check if it's a CORS error
+                if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
+                    showAlert('CORS Error: Cannot connect to backend. Please check if the backend is running and CORS is configured correctly.', 'warning');
+                    
+                    // Fallback to demo mode
+                    showAlert('Switching to demo mode. Farm will be created locally.', 'info');
+                    const farmSelect = document.getElementById('farmSelect');
+                    const option = document.createElement('option');
+                    option.value = `demo-farm-${Date.now()}`;
+                    option.textContent = farmName;
+                    farmSelect.appendChild(option);
+                    farmSelect.value = option.value;
+                    selectedFarm = { id: option.value, name: farmName };
+                    document.getElementById('nextStep1').disabled = false;
+                } else {
+                    showAlert('Error creating farm. Please try again.', 'danger');
+                }
             });
         }
     </script>
