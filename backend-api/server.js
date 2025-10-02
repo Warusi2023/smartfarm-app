@@ -12,14 +12,17 @@ const PORT = environment.PORT;
 // Custom Middleware
 const corsMiddleware = require('./middleware/cors');
 const requestIdMiddleware = require('./middleware/request-id');
+const { sanitizeInput, preventSQLInjection } = require('./middleware/validation');
 
 // Apply middleware in correct order
 app.use(requestIdMiddleware);  // Add request ID first
 app.use(helmet());              // Security headers
 app.use(corsMiddleware);        // CORS with validation
 app.use(logger.logRequest.bind(logger));  // Request logging
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb' })); // Limit JSON payload size
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(sanitizeInput);         // Sanitize all inputs
+app.use(preventSQLInjection);   // Prevent SQL injection
 
 // Database initialization
 const { initializeDatabase } = require('./database/init');
@@ -29,6 +32,7 @@ const { router: authRouter, authenticateToken, authorizeRole } = require('./rout
 
 // Public routes (no authentication required)
 app.use('/api/auth', authRouter);
+app.use('/api/health', require('./routes/health'));
 
 // Protected routes (authentication required)
 app.use('/api/users', require('./routes/users'));

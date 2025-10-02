@@ -125,6 +125,82 @@ class Logger {
             stack: environment.IS_DEVELOPMENT ? error.stack : undefined
         });
     }
+
+    // Security event logging
+    security(event, details = {}) {
+        this.warn(`🔒 Security Event: ${event}`, {
+            ...this.sanitizeData(details),
+            timestamp: new Date().toISOString()
+        });
+    }
+
+    // Audit logging
+    audit(action, resource, details = {}) {
+        this.info(`📋 Audit: ${action} on ${resource}`, {
+            action,
+            resource,
+            ...this.sanitizeData(details),
+            timestamp: new Date().toISOString()
+        });
+    }
+
+    // Authentication logging
+    auth(event, userId, details = {}) {
+        this.security(`Authentication: ${event}`, {
+            event,
+            userId,
+            ...this.sanitizeData(details)
+        });
+    }
+
+    // Rate limiting logging
+    rateLimit(ip, endpoint, details = {}) {
+        this.security('Rate Limit Exceeded', {
+            ip,
+            endpoint,
+            ...this.sanitizeData(details)
+        });
+    }
+
+    // Performance logging
+    performance(operation, duration, details = {}) {
+        this.info(`⚡ Performance: ${operation}`, {
+            operation,
+            duration: `${duration}ms`,
+            ...this.sanitizeData(details)
+        });
+    }
+
+    // Database operation logging
+    dbOperation(operation, table, details = {}) {
+        this.debug(`🗄️ Database: ${operation} on ${table}`, {
+            operation,
+            table,
+            ...this.sanitizeData(details)
+        });
+    }
+
+    // Health check logging
+    healthCheck(status, details = {}) {
+        this.info(`🏥 Health Check: ${status}`, {
+            status,
+            ...this.sanitizeData(details)
+        });
+    }
+
+    // Sanitize sensitive data from logs
+    sanitizeData(data) {
+        const sanitized = { ...data };
+        const sensitiveKeys = ['password', 'token', 'secret', 'authorization', 'apiKey', 'jwt'];
+        
+        for (const key of sensitiveKeys) {
+            if (sanitized[key]) {
+                sanitized[key] = '[REDACTED]';
+            }
+        }
+        
+        return sanitized;
+    }
 }
 
 // Create singleton instance

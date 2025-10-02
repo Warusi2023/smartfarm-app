@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
 const db = require('../database/init');
+const { validateFarm, validateQuery } = require('../middleware/validation');
 
 // Helper function to check farm access
 async function checkFarmAccess(farmId, userId) {
@@ -19,7 +20,7 @@ async function checkFarmExists(farmId) {
 }
 
 // Get all farms with filtering and pagination
-router.get('/', async (req, res) => {
+router.get('/', validateQuery.pagination, validateQuery.search, async (req, res) => {
     try {
         const { page = 1, limit = 10, status, minSize, maxSize, search } = req.query;
         const offset = (page - 1) * limit;
@@ -90,7 +91,7 @@ router.get('/', async (req, res) => {
 });
 
 // Get farm by ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', validateFarm.get, async (req, res) => {
     try {
         const { id } = req.params;
         const userId = req.user.id;
@@ -134,7 +135,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // Create new farm
-router.post('/', async (req, res) => {
+router.post('/', validateFarm.create, async (req, res) => {
     try {
         const { name, location, size, description } = req.body;
         const userId = req.user.id;
@@ -189,7 +190,7 @@ router.post('/', async (req, res) => {
 });
 
 // Update farm
-router.put('/:id', async (req, res) => {
+router.put('/:id', validateFarm.update, async (req, res) => {
     try {
         const { id } = req.params;
         const { name, location, size, status, description } = req.body;
