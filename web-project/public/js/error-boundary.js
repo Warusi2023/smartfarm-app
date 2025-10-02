@@ -9,8 +9,11 @@ class SmartFarmErrorBoundary {
         this.maxErrors = 5;
         this.errorTimeout = 30000; // 30 seconds
         this.lastErrorTime = 0;
+        this.recoveryStrategies = new Map();
+        this.errorHistory = [];
         
         this.init();
+        this.setupRecoveryStrategies();
     }
 
     init() {
@@ -54,8 +57,11 @@ class SmartFarmErrorBoundary {
             console.error(`[SmartFarm] ${type}:`, error);
         }
 
-        // Show error UI if too many errors
-        if (this.errorCount >= this.maxErrors) {
+        // Attempt recovery first
+        const recovered = this.attemptRecovery(error, type);
+        
+        // Show error UI if too many errors and recovery failed
+        if (this.errorCount >= this.maxErrors && !recovered) {
             this.showErrorUI(error, type);
         }
 
@@ -233,6 +239,189 @@ class SmartFarmErrorBoundary {
             lastErrorTime: this.lastErrorTime,
             timeSinceLastError: Date.now() - this.lastErrorTime
         };
+    }
+
+    /**
+     * Setup recovery strategies for common errors
+     */
+    setupRecoveryStrategies() {
+        // CORS error recovery
+        this.recoveryStrategies.set('CORS', {
+            pattern: /CORS|Access-Control-Allow-Origin|cross-origin/i,
+            action: () => {
+                if (window.SmartFarmLogger) {
+                    window.SmartFarmLogger.warn('CORS error detected, attempting recovery...');
+                }
+                // Try to reload the page after a delay
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+            }
+        });
+
+        // Network error recovery
+        this.recoveryStrategies.set('NETWORK', {
+            pattern: /Failed to fetch|NetworkError|timeout/i,
+            action: () => {
+                if (window.SmartFarmLogger) {
+                    window.SmartFarmLogger.warn('Network error detected, checking connection...');
+                }
+                // Check if online and retry
+                if (navigator.onLine) {
+                    this.retryFailedRequests();
+                } else {
+                    this.showOfflineMessage();
+                }
+            }
+        });
+
+        // Script loading error recovery
+        this.recoveryStrategies.set('SCRIPT', {
+            pattern: /Script error|Loading chunk/i,
+            action: () => {
+                if (window.SmartFarmLogger) {
+                    window.SmartFarmLogger.warn('Script loading error detected, attempting recovery...');
+                }
+                // Try to reload critical scripts
+                this.reloadCriticalScripts();
+            }
+        });
+
+        // Memory error recovery
+        this.recoveryStrategies.set('MEMORY', {
+            pattern: /out of memory|allocation failed/i,
+            action: () => {
+                if (window.SmartFarmLogger) {
+                    window.SmartFarmLogger.warn('Memory error detected, clearing caches...');
+                }
+                // Clear caches and reload
+                this.clearCaches();
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            }
+        });
+    }
+
+    /**
+     * Attempt to recover from error using strategies
+     * @param {Error} error - The error object
+     * @param {string} type - Error type
+     */
+    attemptRecovery(error, type) {
+        const errorMessage = error.message || error.toString();
+        
+        for (const [strategyName, strategy] of this.recoveryStrategies) {
+            if (strategy.pattern.test(errorMessage)) {
+                if (window.SmartFarmLogger) {
+                    window.SmartFarmLogger.info(`Attempting recovery using strategy: ${strategyName}`);
+                }
+                try {
+                    strategy.action();
+                    return true;
+                } catch (recoveryError) {
+                    if (window.SmartFarmLogger) {
+                        window.SmartFarmLogger.error(`Recovery strategy ${strategyName} failed:`, recoveryError);
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Retry failed requests
+     */
+    retryFailedRequests() {
+        // This would integrate with the API client to retry failed requests
+        if (window.SmartFarmAPI && typeof window.SmartFarmAPI.retry === 'function') {
+            window.SmartFarmAPI.retry();
+        }
+    }
+
+    /**
+     * Show offline message
+     */
+    showOfflineMessage() {
+        const offlineDiv = document.createElement('div');
+        offlineDiv.id = 'smartfarm-offline-message';
+        offlineDiv.innerHTML = `
+            <div style="
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: #ffc107;
+                color: #000;
+                padding: 20px;
+                border-radius: 8px;
+                z-index: 10001;
+                text-align: center;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            ">
+                <h3>📡 You're Offline</h3>
+                <p>Please check your internet connection and try again.</p>
+                <button onclick="this.parentElement.parentElement.remove()" 
+                        style="background: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
+                    OK
+                </button>
+            </div>
+        `;
+        document.body.appendChild(offlineDiv);
+    }
+
+    /**
+     * Reload critical scripts
+     */
+    reloadCriticalScripts() {
+        const criticalScripts = [
+            'js/config.js',
+            'js/log.js',
+            'js/api-utils.js'
+        ];
+
+        criticalScripts.forEach(scriptPath => {
+            const script = document.createElement('script');
+            script.src = scriptPath;
+            script.onload = () => {
+                if (window.SmartFarmLogger) {
+                    window.SmartFarmLogger.success(`Reloaded critical script: ${scriptPath}`);
+                }
+            };
+            document.head.appendChild(script);
+        });
+    }
+
+    /**
+     * Clear caches
+     */
+    clearCaches() {
+        // Clear localStorage
+        try {
+            localStorage.clear();
+        } catch (e) {
+            if (window.SmartFarmLogger) {
+                window.SmartFarmLogger.warn('Could not clear localStorage:', e);
+            }
+        }
+
+        // Clear sessionStorage
+        try {
+            sessionStorage.clear();
+        } catch (e) {
+            if (window.SmartFarmLogger) {
+                window.SmartFarmLogger.warn('Could not clear sessionStorage:', e);
+            }
+        }
+
+        // Clear service worker caches if available
+        if ('caches' in window) {
+            caches.keys().then(names => {
+                names.forEach(name => {
+                    caches.delete(name);
+                });
+            });
+        }
     }
 
     /**

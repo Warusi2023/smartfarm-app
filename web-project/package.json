@@ -1,25 +1,56 @@
 {
-  "name": "smartfarm-web",
+  "name": "smartfarm-frontend",
   "version": "1.0.0",
-  "description": "SmartFarm Web Application",
-  "main": "index.html",
+  "description": "SmartFarm Frontend - Agricultural Management System",
+  "main": "public/index.html",
   "scripts": {
-    "build": "echo 'Static files already in place'",
-    "start": "echo 'Static HTML files - no server needed'",
-    "dev": "echo 'Static HTML files - no dev server needed'",
-    "lint": "echo 'No linting configured for static HTML'",
-    "test": "echo 'No tests configured for static HTML'"
+    "dev": "npx http-server public -p 3000 -c-1 --cors",
+    "build": "echo 'Static build - no build step required'",
+    "test": "npx playwright test",
+    "test:console": "npx playwright test tests/console.spec.js",
+    "lint": "npx eslint public/js/**/*.js --fix",
+    "lint:check": "npx eslint public/js/**/*.js",
+    "format": "npx prettier --write public/js/**/*.js public/css/**/*.css",
+    "format:check": "npx prettier --check public/js/**/*.js public/css/**/*.css",
+    "validate": "npm run lint:check && npm run format:check && npm run test:console",
+    "serve": "npx http-server public -p 3000 -c-1 --cors",
+    "start": "npm run serve"
   },
   "keywords": [
-    "smartfarm",
     "agriculture",
-    "web",
-    "static"
+    "farming",
+    "crop-management",
+    "livestock-management",
+    "smart-farming",
+    "iot",
+    "dashboard"
   ],
   "author": "SmartFarm Team",
   "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "eslint": "^8.55.0",
+    "http-server": "^14.1.1",
+    "prettier": "^3.1.0"
+  },
+  "dependencies": {
+    "bootstrap": "^5.3.2",
+    "chart.js": "^4.4.0",
+    "leaflet": "^1.9.4",
+    "jspdf": "^2.5.1",
+    "jspdf-autotable": "^3.6.0",
+    "qrcode": "^1.5.3"
+  },
   "engines": {
     "node": ">=16.0.0",
     "npm": ">=8.0.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/smartfarm.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/smartfarm/issues"
+  },
+  "homepage": "https://www.smartfarm-app.com"
 }

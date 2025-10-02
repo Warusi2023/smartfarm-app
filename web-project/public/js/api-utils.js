@@ -97,11 +97,16 @@ class SmartFarmAPI {
      */
     getFullUrl(endpoint) {
         try {
+            // Use environment system if available
+            if (window.SmartFarmEnvironment) {
+                return window.SmartFarmEnvironment.getApiUrl(endpoint);
+            }
+            // Fallback to config system
             if (window.SmartFarmConfig) {
                 return window.SmartFarmConfig.getApiUrl(endpoint);
-            } else {
-                return `/api${endpoint}`;
             }
+            // Final fallback
+            return `/api${endpoint}`;
         } catch (error) {
             if (window.SmartFarmLogger) {
                 window.SmartFarmLogger.error('Error building API URL:', error);
