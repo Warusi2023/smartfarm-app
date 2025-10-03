@@ -24,9 +24,21 @@ class UserManagement {
 
     async loadCurrentUser() {
         try {
-            const response = await this.apiRequest('/profile');
-            if (response.success) {
-                this.currentUser = response.data;
+            // Use the auth endpoint for profile
+            const response = await fetch('/api/auth/profile', {
+                headers: {
+                    'Authorization': `Bearer ${this.token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            
+            const jsonResponse = await response.json();
+            if (jsonResponse.success) {
+                this.currentUser = jsonResponse.data;
                 this.updateUserInterface();
             }
         } catch (error) {
@@ -88,6 +100,15 @@ class UserManagement {
 
         try {
             const response = await fetch(`${this.apiBase}${endpoint}`, config);
+            
+            // Check if response is JSON
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                const text = await response.text();
+                console.error('Non-JSON response received:', text.substring(0, 200));
+                throw new Error(`Expected JSON response but got ${contentType || 'unknown content type'}`);
+            }
+            
             const jsonResponse = await response.json();
             
             if (!response.ok) {
@@ -141,10 +162,15 @@ class UserManagement {
 
     async loadUserManagementInterface() {
         try {
-            // Load users list
-            const usersResponse = await this.apiRequest('/users');
-            if (usersResponse.success) {
-                this.displayUsersList(usersResponse.data);
+            // Load users list (only for admins)
+            if (this.currentUser && this.currentUser.role === 'admin') {
+                const usersResponse = await this.apiRequest('/users');
+                if (usersResponse.success) {
+                    this.displayUsersList(usersResponse.data);
+                }
+            } else {
+                // Show access denied for non-admins
+                this.displayUsersList([]);
             }
 
             // Load user's farms
