@@ -248,6 +248,8 @@ class ButtonHandlers {
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: true,
+                    aspectRatio: 2,
                     plugins: {
                         legend: { display: false }
                     }
@@ -268,7 +270,9 @@ class ButtonHandlers {
                     }]
                 },
                 options: {
-                    responsive: true
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    aspectRatio: 1.5
                 }
             });
         }
