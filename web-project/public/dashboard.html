@@ -1562,8 +1562,8 @@
                                                 <div class="row">
                                                     <div class="col-md-6">
                                                         <div class="mb-3">
-                                                            <label for="livestockType" class="form-label">Livestock Type</label>
-                                                            <select class="form-select" id="livestockType" onchange="updateGrowthStages()">
+                                                            <label for="feedMixLivestockType" class="form-label">Livestock Type</label>
+                                                            <select class="form-select" id="feedMixLivestockType" onchange="updateGrowthStages()">
                                                                 <option value="">Select Type</option>
                                                                 <option value="cattle">Cattle</option>
                                                                 <option value="pigs">Pigs</option>
@@ -12064,7 +12064,7 @@ INVENTORY SUMMARY:
 
         // Update growth stages based on livestock type
         function updateGrowthStages() {
-            const livestockType = document.getElementById('livestockType').value;
+            const livestockType = document.getElementById('feedMixLivestockType').value;
             const growthStageSelect = document.getElementById('growthStage');
             
             // Clear existing options
@@ -12091,7 +12091,7 @@ INVENTORY SUMMARY:
 
         // Calculate feed mix based on inputs
         function calculateFeedMix() {
-            const livestockType = document.getElementById('livestockType').value;
+            const livestockType = document.getElementById('feedMixLivestockType').value;
             const growthStage = document.getElementById('growthStage').value;
             const animalWeight = parseFloat(document.getElementById('animalWeight').value);
             const animalCount = parseInt(document.getElementById('animalCount').value);
