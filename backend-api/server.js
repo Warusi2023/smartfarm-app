@@ -237,11 +237,12 @@ async function startServer() {
         // Initialize database first
         await initializeDatabase();
         
-        // Start the server
-        app.listen(PORT, () => {
-            console.log(`🚀 SmartFarm Backend API running on port ${PORT}`);
-            console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
-            console.log(`📚 API Documentation: http://localhost:${PORT}/api/docs`);
+        // Start the server - listen on all interfaces for Railway deployment
+        const HOST = process.env.HOST || '0.0.0.0';
+        app.listen(PORT, HOST, () => {
+            console.log(`🚀 SmartFarm Backend API running on ${HOST}:${PORT}`);
+            console.log(`📊 Health check: http://${HOST}:${PORT}/api/health`);
+            console.log(`📚 API Documentation: http://${HOST}:${PORT}/api/docs`);
             console.log(`🔐 Authentication: JWT Bearer Token`);
             console.log(`💾 Database: SQLite`);
             console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);

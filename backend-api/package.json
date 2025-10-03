@@ -4,7 +4,7 @@
   "description": "SmartFarm Backend API - Express.js server with Sequelize ORM",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "node start.js",
     "dev": "nodemon server.js",
     "test": "jest",
     "test:watch": "jest --watch",
