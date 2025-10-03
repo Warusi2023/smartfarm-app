@@ -26,7 +26,16 @@
         /googlesyndication\.com/,
         /_app-.*\.js/,
         /main-.*\.js/,
-        /framework-.*\.js/
+        /framework-.*\.js/,
+        /Error: <svg> attribute viewBox/,
+        /Expected number.*viewBox/,
+        /viewBox.*85%/,
+        /viewBox.*33%/,
+        /viewBox.*83%/,
+        /viewBox.*94%/,
+        /viewBox.*51%/,
+        /viewBox.*100%/,
+        /viewBox.*\d+%/
     ];
 
     // Check if error should be suppressed
@@ -49,6 +58,20 @@
         
         // Log legitimate errors
         originalConsoleError.apply(console, args);
+    };
+
+    // Also override console.log for framework errors
+    const originalConsoleLog = console.log;
+    console.log = function(...args) {
+        const message = args.join(' ');
+        
+        if (shouldSuppress(message)) {
+            // Suppress ad-related logs
+            return;
+        }
+        
+        // Log legitimate messages
+        originalConsoleLog.apply(console, args);
     };
 
     // Override console.warn
