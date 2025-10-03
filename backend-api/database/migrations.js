@@ -65,15 +65,14 @@ const migrations = [
             -- Livestock table
             CREATE TABLE IF NOT EXISTS livestock (
                 id TEXT PRIMARY KEY,
-                farmId TEXT NOT NULL,
+                name TEXT NOT NULL,
                 type TEXT NOT NULL,
+                farmId TEXT NOT NULL,
                 breed TEXT,
-                quantity INTEGER NOT NULL,
-                healthStatus TEXT DEFAULT 'healthy',
+                birthDate DATE,
                 weight REAL,
-                age REAL,
-                gender TEXT,
-                notes TEXT,
+                description TEXT,
+                status TEXT DEFAULT 'HEALTHY',
                 createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
                 updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (farmId) REFERENCES farms (id)
@@ -316,6 +315,58 @@ const migrations = [
         down: `
             DROP TABLE IF EXISTS maintenance_records;
             DROP TABLE IF EXISTS equipment;
+        `
+    },
+    {
+        version: '004',
+        name: 'Update Livestock Table Schema',
+        up: `
+            -- Update livestock table to match API expectations
+            -- First, create a new table with the correct schema
+            CREATE TABLE IF NOT EXISTS livestock_new (
+                id TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                type TEXT NOT NULL,
+                farmId TEXT NOT NULL,
+                breed TEXT,
+                birthDate DATE,
+                weight REAL,
+                description TEXT,
+                status TEXT DEFAULT 'HEALTHY',
+                createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (farmId) REFERENCES farms (id)
+            );
+
+            -- Migrate existing data if any
+            INSERT OR IGNORE INTO livestock_new (id, name, type, farmId, breed, birthDate, weight, description, status, createdAt, updatedAt)
+            SELECT 
+                id,
+                COALESCE(name, type || ' ' || breed) as name,
+                type,
+                farmId,
+                breed,
+                COALESCE(birthDate, date('now')) as birthDate,
+                weight,
+                COALESCE(notes, description) as description,
+                COALESCE(healthStatus, 'HEALTHY') as status,
+                COALESCE(createdAt, datetime('now')) as createdAt,
+                COALESCE(updatedAt, datetime('now')) as updatedAt
+            FROM livestock;
+
+            -- Drop the old table
+            DROP TABLE IF EXISTS livestock;
+
+            -- Rename the new table
+            ALTER TABLE livestock_new RENAME TO livestock;
+
+            -- Recreate the index
+            CREATE INDEX IF NOT EXISTS idx_livestock_farm ON livestock(farmId);
+        `,
+        down: `
+            -- Revert to old schema (not recommended as data may be lost)
+            -- This is a destructive rollback
+            DROP TABLE IF EXISTS livestock;
         `
     }
 ];

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../database/connection');
+const db = require('../database/init');
 
 // Get all byproducts for crops
 router.get('/crops', async (req, res) => {

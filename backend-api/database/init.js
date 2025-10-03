@@ -66,15 +66,15 @@ async function insertSampleData() {
 
             // Insert sample livestock
             const sampleLivestock = [
-                ['livestock-001', sampleFarm.id, 'Cattle', 'Angus', 50, 'healthy', 'Main herd'],
-                ['livestock-002', sampleFarm.id, 'Pigs', 'Yorkshire', 25, 'healthy', 'Breeding stock'],
-                ['livestock-003', sampleFarm.id, 'Chickens', 'Rhode Island Red', 200, 'healthy', 'Egg production']
+                ['livestock-001', 'Angus Cattle #1', 'Cattle', sampleFarm.id, 'Angus', '2022-01-15', 450.5, 'Main herd bull', 'HEALTHY'],
+                ['livestock-002', 'Yorkshire Pig #1', 'Pigs', sampleFarm.id, 'Yorkshire', '2023-03-10', 180.2, 'Breeding stock', 'HEALTHY'],
+                ['livestock-003', 'Rhode Island Red Hen #1', 'Chickens', sampleFarm.id, 'Rhode Island Red', '2023-06-01', 2.5, 'Egg production', 'HEALTHY']
             ];
 
-            sampleLivestock.forEach(([id, farmId, type, breed, quantity, healthStatus, notes]) => {
-                db.run(`INSERT OR IGNORE INTO livestock (id, farmId, type, breed, quantity, healthStatus, notes) 
-                        VALUES (?, ?, ?, ?, ?, ?, ?)`,
-                    [id, farmId, type, breed, quantity, healthStatus, notes]
+            sampleLivestock.forEach(([id, name, type, farmId, breed, birthDate, weight, description, status]) => {
+                db.run(`INSERT OR IGNORE INTO livestock (id, name, type, farmId, breed, birthDate, weight, description, status) 
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                    [id, name, type, farmId, breed, birthDate, weight, description, status]
                 );
             });
 

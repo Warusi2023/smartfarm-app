@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../database/connection');
+const db = require('../database/init');
 
 // Get crop nutrition recommendations
 router.get('/crop-nutrition/:cropId', async (req, res) => {
