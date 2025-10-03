@@ -78,14 +78,19 @@ class LocationSelector {
         // Ensure DOM is ready before inserting HTML
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', () => {
+                setTimeout(() => {
+                    if (document.body) {
+                        document.body.insertAdjacentHTML('beforeend', selectorHTML);
+                    }
+                }, 100);
+            });
+        } else {
+            // Use setTimeout to ensure DOM is fully ready
+            setTimeout(() => {
                 if (document.body) {
                     document.body.insertAdjacentHTML('beforeend', selectorHTML);
                 }
-            });
-        } else {
-            if (document.body) {
-                document.body.insertAdjacentHTML('beforeend', selectorHTML);
-            }
+            }, 100);
         }
     }
 

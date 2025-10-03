@@ -132,20 +132,25 @@ class SmartFarmLogger {
                     stack: args.find(arg => arg instanceof Error)?.stack
                 };
 
-                // Send to backend error tracking endpoint (with error handling)
+                // Store error locally instead of sending to non-existent endpoint
                 try {
-                    const response = await fetch(window.SmartFarmConfig.getApiUrl('/errors'), {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(errorData)
-                    });
+                    // Store errors in localStorage for debugging
+                    const existingErrors = JSON.parse(localStorage.getItem('smartfarm_errors') || '[]');
+                    existingErrors.push(errorData);
                     
-                    if (!response.ok) {
-                        console.warn('Error tracking endpoint not available:', response.status);
+                    // Keep only last 50 errors to prevent storage bloat
+                    if (existingErrors.length > 50) {
+                        existingErrors.splice(0, existingErrors.length - 50);
                     }
+                    
+                    localStorage.setItem('smartfarm_errors', JSON.stringify(existingErrors));
+                    
+                    // Also log to console for immediate debugging
+                    console.error('SmartFarm Error:', errorData);
+                    
                 } catch (error) {
-                    // Silently handle error tracking failures to avoid infinite loops
-                    console.warn('Error tracking failed:', error.message);
+                    // Fallback to console only
+                    console.error('SmartFarm Error (local storage failed):', errorData);
                 }
             }
         } catch (error) {

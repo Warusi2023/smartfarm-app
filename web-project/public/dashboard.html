@@ -12856,7 +12856,7 @@ INVENTORY SUMMARY:
             });
         }
 
-        function addLivestockFromDatabase(livestockName, category) {
+        async function addLivestockFromDatabase(livestockName, category) {
             console.log('Adding livestock from database:', { livestockName, category });
             console.log('Global livestock database available:', !!globalLivestockDatabase);
             console.log('Livestock array available:', !!livestock);
