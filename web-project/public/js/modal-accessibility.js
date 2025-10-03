@@ -2,6 +2,7 @@
  * Modal Accessibility Helper
  * Fixes aria-hidden focus issues in Bootstrap modals
  * Implements WAI-ARIA compliant modal behavior with focus trapping and inert background
+ * Ensures only one modal is accessible at a time
  */
 
 class ModalAccessibility {
@@ -9,6 +10,7 @@ class ModalAccessibility {
         this.activeModal = null;
         this.lastFocusedElement = null;
         this.backgroundElements = [];
+        this.modalStates = new Map(); // Track modal states
         this.init();
     }
 
@@ -93,43 +95,90 @@ class ModalAccessibility {
         });
     }
 
-    handleModalShown(modal) {
-        console.log('🔧 ModalAccessibility: Modal shown:', modal.id || 'unnamed modal');
-        
-        // Set active modal reference
-        this.activeModal = modal;
-        
-        // Remove aria-hidden when modal is shown (Bootstrap sets this incorrectly)
-        const hadAriaHidden = modal.hasAttribute('aria-hidden');
-        modal.removeAttribute('aria-hidden');
-        console.log('🔧 ModalAccessibility: Removed aria-hidden:', hadAriaHidden);
-        
-        // Ensure proper ARIA attributes
-        modal.setAttribute('aria-modal', 'true');
-        modal.setAttribute('role', 'dialog');
-        console.log('🔧 ModalAccessibility: Set ARIA attributes');
-        
-        // Apply inert to background elements
-        this.applyInertToBackground();
-        
-        // Focus management - focus on first focusable element
-        const focusableElements = modal.querySelectorAll(
-            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-        );
-        
-        if (focusableElements.length > 0) {
-            // Focus on first focusable element
-            focusableElements[0].focus();
-            console.log('🔧 ModalAccessibility: Focused first element:', focusableElements[0]);
-        } else {
-            console.warn('⚠️ ModalAccessibility: No focusable elements found in modal');
+    // Reusable function to toggle modal accessibility
+    toggleModalAccessibility(modalEl, isOpen) {
+        if (!modalEl) {
+            console.warn('⚠️ ModalAccessibility: No modal element provided');
+            return;
         }
-        
-        // Trap focus within modal
-        this.trapFocus(modal);
-        
+
+        const modalId = modalEl.id || 'unnamed-modal';
+        console.log(`🔧 ModalAccessibility: toggleModalAccessibility(${modalId}, ${isOpen})`);
+
+        if (isOpen) {
+            // Ensure only one modal is active at a time
+            if (this.activeModal && this.activeModal !== modalEl) {
+                console.log('🔧 ModalAccessibility: Hiding previous active modal');
+                this.toggleModalAccessibility(this.activeModal, false);
+            }
+
+            // Set this modal as active
+            this.activeModal = modalEl;
+            this.modalStates.set(modalEl, 'open');
+
+            // CRITICAL: Remove aria-hidden before any focus operations
+            modalEl.removeAttribute('aria-hidden');
+            
+            // Ensure proper ARIA attributes
+            modalEl.setAttribute('aria-modal', 'true');
+            if (!modalEl.hasAttribute('role')) {
+                modalEl.setAttribute('role', 'dialog');
+            }
+            if (!modalEl.hasAttribute('tabindex')) {
+                modalEl.setAttribute('tabindex', '-1');
+            }
+
+            // Apply inert to background elements
+            this.applyInertToBackground();
+
+            // Focus management - focus on first focusable element
+            const focusableElements = modalEl.querySelectorAll(
+                'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+            );
+            
+            if (focusableElements.length > 0) {
+                // Small delay to ensure DOM is ready
+                setTimeout(() => {
+                    focusableElements[0].focus();
+                    console.log('🔧 ModalAccessibility: Focused first element:', focusableElements[0]);
+                }, 10);
+            } else {
+                console.warn('⚠️ ModalAccessibility: No focusable elements found in modal');
+            }
+            
+            // Trap focus within modal
+            this.trapFocus(modalEl);
+
+        } else {
+            // Modal is being closed
+            this.modalStates.set(modalEl, 'closed');
+
+            // CRITICAL: Remove focus BEFORE setting aria-hidden
+            const focusedElement = modalEl.querySelector(':focus');
+            if (focusedElement) {
+                focusedElement.blur();
+                console.log('🔧 ModalAccessibility: Removed focus from:', focusedElement);
+            }
+
+            // Set aria-hidden
+            modalEl.setAttribute('aria-hidden', 'true');
+            
+            // Remove aria-modal
+            modalEl.removeAttribute('aria-modal');
+
+            // Remove focus trap
+            this.removeFocusTrap(modalEl);
+
+            // Clear active modal if this was it
+            if (this.activeModal === modalEl) {
+                this.activeModal = null;
+                // Remove inert from background elements
+                this.removeInertFromBackground();
+            }
+        }
+
         // Validate modal accessibility
-        const issues = ModalAccessibility.validateModalAccessibility(modal);
+        const issues = ModalAccessibility.validateModalAccessibility(modalEl);
         if (issues.length > 0) {
             console.error('❌ ModalAccessibility: Validation issues:', issues);
         } else {
@@ -137,38 +186,25 @@ class ModalAccessibility {
         }
     }
 
+    handleModalShown(modal) {
+        console.log('🔧 ModalAccessibility: Modal shown:', modal.id || 'unnamed modal');
+        this.toggleModalAccessibility(modal, true);
+    }
+
     handleModalHide(modal) {
         console.log('🔧 ModalAccessibility: Modal hiding:', modal.id || 'unnamed modal');
-        
-        // Remove focus from any focused element in the modal BEFORE setting aria-hidden
-        const focusedElement = modal.querySelector(':focus');
-        if (focusedElement) {
-            focusedElement.blur();
-            console.log('🔧 ModalAccessibility: Removed focus from:', focusedElement);
-        }
-        
-        // Set aria-hidden when modal is being hidden
-        modal.setAttribute('aria-hidden', 'true');
-        console.log('🔧 ModalAccessibility: Set aria-hidden="true"');
-        
-        // Remove focus trap
-        this.removeFocusTrap(modal);
+        this.toggleModalAccessibility(modal, false);
     }
 
     handleModalHidden(modal) {
         console.log('🔧 ModalAccessibility: Modal hidden:', modal.id || 'unnamed modal');
         
-        // Clear active modal reference
-        this.activeModal = null;
-        
-        // Remove inert from background elements
-        this.removeInertFromBackground();
-        console.log('🔧 ModalAccessibility: Removed inert from background');
-        
         // Restore focus to element that triggered the modal
         if (this.lastFocusedElement && this.lastFocusedElement !== document.body) {
-            this.lastFocusedElement.focus();
-            console.log('🔧 ModalAccessibility: Restored focus to:', this.lastFocusedElement);
+            setTimeout(() => {
+                this.lastFocusedElement.focus();
+                console.log('🔧 ModalAccessibility: Restored focus to:', this.lastFocusedElement);
+            }, 10);
         }
     }
 
@@ -324,6 +360,26 @@ class ModalAccessibility {
 
 // Initialize modal accessibility helper
 window.ModalAccessibility = new ModalAccessibility();
+
+// Global function for easy access
+window.toggleModalAccessibility = (modalEl, isOpen) => {
+    return window.ModalAccessibility.toggleModalAccessibility(modalEl, isOpen);
+};
+
+// Global function to ensure no aria-hidden conflicts
+window.ensureModalAccessibility = () => {
+    const allModals = document.querySelectorAll('.modal');
+    allModals.forEach(modal => {
+        // Check for aria-hidden conflicts
+        if (modal.hasAttribute('aria-hidden') && modal.getAttribute('aria-hidden') === 'true') {
+            const focusedElement = modal.querySelector(':focus');
+            if (focusedElement) {
+                console.warn('⚠️ ModalAccessibility: Found aria-hidden conflict, fixing...', modal);
+                focusedElement.blur();
+            }
+        }
+    });
+};
 
 // Export for use in other scripts
 if (typeof module !== 'undefined' && module.exports) {

@@ -3035,6 +3035,12 @@
             `;
             
             document.body.appendChild(modal);
+            
+            // Set up modal with accessibility helper
+            if (window.ModalAccessibility) {
+                window.ModalAccessibility.setupDynamicModal(modal);
+            }
+            
             const bsModal = new bootstrap.Modal(modal);
             bsModal.show();
             
@@ -3161,6 +3167,12 @@
             `;
             
             document.body.appendChild(modal);
+            
+            // Set up modal with accessibility helper
+            if (window.ModalAccessibility) {
+                window.ModalAccessibility.setupDynamicModal(modal);
+            }
+            
             const bsModal = new bootstrap.Modal(modal);
             bsModal.show();
             
@@ -3275,6 +3287,12 @@
             `;
             
             document.body.appendChild(modal);
+            
+            // Set up modal with accessibility helper
+            if (window.ModalAccessibility) {
+                window.ModalAccessibility.setupDynamicModal(modal);
+            }
+            
             const bsModal = new bootstrap.Modal(modal);
             bsModal.show();
             
@@ -3521,6 +3539,12 @@
             `;
             
             document.body.appendChild(modal);
+            
+            // Set up modal with accessibility helper
+            if (window.ModalAccessibility) {
+                window.ModalAccessibility.setupDynamicModal(modal);
+            }
+            
             const bsModal = new bootstrap.Modal(modal);
             bsModal.show();
             
@@ -3722,6 +3746,12 @@
             `;
             
             document.body.appendChild(modal);
+            
+            // Set up modal with accessibility helper
+            if (window.ModalAccessibility) {
+                window.ModalAccessibility.setupDynamicModal(modal);
+            }
+            
             const bsModal = new bootstrap.Modal(modal);
             bsModal.show();
             
@@ -3795,6 +3825,12 @@
             `;
             
             document.body.appendChild(modal);
+            
+            // Set up modal with accessibility helper
+            if (window.ModalAccessibility) {
+                window.ModalAccessibility.setupDynamicModal(modal);
+            }
+            
             const bsModal = new bootstrap.Modal(modal);
             bsModal.show();
             
@@ -3946,6 +3982,12 @@
             `;
             
             document.body.appendChild(modal);
+            
+            // Set up modal with accessibility helper
+            if (window.ModalAccessibility) {
+                window.ModalAccessibility.setupDynamicModal(modal);
+            }
+            
             const bsModal = new bootstrap.Modal(modal);
             bsModal.show();
             
@@ -4407,6 +4449,12 @@
             `;
             
             document.body.appendChild(modal);
+            
+            // Set up modal with accessibility helper
+            if (window.ModalAccessibility) {
+                window.ModalAccessibility.setupDynamicModal(modal);
+            }
+            
             const bsModal = new bootstrap.Modal(modal);
             bsModal.show();
             
@@ -4692,6 +4740,12 @@
             `;
             
             document.body.appendChild(modal);
+            
+            // Set up modal with accessibility helper
+            if (window.ModalAccessibility) {
+                window.ModalAccessibility.setupDynamicModal(modal);
+            }
+            
             const bsModal = new bootstrap.Modal(modal);
             bsModal.show();
             
@@ -4784,6 +4838,12 @@
             `;
             
             document.body.appendChild(modal);
+            
+            // Set up modal with accessibility helper
+            if (window.ModalAccessibility) {
+                window.ModalAccessibility.setupDynamicModal(modal);
+            }
+            
             const bsModal = new bootstrap.Modal(modal);
             bsModal.show();
             
@@ -4834,6 +4894,12 @@
             `;
             
             document.body.appendChild(modal);
+            
+            // Set up modal with accessibility helper
+            if (window.ModalAccessibility) {
+                window.ModalAccessibility.setupDynamicModal(modal);
+            }
+            
             const bsModal = new bootstrap.Modal(modal);
             bsModal.show();
             
@@ -4998,6 +5064,12 @@
             `;
             
             document.body.appendChild(modal);
+            
+            // Set up modal with accessibility helper
+            if (window.ModalAccessibility) {
+                window.ModalAccessibility.setupDynamicModal(modal);
+            }
+            
             const bsModal = new bootstrap.Modal(modal);
             bsModal.show();
             
@@ -5118,6 +5190,12 @@
             `;
             
             document.body.appendChild(modal);
+            
+            // Set up modal with accessibility helper
+            if (window.ModalAccessibility) {
+                window.ModalAccessibility.setupDynamicModal(modal);
+            }
+            
             const bsModal = new bootstrap.Modal(modal);
             bsModal.show();
             
@@ -6365,6 +6443,12 @@
             `;
             
             document.body.appendChild(modal);
+            
+            // Set up modal with accessibility helper
+            if (window.ModalAccessibility) {
+                window.ModalAccessibility.setupDynamicModal(modal);
+            }
+            
             const bsModal = new bootstrap.Modal(modal);
             bsModal.show();
             
@@ -6484,6 +6568,12 @@
             `;
             
             document.body.appendChild(modal);
+            
+            // Set up modal with accessibility helper
+            if (window.ModalAccessibility) {
+                window.ModalAccessibility.setupDynamicModal(modal);
+            }
+            
             const bsModal = new bootstrap.Modal(modal);
             bsModal.show();
             
@@ -6645,21 +6735,8 @@
                 keyboard: true
             });
             
-            // Proper focus management
-            modal.addEventListener('shown.bs.modal', () => {
-                // Remove aria-hidden when modal is shown
-                modal.removeAttribute('aria-hidden');
-                // Focus on first input
-                const firstInput = modal.querySelector('input, select, textarea');
-                if (firstInput) {
-                    firstInput.focus();
-                }
-            });
-            
-            modal.addEventListener('hide.bs.modal', () => {
-                // Set aria-hidden when modal is being hidden
-                modal.setAttribute('aria-hidden', 'true');
-            });
+            // Use ModalAccessibility helper for proper focus management
+            // The ModalAccessibility class will handle all event listeners automatically
             
             modal.addEventListener('hidden.bs.modal', () => {
                 document.body.removeChild(modal);
@@ -6951,6 +7028,12 @@
             `;
             
             document.body.appendChild(modal);
+            
+            // Set up modal with accessibility helper
+            if (window.ModalAccessibility) {
+                window.ModalAccessibility.setupDynamicModal(modal);
+            }
+            
             const bsModal = new bootstrap.Modal(modal);
             bsModal.show();
             
@@ -7240,6 +7323,12 @@
             `;
             
             document.body.appendChild(modal);
+            
+            // Set up modal with accessibility helper
+            if (window.ModalAccessibility) {
+                window.ModalAccessibility.setupDynamicModal(modal);
+            }
+            
             const bsModal = new bootstrap.Modal(modal);
             bsModal.show();
             
@@ -7378,6 +7467,12 @@
             `;
             
             document.body.appendChild(modal);
+            
+            // Set up modal with accessibility helper
+            if (window.ModalAccessibility) {
+                window.ModalAccessibility.setupDynamicModal(modal);
+            }
+            
             const bsModal = new bootstrap.Modal(modal);
             bsModal.show();
             
@@ -7481,6 +7576,12 @@
             `;
             
             document.body.appendChild(modal);
+            
+            // Set up modal with accessibility helper
+            if (window.ModalAccessibility) {
+                window.ModalAccessibility.setupDynamicModal(modal);
+            }
+            
             const bsModal = new bootstrap.Modal(modal);
             bsModal.show();
             
@@ -7660,6 +7761,12 @@
             `;
             
             document.body.appendChild(modal);
+            
+            // Set up modal with accessibility helper
+            if (window.ModalAccessibility) {
+                window.ModalAccessibility.setupDynamicModal(modal);
+            }
+            
             const bsModal = new bootstrap.Modal(modal);
             bsModal.show();
             
@@ -7721,6 +7828,12 @@
             `;
             
             document.body.appendChild(modal);
+            
+            // Set up modal with accessibility helper
+            if (window.ModalAccessibility) {
+                window.ModalAccessibility.setupDynamicModal(modal);
+            }
+            
             const bsModal = new bootstrap.Modal(modal);
             bsModal.show();
             
@@ -7796,6 +7909,12 @@
             `;
             
             document.body.appendChild(modal);
+            
+            // Set up modal with accessibility helper
+            if (window.ModalAccessibility) {
+                window.ModalAccessibility.setupDynamicModal(modal);
+            }
+            
             const bsModal = new bootstrap.Modal(modal);
             bsModal.show();
             
@@ -7905,6 +8024,12 @@
             `;
             
             document.body.appendChild(modal);
+            
+            // Set up modal with accessibility helper
+            if (window.ModalAccessibility) {
+                window.ModalAccessibility.setupDynamicModal(modal);
+            }
+            
             const bsModal = new bootstrap.Modal(modal);
             bsModal.show();
             
@@ -8266,6 +8391,12 @@
             `;
             
             document.body.appendChild(modal);
+            
+            // Set up modal with accessibility helper
+            if (window.ModalAccessibility) {
+                window.ModalAccessibility.setupDynamicModal(modal);
+            }
+            
             const bsModal = new bootstrap.Modal(modal);
             bsModal.show();
             
@@ -8410,6 +8541,12 @@
             `;
             
             document.body.appendChild(modal);
+            
+            // Set up modal with accessibility helper
+            if (window.ModalAccessibility) {
+                window.ModalAccessibility.setupDynamicModal(modal);
+            }
+            
             const bsModal = new bootstrap.Modal(modal);
             bsModal.show();
             
@@ -8570,6 +8707,12 @@
             `;
             
             document.body.appendChild(modal);
+            
+            // Set up modal with accessibility helper
+            if (window.ModalAccessibility) {
+                window.ModalAccessibility.setupDynamicModal(modal);
+            }
+            
             const bsModal = new bootstrap.Modal(modal);
             bsModal.show();
             
@@ -9503,6 +9646,12 @@ INVENTORY SUMMARY:
             `;
             
             document.body.appendChild(modal);
+            
+            // Set up modal with accessibility helper
+            if (window.ModalAccessibility) {
+                window.ModalAccessibility.setupDynamicModal(modal);
+            }
+            
             const bsModal = new bootstrap.Modal(modal);
             bsModal.show();
             
@@ -11424,6 +11573,12 @@ INVENTORY SUMMARY:
             `;
             
             document.body.appendChild(modal);
+            
+            // Set up modal with accessibility helper
+            if (window.ModalAccessibility) {
+                window.ModalAccessibility.setupDynamicModal(modal);
+            }
+            
             const bsModal = new bootstrap.Modal(modal);
             bsModal.show();
             
@@ -11583,6 +11738,12 @@ INVENTORY SUMMARY:
             `;
             
             document.body.appendChild(modal);
+            
+            // Set up modal with accessibility helper
+            if (window.ModalAccessibility) {
+                window.ModalAccessibility.setupDynamicModal(modal);
+            }
+            
             const bsModal = new bootstrap.Modal(modal);
             bsModal.show();
             
@@ -12548,6 +12709,12 @@ INVENTORY SUMMARY:
             document.head.appendChild(style);
             
             document.body.appendChild(modal);
+            
+            // Set up modal with accessibility helper
+            if (window.ModalAccessibility) {
+                window.ModalAccessibility.setupDynamicModal(modal);
+            }
+            
             const bsModal = new bootstrap.Modal(modal);
             bsModal.show();
             
@@ -12860,6 +13027,12 @@ INVENTORY SUMMARY:
             `;
             
             document.body.appendChild(modal);
+            
+            // Set up modal with accessibility helper
+            if (window.ModalAccessibility) {
+                window.ModalAccessibility.setupDynamicModal(modal);
+            }
+            
             const bsModal = new bootstrap.Modal(modal);
             bsModal.show();
             
@@ -12908,6 +13081,12 @@ INVENTORY SUMMARY:
             `;
             
             document.body.appendChild(modal);
+            
+            // Set up modal with accessibility helper
+            if (window.ModalAccessibility) {
+                window.ModalAccessibility.setupDynamicModal(modal);
+            }
+            
             const bsModal = new bootstrap.Modal(modal);
             bsModal.show();
             
@@ -12967,6 +13146,12 @@ INVENTORY SUMMARY:
             `;
             
             document.body.appendChild(modal);
+            
+            // Set up modal with accessibility helper
+            if (window.ModalAccessibility) {
+                window.ModalAccessibility.setupDynamicModal(modal);
+            }
+            
             const bsModal = new bootstrap.Modal(modal);
             bsModal.show();
             
@@ -13076,6 +13261,12 @@ INVENTORY SUMMARY:
             `;
             
             document.body.appendChild(modal);
+            
+            // Set up modal with accessibility helper
+            if (window.ModalAccessibility) {
+                window.ModalAccessibility.setupDynamicModal(modal);
+            }
+            
             const bsModal = new bootstrap.Modal(modal);
             bsModal.show();
             
@@ -13256,6 +13447,12 @@ INVENTORY SUMMARY:
             `;
             
             document.body.appendChild(modal);
+            
+            // Set up modal with accessibility helper
+            if (window.ModalAccessibility) {
+                window.ModalAccessibility.setupDynamicModal(modal);
+            }
+            
             const bsModal = new bootstrap.Modal(modal);
             bsModal.show();
             
