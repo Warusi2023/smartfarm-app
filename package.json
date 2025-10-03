@@ -1,0 +1,46 @@
+{
+  "name": "smartfarm-app",
+  "version": "1.0.0",
+  "description": "SmartFarm - Modern Farm Management System",
+  "private": true,
+  "workspaces": [
+    "web-project",
+    "backend-api"
+  ],
+  "scripts": {
+    "install:backend": "cd backend-api && npm install",
+    "install:frontend": "cd web-project && npm install",
+    "install:all": "npm run install:backend && npm run install:frontend",
+    "build:backend": "cd backend-api && npm run build",
+    "build:frontend": "cd web-project && npm run build",
+    "build:all": "npm run build:backend && npm run build:frontend",
+    "test:backend": "cd backend-api && npm test",
+    "test:frontend": "cd web-project && npm test",
+    "test:all": "npm run test:backend && npm run test:frontend",
+    "start": "cd backend-api && npm start",
+    "dev": "concurrently \"cd backend-api && npm run dev\" \"cd web-project && npm run dev\"",
+    "lint:backend": "cd backend-api && npm run lint",
+    "lint:frontend": "cd web-project && npm run lint",
+    "lint:all": "npm run lint:backend && npm run lint:frontend"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Warusi2023/smartfarm-app.git"
+  },
+  "keywords": [
+    "farm",
+    "agriculture",
+    "management",
+    "dashboard",
+    "api"
+  ],
+  "author": "SmartFarm Team",
+  "license": "MIT"
+}

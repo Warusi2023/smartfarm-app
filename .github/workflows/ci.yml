@@ -245,6 +245,8 @@ jobs:
           railway_token: ${{ secrets.RAILWAY_TOKEN }}
           service: ${{ secrets.RAILWAY_SERVICE_ID }}
           working_directory: ./backend-api
+          build_command: "npm ci"
+          start_command: "npm start"
 
   # Notification
   notify:
