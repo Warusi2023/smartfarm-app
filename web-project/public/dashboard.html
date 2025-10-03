@@ -2897,6 +2897,7 @@
                 
                 // Test navigation functions
                 testNavigation();
+                testNavigationFunctions(); // Test navigation functions and DOM elements
                 
                 initializeGlobalDatabase();
                 initializeDashboard();
@@ -5501,20 +5502,63 @@
         }
 
         function showFarmManagement() {
-            console.log('Switching to Farm Management...');
+            console.log('🌾 showFarmManagement called');
             try {
+                // Check if view element exists
+                const viewElement = document.getElementById('farmManagementView');
+                if (!viewElement) {
+                    console.error('❌ farmManagementView element not found');
+                    return;
+                }
+                console.log('✅ farmManagementView element found');
+
+                // Check if showView function exists
+                if (typeof showView !== 'function') {
+                    console.error('❌ showView function not found');
+                    return;
+                }
+                console.log('✅ showView function found');
+
+                // Show the view
                 showView('farmManagementView');
-                setActiveNav('farm');
-                updateURL('farmManagementView');
+                console.log('✅ showView called');
+
+                // Set active navigation
+                if (typeof setActiveNav === 'function') {
+                    setActiveNav('farm');
+                    console.log('✅ setActiveNav called');
+                } else {
+                    console.warn('⚠️ setActiveNav function not found');
+                }
+
+                // Update URL
+                if (typeof updateURL === 'function') {
+                    updateURL('farmManagementView');
+                    console.log('✅ updateURL called');
+                } else {
+                    console.warn('⚠️ updateURL function not found');
+                }
+
                 // Load fresh farm data when switching to this tab
                 if (typeof loadFarmData === 'function') {
                     loadFarmData();
+                    console.log('✅ loadFarmData called');
+                } else {
+                    console.warn('⚠️ loadFarmData function not found');
                 }
-                console.log('Successfully switched to Farm Management');
+
+                console.log('🎉 Successfully switched to Farm Management');
             } catch (error) {
-                console.error('Error switching to Farm Management:', error);
+                console.error('❌ Error switching to Farm Management:', error);
+                console.error('Error stack:', error.stack);
                 // Fallback: just show the view
-                document.getElementById('farmManagementView').style.display = 'block';
+                const viewElement = document.getElementById('farmManagementView');
+                if (viewElement) {
+                    viewElement.style.display = 'block';
+                    console.log('✅ Fallback: Farm Management view displayed');
+                } else {
+                    console.error('❌ Fallback failed: farmManagementView not found');
+                }
             }
         }
 
@@ -5648,16 +5692,55 @@
         }
 
         function showReports() {
-            console.log('Switching to Reports...');
+            console.log('📊 showReports called');
             try {
+                // Check if view element exists
+                const viewElement = document.getElementById('reportsView');
+                if (!viewElement) {
+                    console.error('❌ reportsView element not found');
+                    return;
+                }
+                console.log('✅ reportsView element found');
+
+                // Check if showView function exists
+                if (typeof showView !== 'function') {
+                    console.error('❌ showView function not found');
+                    return;
+                }
+                console.log('✅ showView function found');
+
+                // Show the view
                 showView('reportsView');
-                setActiveNav('reports');
-                updateURL('reportsView');
-                console.log('Successfully switched to Reports');
+                console.log('✅ showView called');
+
+                // Set active navigation
+                if (typeof setActiveNav === 'function') {
+                    setActiveNav('reports');
+                    console.log('✅ setActiveNav called');
+                } else {
+                    console.warn('⚠️ setActiveNav function not found');
+                }
+
+                // Update URL
+                if (typeof updateURL === 'function') {
+                    updateURL('reportsView');
+                    console.log('✅ updateURL called');
+                } else {
+                    console.warn('⚠️ updateURL function not found');
+                }
+
+                console.log('🎉 Successfully switched to Reports');
             } catch (error) {
-                console.error('Error switching to Reports:', error);
+                console.error('❌ Error switching to Reports:', error);
+                console.error('Error stack:', error.stack);
                 // Fallback: just show the view
-                document.getElementById('reportsView').style.display = 'block';
+                const viewElement = document.getElementById('reportsView');
+                if (viewElement) {
+                    viewElement.style.display = 'block';
+                    console.log('✅ Fallback: Reports view displayed');
+                } else {
+                    console.error('❌ Fallback failed: reportsView not found');
+                }
             }
         }
 
@@ -13210,6 +13293,66 @@ INVENTORY SUMMARY:
         window.addNewCropWithData = addNewCropWithData;
         window.addNewPetWithData = addNewPetWithData;
         window.showGlobalCropDatabase = showGlobalCropDatabase;
+        
+        // Make navigation functions globally accessible
+        window.showFarmManagement = showFarmManagement;
+        window.showReports = showReports;
+        window.showDashboard = showDashboard;
+        window.showCropManagement = showCropManagement;
+        window.showLivestockManagement = showLivestockManagement;
+        window.showPetsManagement = showPetsManagement;
+        window.showInventoryManagement = showInventoryManagement;
+        window.showAnalytics = showAnalytics;
+        window.showTasks = showTasks;
+        
+        // Test navigation functions
+        function testNavigationFunctions() {
+            console.log('🧪 Testing navigation functions...');
+            const functions = [
+                'showDashboard',
+                'showFarmManagement', 
+                'showCropManagement',
+                'showLivestockManagement',
+                'showPetsManagement',
+                'showInventoryManagement',
+                'showAnalytics',
+                'showTasks',
+                'showReports'
+            ];
+            
+            functions.forEach(funcName => {
+                if (typeof window[funcName] === 'function') {
+                    console.log(`✅ ${funcName} is available`);
+                } else {
+                    console.error(`❌ ${funcName} is NOT available`);
+                }
+            });
+            
+            // Test DOM elements
+            const views = [
+                'dashboardView',
+                'farmManagementView',
+                'cropManagementView',
+                'livestockManagementView',
+                'petsManagementView',
+                'inventoryManagementView',
+                'analyticsView',
+                'tasksView',
+                'reportsView'
+            ];
+            
+            views.forEach(viewId => {
+                const element = document.getElementById(viewId);
+                if (element) {
+                    console.log(`✅ ${viewId} element found`);
+                } else {
+                    console.error(`❌ ${viewId} element NOT found`);
+                }
+            });
+        }
+        
+        // Make test function globally accessible
+        window.testNavigationFunctions = testNavigationFunctions;
         window.showGlobalLivestockDatabase = showGlobalLivestockDatabase;
         window.showGlobalPetsDatabase = showGlobalPetsDatabase;
         window.filterCrops = filterCrops;
