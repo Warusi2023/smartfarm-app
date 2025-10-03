@@ -77,6 +77,26 @@
             background: rgba(255, 255, 255, 0.2);
             color: white;
             transform: translateX(5px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .sidebar .nav-link.active {
+            background: rgba(255, 255, 255, 0.3);
+            border-left: 3px solid #fff;
+            font-weight: 600;
+        }
+
+        /* Smooth view transitions */
+        .main-content > div {
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .main-content > div[style*="display: none"] {
+            opacity: 0;
+        }
+
+        .main-content > div[style*="display: block"] {
+            opacity: 1;
         }
 
         .main-content {
@@ -2649,6 +2669,67 @@
             } else {
                 console.log('All required functions are defined');
                 return true;
+            }
+        }
+
+        // URL Routing System
+        function updateURL(viewId) {
+            try {
+                const urlMap = {
+                    'dashboardView': '/dashboard',
+                    'farmManagementView': '/farm-management',
+                    'cropManagementView': '/crop-management',
+                    'livestockManagementView': '/livestock-management',
+                    'petsManagementView': '/pets-management',
+                    'inventoryManagementView': '/inventory-management',
+                    'analyticsView': '/analytics',
+                    'tasksView': '/tasks',
+                    'reportsView': '/reports'
+                };
+                
+                const path = urlMap[viewId] || '/dashboard';
+                
+                // Update URL without page reload
+                if (history.pushState) {
+                    history.pushState({view: viewId}, '', path);
+                }
+                
+                console.log('URL updated to:', path);
+            } catch (error) {
+                console.error('Error updating URL:', error);
+            }
+        }
+
+        // Initialize URL routing
+        function initializeURLRouting() {
+            try {
+                // Handle browser back/forward buttons
+                window.addEventListener('popstate', function(event) {
+                    if (event.state && event.state.view) {
+                        showView(event.state.view);
+                    }
+                });
+                
+                // Check current URL and show appropriate view
+                const currentPath = window.location.pathname;
+                const pathToView = {
+                    '/dashboard': 'dashboardView',
+                    '/farm-management': 'farmManagementView',
+                    '/crop-management': 'cropManagementView',
+                    '/livestock-management': 'livestockManagementView',
+                    '/pets-management': 'petsManagementView',
+                    '/inventory-management': 'inventoryManagementView',
+                    '/analytics': 'analyticsView',
+                    '/tasks': 'tasksView',
+                    '/reports': 'reportsView'
+                };
+                
+                const viewId = pathToView[currentPath] || 'dashboardView';
+                showView(viewId);
+                
+                console.log('URL routing initialized for path:', currentPath);
+            } catch (error) {
+                console.error('Error initializing URL routing:', error);
             }
         }
 
@@ -5300,17 +5381,35 @@
 
         // Navigation functions
         function showDashboard() {
-            showView('dashboardView');
-            setActiveNav('dashboard');
-            updateURL('dashboardView');
+            console.log('Switching to Dashboard...');
+            try {
+                showView('dashboardView');
+                setActiveNav('dashboard');
+                updateURL('dashboardView');
+                console.log('Successfully switched to Dashboard');
+            } catch (error) {
+                console.error('Error switching to Dashboard:', error);
+                // Fallback: just show the view
+                document.getElementById('dashboardView').style.display = 'block';
+            }
         }
 
         function showFarmManagement() {
-            showView('farmManagementView');
-            setActiveNav('farm');
-            updateURL('farmManagementView');
-            // Load fresh farm data when switching to this tab
-            loadFarmData();
+            console.log('Switching to Farm Management...');
+            try {
+                showView('farmManagementView');
+                setActiveNav('farm');
+                updateURL('farmManagementView');
+                // Load fresh farm data when switching to this tab
+                if (typeof loadFarmData === 'function') {
+                    loadFarmData();
+                }
+                console.log('Successfully switched to Farm Management');
+            } catch (error) {
+                console.error('Error switching to Farm Management:', error);
+                // Fallback: just show the view
+                document.getElementById('farmManagementView').style.display = 'block';
+            }
         }
 
         function showCropManagement() {
@@ -5399,9 +5498,17 @@
         }
 
         function showAnalytics() {
-            showView('analyticsView');
-            setActiveNav('analytics');
-            updateURL('analyticsView');
+            console.log('Switching to Analytics...');
+            try {
+                showView('analyticsView');
+                setActiveNav('analytics');
+                updateURL('analyticsView');
+                console.log('Successfully switched to Analytics');
+            } catch (error) {
+                console.error('Error switching to Analytics:', error);
+                // Fallback: just show the view
+                document.getElementById('analyticsView').style.display = 'block';
+            }
             // Initialize analytics charts if not already initialized
             if (!revenueChart || !costChart) {
                 initializeAnalyticsCharts();
@@ -5411,40 +5518,78 @@
         }
 
         function showTasks() {
-            showView('tasksView');
-            setActiveNav('tasks');
-            updateURL('tasksView');
-            
-            // Load tasks table
-            loadTasksTable();
-            
-            // Initialize weeding tasks if not already done
-            if (typeof intelligentWeeding !== 'undefined') {
-                intelligentWeeding.generateWeedingTasks();
+            console.log('Switching to Tasks...');
+            try {
+                showView('tasksView');
+                setActiveNav('tasks');
+                updateURL('tasksView');
+                
+                // Load tasks table
+                if (typeof loadTasksTable === 'function') {
+                    loadTasksTable();
+                }
+                
+                // Initialize weeding tasks if not already done
+                if (typeof intelligentWeeding !== 'undefined') {
+                    intelligentWeeding.generateWeedingTasks();
+                }
+                console.log('Successfully switched to Tasks');
+            } catch (error) {
+                console.error('Error switching to Tasks:', error);
+                // Fallback: just show the view
+                document.getElementById('tasksView').style.display = 'block';
             }
         }
 
         function showReports() {
-            showView('reportsView');
-            setActiveNav('reports');
-            updateURL('reportsView');
+            console.log('Switching to Reports...');
+            try {
+                showView('reportsView');
+                setActiveNav('reports');
+                updateURL('reportsView');
+                console.log('Successfully switched to Reports');
+            } catch (error) {
+                console.error('Error switching to Reports:', error);
+                // Fallback: just show the view
+                document.getElementById('reportsView').style.display = 'block';
+            }
         }
 
         function showView(viewId) {
-            // Hide all views
-            const views = ['dashboardView', 'farmManagementView', 'cropManagementView', 
-                          'livestockManagementView', 'inventoryManagementView', 
-                          'analyticsView', 'tasksView', 'reportsView'];
-            views.forEach(id => {
-                document.getElementById(id).style.display = 'none';
-            });
+            console.log('Showing view:', viewId);
             
-            // Show selected view
-            document.getElementById(viewId).style.display = 'block';
+            try {
+                // Hide all views
+                const views = ['dashboardView', 'farmManagementView', 'cropManagementView', 
+                              'livestockManagementView', 'petsManagementView', 'inventoryManagementView', 
+                              'analyticsView', 'tasksView', 'reportsView'];
+                
+                views.forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.style.display = 'none';
+                    } else {
+                        console.warn('View element not found:', id);
+                    }
+                });
+                
+                // Show selected view
+                const targetView = document.getElementById(viewId);
+                if (targetView) {
+                    targetView.style.display = 'block';
+                    console.log('Successfully displayed view:', viewId);
+                } else {
+                    console.error('Target view not found:', viewId);
+                }
+            } catch (error) {
+                console.error('Error in showView:', error);
+            }
         }
 
         function setActiveNav(navItem) {
             try {
+                console.log('Setting active nav for:', navItem);
+                
                 // Remove active class from all nav links
                 const navLinks = document.querySelectorAll('.sidebar .nav-link');
                 if (navLinks && navLinks.length > 0) {
@@ -5453,10 +5598,31 @@
                     });
                 }
                 
-                // Add active class to the corresponding nav link
-                const targetLink = document.querySelector(`[onclick*="${navItem}"]`);
+                // Add active class to the corresponding nav link based on navItem
+                let targetLink = null;
+                
+                // Map navItem to specific selectors
+                const navSelectors = {
+                    'dashboard': '[onclick*="showDashboard"]',
+                    'farm': '[onclick*="showFarmManagement"]',
+                    'crop': '[onclick*="showCropManagement"]',
+                    'livestock': '[onclick*="showLivestockManagement"]',
+                    'pets': '[onclick*="showPetsManagement"]',
+                    'inventory': '[onclick*="showInventoryManagement"]',
+                    'analytics': '[onclick*="showAnalytics"]',
+                    'tasks': '[onclick*="showTasks"]',
+                    'reports': '[onclick*="showReports"]'
+                };
+                
+                if (navSelectors[navItem]) {
+                    targetLink = document.querySelector(navSelectors[navItem]);
+                }
+                
                 if (targetLink) {
                     targetLink.classList.add('active');
+                    console.log('Set active nav link:', targetLink.textContent.trim());
+                } else {
+                    console.warn('Could not find nav link for:', navItem);
                 }
                 
                 // Also try to add active class to clicked nav link if event exists

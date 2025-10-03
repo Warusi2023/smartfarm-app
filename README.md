@@ -41,9 +41,41 @@ A comprehensive agricultural management system that helps farmers manage their f
 
 ### User Management
 - **User Authentication**: Secure user registration and login
-- **Role-based Access**: Different access levels for users
+- **Role-based Access**: Different access levels for users (Admin, Manager, Farmer)
 - **Profile Management**: User profile and preferences
 - **Password Security**: Secure password management
+- **Group Management**: Assign users to farm groups with specific roles
+- **Task Approvals**: Admin/Manager approval workflows for critical tasks
+
+## 🧭 Navigation Map
+
+### Main Dashboard Navigation
+| Menu Item | Route | Function | Status |
+|-----------|-------|----------|---------|
+| Dashboard | `/dashboard` | `showDashboard()` | ✅ Working |
+| Farm Management | `/farm-management` | `showFarmManagement()` | ✅ Working |
+| Crop Management | `/crop-management` | `showCropManagement()` | ✅ Working |
+| Livestock | `/livestock-management` | `showLivestockManagement()` | ✅ Working |
+| Pets | `/pets-management` | `showPetsManagement()` | ✅ Working |
+| Inventory | `/inventory-management` | `showInventoryManagement()` | ✅ Working |
+| Analytics | `/analytics` | `showAnalytics()` | ✅ Working |
+| Tasks | `/tasks` | `showTasks()` | ✅ Working |
+| Reports | `/reports` | `showReports()` | ✅ Working |
+
+### External Pages
+| Menu Item | Route | File | Status |
+|-----------|-------|------|---------|
+| Watering Management | `/watering-management.html` | `watering-management.html` | ✅ Available |
+| Farm Locator | `/farm-locator.html` | `farm-locator.html` | ✅ Available |
+| Geofencing Setup | `/geofencing-setup.html` | `geofencing-setup.html` | ✅ Available |
+| AI Advisory | `/ai-advisory.html` | `ai-advisory.html` | ✅ Available |
+| Farm to Table | `/farm-to-table.html` | `farm-to-table.html` | ✅ Available |
+| Subscription | `/subscription-management.html` | `subscription-management.html` | ✅ Available |
+| User Management | `/user-management.html` | `user-management.html` | ✅ Available |
+| AI Predictions | `/ai-predictions.html` | `ai-predictions.html` | ✅ Available |
+| Weeding | `/weeding-management.html` | `weeding-management.html` | ✅ Available |
+| Pesticides | `/pesticide-management.html` | `pesticide-management.html` | ✅ Available |
+| Supply Chain | `/supply-chain.html` | `supply-chain.html` | ✅ Available |
 
 ## 🚀 Quick Start
 
