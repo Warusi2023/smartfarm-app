@@ -5257,62 +5257,9 @@
             renderCropsTable();
         }
 
-        function loadLivestockData() {
-            const savedLivestock = localStorage.getItem('livestockData');
-            if (savedLivestock) {
-                try {
-                    livestock = JSON.parse(savedLivestock);
-                    console.log('Livestock data loaded from localStorage:', livestock);
-                } catch (e) {
-                    console.error('Error loading livestock data:', e);
-                    livestock = [];
-                }
-            } else {
-                // Initialize with default data
-                livestock = [
-                    { 
-                        id: 1, 
-                        type: 'Cattle', 
-                        breed: 'Holstein', 
-                        quantity: 25, 
-                        location: 'Pasture 1', 
-                        status: 'Healthy',
-                        earTags: ['ET001', 'ET002', 'ET003'],
-                        gpsLocation: { lat: -18.1416, lng: 178.4419, lastUpdate: '2025-01-15T10:30:00Z' },
-                        weightRecords: [
-                            { date: '2025-01-01', avgWeight: 450, notes: 'Initial weigh-in' },
-                            { date: '2025-01-15', avgWeight: 475, notes: 'Monthly check' }
-                        ],
-                        immunizations: [
-                            { date: '2024-12-01', vaccine: 'FMD', nextDue: '2025-06-01', vet: 'Dr. Smith' },
-                            { date: '2024-11-15', vaccine: 'Anthrax', nextDue: '2025-11-15', vet: 'Dr. Smith' }
-                        ],
-                        healthNotes: 'All cattle in good health, regular grazing rotation'
-                    },
-                    { 
-                        id: 2, 
-                        type: 'Pigs', 
-                        breed: 'Large White', 
-                        quantity: 15, 
-                        location: 'Pen 2', 
-                        status: 'Healthy',
-                        earTags: ['ET101', 'ET102'],
-                        gpsLocation: { lat: -18.1420, lng: 178.4425, lastUpdate: '2025-01-15T09:15:00Z' },
-                        weightRecords: [
-                            { date: '2025-01-01', avgWeight: 120, notes: 'Initial weigh-in' },
-                            { date: '2025-01-15', avgWeight: 135, notes: 'Weekly check' }
-                        ],
-                        immunizations: [
-                            { date: '2024-12-15', vaccine: 'PRRS', nextDue: '2025-03-15', vet: 'Dr. Johnson' },
-                            { date: '2024-11-30', vaccine: 'Swine Flu', nextDue: '2025-05-30', vet: 'Dr. Johnson' }
-                        ],
-                        healthNotes: 'Pigs showing good growth rate, no health issues'
-                    }
-                ];
-                saveLivestockData();
-            }
-            renderLivestockTable();
-        }
+        // loadLivestockData function moved to API integration section (line ~12458)
+        // This function now uses the modern API version for better data management
+        // The localStorage version has been removed to prevent function conflicts
 
         function loadPetsData() {
             const savedPets = localStorage.getItem('petsData');
@@ -5449,7 +5396,7 @@
                 if (typeof loadLivestockData === 'function') {
                     loadLivestockData();
                 }
-                console.log('Livestock data after loading:', livestock);
+                console.log('Livestock data after loading:', typeof livestock !== 'undefined' ? livestock : 'Not loaded');
                 console.log('Successfully switched to Livestock Management');
             } catch (error) {
                 console.error('Error switching to Livestock Management:', error);
