@@ -38,8 +38,10 @@ class WeatherService {
     }
 
     getWeatherApiKey() {
-        // Try to get API key from various sources
-        return window.VITE_OPENWEATHER_API_KEY || 
+        // Try to get API key from various sources (frontend environment variables)
+        return window.VITE_WEATHER_API_KEY || 
+               window.VITE_OPENWEATHER_API_KEY || 
+               window.NEXT_PUBLIC_WEATHER_API_KEY ||
                window.OPENWEATHER_API_KEY || 
                null;
     }

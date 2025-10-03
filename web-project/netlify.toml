@@ -4,6 +4,9 @@
 
 [build.environment]
   NODE_VERSION = "18"
+  VITE_API_BASE_URL = "https://smartfarm-backend.railway.app"
+  NEXT_PUBLIC_API_BASE_URL = "https://smartfarm-backend.railway.app"
+  VITE_WEATHER_API_KEY = "your_weather_api_key_here"
 
 # API redirects (must come first)
 [[redirects]]

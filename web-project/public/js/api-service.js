@@ -5,9 +5,18 @@
 
 class SmartFarmAPIService {
     constructor() {
-        this.baseURL = window.SmartFarmConfig?.API_BASE_URL || 'https://smartfarm-app-production.up.railway.app';
+        // Get API base URL from environment variables or config
+        this.baseURL = this.getApiBaseUrl();
         this.authToken = this.getAuthToken();
         this.setupInterceptors();
+    }
+
+    getApiBaseUrl() {
+        // Try environment variables first, then config, then default
+        return window.VITE_API_BASE_URL || 
+               window.NEXT_PUBLIC_API_BASE_URL || 
+               window.SmartFarmConfig?.API_BASE_URL || 
+               'https://smartfarm-backend.railway.app';
     }
 
     // Authentication token management
@@ -33,9 +42,10 @@ class SmartFarmAPIService {
         // This will be used for automatic token refresh, error handling, etc.
     }
 
-    // Generic API request method
-    async request(endpoint, options = {}) {
+    // Generic API request method with retry logic and error handling
+    async request(endpoint, options = {}, retryCount = 0) {
         const url = `${this.baseURL}/api${endpoint}`;
+        const maxRetries = 3;
         const config = {
             headers: {
                 'Content-Type': 'application/json',
@@ -50,28 +60,113 @@ class SmartFarmAPIService {
         }
 
         try {
+            console.log(`🌐 API Request: ${config.method || 'GET'} ${url}`);
+            
             const response = await fetch(url, config);
-            const data = await response.json();
-
-            // Handle authentication errors
-            if (response.status === 401) {
-                this.clearAuthToken();
-                window.location.href = '/login.html';
-                return { success: false, error: 'Authentication required' };
-            }
-
-            // Handle other HTTP errors
+            
             if (!response.ok) {
-                throw new Error(data.error || `HTTP ${response.status}: ${response.statusText}`);
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
-
-            return data;
+            
+            const data = await response.json();
+            console.log(`✅ API Response: ${url}`, data);
+            
+            return {
+                success: true,
+                data: data.data || data,
+                message: data.message || 'Success'
+            };
+            
         } catch (error) {
-            console.error('API Request failed:', error);
+            console.error(`❌ API Error: ${url}`, error);
+            
+            // Retry logic with exponential backoff
+            if (retryCount < maxRetries && this.shouldRetry(error)) {
+                const delay = Math.pow(2, retryCount) * 1000; // 1s, 2s, 4s
+                console.log(`🔄 Retrying in ${delay}ms (attempt ${retryCount + 1}/${maxRetries})`);
+                
+                await this.delay(delay);
+                return this.request(endpoint, options, retryCount + 1);
+            }
+            
+            // Show server unavailable banner after all retries failed
+            this.showServerUnavailableBanner();
+            
             return {
                 success: false,
-                error: error.message || 'Network error occurred'
+                error: error.message,
+                retries: retryCount
             };
+        }
+    }
+
+    // Check if error should trigger a retry
+    shouldRetry(error) {
+        return (
+            error.message.includes('Failed to fetch') ||
+            error.message.includes('NetworkError') ||
+            error.message.includes('HTTP 5') // 5xx server errors
+        );
+    }
+
+    // Delay utility for retry backoff
+    delay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    // Show server unavailable banner
+    showServerUnavailableBanner() {
+        // Remove existing banner if present
+        const existingBanner = document.getElementById('server-unavailable-banner');
+        if (existingBanner) {
+            existingBanner.remove();
+        }
+
+        // Create banner
+        const banner = document.createElement('div');
+        banner.id = 'server-unavailable-banner';
+        banner.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #dc3545;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            z-index: 9999;
+            font-family: Arial, sans-serif;
+        `;
+        banner.innerHTML = `
+            ⚠️ Server temporarily unavailable. Some features may not work. 
+            <button onclick="this.parentElement.remove()" style="background: none; border: none; color: white; cursor: pointer; margin-left: 10px;">✕</button>
+        `;
+
+        // Add body padding to account for banner
+        document.body.style.paddingTop = '50px';
+        
+        document.body.insertBefore(banner, document.body.firstChild);
+
+        // Auto-remove after 10 seconds
+        setTimeout(() => {
+            if (banner.parentElement) {
+                banner.remove();
+                document.body.style.paddingTop = '0px';
+            }
+        }, 10000);
+    }
+
+    // Check if backend is available
+    async isBackendAvailable() {
+        try {
+            const response = await fetch(`${this.baseURL}/api/health`, {
+                method: 'GET',
+                timeout: 5000
+            });
+            return response.ok;
+        } catch (error) {
+            console.warn('Backend not available:', error.message);
+            return false;
         }
     }
 
