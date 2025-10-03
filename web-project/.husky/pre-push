@@ -1,0 +1,26 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🔧 Running pre-push checks..."
+
+# Run linting
+echo "🔍 Running ESLint..."
+npm run lint:check
+
+# Run formatting check
+echo "🎨 Checking code formatting..."
+npm run format:check
+
+# Run all tests
+echo "🧪 Running all tests..."
+npm run test
+
+# Run E2E tests
+echo "🎭 Running E2E tests..."
+npm run e2e
+
+# Check for security vulnerabilities
+echo "🔒 Checking for security vulnerabilities..."
+npm audit --audit-level=moderate
+
+echo "✅ Pre-push checks passed!"

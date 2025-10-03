@@ -1,32 +1,26 @@
 # Dependencies
 node_modules/
-
-# Build outputs
 dist/
 build/
 
 # Coverage reports
 coverage/
 
-# Test results
-test-results/
-playwright-report/
-playwright/.cache/
-
-# Lighthouse CI
-.lighthouseci/
-
 # Logs
 *.log
 npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
 
 # Runtime data
 pids
 *.pid
 *.seed
 *.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+
+# Dependency directories
+node_modules/
 
 # Optional npm cache directory
 .npm
@@ -62,26 +56,10 @@ pids
 ehthumbs.db
 Thumbs.db
 
-# Vendor files
-public/js/vendor/
-public/js/lib/
-public/css/vendor/
+# Test results
+test-results/
+playwright-report/
+playwright/.cache/
 
-# Generated files
-public/js/*.min.js
-public/css/*.min.css
-
-# Temporary files
-*.tmp
-*.temp
-
-# Lock files (keep package-lock.json)
-yarn.lock
-pnpm-lock.yaml
-
-# Sentry
-.sentryclirc
-
-# Local development
-.local
-.cache
+# Lighthouse CI
+.lighthouseci/

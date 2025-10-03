@@ -1,58 +1,90 @@
 {
   "name": "smartfarm-frontend",
   "version": "1.0.0",
-  "description": "SmartFarm Frontend - Agricultural Management System",
-  "main": "public/index.html",
+  "description": "SmartFarm Frontend - Modern Farm Management Dashboard",
+  "main": "public/dashboard.html",
   "scripts": {
-    "dev": "npx http-server public -p 3000 -c-1 --cors",
-    "build": "echo 'Static build - no build step required'",
-    "test": "npx playwright test",
-    "test:console": "npx playwright test tests/console.spec.js",
-    "lint": "npx eslint public/js/**/*.js --fix",
-    "lint:check": "npx eslint public/js/**/*.js",
-    "format": "npx prettier --write public/js/**/*.js public/css/**/*.css",
-    "format:check": "npx prettier --check public/js/**/*.js public/css/**/*.css",
-    "validate": "npm run lint:check && npm run format:check && npm run test:console",
-    "serve": "npx http-server public -p 3000 -c-1 --cors",
-    "start": "npm run serve",
-    "build:prod": "echo \"Static build - no build step required\"",
-    "deploy:prod": "npm run build:prod"
+    "dev": "python -m http.server 8080",
+    "lint": "eslint public/js/**/*.js --fix",
+    "lint:check": "eslint public/js/**/*.js",
+    "format": "prettier --write public/**/*.{js,html,css,json,md}",
+    "format:check": "prettier --check public/**/*.{js,html,css,json,md}",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:a11y": "jest --testPathPattern=accessibility",
+    "e2e": "playwright test",
+    "e2e:ui": "playwright test --ui",
+    "e2e:headed": "playwright test --headed",
+    "build": "echo 'Frontend build completed'",
+    "lhci": "lhci autorun",
+    "lhci:server": "lhci wizard",
+    "prepare": "husky install"
   },
   "keywords": [
+    "farm",
     "agriculture",
-    "farming",
-    "crop-management",
-    "livestock-management",
-    "smart-farming",
-    "iot",
-    "dashboard"
+    "dashboard",
+    "management",
+    "accessibility"
   ],
   "author": "SmartFarm Team",
   "license": "MIT",
   "devDependencies": {
+    "@axe-core/playwright": "^4.8.2",
+    "@lhci/cli": "^0.12.0",
     "@playwright/test": "^1.40.0",
-    "eslint": "^8.55.0",
-    "http-server": "^14.1.1",
+    "eslint": "^8.54.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-jsx-a11y": "^6.8.0",
+    "eslint-plugin-prettier": "^5.0.1",
+    "husky": "^8.0.3",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "jest-axe": "^8.0.0",
+    "lint-staged": "^15.1.0",
     "prettier": "^3.1.0"
   },
   "dependencies": {
     "bootstrap": "^5.3.2",
     "chart.js": "^4.4.0",
-    "leaflet": "^1.9.4",
     "jspdf": "^2.5.1",
-    "jspdf-autotable": "^3.6.0",
     "qrcode": "^1.5.3"
   },
-  "engines": {
-    "node": ">=16.0.0",
-    "npm": ">=8.0.0"
+  "lint-staged": {
+    "*.{js,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{html,css,json,md}": [
+      "prettier --write"
+    ]
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/your-username/smartfarm.git"
+  "jest": {
+    "testEnvironment": "jsdom",
+    "setupFilesAfterEnv": ["<rootDir>/tests/setup.js"],
+    "testMatch": [
+      "<rootDir>/tests/**/*.test.js",
+      "<rootDir>/tests/**/*.spec.js"
+    ],
+    "collectCoverageFrom": [
+      "public/js/**/*.js",
+      "!public/js/vendor/**",
+      "!public/js/lib/**"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 80,
+        "functions": 80,
+        "lines": 80,
+        "statements": 80
+      }
+    },
+    "coverageReporters": ["text", "lcov", "html"]
   },
-  "bugs": {
-    "url": "https://github.com/your-username/smartfarm/issues"
-  },
-  "homepage": "https://www.smartfarm-app.com"
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ]
 }

@@ -1,268 +1,336 @@
 /**
- * Unit Tests for API Service
- * Tests backend connectivity and error handling
+ * API Service Unit Tests
+ * Tests API communication, error handling, and data validation
  */
 
-describe('SmartFarmAPIService', () => {
-    let apiService;
-    let mockFetch;
+describe('API Service Tests', () => {
+  beforeEach(() => {
+    fetch.mockClear();
+  });
 
-    beforeEach(() => {
-        // Create fresh instance
-        apiService = new SmartFarmAPIService();
-        
-        // Mock fetch globally
-        mockFetch = jest.fn();
-        global.fetch = mockFetch;
-        
-        // Mock localStorage
-        const mockLocalStorage = {
-            getItem: jest.fn(),
-            setItem: jest.fn(),
-            removeItem: jest.fn()
-        };
-        Object.defineProperty(window, 'localStorage', {
-            value: mockLocalStorage
-        });
+  describe('SmartFarmAPI', () => {
+    test('should be defined', () => {
+      expect(window.SmartFarmAPI).toBeDefined();
     });
 
-    afterEach(() => {
-        jest.restoreAllMocks();
+    test('should have required methods', () => {
+      expect(typeof window.SmartFarmAPI.getFarms).toBe('function');
+      expect(typeof window.SmartFarmAPI.getCrops).toBe('function');
+      expect(typeof window.SmartFarmAPI.getLivestock).toBe('function');
+      expect(typeof window.SmartFarmAPI.createFarm).toBe('function');
+      expect(typeof window.SmartFarmAPI.createCrop).toBe('function');
+      expect(typeof window.SmartFarmAPI.createLivestock).toBe('function');
+    });
+  });
+
+  describe('Farm API', () => {
+    test('should fetch farms successfully', async () => {
+      const mockFarms = [testUtils.createMockFarm()];
+      fetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => testUtils.mockApiResponse(mockFarms),
+      });
+
+      const result = await window.SmartFarmAPI.getFarms();
+
+      expect(fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/farms'),
+        expect.objectContaining({
+          method: 'GET',
+          headers: expect.objectContaining({
+            'Content-Type': 'application/json',
+          }),
+        })
+      );
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual(mockFarms);
     });
 
-    describe('API Connectivity', () => {
-        test('should successfully fetch farms from Railway backend', async () => {
-            const mockFarms = [
-                { id: '1', name: 'Test Farm', location: 'Test Location' }
-            ];
-            
-            mockFetch.mockResolvedValueOnce({
-                ok: true,
-                json: async () => ({ data: mockFarms })
-            });
+    test('should handle farm fetch errors', async () => {
+      fetch.mockRejectedValueOnce(new Error('Network error'));
 
-            const result = await apiService.getFarms();
+      const result = await window.SmartFarmAPI.getFarms();
 
-            expect(result.success).toBe(true);
-            expect(result.data).toEqual(mockFarms);
-            expect(mockFetch).toHaveBeenCalledWith(
-                expect.stringContaining('/api/farms'),
-                expect.objectContaining({
-                    method: 'GET',
-                    headers: expect.objectContaining({
-                        'Content-Type': 'application/json'
-                    })
-                })
-            );
-        });
-
-        test('should successfully fetch crops from Railway backend', async () => {
-            const mockCrops = [
-                { id: '1', name: 'Test Crop', type: 'Vegetable' }
-            ];
-            
-            mockFetch.mockResolvedValueOnce({
-                ok: true,
-                json: async () => ({ data: mockCrops })
-            });
-
-            const result = await apiService.getCrops();
-
-            expect(result.success).toBe(true);
-            expect(result.data).toEqual(mockCrops);
-            expect(mockFetch).toHaveBeenCalledWith(
-                expect.stringContaining('/api/crops'),
-                expect.any(Object)
-            );
-        });
-
-        test('should successfully fetch livestock from Railway backend', async () => {
-            const mockLivestock = [
-                { id: '1', name: 'Test Animal', species: 'Cattle' }
-            ];
-            
-            mockFetch.mockResolvedValueOnce({
-                ok: true,
-                json: async () => ({ data: mockLivestock })
-            });
-
-            const result = await apiService.getLivestock();
-
-            expect(result.success).toBe(true);
-            expect(result.data).toEqual(mockLivestock);
-            expect(mockFetch).toHaveBeenCalledWith(
-                expect.stringContaining('/api/livestock'),
-                expect.any(Object)
-            );
-        });
-
-        test('should successfully create livestock via API', async () => {
-            const newLivestock = {
-                species: 'Cattle',
-                breed: 'Holstein',
-                tag: 'TAG001',
-                sex: 'female',
-                birthDate: '2023-01-01',
-                weight: 500
-            };
-
-            const createdLivestock = { id: '123', ...newLivestock };
-            
-            mockFetch.mockResolvedValueOnce({
-                ok: true,
-                json: async () => ({ data: createdLivestock })
-            });
-
-            const result = await apiService.createLivestock(newLivestock);
-
-            expect(result.success).toBe(true);
-            expect(result.data).toEqual(createdLivestock);
-            expect(mockFetch).toHaveBeenCalledWith(
-                expect.stringContaining('/api/livestock'),
-                expect.objectContaining({
-                    method: 'POST',
-                    body: JSON.stringify(newLivestock)
-                })
-            );
-        });
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('Network error');
     });
 
-    describe('Error Handling and Retry Logic', () => {
-        test('should retry on network failure with exponential backoff', async () => {
-            // Mock fetch to fail twice, then succeed
-            mockFetch
-                .mockRejectedValueOnce(new Error('Failed to fetch'))
-                .mockRejectedValueOnce(new Error('Failed to fetch'))
-                .mockResolvedValueOnce({
-                    ok: true,
-                    json: async () => ({ data: [] })
-                });
+    test('should create farm successfully', async () => {
+      const farmData = testUtils.createMockFarm();
+      fetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => testUtils.mockApiResponse(farmData),
+      });
 
-            // Mock delay to make test faster
-            jest.spyOn(apiService, 'delay').mockImplementation(() => Promise.resolve());
+      const result = await window.SmartFarmAPI.createFarm(farmData);
 
-            const result = await apiService.getFarms();
-
-            expect(result.success).toBe(true);
-            expect(mockFetch).toHaveBeenCalledTimes(3);
-            expect(apiService.delay).toHaveBeenCalledTimes(2);
-        });
-
-        test('should show server unavailable banner after max retries', async () => {
-            // Mock fetch to always fail
-            mockFetch.mockRejectedValue(new Error('Failed to fetch'));
-
-            // Mock delay and banner display
-            jest.spyOn(apiService, 'delay').mockImplementation(() => Promise.resolve());
-            jest.spyOn(apiService, 'showServerUnavailableBanner').mockImplementation(() => {});
-
-            const result = await apiService.getFarms();
-
-            expect(result.success).toBe(false);
-            expect(result.retries).toBe(3);
-            expect(apiService.showServerUnavailableBanner).toHaveBeenCalled();
-        });
-
-        test('should handle HTTP 5xx errors with retry', async () => {
-            mockFetch
-                .mockResolvedValueOnce({
-                    ok: false,
-                    status: 500,
-                    statusText: 'Internal Server Error'
-                })
-                .mockResolvedValueOnce({
-                    ok: true,
-                    json: async () => ({ data: [] })
-                });
-
-            jest.spyOn(apiService, 'delay').mockImplementation(() => Promise.resolve());
-
-            const result = await apiService.getFarms();
-
-            expect(result.success).toBe(true);
-            expect(mockFetch).toHaveBeenCalledTimes(2);
-        });
-
-        test('should not retry on HTTP 4xx errors', async () => {
-            mockFetch.mockResolvedValue({
-                ok: false,
-                status: 404,
-                statusText: 'Not Found'
-            });
-
-            const result = await apiService.getFarms();
-
-            expect(result.success).toBe(false);
-            expect(mockFetch).toHaveBeenCalledTimes(1);
-            expect(result.error).toContain('HTTP 404');
-        });
+      expect(fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/farms'),
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify(farmData),
+        })
+      );
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual(farmData);
     });
 
-    describe('Authentication', () => {
-        test('should include auth token in requests when available', async () => {
-            const mockToken = 'test-token-123';
-            apiService.setAuthToken(mockToken);
+    test('should validate farm data before creating', async () => {
+      const invalidFarmData = { name: '' }; // Missing required fields
 
-            mockFetch.mockResolvedValue({
-                ok: true,
-                json: async () => ({ data: [] })
-            });
+      const result = await window.SmartFarmAPI.createFarm(invalidFarmData);
 
-            await apiService.getFarms();
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('validation');
+    });
+  });
 
-            expect(mockFetch).toHaveBeenCalledWith(
-                expect.any(String),
-                expect.objectContaining({
-                    headers: expect.objectContaining({
-                        'Authorization': `Bearer ${mockToken}`
-                    })
-                })
-            );
-        });
+  describe('Crop API', () => {
+    test('should fetch crops successfully', async () => {
+      const mockCrops = [testUtils.createMockCrop()];
+      fetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => testUtils.mockApiResponse(mockCrops),
+      });
 
-        test('should handle 401 authentication errors', async () => {
-            const clearAuthTokenSpy = jest.spyOn(apiService, 'clearAuthToken');
-            
-            mockFetch.mockResolvedValue({
-                ok: false,
-                status: 401,
-                statusText: 'Unauthorized'
-            });
+      const result = await window.SmartFarmAPI.getCrops();
 
-            const result = await apiService.getFarms();
-
-            expect(result.success).toBe(false);
-            expect(result.error).toContain('HTTP 401');
-        });
+      expect(fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/crops'),
+        expect.objectContaining({
+          method: 'GET',
+        })
+      );
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual(mockCrops);
     });
 
-    describe('Server Unavailable Banner', () => {
-        test('should create and display server unavailable banner', () => {
-            // Mock DOM elements
-            document.body.innerHTML = '';
-            const appendChildSpy = jest.spyOn(document.body, 'insertBefore');
+    test('should create crop successfully', async () => {
+      const cropData = testUtils.createMockCrop();
+      fetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => testUtils.mockApiResponse(cropData),
+      });
 
-            apiService.showServerUnavailableBanner();
+      const result = await window.SmartFarmAPI.createCrop(cropData);
 
-            expect(appendChildSpy).toHaveBeenCalled();
-            
-            const banner = document.getElementById('server-unavailable-banner');
-            expect(banner).toBeTruthy();
-            expect(banner.textContent).toContain('Server temporarily unavailable');
-            expect(banner.style.background).toBe('rgb(220, 53, 69)'); // #dc3545
-        });
-
-        test('should remove existing banner before creating new one', () => {
-            document.body.innerHTML = `
-                <div id="server-unavailable-banner">Old banner</div>
-                <div>Other content</div>
-            `;
-
-            apiService.showServerUnavailableBanner();
-
-            const banners = document.querySelectorAll('#server-unavailable-banner');
-            expect(banners).toHaveLength(1);
-            expect(banners[0].textContent).toContain('Server temporarily unavailable');
-        });
+      expect(fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/crops'),
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify(cropData),
+        })
+      );
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual(cropData);
     });
+
+    test('should handle crop creation errors', async () => {
+      fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        json: async () => testUtils.mockApiResponse(null, false),
+      });
+
+      const result = await window.SmartFarmAPI.createCrop({});
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBeDefined();
+    });
+  });
+
+  describe('Livestock API', () => {
+    test('should fetch livestock successfully', async () => {
+      const mockLivestock = [testUtils.createMockLivestock()];
+      fetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => testUtils.mockApiResponse(mockLivestock),
+      });
+
+      const result = await window.SmartFarmAPI.getLivestock();
+
+      expect(fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/livestock'),
+        expect.objectContaining({
+          method: 'GET',
+        })
+      );
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual(mockLivestock);
+    });
+
+    test('should create livestock successfully', async () => {
+      const livestockData = testUtils.createMockLivestock();
+      fetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => testUtils.mockApiResponse(livestockData),
+      });
+
+      const result = await window.SmartFarmAPI.createLivestock(livestockData);
+
+      expect(fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/livestock'),
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify(livestockData),
+        })
+      );
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual(livestockData);
+    });
+
+    test('should handle livestock creation validation', async () => {
+      const invalidLivestockData = { species: '' }; // Missing required fields
+
+      const result = await window.SmartFarmAPI.createLivestock(invalidLivestockData);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('validation');
+    });
+  });
+
+  describe('Error Handling', () => {
+    test('should handle network errors gracefully', async () => {
+      fetch.mockRejectedValueOnce(new Error('Failed to fetch'));
+
+      const result = await window.SmartFarmAPI.getFarms();
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('Failed to fetch');
+    });
+
+    test('should handle HTTP errors gracefully', async () => {
+      fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        statusText: 'Internal Server Error',
+        json: async () => ({ error: 'Server error' }),
+      });
+
+      const result = await window.SmartFarmAPI.getFarms();
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('Server error');
+    });
+
+    test('should handle JSON parsing errors', async () => {
+      fetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => {
+          throw new Error('Invalid JSON');
+        },
+      });
+
+      const result = await window.SmartFarmAPI.getFarms();
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('Invalid JSON');
+    });
+
+    test('should handle timeout errors', async () => {
+      fetch.mockImplementationOnce(() =>
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Timeout')), 100)
+        )
+      );
+
+      const result = await window.SmartFarmAPI.getFarms();
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('Timeout');
+    });
+  });
+
+  describe('Data Validation', () => {
+    test('should validate farm data structure', async () => {
+      const invalidFarmData = {
+        name: 123, // Should be string
+        location: null, // Should be string
+        area: 'invalid', // Should be number
+      };
+
+      const result = await window.SmartFarmAPI.createFarm(invalidFarmData);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('validation');
+    });
+
+    test('should validate crop data structure', async () => {
+      const invalidCropData = {
+        name: '', // Should not be empty
+        field: undefined, // Should be defined
+        area: -1, // Should be positive
+      };
+
+      const result = await window.SmartFarmAPI.createCrop(invalidCropData);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('validation');
+    });
+
+    test('should validate livestock data structure', async () => {
+      const invalidLivestockData = {
+        species: '', // Should not be empty
+        breed: null, // Should be defined
+        count: 0, // Should be positive
+      };
+
+      const result = await window.SmartFarmAPI.createLivestock(invalidLivestockData);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('validation');
+    });
+  });
+
+  describe('API Configuration', () => {
+    test('should use correct API base URL', () => {
+      expect(window.SmartFarmConfig).toBeDefined();
+      expect(window.SmartFarmConfig.getApiUrl()).toBeDefined();
+      expect(window.SmartFarmConfig.getApiUrl()).toContain('http');
+    });
+
+    test('should include proper headers', async () => {
+      fetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => testUtils.mockApiResponse([]),
+      });
+
+      await window.SmartFarmAPI.getFarms();
+
+      expect(fetch).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            'Content-Type': 'application/json',
+          }),
+        })
+      );
+    });
+  });
+
+  describe('Retry Logic', () => {
+    test('should retry failed requests', async () => {
+      fetch
+        .mockRejectedValueOnce(new Error('Network error'))
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => testUtils.mockApiResponse([]),
+        });
+
+      const result = await window.SmartFarmAPI.getFarms();
+
+      expect(fetch).toHaveBeenCalledTimes(2);
+      expect(result.success).toBe(true);
+    });
+
+    test('should give up after max retries', async () => {
+      fetch.mockRejectedValue(new Error('Persistent network error'));
+
+      const result = await window.SmartFarmAPI.getFarms();
+
+      expect(fetch).toHaveBeenCalledTimes(3); // Initial + 2 retries
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('Persistent network error');
+    });
+  });
 });

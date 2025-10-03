@@ -1,0 +1,90 @@
+# Dependabot Configuration for SmartFarm
+# Automatically updates dependencies to keep the project secure
+
+version: 2
+updates:
+  # Frontend dependencies
+  - package-ecosystem: "npm"
+    directory: "/web-project"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Pacific/Auckland"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "Warusi2023"
+    assignees:
+      - "Warusi2023"
+    commit-message:
+      prefix: "deps"
+      prefix-development: "deps-dev"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "security"
+    ignore:
+      # Ignore major version updates for stable dependencies
+      - dependency-name: "bootstrap"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "chart.js"
+        update-types: ["version-update:semver-major"]
+    groups:
+      # Group security-related updates
+      security-updates:
+        patterns:
+          - "*"
+        exclude-patterns:
+          - "bootstrap"
+          - "chart.js"
+        update-types:
+          - "security"
+
+  # Backend dependencies
+  - package-ecosystem: "npm"
+    directory: "/backend-api"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Pacific/Auckland"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "Warusi2023"
+    assignees:
+      - "Warusi2023"
+    commit-message:
+      prefix: "deps"
+      prefix-development: "deps-dev"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "backend"
+      - "security"
+    groups:
+      # Group security-related updates
+      security-updates:
+        patterns:
+          - "*"
+        update-types:
+          - "security"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Pacific/Auckland"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "Warusi2023"
+    assignees:
+      - "Warusi2023"
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+    labels:
+      - "ci"
+      - "github-actions"
