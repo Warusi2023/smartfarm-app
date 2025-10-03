@@ -19,7 +19,7 @@
     "build": "echo 'Frontend build completed'",
     "lhci": "lhci autorun",
     "lhci:server": "lhci wizard",
-    "prepare": "husky install"
+    "prepare": "husky install ../.git/hooks"
   },
   "keywords": [
     "farm",
