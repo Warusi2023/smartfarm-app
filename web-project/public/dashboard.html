@@ -1650,7 +1650,7 @@
                                     <i class="fas fa-seedling"></i>
                                 </div>
                                 <div class="stat-content">
-                                    <h3 class="stat-number" id="totalCrops">0</h3>
+                                    <h3 class="stat-number" id="cropManagementTotalCrops">0</h3>
                                     <p class="stat-label">Total Crops</p>
                                 </div>
                             </div>
@@ -1700,7 +1700,7 @@
                                 </div>
                             </div>
                             <div class="col-md-3">
-                                <select class="form-select" id="statusFilter">
+                                <select class="form-select" id="cropStatusFilter">
                                     <option value="">All Status</option>
                                     <option value="planted">Planted</option>
                                     <option value="growing">Growing</option>
@@ -2042,7 +2042,7 @@
                                 </select>
                             </div>
                             <div class="col-md-3">
-                                <select class="form-select" id="statusFilter">
+                                <select class="form-select" id="livestockStatusFilter">
                                     <option value="">All Status</option>
                                     <option value="HEALTHY">Healthy</option>
                                     <option value="SICK">Sick</option>
@@ -14190,7 +14190,7 @@ INVENTORY SUMMARY:
         // Filter functions
         function filterCrops() {
             const searchTerm = document.getElementById('cropSearch').value.toLowerCase();
-            const statusFilter = document.getElementById('statusFilter').value;
+            const statusFilter = document.getElementById('cropStatusFilter').value;
             const fieldFilter = document.getElementById('fieldFilter').value;
             
             document.querySelectorAll('.crop-card').forEach(card => {
@@ -14214,7 +14214,7 @@ INVENTORY SUMMARY:
         function filterLivestock() {
             const searchTerm = document.getElementById('livestockSearch').value.toLowerCase();
             const speciesFilter = document.getElementById('speciesFilter').value;
-            const statusFilter = document.getElementById('statusFilter').value;
+            const statusFilter = document.getElementById('livestockStatusFilter').value;
             
             document.querySelectorAll('.livestock-card').forEach(card => {
                 const animalName = card.querySelector('.livestock-name').textContent.toLowerCase();

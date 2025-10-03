@@ -26,7 +26,12 @@ const environment = {
     // CORS
     CORS_ORIGIN: process.env.CORS_ORIGIN ? 
         process.env.CORS_ORIGIN.split(',').map(origin => origin.trim()) : 
-        ['http://localhost:3000', 'http://localhost:8080'],
+        [
+            'http://localhost:3000', 
+            'http://localhost:8080',
+            'https://smartfarm-app.netlify.app',
+            'https://smartfarm-app.com'
+        ],
     CORS_CREDENTIALS: process.env.CORS_CREDENTIALS === 'true',
     
     // External APIs

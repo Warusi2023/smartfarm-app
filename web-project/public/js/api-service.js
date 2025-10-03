@@ -51,6 +51,8 @@ class SmartFarmAPIService {
                 'Content-Type': 'application/json',
                 ...options.headers
             },
+            credentials: 'include',
+            mode: 'cors',
             ...options
         };
 
@@ -161,6 +163,8 @@ class SmartFarmAPIService {
         try {
             const response = await fetch(`${this.baseURL}/api/health`, {
                 method: 'GET',
+                credentials: 'include',
+                mode: 'cors',
                 timeout: 5000
             });
             return response.ok;
