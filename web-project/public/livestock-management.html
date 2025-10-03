@@ -769,7 +769,7 @@
     </div>
 
     <!-- Add Livestock Modal -->
-    <div class="modal fade modal-custom" id="addLivestockModal" tabindex="-1" aria-labelledby="addLivestockModalLabel" aria-hidden="true">
+    <div class="modal fade modal-custom" id="addLivestockModal" tabindex="-1" aria-labelledby="addLivestockModalLabel" aria-modal="true" role="dialog">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
@@ -2065,6 +2065,11 @@
 
         // Modal focus management - CRITICAL: Fix aria-hidden focus conflict
         document.addEventListener('DOMContentLoaded', function() {
+            // Initialize modal accessibility first
+            if (window.fixAllModalAccessibility) {
+                window.fixAllModalAccessibility();
+            }
+            
             const addLivestockModal = document.getElementById('addLivestockModal');
             if (addLivestockModal) {
                 console.log('🔧 Setting up static modal with enhanced focus management');

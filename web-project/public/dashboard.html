@@ -3476,6 +3476,11 @@
                 updateCropStatistics();
                 updateLivestockStatistics();
                 
+                // Initialize modal accessibility
+                if (window.fixAllModalAccessibility) {
+                    window.fixAllModalAccessibility();
+                }
+                
                 initializeGlobalDatabase();
                 initializeDashboard();
                 initializeWeatherService();

@@ -29,8 +29,13 @@ class ModalAccessibility {
     setupModalHandlers() {
         // Handle all modals with proper focus management
         document.addEventListener('show.bs.modal', (event) => {
+            const modal = event.target;
             this.lastFocusedElement = document.activeElement;
             console.log('🔧 ModalAccessibility: Modal show event - stored focus:', this.lastFocusedElement);
+            
+            // CRITICAL: Prevent Bootstrap from setting aria-hidden="true" on show
+            // We'll manage this attribute ourselves
+            this.preventBootstrapAriaHidden(modal, false);
         });
 
         document.addEventListener('shown.bs.modal', (event) => {
@@ -90,9 +95,51 @@ class ModalAccessibility {
                 modal.setAttribute('tabindex', '-1');
             }
             
-            // Set aria-hidden initially (will be managed by event handlers)
-            modal.setAttribute('aria-hidden', 'true');
+            // CRITICAL: Do NOT set aria-hidden="true" initially
+            // This will be managed dynamically by Bootstrap events
+            // Static modals should start without aria-hidden to avoid conflicts
+            if (modal.hasAttribute('aria-hidden')) {
+                modal.removeAttribute('aria-hidden');
+                console.log('🔧 ModalAccessibility: Removed initial aria-hidden from static modal');
+            }
         });
+    }
+
+    // CRITICAL: Prevent Bootstrap from incorrectly setting aria-hidden
+    preventBootstrapAriaHidden(modal, shouldBeHidden) {
+        if (!modal) return;
+        
+        // Use a MutationObserver to watch for aria-hidden changes
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'aria-hidden') {
+                    const currentValue = modal.getAttribute('aria-hidden');
+                    const expectedValue = shouldBeHidden ? 'true' : null;
+                    
+                    // If Bootstrap set an incorrect value, fix it
+                    if (currentValue !== expectedValue) {
+                        console.log(`🔧 ModalAccessibility: Correcting aria-hidden from "${currentValue}" to "${expectedValue}"`);
+                        if (shouldBeHidden) {
+                            modal.setAttribute('aria-hidden', 'true');
+                        } else {
+                            modal.removeAttribute('aria-hidden');
+                        }
+                    }
+                }
+            });
+        });
+        
+        // Store observer for cleanup
+        modal._ariaHiddenObserver = observer;
+        observer.observe(modal, { attributes: true, attributeFilter: ['aria-hidden'] });
+        
+        // Clean up observer after 5 seconds to prevent memory leaks
+        setTimeout(() => {
+            if (modal._ariaHiddenObserver) {
+                modal._ariaHiddenObserver.disconnect();
+                delete modal._ariaHiddenObserver;
+            }
+        }, 5000);
     }
 
     // Reusable function to toggle modal accessibility
@@ -115,6 +162,9 @@ class ModalAccessibility {
             // Set this modal as active
             this.activeModal = modalEl;
             this.modalStates.set(modalEl, 'open');
+
+            // CRITICAL: Prevent Bootstrap from setting aria-hidden="true"
+            this.preventBootstrapAriaHidden(modalEl, false);
 
             // CRITICAL: Remove aria-hidden before any focus operations
             modalEl.removeAttribute('aria-hidden');
@@ -159,6 +209,9 @@ class ModalAccessibility {
                 focusedElement.blur();
                 console.log('🔧 ModalAccessibility: Removed focus from:', focusedElement);
             }
+
+            // CRITICAL: Prevent Bootstrap from interfering with aria-hidden
+            this.preventBootstrapAriaHidden(modalEl, true);
 
             // Set aria-hidden
             modalEl.setAttribute('aria-hidden', 'true');
@@ -216,8 +269,12 @@ class ModalAccessibility {
         modal.setAttribute('role', 'dialog');
         modal.setAttribute('tabindex', '-1');
         
-        // Set aria-hidden initially (will be removed when shown)
-        modal.setAttribute('aria-hidden', 'true');
+        // CRITICAL: Do NOT set aria-hidden="true" initially for dynamic modals
+        // This will be managed by Bootstrap events to prevent focus conflicts
+        if (modal.hasAttribute('aria-hidden')) {
+            modal.removeAttribute('aria-hidden');
+            console.log('🔧 ModalAccessibility: Removed initial aria-hidden from dynamic modal');
+        }
     }
 
     applyInertToBackground() {
@@ -309,7 +366,8 @@ class ModalAccessibility {
         modal.setAttribute('aria-modal', 'true');
         modal.setAttribute('role', 'dialog');
         modal.setAttribute('tabindex', '-1');
-        modal.setAttribute('aria-hidden', 'true'); // Initially hidden
+        // CRITICAL: Do NOT set aria-hidden="true" initially
+        // Bootstrap will manage this attribute properly
 
         modal.innerHTML = `
             <div class="modal-dialog ${size}">
@@ -376,9 +434,49 @@ window.ensureModalAccessibility = () => {
             if (focusedElement) {
                 console.warn('⚠️ ModalAccessibility: Found aria-hidden conflict, fixing...', modal);
                 focusedElement.blur();
+                
+                // Also remove aria-hidden if modal is actually visible
+                if (modal.classList.contains('show') || getComputedStyle(modal).display !== 'none') {
+                    console.log('🔧 ModalAccessibility: Removing aria-hidden from visible modal');
+                    modal.removeAttribute('aria-hidden');
+                }
             }
         }
     });
+};
+
+// Global function to fix all modal accessibility issues
+window.fixAllModalAccessibility = () => {
+    console.log('🔧 ModalAccessibility: Fixing all modal accessibility issues...');
+    
+    const allModals = document.querySelectorAll('.modal');
+    allModals.forEach(modal => {
+        // Ensure proper ARIA attributes
+        if (!modal.hasAttribute('aria-modal')) {
+            modal.setAttribute('aria-modal', 'true');
+        }
+        if (!modal.hasAttribute('role')) {
+            modal.setAttribute('role', 'dialog');
+        }
+        if (!modal.hasAttribute('tabindex')) {
+            modal.setAttribute('tabindex', '-1');
+        }
+        
+        // Fix aria-hidden based on visibility
+        const isVisible = modal.classList.contains('show') || 
+                         getComputedStyle(modal).display !== 'none' ||
+                         modal.style.display === 'block';
+        
+        if (isVisible && modal.hasAttribute('aria-hidden')) {
+            console.log('🔧 ModalAccessibility: Removing aria-hidden from visible modal:', modal.id);
+            modal.removeAttribute('aria-hidden');
+        } else if (!isVisible && !modal.hasAttribute('aria-hidden')) {
+            console.log('🔧 ModalAccessibility: Adding aria-hidden to hidden modal:', modal.id);
+            modal.setAttribute('aria-hidden', 'true');
+        }
+    });
+    
+    console.log('✅ ModalAccessibility: All modal accessibility issues fixed');
 };
 
 // Export for use in other scripts
