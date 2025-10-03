@@ -866,8 +866,9 @@ class QRTraceability {
         
         console.log('=== END QR DEBUG ===');
     }
+}
 
-    // Initialize QR Traceability System
+// Initialize QR Traceability System
 const qrTraceability = new QRTraceability();
 
 // Add debug function to global scope for testing
@@ -966,6 +967,3 @@ const qrStyles = `
 
 // Inject styles
 document.head.insertAdjacentHTML('beforeend', qrStyles);
-
-// Close the QRTraceability class
-}
