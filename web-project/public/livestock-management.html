@@ -2037,8 +2037,16 @@
                 });
                 
                 // Let ModalAccessibility handle the rest
-                if (window.ModalAccessibility) {
+                if (window.ModalAccessibility && typeof window.ModalAccessibility.setupStaticModals === 'function') {
                     window.ModalAccessibility.setupStaticModals();
+                } else {
+                    console.warn('⚠️ ModalAccessibility or setupStaticModals not available, using fallback');
+                    // Fallback: manually set up the modal
+                    addLivestockModal.setAttribute('aria-modal', 'true');
+                    addLivestockModal.setAttribute('role', 'dialog');
+                    if (!addLivestockModal.hasAttribute('tabindex')) {
+                        addLivestockModal.setAttribute('tabindex', '-1');
+                    }
                 }
                 
                 // CRITICAL: Global focus validation to catch any remaining issues
