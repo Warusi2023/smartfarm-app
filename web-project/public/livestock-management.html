@@ -1685,24 +1685,13 @@
             }, 3000);
         }
 
-        // Modal focus management
+        // Modal focus management - Let ModalAccessibility handle this
         document.addEventListener('DOMContentLoaded', function() {
             const addLivestockModal = document.getElementById('addLivestockModal');
-            if (addLivestockModal) {
-                addLivestockModal.addEventListener('shown.bs.modal', function() {
-                    // Remove aria-hidden when modal is shown
-                    this.removeAttribute('aria-hidden');
-                    // Focus on first input
-                    const firstInput = this.querySelector('input, select, textarea');
-                    if (firstInput) {
-                        firstInput.focus();
-                    }
-                });
-                
-                addLivestockModal.addEventListener('hide.bs.modal', function() {
-                    // Set aria-hidden when modal is being hidden
-                    this.setAttribute('aria-hidden', 'true');
-                });
+            if (addLivestockModal && window.ModalAccessibility) {
+                console.log('🔧 Setting up static modal with ModalAccessibility');
+                // The ModalAccessibility class will handle all the accessibility features
+                // No need for custom event handlers
             }
         });
 

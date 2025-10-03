@@ -15,7 +15,10 @@ class ModalAccessibility {
     init() {
         // Wait for DOM to be ready
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => this.setupModalHandlers());
+            document.addEventListener('DOMContentLoaded', () => {
+            this.setupModalHandlers();
+            this.setupStaticModals();
+        });
         } else {
             this.setupModalHandlers();
         }
@@ -25,20 +28,25 @@ class ModalAccessibility {
         // Handle all modals with proper focus management
         document.addEventListener('show.bs.modal', (event) => {
             this.lastFocusedElement = document.activeElement;
+            console.log('🔧 ModalAccessibility: Modal show event - stored focus:', this.lastFocusedElement);
         });
 
         document.addEventListener('shown.bs.modal', (event) => {
             const modal = event.target;
+            console.log('🔧 ModalAccessibility: Modal shown event for:', modal.id || 'unnamed modal');
             this.handleModalShown(modal);
         });
 
         document.addEventListener('hide.bs.modal', (event) => {
             const modal = event.target;
+            console.log('🔧 ModalAccessibility: Modal hide event for:', modal.id || 'unnamed modal');
             this.handleModalHide(modal);
         });
 
         document.addEventListener('hidden.bs.modal', (event) => {
-            this.handleModalHidden(event.target);
+            const modal = event.target;
+            console.log('🔧 ModalAccessibility: Modal hidden event for:', modal.id || 'unnamed modal');
+            this.handleModalHidden(modal);
         });
 
         // Handle dynamically created modals
@@ -62,6 +70,26 @@ class ModalAccessibility {
                     bsModal.hide();
                 }
             }
+        });
+    }
+
+    setupStaticModals() {
+        // Find all existing static modals and set them up
+        const staticModals = document.querySelectorAll('.modal');
+        console.log(`🔧 ModalAccessibility: Found ${staticModals.length} static modals`);
+        
+        staticModals.forEach(modal => {
+            console.log('🔧 ModalAccessibility: Setting up static modal:', modal.id || 'unnamed modal');
+            
+            // Ensure proper initial attributes
+            modal.setAttribute('aria-modal', 'true');
+            modal.setAttribute('role', 'dialog');
+            if (!modal.hasAttribute('tabindex')) {
+                modal.setAttribute('tabindex', '-1');
+            }
+            
+            // Set aria-hidden initially (will be managed by event handlers)
+            modal.setAttribute('aria-hidden', 'true');
         });
     }
 
@@ -111,6 +139,13 @@ class ModalAccessibility {
 
     handleModalHide(modal) {
         console.log('🔧 ModalAccessibility: Modal hiding:', modal.id || 'unnamed modal');
+        
+        // Remove focus from any focused element in the modal BEFORE setting aria-hidden
+        const focusedElement = modal.querySelector(':focus');
+        if (focusedElement) {
+            focusedElement.blur();
+            console.log('🔧 ModalAccessibility: Removed focus from:', focusedElement);
+        }
         
         // Set aria-hidden when modal is being hidden
         modal.setAttribute('aria-hidden', 'true');
