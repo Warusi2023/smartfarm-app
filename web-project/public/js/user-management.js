@@ -304,6 +304,19 @@ class UserManagement {
 
     async createUser(form) {
         try {
+            // First check if we have a valid token
+            if (!this.token) {
+                this.showErrorMessage('Please log in to create users');
+                window.location.href = '/login.html';
+                return;
+            }
+
+            // Check if user is admin
+            if (!this.currentUser || this.currentUser.role !== 'admin') {
+                this.showErrorMessage('Only administrators can create users');
+                return;
+            }
+
             const formData = new FormData(form);
             const userData = {
                 email: formData.get('email'),
@@ -315,6 +328,7 @@ class UserManagement {
                 permissions: formData.get('permissions') ? formData.get('permissions').split(',') : []
             };
 
+            console.log('Creating user with data:', userData);
             const response = await this.apiRequest('/users', 'POST', userData);
             if (response.success) {
                 this.showSuccessMessage('User created successfully');
@@ -323,7 +337,21 @@ class UserManagement {
                 form.reset();
             }
         } catch (error) {
-            this.showErrorMessage('Failed to create user: ' + error.message);
+            console.error('User creation error:', error);
+            
+            // Handle specific error cases
+            if (error.message.includes('Unexpected token')) {
+                this.showErrorMessage('Server error: Unable to process request. The backend may not be running or accessible.');
+            } else if (error.message.includes('Failed to fetch')) {
+                this.showErrorMessage('Network error: Unable to connect to server. Please check your internet connection.');
+            } else if (error.message.includes('401')) {
+                this.showErrorMessage('Authentication failed. Please log in again.');
+                window.location.href = '/login.html';
+            } else if (error.message.includes('404')) {
+                this.showErrorMessage('API endpoint not found. The backend may not be properly deployed.');
+            } else {
+                this.showErrorMessage('Failed to create user: ' + error.message);
+            }
         }
     }
 
