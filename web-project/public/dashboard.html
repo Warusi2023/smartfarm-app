@@ -6555,6 +6555,9 @@
             // Create comprehensive add livestock modal
             const modal = document.createElement('div');
             modal.className = 'modal fade';
+            modal.setAttribute('aria-hidden', 'false');
+            modal.setAttribute('aria-modal', 'true');
+            modal.setAttribute('role', 'dialog');
             modal.innerHTML = `
                 <div class="modal-dialog modal-lg">
                     <div class="modal-content">
@@ -6645,20 +6648,43 @@
         }
 
         async function saveNewLivestock() {
+            console.log('🐄 saveNewLivestock called');
+            
+            // Get form values
             const type = document.getElementById('livestockType').value;
             const breed = document.getElementById('livestockBreed').value;
-            const quantity = parseInt(document.getElementById('livestockQuantity').value);
+            const quantityStr = document.getElementById('livestockQuantity').value;
             const location = document.getElementById('livestockLocation').value;
             const status = document.getElementById('livestockStatus').value;
             const earTagsText = document.getElementById('earTags').value;
-            const gpsLat = parseFloat(document.getElementById('gpsLat').value);
-            const gpsLng = parseFloat(document.getElementById('gpsLng').value);
+            const gpsLat = document.getElementById('gpsLat').value;
+            const gpsLng = document.getElementById('gpsLng').value;
             const healthNotes = document.getElementById('healthNotes').value;
 
-            if (!type || !breed || !quantity || !location || !status) {
-                showInfoDialog('Validation Error', 'Please fill in all required fields', 'OK');
+            // Parse quantity with validation
+            const quantity = quantityStr ? parseInt(quantityStr) : 0;
+            
+            console.log('Form values:', {
+                type, breed, quantity, quantityStr, location, status, 
+                earTagsText, gpsLat, gpsLng, healthNotes
+            });
+
+            // Enhanced validation with specific error messages
+            const errors = [];
+            
+            if (!type) errors.push('Type is required');
+            if (!breed || breed.trim() === '') errors.push('Breed is required');
+            if (!quantityStr || quantity <= 0 || isNaN(quantity)) errors.push('Valid quantity is required');
+            if (!location || location.trim() === '') errors.push('Location is required');
+            if (!status) errors.push('Health status is required');
+
+            if (errors.length > 0) {
+                console.error('Validation errors:', errors);
+                showInfoDialog('Validation Error', `Please fix the following:\n• ${errors.join('\n• ')}`, 'OK');
                 return;
             }
+            
+            console.log('✅ All validation checks passed');
 
             // Show loading state
             const submitButton = document.querySelector('button[onclick="saveNewLivestock()"]');
@@ -12642,9 +12668,20 @@ INVENTORY SUMMARY:
 
         // Load livestock data from API
         async function loadLivestockData() {
+            console.log('🐄 Loading livestock data...');
             try {
+                // Check if API is available
+                if (typeof window.SmartFarmAPI === 'undefined') {
+                    console.warn('⚠️ SmartFarmAPI not available, using fallback');
+                    livestock = [];
+                    renderLivestockTable();
+                    return;
+                }
+
                 const response = await window.SmartFarmAPI.getLivestock();
-                if (response.success) {
+                console.log('📡 Livestock API response:', response);
+                
+                if (response && response.success) {
                     // Update livestock array for backward compatibility
                     livestock = response.data.map(item => ({
                         id: item.id,
@@ -12662,14 +12699,33 @@ INVENTORY SUMMARY:
                         createdAt: item.createdAt
                     }));
                     
+                    console.log('✅ Livestock data loaded successfully:', livestock.length, 'items');
+                    
                     // Update UI
                     renderLivestockTable();
                     updateAnalyticsCharts();
                 } else {
-                    console.error('Failed to load livestock data:', response.error);
+                    console.warn('⚠️ API returned unsuccessful response:', response);
+                    // Initialize with empty array if API fails
+                    livestock = [];
+                    renderLivestockTable();
                 }
             } catch (error) {
-                console.error('Error loading livestock data:', error);
+                console.error('❌ Error loading livestock data:', error);
+                console.error('Error details:', {
+                    message: error.message,
+                    stack: error.stack,
+                    name: error.name
+                });
+                
+                // Fallback: initialize with empty array
+                livestock = [];
+                renderLivestockTable();
+                
+                // Show user-friendly message
+                if (error.message.includes('Failed to fetch')) {
+                    console.warn('🌐 Network error - backend may be unavailable');
+                }
             }
         }
 
