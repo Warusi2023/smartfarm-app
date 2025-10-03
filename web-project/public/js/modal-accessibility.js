@@ -66,17 +66,20 @@ class ModalAccessibility {
     }
 
     handleModalShown(modal) {
-        console.log('Modal shown:', modal.id || 'unnamed modal');
+        console.log('🔧 ModalAccessibility: Modal shown:', modal.id || 'unnamed modal');
         
         // Set active modal reference
         this.activeModal = modal;
         
         // Remove aria-hidden when modal is shown (Bootstrap sets this incorrectly)
+        const hadAriaHidden = modal.hasAttribute('aria-hidden');
         modal.removeAttribute('aria-hidden');
+        console.log('🔧 ModalAccessibility: Removed aria-hidden:', hadAriaHidden);
         
         // Ensure proper ARIA attributes
         modal.setAttribute('aria-modal', 'true');
         modal.setAttribute('role', 'dialog');
+        console.log('🔧 ModalAccessibility: Set ARIA attributes');
         
         // Apply inert to background elements
         this.applyInertToBackground();
@@ -89,34 +92,48 @@ class ModalAccessibility {
         if (focusableElements.length > 0) {
             // Focus on first focusable element
             focusableElements[0].focus();
+            console.log('🔧 ModalAccessibility: Focused first element:', focusableElements[0]);
+        } else {
+            console.warn('⚠️ ModalAccessibility: No focusable elements found in modal');
         }
         
         // Trap focus within modal
         this.trapFocus(modal);
+        
+        // Validate modal accessibility
+        const issues = ModalAccessibility.validateModalAccessibility(modal);
+        if (issues.length > 0) {
+            console.error('❌ ModalAccessibility: Validation issues:', issues);
+        } else {
+            console.log('✅ ModalAccessibility: Modal passes validation');
+        }
     }
 
     handleModalHide(modal) {
-        console.log('Modal hiding:', modal.id || 'unnamed modal');
+        console.log('🔧 ModalAccessibility: Modal hiding:', modal.id || 'unnamed modal');
         
         // Set aria-hidden when modal is being hidden
         modal.setAttribute('aria-hidden', 'true');
+        console.log('🔧 ModalAccessibility: Set aria-hidden="true"');
         
         // Remove focus trap
         this.removeFocusTrap(modal);
     }
 
     handleModalHidden(modal) {
-        console.log('Modal hidden:', modal.id || 'unnamed modal');
+        console.log('🔧 ModalAccessibility: Modal hidden:', modal.id || 'unnamed modal');
         
         // Clear active modal reference
         this.activeModal = null;
         
         // Remove inert from background elements
         this.removeInertFromBackground();
+        console.log('🔧 ModalAccessibility: Removed inert from background');
         
         // Restore focus to element that triggered the modal
         if (this.lastFocusedElement && this.lastFocusedElement !== document.body) {
             this.lastFocusedElement.focus();
+            console.log('🔧 ModalAccessibility: Restored focus to:', this.lastFocusedElement);
         }
     }
 
@@ -138,7 +155,15 @@ class ModalAccessibility {
         
         bodyChildren.forEach(element => {
             if (element !== this.activeModal && !element.contains(this.activeModal)) {
-                element.setAttribute('inert', 'true');
+                // Check if inert is supported
+                if ('inert' in Element.prototype) {
+                    element.setAttribute('inert', 'true');
+                } else {
+                    // Fallback: disable focus and pointer events
+                    element.style.pointerEvents = 'none';
+                    element.setAttribute('tabindex', '-1');
+                    element.setAttribute('aria-hidden', 'true');
+                }
                 this.backgroundElements.push(element);
             }
         });
@@ -148,6 +173,10 @@ class ModalAccessibility {
         // Remove inert from all background elements
         this.backgroundElements.forEach(element => {
             element.removeAttribute('inert');
+            // Remove fallback styles
+            element.style.pointerEvents = '';
+            element.removeAttribute('tabindex');
+            element.removeAttribute('aria-hidden');
         });
         this.backgroundElements = [];
     }

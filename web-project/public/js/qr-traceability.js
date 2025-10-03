@@ -718,7 +718,9 @@ class QRTraceability {
         modal.id = 'qrOptionsModal';
         modal.setAttribute('tabindex', '-1');
         modal.setAttribute('aria-labelledby', 'qrOptionsModalLabel');
-        modal.setAttribute('aria-hidden', 'true');
+        modal.setAttribute('aria-modal', 'true');
+        modal.setAttribute('role', 'dialog');
+        // Let the accessibility helper manage aria-hidden
         
         modal.innerHTML = `
             <div class="modal-dialog modal-lg">
