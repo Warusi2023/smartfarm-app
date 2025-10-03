@@ -2009,13 +2009,77 @@
             }, 3000);
         }
 
-        // Modal focus management - Let ModalAccessibility handle this
+        // Modal focus management - CRITICAL: Fix aria-hidden focus conflict
         document.addEventListener('DOMContentLoaded', function() {
             const addLivestockModal = document.getElementById('addLivestockModal');
-            if (addLivestockModal && window.ModalAccessibility) {
-                console.log('🔧 Setting up static modal with ModalAccessibility');
-                // The ModalAccessibility class will handle all the accessibility features
-                // No need for custom event handlers
+            if (addLivestockModal) {
+                console.log('🔧 Setting up static modal with enhanced focus management');
+                
+                // CRITICAL: Intercept Bootstrap's modal hide event to prevent focus conflict
+                addLivestockModal.addEventListener('hide.bs.modal', function() {
+                    console.log('🔧 Static modal hide event - removing focus to prevent aria-hidden conflict');
+                    
+                    // Remove focus from any focused element in the modal BEFORE Bootstrap sets aria-hidden
+                    const focusedElement = this.querySelector(':focus');
+                    if (focusedElement) {
+                        focusedElement.blur();
+                        console.log('🔧 Removed focus from:', focusedElement);
+                    }
+                    
+                    // Also check for any buttons that might retain focus
+                    const buttons = this.querySelectorAll('button');
+                    buttons.forEach(button => {
+                        if (document.activeElement === button) {
+                            button.blur();
+                            console.log('🔧 Removed focus from button:', button);
+                        }
+                    });
+                });
+                
+                // Let ModalAccessibility handle the rest
+                if (window.ModalAccessibility) {
+                    window.ModalAccessibility.setupStaticModals();
+                }
+                
+                // CRITICAL: Global focus validation to catch any remaining issues
+                document.addEventListener('focusin', function(event) {
+                    const modal = event.target.closest('.modal');
+                    if (modal && modal.getAttribute('aria-hidden') === 'true') {
+                        console.warn('⚠️ Focus detected on hidden modal element, removing focus:', event.target);
+                        event.target.blur();
+                        
+                        // Move focus to a safe element
+                        const safeElement = document.querySelector('button:not(.modal *)');
+                        if (safeElement) {
+                            safeElement.focus();
+                        }
+                    }
+                });
+                
+                // CRITICAL: MutationObserver to detect aria-hidden changes and fix focus conflicts
+                const observer = new MutationObserver(function(mutations) {
+                    mutations.forEach(function(mutation) {
+                        if (mutation.type === 'attributes' && mutation.attributeName === 'aria-hidden') {
+                            const modal = mutation.target;
+                            if (modal.classList.contains('modal') && modal.getAttribute('aria-hidden') === 'true') {
+                                console.log('🔧 Detected aria-hidden="true" on modal, checking for focus conflicts');
+                                
+                                // Check if any element inside the modal has focus
+                                const focusedElement = modal.querySelector(':focus');
+                                if (focusedElement) {
+                                    console.warn('⚠️ Focus conflict detected, removing focus from:', focusedElement);
+                                    focusedElement.blur();
+                                }
+                            }
+                        }
+                    });
+                });
+                
+                // Observe the modal for aria-hidden changes
+                observer.observe(addLivestockModal, {
+                    attributes: true,
+                    attributeFilter: ['aria-hidden']
+                });
             }
         });
 
