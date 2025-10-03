@@ -445,12 +445,12 @@
     </div>
 
     <!-- Add Livestock Modal -->
-    <div class="modal fade modal-custom" id="addLivestockModal" tabindex="-1">
+    <div class="modal fade modal-custom" id="addLivestockModal" tabindex="-1" aria-labelledby="addLivestockModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Add New Animal</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title" id="addLivestockModalLabel">Add New Animal</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form id="addLivestockForm">
@@ -703,6 +703,8 @@
     <script src="js/ai-advisory-database.js"></script>
     <!-- Include config -->
     <script src="js/config.js"></script>
+    <!-- Include modal accessibility helper -->
+    <script src="js/modal-accessibility.js"></script>
     
     <script>
         // Comprehensive Dog Breeds Database
@@ -1682,6 +1684,27 @@
                 }
             }, 3000);
         }
+
+        // Modal focus management
+        document.addEventListener('DOMContentLoaded', function() {
+            const addLivestockModal = document.getElementById('addLivestockModal');
+            if (addLivestockModal) {
+                addLivestockModal.addEventListener('shown.bs.modal', function() {
+                    // Remove aria-hidden when modal is shown
+                    this.removeAttribute('aria-hidden');
+                    // Focus on first input
+                    const firstInput = this.querySelector('input, select, textarea');
+                    if (firstInput) {
+                        firstInput.focus();
+                    }
+                });
+                
+                addLivestockModal.addEventListener('hide.bs.modal', function() {
+                    // Set aria-hidden when modal is being hidden
+                    this.setAttribute('aria-hidden', 'true');
+                });
+            }
+        });
 
         // Search functionality
         document.getElementById('searchInput').addEventListener('input', applyFilters);

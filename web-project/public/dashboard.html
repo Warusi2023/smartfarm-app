@@ -34,6 +34,7 @@
     <script src="js/api-service.js"></script>
     <script src="js/performance-optimizer.js"></script>
     <script src="js/accessibility-enhancer.js"></script>
+    <script src="js/modal-accessibility.js"></script>
     <script src="js/ai-seed-predictor.js"></script>
     <script src="js/intelligent-weeding.js"></script>
     <script src="js/qr-traceability.js"></script>
@@ -6555,9 +6556,9 @@
             // Create comprehensive add livestock modal
             const modal = document.createElement('div');
             modal.className = 'modal fade';
-            modal.setAttribute('aria-hidden', 'false');
             modal.setAttribute('aria-modal', 'true');
             modal.setAttribute('role', 'dialog');
+            modal.setAttribute('tabindex', '-1');
             modal.innerHTML = `
                 <div class="modal-dialog modal-lg">
                     <div class="modal-content">
@@ -6639,12 +6640,32 @@
             `;
             
             document.body.appendChild(modal);
-            const bsModal = new bootstrap.Modal(modal);
-            bsModal.show();
+            const bsModal = new bootstrap.Modal(modal, {
+                focus: true,
+                keyboard: true
+            });
+            
+            // Proper focus management
+            modal.addEventListener('shown.bs.modal', () => {
+                // Remove aria-hidden when modal is shown
+                modal.removeAttribute('aria-hidden');
+                // Focus on first input
+                const firstInput = modal.querySelector('input, select, textarea');
+                if (firstInput) {
+                    firstInput.focus();
+                }
+            });
+            
+            modal.addEventListener('hide.bs.modal', () => {
+                // Set aria-hidden when modal is being hidden
+                modal.setAttribute('aria-hidden', 'true');
+            });
             
             modal.addEventListener('hidden.bs.modal', () => {
                 document.body.removeChild(modal);
             });
+            
+            bsModal.show();
         }
 
         async function saveNewLivestock() {
