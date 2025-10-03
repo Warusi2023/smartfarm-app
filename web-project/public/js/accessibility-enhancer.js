@@ -35,6 +35,9 @@ class AccessibilityEnhancer {
 
         // Add skip links
         this.addSkipLinks();
+
+        // Setup modal focus trapping
+        this.setupModalFocusTrapping();
     }
 
     handleKeyboardNavigation(e) {
@@ -613,6 +616,70 @@ class AccessibilityEnhancer {
 
         if (nextIndex !== undefined) {
             menuItems[nextIndex].focus();
+        }
+    }
+
+    // Modal focus trapping for accessibility
+    setupModalFocusTrapping() {
+        // Listen for modal events to ensure proper focus management
+        document.addEventListener('shown.bs.modal', (event) => {
+            const modal = event.target;
+            this.enhanceModalAccessibility(modal);
+        });
+
+        document.addEventListener('hidden.bs.modal', (event) => {
+            const modal = event.target;
+            this.cleanupModalAccessibility(modal);
+        });
+    }
+
+    enhanceModalAccessibility(modal) {
+        // Ensure modal has proper ARIA attributes
+        if (!modal.hasAttribute('aria-modal')) {
+            modal.setAttribute('aria-modal', 'true');
+        }
+        if (!modal.hasAttribute('role')) {
+            modal.setAttribute('role', 'dialog');
+        }
+
+        // Add live region for screen reader announcements
+        const liveRegion = document.createElement('div');
+        liveRegion.setAttribute('aria-live', 'polite');
+        liveRegion.setAttribute('aria-atomic', 'true');
+        liveRegion.className = 'sr-only';
+        liveRegion.id = 'modal-announcement';
+        modal.appendChild(liveRegion);
+
+        // Announce modal opening
+        this.announceModal('Modal opened: ' + (modal.querySelector('.modal-title')?.textContent || 'Dialog'));
+
+        // Ensure first focusable element gets focus
+        const firstFocusable = modal.querySelector(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        if (firstFocusable) {
+            setTimeout(() => firstFocusable.focus(), 100);
+        }
+    }
+
+    cleanupModalAccessibility(modal) {
+        // Remove live region
+        const liveRegion = modal.querySelector('#modal-announcement');
+        if (liveRegion) {
+            liveRegion.remove();
+        }
+
+        // Announce modal closing
+        this.announceModal('Modal closed');
+    }
+
+    announceModal(message) {
+        const liveRegion = document.getElementById('modal-announcement');
+        if (liveRegion) {
+            liveRegion.textContent = message;
+            setTimeout(() => {
+                liveRegion.textContent = '';
+            }, 1000);
         }
     }
 }

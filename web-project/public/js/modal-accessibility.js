@@ -1,10 +1,14 @@
 /**
  * Modal Accessibility Helper
  * Fixes aria-hidden focus issues in Bootstrap modals
+ * Implements WAI-ARIA compliant modal behavior with focus trapping and inert background
  */
 
 class ModalAccessibility {
     constructor() {
+        this.activeModal = null;
+        this.lastFocusedElement = null;
+        this.backgroundElements = [];
         this.init();
     }
 
@@ -19,6 +23,10 @@ class ModalAccessibility {
 
     setupModalHandlers() {
         // Handle all modals with proper focus management
+        document.addEventListener('show.bs.modal', (event) => {
+            this.lastFocusedElement = document.activeElement;
+        });
+
         document.addEventListener('shown.bs.modal', (event) => {
             const modal = event.target;
             this.handleModalShown(modal);
@@ -27,6 +35,10 @@ class ModalAccessibility {
         document.addEventListener('hide.bs.modal', (event) => {
             const modal = event.target;
             this.handleModalHide(modal);
+        });
+
+        document.addEventListener('hidden.bs.modal', (event) => {
+            this.handleModalHidden(event.target);
         });
 
         // Handle dynamically created modals
@@ -41,17 +53,33 @@ class ModalAccessibility {
         });
 
         observer.observe(document.body, { childList: true, subtree: true });
+
+        // Handle Escape key globally for modals
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && this.activeModal) {
+                const bsModal = bootstrap.Modal.getInstance(this.activeModal);
+                if (bsModal) {
+                    bsModal.hide();
+                }
+            }
+        });
     }
 
     handleModalShown(modal) {
         console.log('Modal shown:', modal.id || 'unnamed modal');
         
-        // Remove aria-hidden when modal is shown
+        // Set active modal reference
+        this.activeModal = modal;
+        
+        // Remove aria-hidden when modal is shown (Bootstrap sets this incorrectly)
         modal.removeAttribute('aria-hidden');
         
         // Ensure proper ARIA attributes
         modal.setAttribute('aria-modal', 'true');
         modal.setAttribute('role', 'dialog');
+        
+        // Apply inert to background elements
+        this.applyInertToBackground();
         
         // Focus management - focus on first focusable element
         const focusableElements = modal.querySelectorAll(
@@ -63,21 +91,28 @@ class ModalAccessibility {
             focusableElements[0].focus();
         }
         
-        // Store reference to last focused element for restoration
-        this.lastFocusedElement = document.activeElement;
-        
         // Trap focus within modal
         this.trapFocus(modal);
     }
 
     handleModalHide(modal) {
-        console.log('Modal hidden:', modal.id || 'unnamed modal');
+        console.log('Modal hiding:', modal.id || 'unnamed modal');
         
         // Set aria-hidden when modal is being hidden
         modal.setAttribute('aria-hidden', 'true');
         
         // Remove focus trap
         this.removeFocusTrap(modal);
+    }
+
+    handleModalHidden(modal) {
+        console.log('Modal hidden:', modal.id || 'unnamed modal');
+        
+        // Clear active modal reference
+        this.activeModal = null;
+        
+        // Remove inert from background elements
+        this.removeInertFromBackground();
         
         // Restore focus to element that triggered the modal
         if (this.lastFocusedElement && this.lastFocusedElement !== document.body) {
@@ -93,8 +128,28 @@ class ModalAccessibility {
         modal.setAttribute('role', 'dialog');
         modal.setAttribute('tabindex', '-1');
         
-        // Remove any existing aria-hidden to let Bootstrap handle it
-        modal.removeAttribute('aria-hidden');
+        // Set aria-hidden initially (will be removed when shown)
+        modal.setAttribute('aria-hidden', 'true');
+    }
+
+    applyInertToBackground() {
+        // Apply inert to all body children except the modal
+        const bodyChildren = Array.from(document.body.children);
+        
+        bodyChildren.forEach(element => {
+            if (element !== this.activeModal && !element.contains(this.activeModal)) {
+                element.setAttribute('inert', 'true');
+                this.backgroundElements.push(element);
+            }
+        });
+    }
+
+    removeInertFromBackground() {
+        // Remove inert from all background elements
+        this.backgroundElements.forEach(element => {
+            element.removeAttribute('inert');
+        });
+        this.backgroundElements = [];
     }
 
     trapFocus(modal) {
@@ -102,10 +157,12 @@ class ModalAccessibility {
             'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
         );
         
+        if (focusableElements.length === 0) return;
+        
         const firstFocusableElement = focusableElements[0];
         const lastFocusableElement = focusableElements[focusableElements.length - 1];
 
-        modal.addEventListener('keydown', (event) => {
+        const handleKeydown = (event) => {
             if (event.key === 'Tab') {
                 if (event.shiftKey) {
                     // Shift + Tab
@@ -121,21 +178,19 @@ class ModalAccessibility {
                     }
                 }
             }
-            
-            // Escape key to close modal
-            if (event.key === 'Escape') {
-                const bsModal = bootstrap.Modal.getInstance(modal);
-                if (bsModal) {
-                    bsModal.hide();
-                }
-            }
-        });
+        };
+
+        modal.addEventListener('keydown', handleKeydown);
+        
+        // Store the handler for cleanup
+        modal._focusTrapHandler = handleKeydown;
     }
 
     removeFocusTrap(modal) {
-        // Remove event listeners by cloning the modal
-        const newModal = modal.cloneNode(true);
-        modal.parentNode.replaceChild(newModal, modal);
+        if (modal._focusTrapHandler) {
+            modal.removeEventListener('keydown', modal._focusTrapHandler);
+            delete modal._focusTrapHandler;
+        }
     }
 
     // Utility method to create accessible modals
@@ -154,6 +209,7 @@ class ModalAccessibility {
         modal.setAttribute('aria-modal', 'true');
         modal.setAttribute('role', 'dialog');
         modal.setAttribute('tabindex', '-1');
+        modal.setAttribute('aria-hidden', 'true'); // Initially hidden
 
         modal.innerHTML = `
             <div class="modal-dialog ${size}">
@@ -171,6 +227,34 @@ class ModalAccessibility {
 
         document.body.appendChild(modal);
         return modal;
+    }
+
+    // Method to validate modal accessibility
+    static validateModalAccessibility(modal) {
+        const issues = [];
+        
+        // Check for aria-hidden conflict
+        if (modal.hasAttribute('aria-hidden') && modal.getAttribute('aria-hidden') === 'true') {
+            const focusedElement = modal.querySelector(':focus');
+            if (focusedElement) {
+                issues.push('Modal has aria-hidden="true" but contains focused element');
+            }
+        }
+        
+        // Check for proper ARIA attributes
+        if (!modal.hasAttribute('aria-modal')) {
+            issues.push('Modal missing aria-modal attribute');
+        }
+        
+        if (!modal.hasAttribute('role')) {
+            issues.push('Modal missing role attribute');
+        }
+        
+        if (!modal.hasAttribute('tabindex')) {
+            issues.push('Modal missing tabindex attribute');
+        }
+        
+        return issues;
     }
 }
 
