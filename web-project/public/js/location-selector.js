@@ -75,23 +75,77 @@ class LocationSelector {
             </div>
         `;
 
-        // Ensure DOM is ready before inserting HTML
+        // Ensure DOM is ready before inserting HTML with comprehensive fallbacks
+        const insertLocationSelector = () => {
+            try {
+                // Try multiple insertion points with fallbacks
+                const insertionPoints = [
+                    () => document.body,
+                    () => document.querySelector('main'),
+                    () => document.querySelector('.container'),
+                    () => document.querySelector('#app'),
+                    () => document.documentElement
+                ];
+
+                let targetElement = null;
+                for (const getElement of insertionPoints) {
+                    try {
+                        targetElement = getElement();
+                        if (targetElement && targetElement.insertAdjacentHTML) {
+                            break;
+                        }
+                    } catch (e) {
+                        continue;
+                    }
+                }
+
+                if (targetElement && targetElement.insertAdjacentHTML) {
+                    targetElement.insertAdjacentHTML('beforeend', selectorHTML);
+                    console.log('✅ LocationSelector inserted successfully');
+                } else {
+                    // Fallback: create a container if nothing exists
+                    const fallbackContainer = document.createElement('div');
+                    fallbackContainer.id = 'location-selector-fallback';
+                    fallbackContainer.innerHTML = selectorHTML;
+                    document.documentElement.appendChild(fallbackContainer);
+                    console.warn('⚠️ LocationSelector inserted to fallback container');
+                }
+            } catch (error) {
+                console.error('❌ Failed to insert LocationSelector:', error);
+                // Store for later retry
+                this.retryInsertion(selectorHTML);
+            }
+        };
+
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', () => {
-                setTimeout(() => {
-                    if (document.body) {
-                        document.body.insertAdjacentHTML('beforeend', selectorHTML);
-                    }
-                }, 100);
+                setTimeout(insertLocationSelector, 100);
             });
         } else {
-            // Use setTimeout to ensure DOM is fully ready
-            setTimeout(() => {
-                if (document.body) {
-                    document.body.insertAdjacentHTML('beforeend', selectorHTML);
-                }
-            }, 100);
+            setTimeout(insertLocationSelector, 100);
         }
+    }
+
+    retryInsertion(selectorHTML, attempts = 0) {
+        const maxAttempts = 3;
+        if (attempts >= maxAttempts) {
+            console.error('❌ LocationSelector insertion failed after maximum attempts');
+            return;
+        }
+
+        setTimeout(() => {
+            try {
+                if (document.body && document.body.insertAdjacentHTML) {
+                    document.body.insertAdjacentHTML('beforeend', selectorHTML);
+                    console.log('✅ LocationSelector inserted on retry attempt', attempts + 1);
+                } else {
+                    this.retryInsertion(selectorHTML, attempts + 1);
+                }
+            } catch (error) {
+                console.error(`❌ LocationSelector retry ${attempts + 1} failed:`, error);
+                this.retryInsertion(selectorHTML, attempts + 1);
+            }
+        }, 500 * (attempts + 1)); // Exponential backoff
     }
 
     setupEventListeners() {

@@ -93,20 +93,34 @@ class SmartFarmCompetitive {
                 return;
             }
             
-            // Handle different sensor data structures
+            // Comprehensive IoT sensor data validation
             let value = data.value;
+            
+            // Validate complex sensor objects
             if (typeof value === 'object' && value !== null) {
-                // For complex sensors like livestockHealth, use the first numeric value
-                const numericValues = Object.values(value).filter(v => typeof v === 'number');
-                value = numericValues.length > 0 ? numericValues[0] : 0;
+                // For livestockHealth, validate specific fields
+                if (sensorName === 'livestockHealth') {
+                    const validationResult = this.validateLivestockHealthData(value);
+                    if (!validationResult.isValid) {
+                        console.warn(`⚠️ Invalid livestock health data:`, validationResult.errors, value);
+                        return;
+                    }
+                    // Use heart rate as primary value for display
+                    value = value.heartRate || 0;
+                } else {
+                    // For other complex sensors, use the first numeric value
+                    const numericValues = Object.values(value).filter(v => typeof v === 'number');
+                    value = numericValues.length > 0 ? numericValues[0] : 0;
+                }
             }
             
-            if (typeof value !== 'number') {
-                if (window.SmartFarmLogger) {
-                    window.SmartFarmLogger.warn(`Invalid sensor data for ${sensorName}:`, data);
-                } else {
-                    console.warn(`Invalid sensor data for ${sensorName}:`, data);
-                }
+            // Final validation
+            if (typeof value !== 'number' || isNaN(value) || !isFinite(value)) {
+                console.warn(`⚠️ Invalid sensor data for ${sensorName}:`, {
+                    value,
+                    type: typeof value,
+                    data
+                });
                 return;
             }
             
@@ -143,6 +157,71 @@ class SmartFarmCompetitive {
             feedLevel: 'Feed Level'
         };
         return names[sensorName] || sensorName;
+    }
+
+    validateLivestockHealthData(data) {
+        const errors = [];
+        
+        // Check required fields
+        const requiredFields = ['heartRate', 'temperature', 'activity', 'location', 'timestamp'];
+        requiredFields.forEach(field => {
+            if (!(field in data)) {
+                errors.push(`Missing required field: ${field}`);
+            }
+        });
+        
+        // Validate heart rate (typical range: 40-200 BPM)
+        if (data.heartRate !== undefined) {
+            if (typeof data.heartRate !== 'number' || isNaN(data.heartRate) || data.heartRate < 20 || data.heartRate > 250) {
+                errors.push(`Invalid heart rate: ${data.heartRate} (expected 20-250 BPM)`);
+            }
+        }
+        
+        // Validate temperature (typical range: 35-42°C for livestock)
+        if (data.temperature !== undefined) {
+            if (typeof data.temperature !== 'number' || isNaN(data.temperature) || data.temperature < 30 || data.temperature > 45) {
+                errors.push(`Invalid temperature: ${data.temperature} (expected 30-45°C)`);
+            }
+        }
+        
+        // Validate activity level
+        if (data.activity !== undefined) {
+            const validActivities = ['normal', 'active', 'resting', 'feeding', 'grazing', 'sleeping'];
+            if (!validActivities.includes(data.activity)) {
+                errors.push(`Invalid activity: ${data.activity} (expected one of: ${validActivities.join(', ')})`);
+            }
+        }
+        
+        // Validate timestamp
+        if (data.timestamp !== undefined) {
+            try {
+                const date = new Date(data.timestamp);
+                if (isNaN(date.getTime())) {
+                    errors.push(`Invalid timestamp: ${data.timestamp}`);
+                } else {
+                    // Check if timestamp is within reasonable range (not too old or future)
+                    const now = new Date();
+                    const diffHours = Math.abs(now.getTime() - date.getTime()) / (1000 * 60 * 60);
+                    if (diffHours > 24) {
+                        errors.push(`Timestamp too old or future: ${data.timestamp} (${diffHours.toFixed(1)}h difference)`);
+                    }
+                }
+            } catch (error) {
+                errors.push(`Timestamp parsing error: ${error.message}`);
+            }
+        }
+        
+        // Validate location (non-empty string)
+        if (data.location !== undefined) {
+            if (typeof data.location !== 'string' || data.location.trim().length === 0) {
+                errors.push(`Invalid location: ${data.location} (expected non-empty string)`);
+            }
+        }
+        
+        return {
+            isValid: errors.length === 0,
+            errors
+        };
     }
 
     setupIoTAlerts() {

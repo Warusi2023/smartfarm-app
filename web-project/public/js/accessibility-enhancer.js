@@ -156,7 +156,69 @@ class AccessibilityEnhancer {
             skipLink.style.top = '-40px';
         });
 
-        document.body.insertBefore(skipLink, document.body.firstChild);
+        // Safe insertion with fallback
+        this.safeInsertSkipLink(skipLink);
+    }
+
+    safeInsertSkipLink(skipLink) {
+        try {
+            // Try multiple insertion strategies
+            const insertionStrategies = [
+                () => {
+                    // Primary: Insert before first child of body
+                    if (document.body && document.body.firstChild) {
+                        return document.body.insertBefore(skipLink, document.body.firstChild);
+                    }
+                    return null;
+                },
+                () => {
+                    // Fallback 1: Prepend to body
+                    if (document.body && document.body.prepend) {
+                        return document.body.prepend(skipLink);
+                    }
+                    return null;
+                },
+                () => {
+                    // Fallback 2: Append to body
+                    if (document.body && document.body.appendChild) {
+                        return document.body.appendChild(skipLink);
+                    }
+                    return null;
+                },
+                () => {
+                    // Fallback 3: Insert to head
+                    if (document.head && document.head.appendChild) {
+                        return document.head.appendChild(skipLink);
+                    }
+                    return null;
+                },
+                () => {
+                    // Fallback 4: Create container and insert
+                    const container = document.createElement('div');
+                    container.id = 'accessibility-skip-link-container';
+                    container.appendChild(skipLink);
+                    document.documentElement.appendChild(container);
+                    return container;
+                }
+            ];
+
+            for (const strategy of insertionStrategies) {
+                try {
+                    const result = strategy();
+                    if (result) {
+                        console.log('✅ Skip link inserted successfully using fallback strategy');
+                        return;
+                    }
+                } catch (error) {
+                    console.warn('⚠️ Skip link insertion strategy failed:', error.message);
+                    continue;
+                }
+            }
+            
+            console.error('❌ All skip link insertion strategies failed');
+        } catch (error) {
+            console.error('❌ Critical error in skip link insertion:', error);
+        }
     }
 
     // Screen reader support

@@ -52,8 +52,15 @@ class UserRoleManager {
                 sessionStorage.removeItem('smartfarm_user');
                 return { role: 'guest', isOwner: false };
             }
-                
+            
+            // Attempt to parse JSON with comprehensive error handling
+            try {
                 const user = JSON.parse(userData);
+                
+                // Validate parsed user object structure
+                if (!user || typeof user !== 'object') {
+                    throw new Error('Invalid user object structure');
+                }
                 
                 // Check if this is the project owner
                 if (this.isProjectOwner()) {
@@ -61,9 +68,12 @@ class UserRoleManager {
                     user.isOwner = true;
                 }
                 
+                console.log('✅ User data parsed successfully:', user);
                 return user;
-            } else {
-                // Invalid data, clear it
+                
+            } catch (parseError) {
+                console.warn('⚠️ JSON parse error:', parseError.message, 'Data:', userData);
+                // Clear corrupted data
                 localStorage.removeItem('smartfarm_user');
                 sessionStorage.removeItem('smartfarm_user');
                 return { role: 'guest', isOwner: false };
@@ -119,9 +129,32 @@ class UserRoleManager {
     getUserEmail() {
         try {
             const userData = localStorage.getItem('smartfarm_user') || sessionStorage.getItem('smartfarm_user') || '{}';
-            const user = JSON.parse(userData);
-            return user.email || '';
+            
+            // Validate JSON before parsing
+            if (userData === '{}' || userData === 'null' || userData === 'undefined') {
+                return '';
+            }
+            
+            // Check if it's valid JSON format
+            if (!userData.startsWith('{') && !userData.startsWith('[')) {
+                return '';
+            }
+            
+            try {
+                const user = JSON.parse(userData);
+                
+                // Validate parsed user object
+                if (!user || typeof user !== 'object') {
+                    return '';
+                }
+                
+                return user.email || '';
+            } catch (parseError) {
+                console.warn('⚠️ JSON parse error in getUserEmail:', parseError.message);
+                return '';
+            }
         } catch (error) {
+            console.warn('⚠️ Error in getUserEmail:', error);
             return '';
         }
     }

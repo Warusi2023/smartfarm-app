@@ -48,9 +48,18 @@ class PerformanceOptimizer {
                 threshold: 0.1
             });
 
-            // Observe all lazy elements
+            // Observe all lazy elements with validation
             document.querySelectorAll('[data-src], [data-component]').forEach(el => {
-                this.lazyLoadObserver.observe(el);
+                if (el && el.nodeType === Node.ELEMENT_NODE) {
+                    try {
+                        this.lazyLoadObserver.observe(el);
+                        console.log('✅ Lazy element observed successfully');
+                    } catch (error) {
+                        console.warn('⚠️ Failed to observe lazy element:', error, el);
+                    }
+                } else {
+                    console.warn('⚠️ Invalid lazy element detected:', el);
+                }
             });
         }
     }
@@ -81,10 +90,30 @@ class PerformanceOptimizer {
             });
         });
 
-        imageObserver.observe(document.body, {
-            childList: true,
-            subtree: true
-        });
+        // Safe observe with validation
+        if (document.body && document.body.nodeType === Node.ELEMENT_NODE) {
+            try {
+                imageObserver.observe(document.body, {
+                    childList: true,
+                    subtree: true
+                });
+                console.log('✅ Image observer started successfully');
+            } catch (error) {
+                console.warn('⚠️ Failed to start image observer:', error);
+                // Fallback: observe document instead
+                try {
+                    imageObserver.observe(document.documentElement, {
+                        childList: true,
+                        subtree: true
+                    });
+                    console.log('✅ Image observer fallback started successfully');
+                } catch (fallbackError) {
+                    console.error('❌ Image observer fallback failed:', fallbackError);
+                }
+            }
+        } else {
+            console.warn('⚠️ document.body not available for image observer');
+        }
     }
 
     optimizeImage(img) {
