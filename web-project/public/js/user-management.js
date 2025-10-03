@@ -24,6 +24,12 @@ class UserManagement {
 
     async loadCurrentUser() {
         try {
+            if (!this.token) {
+                console.warn('No authentication token found. Redirecting to login...');
+                window.location.href = '/login.html';
+                return;
+            }
+
             // Use the auth endpoint for profile
             const response = await fetch('/api/auth/profile', {
                 headers: {
@@ -31,6 +37,14 @@ class UserManagement {
                     'Content-Type': 'application/json'
                 }
             });
+            
+            if (response.status === 401) {
+                console.warn('Authentication failed. Redirecting to login...');
+                localStorage.removeItem('jwtToken');
+                sessionStorage.removeItem('jwtToken');
+                window.location.href = '/login.html';
+                return;
+            }
             
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}`);
@@ -43,6 +57,10 @@ class UserManagement {
             }
         } catch (error) {
             console.error('Error loading current user:', error);
+            // If it's a network error, show a message
+            if (error.message.includes('Failed to fetch')) {
+                this.showErrorMessage('Unable to connect to server. Please check your internet connection.');
+            }
         }
     }
 
