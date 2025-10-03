@@ -2642,6 +2642,15 @@
                 colno: e.colno,
                 stack: e.error ? e.error.stack : 'No stack trace'
             });
+            
+            // Show user-friendly error message for navigation errors
+            if (e.message.includes('showDashboard') || e.message.includes('showFarm') || 
+                e.message.includes('showCrop') || e.message.includes('showLivestock') ||
+                e.message.includes('showPets') || e.message.includes('showInventory') ||
+                e.message.includes('showAnalytics') || e.message.includes('showTasks') ||
+                e.message.includes('showReports')) {
+                console.error('Navigation function error detected. Please refresh the page.');
+            }
         });
 
         // Function to verify all required functions are defined
@@ -2650,10 +2659,15 @@
                 'showView',
                 'setActiveNav',
                 'updateURL',
-                'showLivestockManagement',
+                'showDashboard',
+                'showFarmManagement',
                 'showCropManagement',
+                'showLivestockManagement',
                 'showPetsManagement',
-                'showInventoryManagement'
+                'showInventoryManagement',
+                'showAnalytics',
+                'showTasks',
+                'showReports'
             ];
             
             const missingFunctions = [];
@@ -2670,6 +2684,43 @@
                 console.log('All required functions are defined');
                 return true;
             }
+        }
+
+        // Navigation test function
+        function testNavigation() {
+            console.log('Testing navigation functions...');
+            const navTests = [
+                { name: 'Dashboard', func: 'showDashboard', view: 'dashboardView' },
+                { name: 'Farm Management', func: 'showFarmManagement', view: 'farmManagementView' },
+                { name: 'Crop Management', func: 'showCropManagement', view: 'cropManagementView' },
+                { name: 'Livestock Management', func: 'showLivestockManagement', view: 'livestockManagementView' },
+                { name: 'Pets Management', func: 'showPetsManagement', view: 'petsManagementView' },
+                { name: 'Inventory Management', func: 'showInventoryManagement', view: 'inventoryManagementView' },
+                { name: 'Analytics', func: 'showAnalytics', view: 'analyticsView' },
+                { name: 'Tasks', func: 'showTasks', view: 'tasksView' },
+                { name: 'Reports', func: 'showReports', view: 'reportsView' }
+            ];
+
+            navTests.forEach(test => {
+                try {
+                    // Test if function exists
+                    if (typeof window[test.func] === 'function') {
+                        console.log(`✅ ${test.name}: Function exists`);
+                        
+                        // Test if view element exists
+                        const viewElement = document.getElementById(test.view);
+                        if (viewElement) {
+                            console.log(`✅ ${test.name}: View element exists`);
+                        } else {
+                            console.error(`❌ ${test.name}: View element '${test.view}' not found`);
+                        }
+                    } else {
+                        console.error(`❌ ${test.name}: Function '${test.func}' not defined`);
+                    }
+                } catch (error) {
+                    console.error(`❌ ${test.name}: Test failed - ${error.message}`);
+                }
+            });
         }
 
         // URL Routing System
@@ -2738,6 +2789,9 @@
             try {
                 // Verify all required functions are defined
                 verifyRequiredFunctions();
+                
+                // Test navigation functions
+                testNavigation();
                 
                 initializeGlobalDatabase();
                 initializeDashboard();
@@ -11066,10 +11120,7 @@ INVENTORY SUMMARY:
             }
         }
 
-        function updateURL(viewName) {
-            window.location.hash = viewName;
-            localStorage.setItem('smartfarm_lastView', viewName);
-        }
+        // Duplicate updateURL function removed - using the main one above
 
         // User functions
         function editProfile() {
