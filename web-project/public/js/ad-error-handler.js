@@ -91,13 +91,26 @@
     window.addEventListener('error', function(event) {
         const message = event.message || '';
         const source = event.filename || '';
+        const error = event.error || '';
         
-        if (shouldSuppress(message) || shouldSuppress(source)) {
+        if (shouldSuppress(message) || shouldSuppress(source) || shouldSuppress(String(error))) {
             event.preventDefault();
             event.stopPropagation();
             return false;
         }
     });
+
+    // Handle resource loading errors
+    window.addEventListener('error', function(event) {
+        if (event.target !== window) {
+            const src = event.target.src || event.target.href || '';
+            if (shouldSuppress(src)) {
+                event.preventDefault();
+                event.stopPropagation();
+                return false;
+            }
+        }
+    }, true);
 
     // Handle unhandled promise rejections
     window.addEventListener('unhandledrejection', function(event) {
@@ -124,5 +137,39 @@
         });
     };
 
-    console.log('🛡️ Ad error handler initialized - suppressing third-party ad errors');
+    // Block problematic scripts from loading
+    const originalCreateElement = document.createElement;
+    document.createElement = function(tagName) {
+        const element = originalCreateElement.call(this, tagName);
+        
+        if (tagName.toLowerCase() === 'script') {
+            const originalSetAttribute = element.setAttribute;
+            element.setAttribute = function(name, value) {
+                if (name === 'src' && shouldSuppress(value)) {
+                    console.log('🚫 Blocked script:', value);
+                    return; // Don't set the src attribute
+                }
+                originalSetAttribute.call(this, name, value);
+            };
+        }
+        
+        return element;
+    };
+
+    // Block script loading via innerHTML
+    const originalInnerHTML = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML');
+    if (originalInnerHTML && originalInnerHTML.set) {
+        Object.defineProperty(Element.prototype, 'innerHTML', {
+            set: function(value) {
+                if (typeof value === 'string' && shouldSuppress(value)) {
+                    console.log('🚫 Blocked innerHTML with suppressed content');
+                    return;
+                }
+                originalInnerHTML.set.call(this, value);
+            },
+            get: originalInnerHTML.get
+        });
+    }
+
+    console.log('🛡️ Ad error handler initialized - suppressing third-party ad errors and blocking problematic scripts');
 })();
