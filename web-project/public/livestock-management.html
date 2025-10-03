@@ -314,6 +314,137 @@
         .weight-chart {
             height: 250px;
         }
+
+        /* Livestock Card Styling */
+        .livestock-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .livestock-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .livestock-id {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #2e7d32;
+            margin-bottom: 5px;
+        }
+
+        .livestock-breed {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .livestock-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .livestock-info-label {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .livestock-info-value {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .livestock-value {
+            color: #2e7d32;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .badge-lifecycle {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-right: 5px;
+        }
+
+        .lifecycle-cow { background: #e8f5e8; color: #2e7d32; }
+        .lifecycle-bull { background: #f3e5f5; color: #7b1fa2; }
+        .lifecycle-heifer { background: #f3e5f5; color: #7b1fa2; }
+
+        .badge-purpose {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .purpose-dairy { background: #e3f2fd; color: #1976d2; }
+        .purpose-beef { background: #ffebee; color: #d32f2f; }
+        .purpose-breeding { background: #f3e5f5; color: #7b1fa2; }
+
+        .livestock-status {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-dot.healthy { background: #28a745; }
+        .status-dot.pregnant { background: #ff9800; }
+        .status-dot.sick { background: #dc3545; }
+
+        .status-badge-top {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-badge-top.healthy { background: #d4edda; color: #155724; }
+        .status-badge-top.pregnant { background: #fff3cd; color: #856404; }
+
+        .livestock-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .livestock-actions .btn {
+            flex: 1;
+            padding: 8px 12px;
+            font-size: 0.85rem;
+            border-radius: 6px;
+        }
+
+        .btn-edit { background: #17a2b8; color: white; border: none; }
+        .btn-edit:hover { background: #138496; }
+
+        .btn-health { background: #28a745; color: white; border: none; }
+        .btn-health:hover { background: #218838; }
+
+        .btn-timeline { background: #6c757d; color: white; border: none; }
+        .btn-timeline:hover { background: #5a6268; }
+
+        .btn-delete { background: #dc3545; color: white; border: none; }
+        .btn-delete:hover { background: #c82333; }
     </style>
 </head>
 <body>
@@ -368,25 +499,25 @@
         <div class="row mb-4">
             <div class="col-lg-3 col-md-6">
                 <div class="card-custom text-center">
-                    <h3 class="text-primary mb-2" id="totalAnimals">0</h3>
+                    <h3 class="text-primary mb-2" id="totalAnimals">5</h3>
                     <p class="mb-0">Total Animals</p>
                 </div>
             </div>
             <div class="col-lg-3 col-md-6">
                 <div class="card-custom text-center">
-                    <h3 class="text-success mb-2" id="healthyAnimals">0</h3>
+                    <h3 class="text-success mb-2" id="healthyAnimals">4</h3>
                     <p class="mb-0">Healthy Animals</p>
                 </div>
             </div>
             <div class="col-lg-3 col-md-6">
                 <div class="card-custom text-center">
-                    <h3 class="text-warning mb-2" id="pregnantAnimals">0</h3>
+                    <h3 class="text-warning mb-2" id="pregnantAnimals">1</h3>
                     <p class="mb-0">Pregnant Animals</p>
                 </div>
             </div>
             <div class="col-lg-3 col-md-6">
                 <div class="card-custom text-center">
-                    <h3 class="text-info mb-2" id="totalValue">0</h3>
+                    <h3 class="text-info mb-2" id="totalValue">11800</h3>
                     <p class="mb-0">Total Value (FJD)</p>
                 </div>
             </div>
@@ -430,7 +561,200 @@
 
         <!-- Livestock Grid -->
         <div class="row" id="livestockContainer">
-            <!-- Livestock cards will be dynamically loaded here -->
+            <!-- H001 - Cattle -->
+            <div class="col-lg-4 col-md-6">
+                <div class="livestock-card">
+                    <div class="status-badge-top healthy">Healthy</div>
+                    <div class="livestock-id">H001 - Cattle</div>
+                    <div class="livestock-breed">Holstein • female</div>
+                    <div class="livestock-info">
+                        <span class="livestock-info-label">Age</span>
+                        <span class="livestock-info-value">2y 6m</span>
+                    </div>
+                    <div class="livestock-info">
+                        <span class="livestock-info-label">Weight</span>
+                        <span class="livestock-info-value">450.5 kg</span>
+                    </div>
+                    <div class="livestock-info">
+                        <span class="livestock-info-label">Location</span>
+                        <span class="livestock-info-value">Pasture 1</span>
+                    </div>
+                    <div class="livestock-info">
+                        <span class="livestock-info-label">Value</span>
+                        <span class="livestock-value">FJD 2500</span>
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge badge-lifecycle lifecycle-cow">COW</span>
+                        <span class="badge badge-purpose purpose-dairy">DAIRY</span>
+                    </div>
+                    <div class="livestock-status">
+                        <span class="status-dot healthy"></span>
+                        <span>Healthy</span>
+                    </div>
+                    <div class="livestock-actions">
+                        <button class="btn btn-edit"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-health"><i class="fas fa-heart"></i></button>
+                        <button class="btn btn-timeline"><i class="fas fa-chart-line"></i></button>
+                        <button class="btn btn-delete"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- P001 - Pigs -->
+            <div class="col-lg-4 col-md-6">
+                <div class="livestock-card">
+                    <div class="status-badge-top healthy">Healthy</div>
+                    <div class="livestock-id">P001 - Pigs</div>
+                    <div class="livestock-breed">Large White • male</div>
+                    <div class="livestock-info">
+                        <span class="livestock-info-label">Age</span>
+                        <span class="livestock-info-value">1y 8m</span>
+                    </div>
+                    <div class="livestock-info">
+                        <span class="livestock-info-label">Weight</span>
+                        <span class="livestock-info-value">180.2 kg</span>
+                    </div>
+                    <div class="livestock-info">
+                        <span class="livestock-info-label">Location</span>
+                        <span class="livestock-info-value">Pen 2</span>
+                    </div>
+                    <div class="livestock-info">
+                        <span class="livestock-info-label">Value</span>
+                        <span class="livestock-value">FJD 800</span>
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge badge-lifecycle lifecycle-bull">BOAR</span>
+                        <span class="badge badge-purpose purpose-beef">BEEF</span>
+                    </div>
+                    <div class="livestock-status">
+                        <span class="status-dot healthy"></span>
+                        <span>Healthy</span>
+                    </div>
+                    <div class="livestock-actions">
+                        <button class="btn btn-edit"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-health"><i class="fas fa-heart"></i></button>
+                        <button class="btn btn-timeline"><i class="fas fa-chart-line"></i></button>
+                        <button class="btn btn-delete"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- A001 - Cattle (Pregnant) -->
+            <div class="col-lg-4 col-md-6">
+                <div class="livestock-card">
+                    <div class="status-badge-top pregnant">Pregnant</div>
+                    <div class="livestock-id">A001 - Cattle</div>
+                    <div class="livestock-breed">Angus • female</div>
+                    <div class="livestock-info">
+                        <span class="livestock-info-label">Age</span>
+                        <span class="livestock-info-value">3y 1m</span>
+                    </div>
+                    <div class="livestock-info">
+                        <span class="livestock-info-label">Weight</span>
+                        <span class="livestock-info-value">520.8 kg</span>
+                    </div>
+                    <div class="livestock-info">
+                        <span class="livestock-info-label">Location</span>
+                        <span class="livestock-info-value">Pasture 2</span>
+                    </div>
+                    <div class="livestock-info">
+                        <span class="livestock-info-label">Value</span>
+                        <span class="livestock-value">FJD 3200</span>
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge badge-lifecycle lifecycle-cow">COW</span>
+                        <span class="badge badge-purpose purpose-beef">BEEF</span>
+                    </div>
+                    <div class="livestock-status">
+                        <span class="status-dot pregnant"></span>
+                        <span>Pregnant</span>
+                    </div>
+                    <div class="livestock-actions">
+                        <button class="btn btn-edit"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-health"><i class="fas fa-heart"></i></button>
+                        <button class="btn btn-timeline"><i class="fas fa-chart-line"></i></button>
+                        <button class="btn btn-delete"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- A003 - Cattle (Bull) -->
+            <div class="col-lg-4 col-md-6">
+                <div class="livestock-card">
+                    <div class="status-badge-top healthy">Healthy</div>
+                    <div class="livestock-id">A003 - Cattle</div>
+                    <div class="livestock-breed">Hereford • male</div>
+                    <div class="livestock-info">
+                        <span class="livestock-info-label">Age</span>
+                        <span class="livestock-info-value">4y 3m</span>
+                    </div>
+                    <div class="livestock-info">
+                        <span class="livestock-info-label">Weight</span>
+                        <span class="livestock-info-value">750 kg</span>
+                    </div>
+                    <div class="livestock-info">
+                        <span class="livestock-info-label">Location</span>
+                        <span class="livestock-info-value">Bull Pen</span>
+                    </div>
+                    <div class="livestock-info">
+                        <span class="livestock-info-label">Value</span>
+                        <span class="livestock-value">FJD 4500</span>
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge badge-lifecycle lifecycle-bull">BULL</span>
+                        <span class="badge badge-purpose purpose-breeding">BREEDING</span>
+                    </div>
+                    <div class="livestock-status">
+                        <span class="status-dot healthy"></span>
+                        <span>Healthy</span>
+                    </div>
+                    <div class="livestock-actions">
+                        <button class="btn btn-edit"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-health"><i class="fas fa-heart"></i></button>
+                        <button class="btn btn-timeline"><i class="fas fa-chart-line"></i></button>
+                        <button class="btn btn-delete"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- A004 - Cattle (Heifer) -->
+            <div class="col-lg-4 col-md-6">
+                <div class="livestock-card">
+                    <div class="status-badge-top healthy">Healthy</div>
+                    <div class="livestock-id">A004 - Cattle</div>
+                    <div class="livestock-breed">Jersey • female</div>
+                    <div class="livestock-info">
+                        <span class="livestock-info-label">Age</span>
+                        <span class="livestock-info-value">1y 7m</span>
+                    </div>
+                    <div class="livestock-info">
+                        <span class="livestock-info-label">Weight</span>
+                        <span class="livestock-info-value">120.5 kg</span>
+                    </div>
+                    <div class="livestock-info">
+                        <span class="livestock-info-label">Location</span>
+                        <span class="livestock-info-value">Calf Pen</span>
+                    </div>
+                    <div class="livestock-info">
+                        <span class="livestock-info-label">Value</span>
+                        <span class="livestock-value">FJD 800</span>
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge badge-lifecycle lifecycle-heifer">HEIFER</span>
+                        <span class="badge badge-purpose purpose-dairy">DAIRY</span>
+                    </div>
+                    <div class="livestock-status">
+                        <span class="status-dot healthy"></span>
+                        <span>Healthy</span>
+                    </div>
+                    <div class="livestock-actions">
+                        <button class="btn btn-edit"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-health"><i class="fas fa-heart"></i></button>
+                        <button class="btn btn-timeline"><i class="fas fa-chart-line"></i></button>
+                        <button class="btn btn-delete"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- No animals message -->
