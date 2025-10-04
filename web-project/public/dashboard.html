@@ -351,21 +351,42 @@
             box-shadow: 0 8px 30px rgba(0,0,0,0.15);
         }
 
-        .livestock-header {
+        /* Pets Cards */
+        .pets-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .pets-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            border: 1px solid #f0f0f0;
+        }
+
+        .pets-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+        }
+
+        .livestock-header, .pets-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
             margin-bottom: 1rem;
         }
 
-        .livestock-name {
+        .livestock-name, .pets-name {
             font-size: 1.2rem;
             font-weight: 600;
             margin: 0;
             color: #333;
         }
 
-        .livestock-breed {
+        .livestock-breed, .pets-breed {
             font-size: 0.9rem;
             color: #666;
             margin: 0.25rem 0 0 0;
@@ -395,17 +416,17 @@
             background: #f44336;
         }
 
-        .livestock-details {
+        .livestock-details, .pets-details {
             margin-bottom: 1rem;
         }
 
-        .livestock-actions {
+        .livestock-actions, .pets-actions {
             display: flex;
             gap: 0.5rem;
             flex-wrap: wrap;
         }
 
-        .livestock-actions .btn {
+        .livestock-actions .btn, .pets-actions .btn {
             flex: 1;
             min-width: 0;
         }
@@ -461,12 +482,14 @@
             }
 
             .crops-grid,
-            .livestock-grid {
+            .livestock-grid,
+            .pets-grid {
                 grid-template-columns: 1fr;
             }
 
             .crop-actions,
-            .livestock-actions {
+            .livestock-actions,
+            .pets-actions {
                 flex-direction: column;
             }
 
@@ -2282,16 +2305,174 @@
                 </div>
 
                 <div id="petsManagementView" style="display: none;">
-                    <h2>Pets Management</h2>
-                    <div class="dashboard-card">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5>Pets by Type</h5>
+                    <!-- Page Header -->
+                    <div class="page-header mb-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h1 class="page-title">Pets Management</h1>
+                                <p class="page-subtitle">Manage your pets, track health, and monitor veterinary care</p>
+                            </div>
                             <div>
                                 <button class="btn btn-outline-success me-2" onclick="showGlobalPetsDatabase()">
                                     <i class="fas fa-globe me-2"></i>Global Database
                                 </button>
-                                <button class="btn btn-custom" onclick="addNewPet()">
-                                    <i class="fas fa-plus me-2"></i>Add Pet
+                                <button class="btn btn-custom btn-lg" onclick="addNewPet()">
+                                    <i class="fas fa-plus me-2"></i>Add New Pet
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Statistics Cards -->
+                    <div class="row mb-4">
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <div class="stat-card">
+                                <div class="stat-icon bg-primary">
+                                    <i class="fas fa-paw"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <h3 class="stat-number" id="totalPets">0</h3>
+                                    <p class="stat-label">Total Pets</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <div class="stat-card">
+                                <div class="stat-icon bg-success">
+                                    <i class="fas fa-heart"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <h3 class="stat-number" id="healthyPets">0</h3>
+                                    <p class="stat-label">Healthy Pets</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <div class="stat-card">
+                                <div class="stat-icon bg-info">
+                                    <i class="fas fa-syringe"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <h3 class="stat-number" id="vaccinatedPets">0</h3>
+                                    <p class="stat-label">Vaccinated Pets</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <div class="stat-card">
+                                <div class="stat-icon bg-warning">
+                                    <i class="fas fa-dollar-sign"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <h3 class="stat-number" id="totalPetsValue">0</h3>
+                                    <p class="stat-label">Total Value (FJD)</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filter and Search -->
+                    <div class="filter-section mb-4">
+                        <div class="row align-items-center">
+                            <div class="col-md-4">
+                                <div class="search-box">
+                                    <i class="fas fa-search"></i>
+                                    <input type="text" id="petsSearch" placeholder="Search pets..." class="form-control">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <select class="form-select" id="petsSpeciesFilter">
+                                    <option value="">All Species</option>
+                                    <option value="Dog">Dog</option>
+                                    <option value="Cat">Cat</option>
+                                    <option value="Bird">Bird</option>
+                                    <option value="Fish">Fish</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select class="form-select" id="petsStatusFilter">
+                                    <option value="">All Status</option>
+                                    <option value="Healthy">Healthy</option>
+                                    <option value="Sick">Sick</option>
+                                    <option value="Recovering">Recovering</option>
+                                    <option value="Under Treatment">Under Treatment</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-outline-primary w-100" onclick="filterPets()">
+                                    <i class="fas fa-filter me-1"></i>Filter
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pets Grid -->
+                    <div class="pets-grid" id="petsGrid">
+                        <!-- Sample pets cards for demonstration -->
+                        <div class="pets-card">
+                            <div class="pets-header">
+                                <div class="pets-info">
+                                    <h5 class="pets-name">Buddy</h5>
+                                    <p class="pets-breed">Golden Retriever</p>
+                                </div>
+                                <div class="status-badge-top">
+                                    <span class="status-dot status-healthy"></span>
+                                    <span class="status-badge status-healthy">Healthy</span>
+                                </div>
+                            </div>
+                            <div class="pets-details">
+                                <div class="detail-row">
+                                    <i class="fas fa-tag"></i>
+                                    <span>ID: P001</span>
+                                </div>
+                                <div class="detail-row">
+                                    <i class="fas fa-venus-mars"></i>
+                                    <span>Sex: Male</span>
+                                </div>
+                                <div class="detail-row">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    <span>Birth: 15/03/2022</span>
+                                </div>
+                                <div class="detail-row">
+                                    <i class="fas fa-weight"></i>
+                                    <span>Weight: 25 kg</span>
+                                </div>
+                                <div class="detail-row">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span>Location: Home</span>
+                                </div>
+                                <div class="detail-row">
+                                    <i class="fas fa-syringe"></i>
+                                    <span>Vaccination: Up to date</span>
+                                </div>
+                            </div>
+                            <div class="pets-actions">
+                                <button class="btn btn-sm btn-outline-primary" onclick="editPet(1)">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                                <button class="btn btn-sm btn-success" onclick="addHealthRecord(1)">
+                                    <i class="fas fa-heartbeat"></i> Health
+                                </button>
+                                <button class="btn btn-sm btn-info" onclick="viewPetDetails(1)">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="deletePet(1)">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5>Pets by Type</h5>
+                            <div>
+                                <button class="btn btn-outline-secondary me-2" onclick="showAllPets()">
+                                    <i class="fas fa-list me-2"></i>Show All
+                                </button>
+                                <button class="btn btn-outline-primary" onclick="exportPetsData()">
+                                    <i class="fas fa-download me-2"></i>Export
                                 </button>
                             </div>
                         </div>
@@ -6130,7 +6311,10 @@
                         healthStatus: 'Healthy',
                         vaccination: 'Up to date',
                         lastVetVisit: '2025-01-01',
-                        notes: 'Friendly and energetic'
+                        notes: 'Friendly and energetic',
+                        weight: '25 kg',
+                        location: 'Home',
+                        value: 500
                     },
                     { 
                         id: 2, 
@@ -6142,13 +6326,18 @@
                         healthStatus: 'Healthy',
                         vaccination: 'Up to date',
                         lastVetVisit: '2024-12-15',
-                        notes: 'Calm and affectionate'
+                        notes: 'Calm and affectionate',
+                        weight: '4 kg',
+                        location: 'Home',
+                        value: 300
                     }
                 ];
                 savePetsData();
             }
+            renderPetsGrid();
             renderPetsTable();
             updatePetsTabCounts();
+            updatePetsStatistics();
         }
 
         function loadInventoryData() {
@@ -6314,6 +6503,23 @@
             // Load fresh pets data when switching to this tab
             loadPetsData();
             console.log('Pets data after loading:', pets);
+            
+            // Add event listeners for search and filter
+            setTimeout(() => {
+                const searchInput = document.getElementById('petsSearch');
+                const speciesFilter = document.getElementById('petsSpeciesFilter');
+                const statusFilter = document.getElementById('petsStatusFilter');
+                
+                if (searchInput) {
+                    searchInput.addEventListener('input', filterPets);
+                }
+                if (speciesFilter) {
+                    speciesFilter.addEventListener('change', filterPets);
+                }
+                if (statusFilter) {
+                    statusFilter.addEventListener('change', filterPets);
+                }
+            }, 100);
         }
 
         function showInventoryManagement() {
@@ -7805,6 +8011,129 @@
             document.getElementById('other-pets-count').textContent = counts.other;
         }
 
+        function renderPetsGrid() {
+            const petsGrid = document.getElementById('petsGrid');
+            if (!petsGrid) return;
+
+            petsGrid.innerHTML = '';
+
+            pets.forEach(pet => {
+                const petCard = createPetsCard(pet);
+                petsGrid.appendChild(petCard);
+            });
+        }
+
+        function createPetsCard(pet) {
+            const card = document.createElement('div');
+            card.className = 'pets-card';
+            
+            const statusClass = pet.healthStatus.toLowerCase().replace(' ', '-');
+            const statusColor = getStatusColor(pet.healthStatus);
+            
+            card.innerHTML = `
+                <div class="pets-header">
+                    <div class="pets-info">
+                        <h5 class="pets-name">${pet.name}</h5>
+                        <p class="pets-breed">${pet.breed}</p>
+                    </div>
+                    <div class="status-badge-top">
+                        <span class="status-dot status-${statusClass}"></span>
+                        <span class="status-badge status-${statusClass}">${pet.healthStatus}</span>
+                    </div>
+                </div>
+                <div class="pets-details">
+                    <div class="detail-row">
+                        <i class="fas fa-tag"></i>
+                        <span>ID: P${pet.id.toString().padStart(3, '0')}</span>
+                    </div>
+                    <div class="detail-row">
+                        <i class="fas fa-venus-mars"></i>
+                        <span>Sex: ${pet.gender}</span>
+                    </div>
+                    <div class="detail-row">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Age: ${pet.age} years</span>
+                    </div>
+                    <div class="detail-row">
+                        <i class="fas fa-weight"></i>
+                        <span>Weight: ${pet.weight || 'N/A'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>Location: ${pet.location || 'Home'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <i class="fas fa-syringe"></i>
+                        <span>Vaccination: ${pet.vaccination}</span>
+                    </div>
+                </div>
+                <div class="pets-actions">
+                    <button class="btn btn-sm btn-outline-primary" onclick="editPet(${pet.id})">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button class="btn btn-sm btn-success" onclick="addHealthRecord(${pet.id})">
+                        <i class="fas fa-heartbeat"></i> Health
+                    </button>
+                    <button class="btn btn-sm btn-info" onclick="viewPetDetails(${pet.id})">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger" onclick="deletePet(${pet.id})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `;
+            
+            return card;
+        }
+
+        function updatePetsStatistics() {
+            const totalPets = pets.length;
+            const healthyPets = pets.filter(pet => pet.healthStatus === 'Healthy').length;
+            const vaccinatedPets = pets.filter(pet => pet.vaccination === 'Up to date').length;
+            const totalValue = pets.reduce((sum, pet) => sum + (pet.value || 0), 0);
+
+            document.getElementById('totalPets').textContent = totalPets;
+            document.getElementById('healthyPets').textContent = healthyPets;
+            document.getElementById('vaccinatedPets').textContent = vaccinatedPets;
+            document.getElementById('totalPetsValue').textContent = totalValue.toLocaleString();
+        }
+
+        function getStatusColor(status) {
+            switch (status.toLowerCase()) {
+                case 'healthy': return 'success';
+                case 'sick': return 'danger';
+                case 'recovering': return 'warning';
+                case 'under treatment': return 'info';
+                default: return 'secondary';
+            }
+        }
+
+        function filterPets() {
+            const searchTerm = document.getElementById('petsSearch').value.toLowerCase();
+            const speciesFilter = document.getElementById('petsSpeciesFilter').value;
+            const statusFilter = document.getElementById('petsStatusFilter').value;
+
+            let filteredPets = pets.filter(pet => {
+                const matchesSearch = pet.name.toLowerCase().includes(searchTerm) || 
+                                    pet.breed.toLowerCase().includes(searchTerm) ||
+                                    pet.species.toLowerCase().includes(searchTerm);
+                const matchesSpecies = !speciesFilter || pet.species === speciesFilter;
+                const matchesStatus = !statusFilter || pet.healthStatus === statusFilter;
+                
+                return matchesSearch && matchesSpecies && matchesStatus;
+            });
+
+            // Update the pets grid with filtered results
+            const petsGrid = document.getElementById('petsGrid');
+            if (petsGrid) {
+                petsGrid.innerHTML = '';
+                filteredPets.forEach(pet => {
+                    const petCard = createPetsCard(pet);
+                    petsGrid.appendChild(petCard);
+                });
+            }
+        }
+
         function createPetRow(pet, showSpecies = true) {
             const row = document.createElement('tr');
             
@@ -8005,7 +8334,9 @@
 
             pets.push(newPet);
             savePetsData();
+            renderPetsGrid();
             renderPetsTable();
+            updatePetsStatistics();
             updateAnalyticsCharts();
             
             // Close modal
@@ -8232,7 +8563,9 @@
             pet.lastUpdated = new Date().toISOString();
 
             savePetsData();
+            renderPetsGrid();
             renderPetsTable();
+            updatePetsStatistics();
             updateAnalyticsCharts();
             
             // Close modal
@@ -8256,10 +8589,217 @@
                 () => {
                     pets = pets.filter(pet => pet.id !== id);
                     savePetsData();
+                    renderPetsGrid();
                     renderPetsTable();
+                    updatePetsStatistics();
                     showSuccessMessage('Pet deleted successfully!');
                 }
             );
+        }
+
+        function viewPetDetails(id) {
+            const pet = pets.find(p => p.id === id);
+            if (!pet) {
+                showInfoDialog('Error', 'Pet record not found', 'OK');
+                return;
+            }
+
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-paw me-2"></i>Pet Details - ${pet.name}
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6 class="text-primary mb-3">Basic Information</h6>
+                                    <div class="detail-item mb-2">
+                                        <strong>Name:</strong> ${pet.name}
+                                    </div>
+                                    <div class="detail-item mb-2">
+                                        <strong>Species:</strong> ${pet.species}
+                                    </div>
+                                    <div class="detail-item mb-2">
+                                        <strong>Breed:</strong> ${pet.breed}
+                                    </div>
+                                    <div class="detail-item mb-2">
+                                        <strong>Age:</strong> ${pet.age} years
+                                    </div>
+                                    <div class="detail-item mb-2">
+                                        <strong>Gender:</strong> ${pet.gender}
+                                    </div>
+                                    <div class="detail-item mb-2">
+                                        <strong>Weight:</strong> ${pet.weight || 'N/A'}
+                                    </div>
+                                    <div class="detail-item mb-2">
+                                        <strong>Location:</strong> ${pet.location || 'Home'}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="text-success mb-3">Health Information</h6>
+                                    <div class="detail-item mb-2">
+                                        <strong>Health Status:</strong> 
+                                        <span class="badge bg-${getStatusColor(pet.healthStatus)}">${pet.healthStatus}</span>
+                                    </div>
+                                    <div class="detail-item mb-2">
+                                        <strong>Vaccination:</strong> ${pet.vaccination}
+                                    </div>
+                                    <div class="detail-item mb-2">
+                                        <strong>Last Vet Visit:</strong> ${pet.lastVetVisit || 'Not recorded'}
+                                    </div>
+                                    <div class="detail-item mb-2">
+                                        <strong>Value:</strong> FJD ${pet.value || 'Not set'}
+                                    </div>
+                                </div>
+                            </div>
+                            ${pet.notes ? `
+                                <div class="mt-3">
+                                    <h6 class="text-info mb-2">Notes</h6>
+                                    <div class="alert alert-light">${pet.notes}</div>
+                                </div>
+                            ` : ''}
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-primary" onclick="editPet(${pet.id}); const modal = bootstrap.Modal.getInstance(document.querySelector('.modal')); modal.hide();">
+                                <i class="fas fa-edit me-1"></i>Edit Pet
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        function addHealthRecord(petId) {
+            const pet = pets.find(p => p.id === petId);
+            if (!pet) {
+                showInfoDialog('Error', 'Pet record not found', 'OK');
+                return;
+            }
+
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-success text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-heartbeat me-2"></i>Health Record - ${pet.name}
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label">Health Status</label>
+                                <select class="form-select" id="healthStatus">
+                                    <option value="Healthy" ${pet.healthStatus === 'Healthy' ? 'selected' : ''}>Healthy</option>
+                                    <option value="Sick" ${pet.healthStatus === 'Sick' ? 'selected' : ''}>Sick</option>
+                                    <option value="Recovering" ${pet.healthStatus === 'Recovering' ? 'selected' : ''}>Recovering</option>
+                                    <option value="Under Treatment" ${pet.healthStatus === 'Under Treatment' ? 'selected' : ''}>Under Treatment</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Vaccination Status</label>
+                                <select class="form-select" id="vaccinationStatus">
+                                    <option value="Up to date" ${pet.vaccination === 'Up to date' ? 'selected' : ''}>Up to date</option>
+                                    <option value="Due soon" ${pet.vaccination === 'Due soon' ? 'selected' : ''}>Due soon</option>
+                                    <option value="Overdue" ${pet.vaccination === 'Overdue' ? 'selected' : ''}>Overdue</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Last Vet Visit</label>
+                                <input type="date" class="form-control" id="lastVetVisit" value="${pet.lastVetVisit || ''}">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Health Notes</label>
+                                <textarea class="form-control" id="healthNotes" rows="3" placeholder="Enter any health notes or observations...">${pet.notes || ''}</textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-success" onclick="saveHealthRecord(${petId})">
+                                <i class="fas fa-save me-1"></i>Save Health Record
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        function saveHealthRecord(petId) {
+            const pet = pets.find(p => p.id === petId);
+            if (!pet) return;
+
+            const healthStatus = document.getElementById('healthStatus').value;
+            const vaccinationStatus = document.getElementById('vaccinationStatus').value;
+            const lastVetVisit = document.getElementById('lastVetVisit').value;
+            const healthNotes = document.getElementById('healthNotes').value;
+
+            pet.healthStatus = healthStatus;
+            pet.vaccination = vaccinationStatus;
+            pet.lastVetVisit = lastVetVisit || null;
+            pet.notes = healthNotes;
+            pet.lastUpdated = new Date().toISOString();
+
+            savePetsData();
+            renderPetsGrid();
+            renderPetsTable();
+            updatePetsStatistics();
+            
+            // Close modal
+            const modal = document.querySelector('.modal');
+            if (modal) {
+                const bsModal = bootstrap.Modal.getInstance(modal);
+                if (bsModal) {
+                    bsModal.hide();
+                }
+            }
+            
+            showSuccessMessage('Health record updated successfully!');
+        }
+
+        function showAllPets() {
+            // Reset filters and show all pets
+            document.getElementById('petsSearch').value = '';
+            document.getElementById('petsSpeciesFilter').value = '';
+            document.getElementById('petsStatusFilter').value = '';
+            renderPetsGrid();
+        }
+
+        function exportPetsData() {
+            const dataStr = JSON.stringify(pets, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'pets-data.json';
+            link.click();
+            URL.revokeObjectURL(url);
+            showSuccessMessage('Pets data exported successfully!');
         }
 
         // Enhanced Livestock Management Functions
@@ -14146,7 +14686,9 @@ INVENTORY SUMMARY:
                 
                 pets.push(newPet);
                 savePetsData();
+                renderPetsGrid();
                 renderPetsTable();
+                updatePetsStatistics();
                 updateAnalyticsCharts();
                 
                 showNotification(`Successfully added ${petName} to your farm!`, 'success');
