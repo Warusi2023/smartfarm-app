@@ -2259,42 +2259,46 @@
             printWindow.document.close();
             printWindow.print();
         }
-                    case 'Insecticidal Soap':
-                        basicInfo = `🔬 INSECTICIDAL SOAP DETAILS\n\nType: Organic Insecticide\nEffectiveness: 70%\nSafety Level: Very High\nCost: $8.00/L\n\nTarget Pests:\n• Aphids\n• Whiteflies\n• Spider Mites\n• Mealybugs\n\nSafety Guidelines:\n• Minimal protection needed\n• Safe for beneficial insects\n• No pre-harvest interval\n• Safe for organic farming\n\nPre-Harvest Interval: 0 days`;
-                        break;
-                    case 'Imidacloprid':
-                        basicInfo = `🔬 IMIDACLOPRID DETAILS\n\nType: Neonicotinoid Insecticide\nEffectiveness: 90%\nSafety Level: Moderate\nCost: $55.00/L\n\nTarget Pests:\n• Aphids\n• Whiteflies\n• Thrips\n• Leafhoppers\n• Beetles\n\nSafety Guidelines:\n• Wear protective clothing\n• Use chemical-resistant gloves\n• Avoid beneficial insects\n• Do not apply near flowering crops\n• 21-day pre-harvest interval\n\nPre-Harvest Interval: 21 days`;
-                        break;
-                    case 'Spinosad':
-                        basicInfo = `🔬 SPINOSAD DETAILS\n\nType: Natural Insecticide\nEffectiveness: 85%\nSafety Level: High\nCost: $40.00/L\n\nTarget Pests:\n• Caterpillars\n• Thrips\n• Leafminers\n• Beetles\n• Fruit Flies\n\nSafety Guidelines:\n• Wear protective clothing\n• Use chemical-resistant gloves\n• Safe for beneficial insects\n• Do not apply in windy conditions\n• 1-day pre-harvest interval\n\nPre-Harvest Interval: 1 day`;
-                        break;
-                    case 'Bacillus thuringiensis':
-                        basicInfo = `🔬 BACILLUS THURINGIENSIS DETAILS\n\nType: Biological Insecticide\nEffectiveness: 80%\nSafety Level: Very High\nCost: $25.00/L\n\nTarget Pests:\n• Caterpillars\n• Larvae\n• Moth larvae\n• Butterfly larvae\n\nSafety Guidelines:\n• Minimal protective equipment needed\n• Safe for beneficial insects\n• No pre-harvest interval\n• Environmentally friendly\n• Safe for organic farming\n\nPre-Harvest Interval: 0 days`;
-                        break;
-                    case 'Mancozeb':
-                        basicInfo = `🔬 MANCOZEB DETAILS\n\nType: Dithiocarbamate Fungicide\nEffectiveness: 85%\nSafety Level: Moderate\nCost: $30.00/L\n\nTarget Diseases:\n• Powdery mildew\n• Downy mildew\n• Leaf spot\n• Rust\n• Blight\n\nSafety Guidelines:\n• Wear protective clothing\n• Use chemical-resistant gloves\n• Avoid skin and eye contact\n• Do not eat, drink or smoke during application\n• 14-day pre-harvest interval\n\nPre-Harvest Interval: 14 days`;
-                        break;
-                    case 'Propiconazole':
-                        basicInfo = `🔬 PROPICONAZOLE DETAILS\n\nType: Triazole Systemic Fungicide\nEffectiveness: 90%\nSafety Level: Moderate\nCost: $50.00/L\n\nTarget Diseases:\n• Powdery mildew\n• Rust\n• Leaf spot\n• Anthracnose\n• Fruit rot\n\nSafety Guidelines:\n• Wear protective clothing\n• Use chemical-resistant gloves\n• Avoid skin and eye contact\n• Do not apply near water sources\n• 21-day pre-harvest interval\n\nPre-Harvest Interval: 21 days`;
-                        break;
-                    case 'Chlorothalonil':
-                        basicInfo = `🔬 CHLOROTHALONIL DETAILS\n\nType: Chloronitrile Protectant Fungicide\nEffectiveness: 80%\nSafety Level: Moderate\nCost: $35.00/L\n\nTarget Diseases:\n• Leaf spot\n• Blight\n• Anthracnose\n• Downy mildew\n• Rust\n\nSafety Guidelines:\n• Wear protective clothing\n• Use chemical-resistant gloves\n• Avoid skin and eye contact\n• Do not apply near water sources\n• 7-day pre-harvest interval\n\nPre-Harvest Interval: 7 days`;
-                        break;
-                    case 'Copper Compounds':
-                        basicInfo = `🔬 COPPER COMPOUNDS DETAILS\n\nType: Inorganic Bactericide & Fungicide\nEffectiveness: 75%\nSafety Level: Moderate\nCost: $20.00/L\n\nTarget Diseases:\n• Bacterial diseases\n• Fire blight\n• Bacterial spot\n• Powdery mildew\n• Downy mildew\n\nSafety Guidelines:\n• Wear protective clothing\n• Use chemical-resistant gloves\n• Avoid skin and eye contact\n• Safe for organic farming\n• No pre-harvest interval\n\nPre-Harvest Interval: 0 days`;
-                        break;
-                    case 'Streptomycin':
-                        basicInfo = `🔬 STREPTOMYCIN DETAILS\n\nType: Antibiotic Bactericide\nEffectiveness: 85%\nSafety Level: High\nCost: $60.00/L\n\nTarget Diseases:\n• Fire blight\n• Bacterial spot\n• Bacterial canker\n• Bacterial wilt\n• Halo blight\n\nSafety Guidelines:\n• Wear protective clothing\n• Use chemical-resistant gloves\n• Avoid skin and eye contact\n• Do not apply near water sources\n• 7-day pre-harvest interval\n\nPre-Harvest Interval: 7 days`;
-                        break;
-                    default:
-                        basicInfo = `🔬 ${pesticideName} DETAILS\n\nThis would display comprehensive pesticide information including:\n\n• Chemical properties and molecular data\n• Toxicity and ecotoxicity information\n• Target pests and resistance data\n• Application instructions and timing\n• Safety guidelines and protective equipment\n• Regulatory compliance information\n\nDetailed pesticide database integration required.`;
-                }
-                
-                showInfoDialog(
-                    `🔬 ${pesticideName} Details`,
-                    basicInfo.replace(`🔬 ${pesticideName} DETAILS\n\n`, '')
-                );
+
+        function showPesticideDetails(pesticideName) {
+            let basicInfo;
+            
+            switch(pesticideName) {
+                case 'Insecticidal Soap':
+                    basicInfo = `🔬 INSECTICIDAL SOAP DETAILS\n\nType: Organic Insecticide\nEffectiveness: 70%\nSafety Level: Very High\nCost: $8.00/L\n\nTarget Pests:\n• Aphids\n• Whiteflies\n• Spider Mites\n• Mealybugs\n\nSafety Guidelines:\n• Minimal protection needed\n• Safe for beneficial insects\n• No pre-harvest interval\n• Safe for organic farming\n\nPre-Harvest Interval: 0 days`;
+                    break;
+                case 'Imidacloprid':
+                    basicInfo = `🔬 IMIDACLOPRID DETAILS\n\nType: Neonicotinoid Insecticide\nEffectiveness: 90%\nSafety Level: Moderate\nCost: $55.00/L\n\nTarget Pests:\n• Aphids\n• Whiteflies\n• Thrips\n• Leafhoppers\n• Beetles\n\nSafety Guidelines:\n• Wear protective clothing\n• Use chemical-resistant gloves\n• Avoid beneficial insects\n• Do not apply near flowering crops\n• 21-day pre-harvest interval\n\nPre-Harvest Interval: 21 days`;
+                    break;
+                case 'Spinosad':
+                    basicInfo = `🔬 SPINOSAD DETAILS\n\nType: Natural Insecticide\nEffectiveness: 85%\nSafety Level: High\nCost: $40.00/L\n\nTarget Pests:\n• Caterpillars\n• Thrips\n• Leafminers\n• Beetles\n• Fruit Flies\n\nSafety Guidelines:\n• Wear protective clothing\n• Use chemical-resistant gloves\n• Safe for beneficial insects\n• Do not apply in windy conditions\n• 1-day pre-harvest interval\n\nPre-Harvest Interval: 1 day`;
+                    break;
+                case 'Bacillus thuringiensis':
+                    basicInfo = `🔬 BACILLUS THURINGIENSIS DETAILS\n\nType: Biological Insecticide\nEffectiveness: 80%\nSafety Level: Very High\nCost: $25.00/L\n\nTarget Pests:\n• Caterpillars\n• Larvae\n• Moth larvae\n• Butterfly larvae\n\nSafety Guidelines:\n• Minimal protective equipment needed\n• Safe for beneficial insects\n• No pre-harvest interval\n• Environmentally friendly\n• Safe for organic farming\n\nPre-Harvest Interval: 0 days`;
+                    break;
+                case 'Mancozeb':
+                    basicInfo = `🔬 MANCOZEB DETAILS\n\nType: Dithiocarbamate Fungicide\nEffectiveness: 85%\nSafety Level: Moderate\nCost: $30.00/L\n\nTarget Diseases:\n• Powdery mildew\n• Downy mildew\n• Leaf spot\n• Rust\n• Blight\n\nSafety Guidelines:\n• Wear protective clothing\n• Use chemical-resistant gloves\n• Avoid skin and eye contact\n• Do not eat, drink or smoke during application\n• 14-day pre-harvest interval\n\nPre-Harvest Interval: 14 days`;
+                    break;
+                case 'Propiconazole':
+                    basicInfo = `🔬 PROPICONAZOLE DETAILS\n\nType: Triazole Systemic Fungicide\nEffectiveness: 90%\nSafety Level: Moderate\nCost: $50.00/L\n\nTarget Diseases:\n• Powdery mildew\n• Rust\n• Leaf spot\n• Anthracnose\n• Fruit rot\n\nSafety Guidelines:\n• Wear protective clothing\n• Use chemical-resistant gloves\n• Avoid skin and eye contact\n• Do not apply near water sources\n• 21-day pre-harvest interval\n\nPre-Harvest Interval: 21 days`;
+                    break;
+                case 'Chlorothalonil':
+                    basicInfo = `🔬 CHLOROTHALONIL DETAILS\n\nType: Chloronitrile Protectant Fungicide\nEffectiveness: 80%\nSafety Level: Moderate\nCost: $35.00/L\n\nTarget Diseases:\n• Leaf spot\n• Blight\n• Anthracnose\n• Downy mildew\n• Rust\n\nSafety Guidelines:\n• Wear protective clothing\n• Use chemical-resistant gloves\n• Avoid skin and eye contact\n• Do not apply near water sources\n• 7-day pre-harvest interval\n\nPre-Harvest Interval: 7 days`;
+                    break;
+                case 'Copper Compounds':
+                    basicInfo = `🔬 COPPER COMPOUNDS DETAILS\n\nType: Inorganic Bactericide & Fungicide\nEffectiveness: 75%\nSafety Level: Moderate\nCost: $20.00/L\n\nTarget Diseases:\n• Bacterial diseases\n• Fire blight\n• Bacterial spot\n• Powdery mildew\n• Downy mildew\n\nSafety Guidelines:\n• Wear protective clothing\n• Use chemical-resistant gloves\n• Avoid skin and eye contact\n• Safe for organic farming\n• No pre-harvest interval\n\nPre-Harvest Interval: 0 days`;
+                    break;
+                case 'Streptomycin':
+                    basicInfo = `🔬 STREPTOMYCIN DETAILS\n\nType: Antibiotic Bactericide\nEffectiveness: 85%\nSafety Level: High\nCost: $60.00/L\n\nTarget Diseases:\n• Fire blight\n• Bacterial spot\n• Bacterial canker\n• Bacterial wilt\n• Halo blight\n\nSafety Guidelines:\n• Wear protective clothing\n• Use chemical-resistant gloves\n• Avoid skin and eye contact\n• Do not apply near water sources\n• 7-day pre-harvest interval\n\nPre-Harvest Interval: 7 days`;
+                    break;
+                default:
+                    basicInfo = `🔬 ${pesticideName} DETAILS\n\nThis would display comprehensive pesticide information including:\n\n• Chemical properties and molecular data\n• Toxicity and ecotoxicity information\n• Target pests and resistance data\n• Application instructions and timing\n• Safety guidelines and protective equipment\n• Regulatory compliance information\n\nDetailed pesticide database integration required.`;
             }
+            
+            showInfoDialog(
+                `🔬 ${pesticideName} Details`,
+                basicInfo.replace(`🔬 ${pesticideName} DETAILS\n\n`, '')
+            );
         }
     </script>
 </body>
