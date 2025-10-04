@@ -205,6 +205,8 @@ class UserManagement {
         const container = document.getElementById('users-list');
         if (!container) return;
 
+        this.users = users; // Store users for later use
+
         const html = users.map(user => `
             <div class="card mb-3">
                 <div class="card-body">
@@ -212,40 +214,56 @@ class UserManagement {
                         <div class="col-md-3">
                             <h6 class="mb-1">${user.firstName} ${user.lastName}</h6>
                             <small class="text-muted">${user.email}</small>
+                            ${user.phone ? `<br><small class="text-muted"><i class="fas fa-phone me-1"></i>${user.phone}</small>` : ''}
                         </div>
                         <div class="col-md-2">
                             <span class="badge ${this.getRoleBadgeClass(user.role)}">${user.role.toUpperCase()}</span>
                         </div>
                         <div class="col-md-2">
-                            <span class="badge ${user.status === 'active' ? 'bg-success' : 'bg-secondary'}">${user.status}</span>
+                            <span class="badge ${user.status === 'active' ? 'bg-success' : user.status === 'inactive' ? 'bg-secondary' : 'bg-warning'}">${user.status}</span>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <small class="text-muted">
-                                ${user.ownedFarms ? user.ownedFarms.length : 0} farms owned<br>
+                                ${user.farms ? user.farms.length : 0} farms<br>
                                 ${user.permissions ? user.permissions.length : 0} permissions
                             </small>
                         </div>
-                        <div class="col-md-2">
-                            <div class="btn-group btn-group-sm">
-                                <button class="btn btn-outline-primary" onclick="userManagement.editUser('${user.id}')">
+                        <div class="col-md-3">
+                            <div class="btn-group btn-group-sm" role="group">
+                                <button class="btn btn-outline-primary btn-sm" data-action="edit-user" data-user-id="${user.id}" title="Edit User">
                                     <i class="fas fa-edit"></i>
                                 </button>
-                                <button class="btn btn-outline-success" onclick="userManagement.assignFarm('${user.id}')">
+                                <button class="btn btn-outline-info btn-sm" data-action="change-password" data-user-id="${user.id}" title="Change Password">
+                                    <i class="fas fa-key"></i>
+                                </button>
+                                <button class="btn btn-outline-success btn-sm" data-action="assign-farm" data-user-id="${user.id}" title="Assign to Farm">
                                     <i class="fas fa-plus"></i>
                                 </button>
-                                ${this.currentUser.role === 'admin' ? `
-                                    <button class="btn btn-outline-warning" onclick="userManagement.changeRole('${user.id}')">
-                                        <i class="fas fa-user-cog"></i>
+                                ${this.currentUser && this.currentUser.role === 'admin' ? `
+                                    <button class="btn btn-outline-danger btn-sm" data-action="delete-user" data-user-id="${user.id}" title="Delete User">
+                                        <i class="fas fa-trash"></i>
                                     </button>
                                 ` : ''}
                             </div>
                         </div>
                     </div>
+                    ${user.permissions && user.permissions.length > 0 ? `
+                        <div class="row mt-2">
+                            <div class="col-12">
+                                <small class="text-muted">
+                                    <strong>Permissions:</strong> ${user.permissions.join(', ')}
+                                </small>
+                            </div>
+                        </div>
+                    ` : ''}
                 </div>
             </div>
         `).join('');
 
         container.innerHTML = html;
+        
+        // Add event listeners for the new action buttons
+        this.addUserActionListeners();
     }
 
     displayUserFarms(farmsData) {
@@ -464,6 +482,258 @@ class UserManagement {
         
         const bsModal = new bootstrap.Modal(modal);
         bsModal.show();
+    }
+
+    // Add event listeners for user actions
+    addUserActionListeners() {
+        document.addEventListener('click', (e) => {
+            if (e.target.matches('[data-action="change-password"]')) {
+                const userId = e.target.dataset.userId;
+                this.showChangePasswordModal(userId);
+            }
+            if (e.target.matches('[data-action="delete-user"]')) {
+                const userId = e.target.dataset.userId;
+                this.confirmDeleteUser(userId);
+            }
+            if (e.target.matches('[data-action="edit-user"]')) {
+                const userId = e.target.dataset.userId;
+                this.showEditUserModal(userId);
+            }
+        });
+
+        // Handle change password form submission
+        document.addEventListener('submit', (e) => {
+            if (e.target.matches('#change-password-form')) {
+                e.preventDefault();
+                this.changePassword(e.target);
+            }
+            if (e.target.matches('#edit-user-form')) {
+                e.preventDefault();
+                this.editUser(e.target);
+            }
+        });
+    }
+
+    showChangePasswordModal(userId) {
+        const modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.id = 'change-password-modal';
+        modal.innerHTML = `
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title"><i class="fas fa-key me-2"></i>Change Password</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form id="change-password-form">
+                        <input type="hidden" name="userId" value="${userId}">
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="currentPassword" class="form-label">Current Password</label>
+                                <input type="password" class="form-control" id="currentPassword" name="currentPassword" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="newPassword" class="form-label">New Password</label>
+                                <input type="password" class="form-control" id="newPassword" name="newPassword" required>
+                                <div class="form-text">Password must be at least 8 characters long</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="confirmPassword" class="form-label">Confirm New Password</label>
+                                <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-key me-1"></i>Change Password
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        const bsModal = new bootstrap.Modal(modal);
+        bsModal.show();
+        
+        modal.addEventListener('hidden.bs.modal', () => {
+            document.body.removeChild(modal);
+        });
+    }
+
+    async changePassword(form) {
+        try {
+            const formData = new FormData(form);
+            const userId = formData.get('userId');
+            const currentPassword = formData.get('currentPassword');
+            const newPassword = formData.get('newPassword');
+            const confirmPassword = formData.get('confirmPassword');
+
+            // Validation
+            if (newPassword !== confirmPassword) {
+                this.showErrorMessage('New passwords do not match');
+                return;
+            }
+
+            if (newPassword.length < 8) {
+                this.showErrorMessage('Password must be at least 8 characters long');
+                return;
+            }
+
+            const response = await this.apiRequest(`/users/${userId}/password`, 'PUT', {
+                currentPassword,
+                newPassword
+            });
+
+            if (response.success) {
+                this.showSuccessMessage('Password changed successfully');
+                bootstrap.Modal.getInstance(document.getElementById('change-password-modal')).hide();
+                form.reset();
+            }
+        } catch (error) {
+            console.error('Password change error:', error);
+            this.showErrorMessage('Failed to change password: ' + error.message);
+        }
+    }
+
+    confirmDeleteUser(userId) {
+        const user = this.users.find(u => u.id == userId);
+        if (!user) return;
+
+        const confirmed = confirm(`Are you sure you want to delete user "${user.firstName} ${user.lastName}" (${user.email})?\n\nThis action cannot be undone and will restrict the user from accessing group details.`);
+        
+        if (confirmed) {
+            this.deleteUser(userId);
+        }
+    }
+
+    async deleteUser(userId) {
+        try {
+            const response = await this.apiRequest(`/users/${userId}`, 'DELETE');
+            
+            if (response.success) {
+                this.showSuccessMessage(`User ${response.data.name} has been deleted successfully`);
+                this.loadUserManagementInterface(); // Refresh the user list
+            }
+        } catch (error) {
+            console.error('Delete user error:', error);
+            this.showErrorMessage('Failed to delete user: ' + error.message);
+        }
+    }
+
+    showEditUserModal(userId) {
+        const user = this.users.find(u => u.id == userId);
+        if (!user) return;
+
+        const modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.id = 'edit-user-modal';
+        modal.innerHTML = `
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title"><i class="fas fa-edit me-2"></i>Edit User</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form id="edit-user-form">
+                        <input type="hidden" name="userId" value="${userId}">
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="editFirstName" class="form-label">First Name</label>
+                                        <input type="text" class="form-control" id="editFirstName" name="firstName" value="${user.firstName}" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="editLastName" class="form-label">Last Name</label>
+                                        <input type="text" class="form-control" id="editLastName" name="lastName" value="${user.lastName}" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editEmail" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="editEmail" name="email" value="${user.email}" readonly>
+                                <div class="form-text">Email cannot be changed</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="editRole" class="form-label">Role</label>
+                                        <select class="form-select" id="editRole" name="role" required>
+                                            <option value="farmer" ${user.role === 'farmer' ? 'selected' : ''}>Farmer</option>
+                                            <option value="manager" ${user.role === 'manager' ? 'selected' : ''}>Manager</option>
+                                            <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Admin</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="editPhone" class="form-label">Phone</label>
+                                        <input type="tel" class="form-control" id="editPhone" name="phone" value="${user.phone || ''}">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editPermissions" class="form-label">Permissions</label>
+                                <input type="text" class="form-control" id="editPermissions" name="permissions" value="${user.permissions.join(', ')}" placeholder="permission1,permission2,permission3">
+                                <div class="form-text">Comma-separated list of permissions</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editStatus" class="form-label">Status</label>
+                                <select class="form-select" id="editStatus" name="status">
+                                    <option value="active" ${user.status === 'active' ? 'selected' : ''}>Active</option>
+                                    <option value="inactive" ${user.status === 'inactive' ? 'selected' : ''}>Inactive</option>
+                                    <option value="suspended" ${user.status === 'suspended' ? 'selected' : ''}>Suspended</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        const bsModal = new bootstrap.Modal(modal);
+        bsModal.show();
+        
+        modal.addEventListener('hidden.bs.modal', () => {
+            document.body.removeChild(modal);
+        });
+    }
+
+    async editUser(form) {
+        try {
+            const formData = new FormData(form);
+            const userId = formData.get('userId');
+            const userData = {
+                firstName: formData.get('firstName'),
+                lastName: formData.get('lastName'),
+                role: formData.get('role'),
+                phone: formData.get('phone'),
+                permissions: formData.get('permissions') ? formData.get('permissions').split(',').map(p => p.trim()).filter(p => p) : [],
+                status: formData.get('status')
+            };
+
+            const response = await this.apiRequest(`/users/${userId}`, 'PUT', userData);
+            
+            if (response.success) {
+                this.showSuccessMessage('User updated successfully');
+                bootstrap.Modal.getInstance(document.getElementById('edit-user-modal')).hide();
+                this.loadUserManagementInterface(); // Refresh the user list
+            }
+        } catch (error) {
+            console.error('Edit user error:', error);
+            this.showErrorMessage('Failed to update user: ' + error.message);
+        }
     }
 
     showSuccessMessage(message) {

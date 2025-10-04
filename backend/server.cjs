@@ -25,6 +25,10 @@ app.get("/api/ready", (_req, res) => {
   res.json({ ready: true, ts: Date.now() });
 });
 
+// User Management API Routes
+app.use('/api/user-management', require('./routes/user-management'));
+app.use('/api/auth', require('./routes/auth'));
+
 // Log API key status on startup
 logApiKeyStatus();
 
