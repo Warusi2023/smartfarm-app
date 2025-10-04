@@ -1,7 +1,11 @@
-name: Deploy SmartFarm Backend(s) to Railway
+name: Deploy SmartFarm Backend to Railway
 on:
   push:
     branches: [ "main" ]
+
+concurrency:
+  group: railway-deploy-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   preflight:
@@ -11,21 +15,37 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 18 }
       - run: npm ci || true
-      - run: npm run preflight
+      - name: Verify backend path & start script
+        run: npm run preflight
 
   deploy-determined-elegance:
     needs: preflight
+    if: ${{ secrets.RAILWAY_TOKEN && secrets.RAILWAY_SERVICE_ID_DETERMINED }}
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: backend
-    if: ${{ secrets.RAILWAY_TOKEN && secrets.RAILWAY_SERVICE_ID_DETERMINED }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version-file: backend/.nvmrc }
-      - run: npm ci
-      - run: npm run build
+        with:
+          node-version-file: backend/.nvmrc
+      - name: Print environment
+        run: |
+          node -v
+          npm -v
+          pwd
+          ls -la
+          cat package.json
+      - name: Install
+        run: npm ci
+      - name: Sanity-check runtime
+        run: |
+          node -e "console.log('require express:', !!require('express'))"
+          node -e "require('./server.cjs'); setTimeout(()=>process.exit(0), 1500)" &
+          sleep 1
+          curl -f http://localhost:3000/api/health || (echo '❌ health failed locally' && exit 1)
+          kill %1 || true
       - name: Deploy to Railway (determined-elegance)
         uses: railwayapp/action@v1
         with:
@@ -34,17 +54,32 @@ jobs:
 
   deploy-enchanting-joy:
     needs: preflight
+    if: ${{ secrets.RAILWAY_TOKEN && secrets.RAILWAY_SERVICE_ID_ENCHANTING }}
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: backend
-    if: ${{ secrets.RAILWAY_TOKEN && secrets.RAILWAY_SERVICE_ID_ENCHANTING }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version-file: backend/.nvmrc }
-      - run: npm ci
-      - run: npm run build
+        with:
+          node-version-file: backend/.nvmrc
+      - name: Print environment
+        run: |
+          node -v
+          npm -v
+          pwd
+          ls -la
+          cat package.json
+      - name: Install
+        run: npm ci
+      - name: Sanity-check runtime
+        run: |
+          node -e "console.log('require express:', !!require('express'))"
+          node -e "require('./server.cjs'); setTimeout(()=>process.exit(0), 1500)" &
+          sleep 1
+          curl -f http://localhost:3000/api/health || (echo '❌ health failed locally' && exit 1)
+          kill %1 || true
       - name: Deploy to Railway (enchanting-joy)
         uses: railwayapp/action@v1
         with:
