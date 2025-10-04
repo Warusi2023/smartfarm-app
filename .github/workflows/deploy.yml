@@ -25,7 +25,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version-file: '.nvmrc'
           cache: 'npm'
           cache-dependency-path: ${{ env.BACKEND_DIR }}/package-lock.json
           
@@ -46,10 +46,10 @@ jobs:
         run: npm run build
         
       - name: Deploy to Railway
-        uses: railway-deploy@v2
+        uses: railwayapp/action@v1
         with:
-          railway-token: ${{ secrets.RAILWAY_TOKEN }}
-          service: ${{ secrets.RAILWAY_SERVICE_NAME }}
+          serviceId: ${{ secrets.RAILWAY_SERVICE_ID }}
+          railwayToken: ${{ secrets.RAILWAY_TOKEN }}
         env:
           NODE_ENV: production
           
@@ -67,7 +67,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version-file: '.nvmrc'
           cache: 'npm'
           cache-dependency-path: ${{ env.FRONTEND_DIR }}/package-lock.json
           

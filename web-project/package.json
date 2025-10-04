@@ -20,6 +20,7 @@
     "validate:svg": "node scripts/validate-svg.js",
     "validate:ids": "node scripts/validate-ids.js",
     "validate:cors": "node scripts/validate-cors.js",
+    "test:build": "node scripts/test-build.js",
     "prebuild": "npm run validate:svg && npm run validate:ids && npm run validate:cors",
     "lhci": "lhci autorun",
     "lhci:server": "lhci wizard"
