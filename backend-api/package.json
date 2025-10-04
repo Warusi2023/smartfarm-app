@@ -4,8 +4,10 @@
   "description": "SmartFarm Backend API - Express.js server with Sequelize ORM",
   "main": "server.js",
   "scripts": {
+    "prebuild:diagnostics": "node ../../scripts/deploy-diagnostics.mjs || node ./scripts/deploy-diagnostics.mjs || exit 1",
     "start": "node start.js",
     "dev": "nodemon server.js",
+    "build": "echo 'Backend build completed - no compilation needed'",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
@@ -56,7 +58,7 @@
     "supertest": "^6.3.4"
   },
   "engines": {
-    "node": ">=18.0.0",
+    "node": ">=18.19.0 <19",
     "npm": ">=8.0.0"
   },
   "jest": {
