@@ -47,35 +47,48 @@ class AdsProvider {
     }
 
     loadAdSense() {
-        if (!this.adsenseClientId) {
-            console.warn('⚠️ AdSense client ID not provided');
+        try {
+            if (!this.adsenseClientId) {
+                console.warn('⚠️ AdSense client ID not provided');
+                return;
+            }
+
+            const scriptId = 'adsbygoogle-script';
+            if (document.getElementById(scriptId)) {
+                console.log('✅ AdSense script already loaded');
+                return;
+            }
+        } catch (error) {
+            console.warn('⚠️ Error loading AdSense:', error.message);
             return;
         }
 
-        const scriptId = 'adsbygoogle-script';
-        if (document.getElementById(scriptId)) {
-            console.log('✅ AdSense script already loaded');
-            return;
+        try {
+            console.log('📢 Loading AdSense script...');
+            
+            const script = document.createElement('script');
+            script.id = scriptId;
+            script.async = true;
+            script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${this.adsenseClientId}`;
+            script.crossOrigin = 'anonymous';
+            
+            script.onload = () => {
+                try {
+                    console.log('✅ AdSense script loaded successfully');
+                    this.initializeAdSense();
+                } catch (error) {
+                    console.warn('⚠️ Error initializing AdSense:', error.message);
+                }
+            };
+            
+            script.onerror = () => {
+                console.warn('⚠️ Failed to load AdSense script - ad blocker may be active');
+            };
+            
+            document.head.appendChild(script);
+        } catch (error) {
+            console.warn('⚠️ Error loading AdSense script:', error.message);
         }
-
-        console.log('📢 Loading AdSense script...');
-        
-        const script = document.createElement('script');
-        script.id = scriptId;
-        script.async = true;
-        script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${this.adsenseClientId}`;
-        script.crossOrigin = 'anonymous';
-        
-        script.onload = () => {
-            console.log('✅ AdSense script loaded successfully');
-            this.initializeAdSense();
-        };
-        
-        script.onerror = () => {
-            console.error('❌ Failed to load AdSense script');
-        };
-        
-        document.head.appendChild(script);
     }
 
     initializeAdSense() {

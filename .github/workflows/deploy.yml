@@ -1,194 +1,190 @@
-name: SmartFarm CI/CD Pipeline
-# Automated deployment: Backend → Railway, Frontend → Netlify
+name: Deploy SmartFarm
 
 on:
   push:
-    branches: [ main ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ main ]
+    branches: [ "main" ]
 
 env:
-  NODE_VERSION: '20'
+  NODE_VERSION: '18.19.0'
+  BACKEND_DIR: 'backend-api'
+  FRONTEND_DIR: 'web-project'
 
 jobs:
-  # Job 1: Build and Test
-  build-and-test:
-    name: Build & Test
+  # Backend deployment job
+  deploy-backend:
+    name: Deploy Backend to Railway
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+        
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: backend-api/package-lock.json
-      
+          cache-dependency-path: ${{ env.BACKEND_DIR }}/package-lock.json
+          
       - name: Install backend dependencies
-        working-directory: ./backend-api
-        run: npm ci
-      
+        working-directory: ${{ env.BACKEND_DIR }}
+        run: npm ci --production=false
+        
+      - name: Run backend linting
+        working-directory: ${{ env.BACKEND_DIR }}
+        run: npm run lint:check
+        
       - name: Run backend tests
-        working-directory: ./backend-api
-        run: npm run test:ci
-        continue-on-error: true
-      
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results
-          path: backend-api/coverage/
-      
-      - name: Check frontend files
-        run: |
-          echo "Checking frontend static files..."
-          ls -la web-project/public/
-          echo "✅ Frontend files present"
-
-  # Job 2: Deploy Backend to Railway
-  deploy-backend:
-    name: Deploy Backend (Railway)
-    needs: build-and-test
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
+        working-directory: ${{ env.BACKEND_DIR }}
+        run: npm test
+        
+      - name: Build backend
+        working-directory: ${{ env.BACKEND_DIR }}
+        run: npm run build
+        
       - name: Deploy to Railway
-        uses: bervProject/railway-deploy@main
+        uses: railway-deploy@v2
         with:
-          service: ${{ secrets.RAILWAY_SERVICE_NAME || 'smartfarm-backend' }}
-          railway_token: ${{ secrets.RAILWAY_TOKEN }}
-      
-      - name: Wait for Railway deployment
-        run: sleep 30
-      
-      - name: Health check
-        run: |
-          echo "Checking Railway backend health..."
-          HEALTH_URL="${{ secrets.RAILWAY_PUBLIC_URL || 'https://smartfarm-app-production.up.railway.app' }}/api/health"
-          echo "Health check URL: $HEALTH_URL"
-          
-          for i in {1..5}; do
-            if curl -f -s "$HEALTH_URL"; then
-              echo "✅ Backend is healthy!"
-              exit 0
-            fi
-            echo "Attempt $i failed, retrying in 10s..."
-            sleep 10
-          done
-          
-          echo "⚠️  Health check failed, but deployment may still be in progress"
-          exit 0
-
-  # Job 3: Deploy Frontend to Netlify
-  deploy-frontend:
-    name: Deploy Frontend (Netlify)
-    needs: deploy-backend
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Prepare frontend files
-        run: |
-          echo "Preparing frontend for deployment..."
-          cd web-project/public
-          
-          # Create _redirects for Netlify SPA routing
-          cat > _redirects << EOF
-          # API proxy (optional - direct calls work too)
-          /api/*  https://smartfarm-app-production.up.railway.app/api/:splat  200
-          
-          # SPA fallback
-          /*    /index.html   200
-          EOF
-          
-          echo "✅ Frontend prepared"
-      
-      - name: Deploy to Netlify
-        uses: nwtgck/actions-netlify@v2
-        with:
-          publish-dir: 'web-project/public'
-          production-deploy: true
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          deploy-message: "Deploy from GitHub Actions - ${{ github.sha }}"
-          enable-pull-request-comment: true
-          enable-commit-comment: true
-          enable-commit-status: true
+          railway-token: ${{ secrets.RAILWAY_TOKEN }}
+          service: ${{ secrets.RAILWAY_SERVICE_NAME }}
         env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-      
-      - name: Verify deployment
-        run: |
-          echo "🎉 Deployment complete!"
-          echo "Backend: https://smartfarm-app-production.up.railway.app"
-          echo "Frontend: Will be displayed in Netlify deploy comment"
-
-  # Job 4: E2E Tests (Optional - runs after deployment)
-  e2e-tests:
-    name: E2E Tests
-    needs: deploy-frontend
+          NODE_ENV: production
+          
+  # Frontend deployment job
+  deploy-frontend:
+    name: Deploy Frontend to Netlify
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    continue-on-error: true
+    if: github.ref == 'refs/heads/main'
+    needs: deploy-backend
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+        
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-      
-      - name: Install Playwright
-        run: |
-          npm init -y
-          npm install -D @playwright/test
-          npx playwright install --with-deps chromium
-      
-      - name: Run E2E tests
-        run: |
-          echo "E2E tests would run here"
-          echo "Target: ${{ secrets.NETLIFY_SITE_URL || 'https://dulcet-sawine-92d6a8.netlify.app' }}"
-          # npx playwright test --project=chromium
-      
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
+          cache: 'npm'
+          cache-dependency-path: ${{ env.FRONTEND_DIR }}/package-lock.json
+          
+      - name: Install frontend dependencies
+        working-directory: ${{ env.FRONTEND_DIR }}
+        run: npm ci --production=false
+        
+      - name: Run frontend linting
+        working-directory: ${{ env.FRONTEND_DIR }}
+        run: npm run lint:check
+        
+      - name: Run frontend tests
+        working-directory: ${{ env.FRONTEND_DIR }}
+        run: npm test
+        
+      - name: Validate SVG viewBox attributes
+        working-directory: ${{ env.FRONTEND_DIR }}
+        run: npm run validate:svg
+        
+      - name: Validate DOM IDs
+        working-directory: ${{ env.FRONTEND_DIR }}
+        run: npm run validate:ids
+        
+      - name: Validate CORS configuration
+        working-directory: ${{ env.FRONTEND_DIR }}
+        run: npm run validate:cors
+        
+      - name: Build frontend
+        working-directory: ${{ env.FRONTEND_DIR }}
+        run: npm run build
+        
+      - name: Deploy to Netlify
+        uses: nwtgck/actions-netlify@v2.0
         with:
-          name: e2e-results
-          path: test-results/
-        continue-on-error: true
-
-  # Job 5: Notify on completion
-  notify:
-    name: Deployment Summary
-    needs: [build-and-test, deploy-backend, deploy-frontend]
+          publish-dir: ${{ env.FRONTEND_DIR }}/dist
+          production-branch: main
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          deploy-message: "Deploy from GitHub Actions"
+          enable-pull-request-comment: false
+          enable-commit-comment: true
+          overwrites-pull-request-comment: true
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+          
+  # Testing job (runs on PRs)
+  test:
+    name: Test and Validate
     runs-on: ubuntu-latest
-    if: always()
+    if: github.event_name == 'pull_request'
+    
+    strategy:
+      matrix:
+        project: [backend, frontend]
+        
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: ${{ matrix.project == 'backend' && env.BACKEND_DIR || env.FRONTEND_DIR }}/package-lock.json
+          
+      - name: Install dependencies
+        working-directory: ${{ matrix.project == 'backend' && env.BACKEND_DIR || env.FRONTEND_DIR }}
+        run: npm ci --production=false
+        
+      - name: Run linting
+        working-directory: ${{ matrix.project == 'backend' && env.BACKEND_DIR || env.FRONTEND_DIR }}
+        run: npm run lint:check
+        
+      - name: Run tests
+        working-directory: ${{ matrix.project == 'backend' && env.BACKEND_DIR || env.FRONTEND_DIR }}
+        run: npm test
+        
+      - name: Run frontend validations
+        if: matrix.project == 'frontend'
+        working-directory: ${{ env.FRONTEND_DIR }}
+        run: |
+          npm run validate:svg
+          npm run validate:ids
+          npm run validate:cors
+          
+      - name: Build project
+        working-directory: ${{ matrix.project == 'backend' && env.BACKEND_DIR || env.FRONTEND_DIR }}
+        run: npm run build
+        
+  # Security and quality checks
+  security:
+    name: Security and Quality Checks
+    runs-on: ubuntu-latest
     
     steps:
-      - name: Summary
-        run: |
-          echo "## 🚀 SmartFarm Deployment Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Component | Status |" >> $GITHUB_STEP_SUMMARY
-          echo "|-----------|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Build & Test | ${{ needs.build-and-test.result }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Backend (Railway) | ${{ needs.deploy-backend.result }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Frontend (Netlify) | ${{ needs.deploy-frontend.result }} |" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 🔗 Links" >> $GITHUB_STEP_SUMMARY
-          echo "- Backend API: https://smartfarm-app-production.up.railway.app" >> $GITHUB_STEP_SUMMARY
-          echo "- Frontend: https://dulcet-sawine-92d6a8.netlify.app" >> $GITHUB_STEP_SUMMARY
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+          
+      - name: Check for secrets
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: main
+          head: HEAD
+          extra_args: --debug --only-verified

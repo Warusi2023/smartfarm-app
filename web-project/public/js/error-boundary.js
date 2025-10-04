@@ -1,444 +1,394 @@
 /**
- * SmartFarm Error Boundary
- * Catches JavaScript errors and provides fallback UI
+ * Error Boundary for Vanilla JavaScript
+ * Provides React-style error boundary functionality for vanilla JS applications
  */
 
-class SmartFarmErrorBoundary {
-    constructor() {
+class ErrorBoundary {
+    constructor(options = {}) {
+        this.options = {
+            onError: options.onError || this.defaultErrorHandler,
+            onRecover: options.onRecover || this.defaultRecoverHandler,
+            fallbackElement: options.fallbackElement || null,
+            logErrors: options.logErrors !== false,
+            recoverable: options.recoverable !== false,
+            ...options
+        };
+        
         this.errorCount = 0;
-        this.maxErrors = 5;
-        this.errorTimeout = 30000; // 30 seconds
-        this.lastErrorTime = 0;
-        this.recoveryStrategies = new Map();
-        this.errorHistory = [];
+        this.maxErrors = this.options.maxErrors || 5;
+        this.isRecovering = false;
         
-        this.init();
-        this.setupRecoveryStrategies();
+        this.setupGlobalErrorHandlers();
     }
 
-    init() {
-        // Global error handlers
+    /**
+     * Setup global error handlers
+     */
+    setupGlobalErrorHandlers() {
+        // Handle uncaught JavaScript errors
         window.addEventListener('error', (event) => {
-            this.handleError(event.error, 'Global Error', event);
+            this.handleError(event.error, {
+                type: 'javascript',
+                message: event.message,
+                filename: event.filename,
+                lineno: event.lineno,
+                colno: event.colno
+            });
         });
 
+        // Handle unhandled promise rejections
         window.addEventListener('unhandledrejection', (event) => {
-            this.handleError(event.reason, 'Unhandled Promise Rejection', event);
+            this.handleError(event.reason, {
+                type: 'promise',
+                message: event.reason?.message || 'Unhandled promise rejection'
+            });
         });
 
-        // DOM error handler
-        document.addEventListener('DOMContentLoaded', () => {
-            this.setupDOMErrorHandling();
-        });
-    }
-
-    /**
-     * Handle JavaScript errors
-     * @param {Error} error - The error object
-     * @param {string} type - Error type
-     * @param {Event} event - Original event
-     */
-    handleError(error, type, event) {
-        const now = Date.now();
-        
-        // Rate limiting
-        if (now - this.lastErrorTime < this.errorTimeout) {
-            this.errorCount++;
-        } else {
-            this.errorCount = 1;
-        }
-        
-        this.lastErrorTime = now;
-
-        // Log error
-        if (window.SmartFarmLogger) {
-            window.SmartFarmLogger.error(`${type}:`, error);
-        } else {
-            console.error(`[SmartFarm] ${type}:`, error);
-        }
-
-        // Attempt recovery first
-        const recovered = this.attemptRecovery(error, type);
-        
-        // Show error UI if too many errors and recovery failed
-        if (this.errorCount >= this.maxErrors && !recovered) {
-            this.showErrorUI(error, type);
-        }
-
-        // Prevent default error handling
-        if (event && event.preventDefault) {
-            event.preventDefault();
-        }
-
-        return false;
-    }
-
-    /**
-     * Setup DOM error handling
-     */
-    setupDOMErrorHandling() {
-        // Monitor for failed image loads
-        document.addEventListener('error', (event) => {
-            if (event.target.tagName === 'IMG') {
-                this.handleImageError(event.target);
-            }
-        }, true);
-
-        // Monitor for failed script loads
-        document.addEventListener('error', (event) => {
-            if (event.target.tagName === 'SCRIPT') {
-                this.handleScriptError(event.target);
+        // Handle resource loading errors
+        window.addEventListener('error', (event) => {
+            if (event.target !== window) {
+                this.handleError(new Error(`Failed to load resource: ${event.target.src || event.target.href}`), {
+                    type: 'resource',
+                    element: event.target.tagName,
+                    src: event.target.src || event.target.href
+                });
             }
         }, true);
     }
 
     /**
-     * Handle image load errors
-     * @param {HTMLImageElement} img - Failed image element
+     * Handle errors with recovery options
      */
-    handleImageError(img) {
-        if (window.SmartFarmLogger) {
-            window.SmartFarmLogger.warn('Image failed to load:', img.src);
-        }
-        
-        // Set fallback image
-        img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDJMMTMuMDkgOC4yNkwyMCA5TDEzLjA5IDE1Ljc0TDEyIDIyTDEwLjkxIDE1Ljc0TDQgOUwxMC45MSA4LjI2TDEyIDJaIiBmaWxsPSIjNjY2Ii8+Cjwvc3ZnPgo=';
-        img.alt = 'Image failed to load';
-    }
-
-    /**
-     * Handle script load errors
-     * @param {HTMLScriptElement} script - Failed script element
-     */
-    handleScriptError(script) {
-        if (window.SmartFarmLogger) {
-            window.SmartFarmLogger.error('Script failed to load:', script.src);
-        }
-        
-        // Try to load from alternative CDN
-        this.loadScriptFromAlternativeCDN(script);
-    }
-
-    /**
-     * Load script from alternative CDN
-     * @param {HTMLScriptElement} originalScript - Original failed script
-     */
-    loadScriptFromAlternativeCDN(originalScript) {
-        const script = document.createElement('script');
-        script.src = originalScript.src;
-        script.onerror = () => {
-            if (window.SmartFarmLogger) {
-                window.SmartFarmLogger.error('All CDN sources failed for script:', originalScript.src);
-            }
-        };
-        script.onload = () => {
-            if (window.SmartFarmLogger) {
-                window.SmartFarmLogger.success('Script loaded from alternative CDN:', originalScript.src);
-            }
-        };
-        document.head.appendChild(script);
-    }
-
-    /**
-     * Show error UI
-     * @param {Error} error - The error object
-     * @param {string} type - Error type
-     */
-    showErrorUI(error, type) {
-        // Remove existing error UI
-        const existingError = document.getElementById('smartfarm-error-boundary');
-        if (existingError) {
-            existingError.remove();
+    handleError(error, context = {}) {
+        if (this.errorCount >= this.maxErrors) {
+            this.showFatalError();
+            return;
         }
 
-        // Create error UI
-        const errorDiv = document.createElement('div');
-        errorDiv.id = 'smartfarm-error-boundary';
-        errorDiv.innerHTML = `
-            <div style="
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                background: #dc3545;
-                color: white;
-                padding: 15px;
-                z-index: 10000;
-                font-family: Arial, sans-serif;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-            ">
-                <div style="display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto;">
-                    <div>
-                        <strong>⚠️ SmartFarm Error</strong>
-                        <div style="font-size: 14px; margin-top: 5px;">
-                            ${type}: ${error.message || 'Unknown error'}
-                        </div>
-                    </div>
-                    <div>
-                        <button onclick="this.parentElement.parentElement.parentElement.remove()" 
-                                style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 5px 10px; border-radius: 3px; cursor: pointer;">
-                            ✕
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
+        this.errorCount++;
 
-        document.body.insertBefore(errorDiv, document.body.firstChild);
-
-        // Auto-remove after 10 seconds
-        setTimeout(() => {
-            if (errorDiv.parentNode) {
-                errorDiv.remove();
-            }
-        }, 10000);
-    }
-
-    /**
-     * Wrap function with error handling
-     * @param {Function} fn - Function to wrap
-     * @param {string} context - Context for error reporting
-     * @returns {Function} Wrapped function
-     */
-    wrapFunction(fn, context) {
-        return (...args) => {
-            try {
-                return fn.apply(this, args);
-            } catch (error) {
-                this.handleError(error, `Function Error (${context})`, null);
-                return null;
-            }
+        const errorInfo = {
+            error: error,
+            context: context,
+            timestamp: new Date().toISOString(),
+            userAgent: navigator.userAgent,
+            url: window.location.href,
+            errorCount: this.errorCount
         };
+
+        // Log error if enabled
+        if (this.options.logErrors) {
+            this.logError(errorInfo);
+        }
+
+        // Call custom error handler
+        try {
+            this.options.onError(errorInfo);
+        } catch (handlerError) {
+            console.error('Error in error handler:', handlerError);
+        }
+
+        // Attempt recovery if enabled
+        if (this.options.recoverable && !this.isRecovering) {
+            this.attemptRecovery(errorInfo);
+        }
     }
 
     /**
-     * Wrap async function with error handling
-     * @param {Function} fn - Async function to wrap
-     * @param {string} context - Context for error reporting
-     * @returns {Function} Wrapped async function
+     * Attempt to recover from error
      */
-    wrapAsyncFunction(fn, context) {
-        return async (...args) => {
-            try {
-                return await fn.apply(this, args);
-            } catch (error) {
-                this.handleError(error, `Async Function Error (${context})`, null);
-                return null;
-            }
-        };
+    async attemptRecovery(errorInfo) {
+        this.isRecovering = true;
+
+        try {
+            // Wait a bit before attempting recovery
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            // Clear any corrupted state
+            this.clearCorruptedState();
+
+            // Reload critical scripts
+            await this.reloadCriticalScripts();
+
+            // Call recovery handler
+            this.options.onRecover(errorInfo);
+
+            console.log('✅ Error recovery completed');
+        } catch (recoveryError) {
+            console.error('❌ Error recovery failed:', recoveryError);
+            this.showFatalError();
+        } finally {
+            this.isRecovering = false;
+        }
     }
 
     /**
-     * Get error statistics
-     * @returns {Object} Error statistics
+     * Clear potentially corrupted state
      */
-    getErrorStats() {
-        return {
-            errorCount: this.errorCount,
-            maxErrors: this.maxErrors,
-            lastErrorTime: this.lastErrorTime,
-            timeSinceLastError: Date.now() - this.lastErrorTime
-        };
-    }
-
-    /**
-     * Setup recovery strategies for common errors
-     */
-    setupRecoveryStrategies() {
-        // CORS error recovery
-        this.recoveryStrategies.set('CORS', {
-            pattern: /CORS|Access-Control-Allow-Origin|cross-origin/i,
-            action: () => {
-                if (window.SmartFarmLogger) {
-                    window.SmartFarmLogger.warn('CORS error detected, attempting recovery...');
-                }
-                // Try to reload the page after a delay
-                setTimeout(() => {
-                    window.location.reload();
-                }, 2000);
-            }
-        });
-
-        // Network error recovery
-        this.recoveryStrategies.set('NETWORK', {
-            pattern: /Failed to fetch|NetworkError|timeout/i,
-            action: () => {
-                if (window.SmartFarmLogger) {
-                    window.SmartFarmLogger.warn('Network error detected, checking connection...');
-                }
-                // Check if online and retry
-                if (navigator.onLine) {
-                    this.retryFailedRequests();
-                } else {
-                    this.showOfflineMessage();
-                }
-            }
-        });
-
-        // Script loading error recovery
-        this.recoveryStrategies.set('SCRIPT', {
-            pattern: /Script error|Loading chunk/i,
-            action: () => {
-                if (window.SmartFarmLogger) {
-                    window.SmartFarmLogger.warn('Script loading error detected, attempting recovery...');
-                }
-                // Try to reload critical scripts
-                this.reloadCriticalScripts();
-            }
-        });
-
-        // Memory error recovery
-        this.recoveryStrategies.set('MEMORY', {
-            pattern: /out of memory|allocation failed/i,
-            action: () => {
-                if (window.SmartFarmLogger) {
-                    window.SmartFarmLogger.warn('Memory error detected, clearing caches...');
-                }
-                // Clear caches and reload
-                this.clearCaches();
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1000);
-            }
-        });
-    }
-
-    /**
-     * Attempt to recover from error using strategies
-     * @param {Error} error - The error object
-     * @param {string} type - Error type
-     */
-    attemptRecovery(error, type) {
-        const errorMessage = error.message || error.toString();
-        
-        for (const [strategyName, strategy] of this.recoveryStrategies) {
-            if (strategy.pattern.test(errorMessage)) {
-                if (window.SmartFarmLogger) {
-                    window.SmartFarmLogger.info(`Attempting recovery using strategy: ${strategyName}`);
-                }
+    clearCorruptedState() {
+        try {
+            // Clear any corrupted localStorage items
+            const corruptedKeys = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
                 try {
-                    strategy.action();
-                    return true;
-                } catch (recoveryError) {
-                    if (window.SmartFarmLogger) {
-                        window.SmartFarmLogger.error(`Recovery strategy ${strategyName} failed:`, recoveryError);
-                    }
+                    JSON.parse(localStorage.getItem(key));
+                } catch {
+                    corruptedKeys.push(key);
                 }
             }
-        }
-        return false;
-    }
+            corruptedKeys.forEach(key => localStorage.removeItem(key));
 
-    /**
-     * Retry failed requests
-     */
-    retryFailedRequests() {
-        // This would integrate with the API client to retry failed requests
-        if (window.SmartFarmAPI && typeof window.SmartFarmAPI.retry === 'function') {
-            window.SmartFarmAPI.retry();
-        }
-    }
+            // Clear any corrupted sessionStorage items
+            const corruptedSessionKeys = [];
+            for (let i = 0; i < sessionStorage.length; i++) {
+                const key = sessionStorage.key(i);
+                try {
+                    JSON.parse(sessionStorage.getItem(key));
+                } catch {
+                    corruptedSessionKeys.push(key);
+                }
+            }
+            corruptedSessionKeys.forEach(key => sessionStorage.removeItem(key));
 
-    /**
-     * Show offline message
-     */
-    showOfflineMessage() {
-        const offlineDiv = document.createElement('div');
-        offlineDiv.id = 'smartfarm-offline-message';
-        offlineDiv.innerHTML = `
-            <div style="
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                background: #ffc107;
-                color: #000;
-                padding: 20px;
-                border-radius: 8px;
-                z-index: 10001;
-                text-align: center;
-                box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-            ">
-                <h3>📡 You're Offline</h3>
-                <p>Please check your internet connection and try again.</p>
-                <button onclick="this.parentElement.parentElement.remove()" 
-                        style="background: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
-                    OK
-                </button>
-            </div>
-        `;
-        document.body.appendChild(offlineDiv);
+            console.log(`🧹 Cleared ${corruptedKeys.length} corrupted localStorage items and ${corruptedSessionKeys.length} corrupted sessionStorage items`);
+        } catch (error) {
+            console.warn('⚠️ Error clearing corrupted state:', error.message);
+        }
     }
 
     /**
      * Reload critical scripts
      */
-    reloadCriticalScripts() {
-        const criticalScripts = [
-            'js/config.js',
-            'js/log.js',
-            'js/api-utils.js'
-        ];
+    async reloadCriticalScripts() {
+        try {
+            // List of critical scripts that should be reloaded
+            const criticalScripts = [
+                'js/api-service.js',
+                'js/error-boundary.js',
+                'js/ad-error-handler.js'
+            ];
 
-        criticalScripts.forEach(scriptPath => {
-            const script = document.createElement('script');
-            script.src = scriptPath;
-            script.onload = () => {
-                if (window.SmartFarmLogger) {
-                    window.SmartFarmLogger.success(`Reloaded critical script: ${scriptPath}`);
+            for (const scriptSrc of criticalScripts) {
+                try {
+                    const existingScript = document.querySelector(`script[src*="${scriptSrc}"]`);
+                    if (existingScript) {
+                        const newScript = document.createElement('script');
+                        newScript.src = existingScript.src + '?reload=' + Date.now();
+                        newScript.onload = () => existingScript.remove();
+                        document.head.appendChild(newScript);
+                    }
+                } catch (scriptError) {
+                    console.warn(`⚠️ Failed to reload script ${scriptSrc}:`, scriptError.message);
                 }
-            };
-            document.head.appendChild(script);
-        });
+            }
+        } catch (error) {
+            console.warn('⚠️ Error reloading critical scripts:', error.message);
+        }
     }
 
     /**
-     * Clear caches
+     * Show fatal error UI
      */
-    clearCaches() {
-        // Clear localStorage
+    showFatalError() {
         try {
-            localStorage.clear();
-        } catch (e) {
-            if (window.SmartFarmLogger) {
-                window.SmartFarmLogger.warn('Could not clear localStorage:', e);
-            }
-        }
+            const errorContainer = document.createElement('div');
+            errorContainer.id = 'fatal-error-container';
+            errorContainer.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.9);
+                color: white;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                z-index: 999999;
+                font-family: Arial, sans-serif;
+                padding: 20px;
+                box-sizing: border-box;
+            `;
 
-        // Clear sessionStorage
+            errorContainer.innerHTML = `
+                <div style="text-align: center; max-width: 600px;">
+                    <h1 style="color: #ff6b6b; margin-bottom: 20px;">⚠️ Application Error</h1>
+                    <p style="margin-bottom: 20px; font-size: 16px;">
+                        We're sorry, but the application has encountered multiple errors and cannot continue safely.
+                    </p>
+                    <div style="margin-bottom: 30px;">
+                        <button onclick="window.location.reload()" style="
+                            background: #4CAF50;
+                            color: white;
+                            border: none;
+                            padding: 12px 24px;
+                            border-radius: 6px;
+                            font-size: 16px;
+                            cursor: pointer;
+                            margin-right: 10px;
+                        ">Reload Page</button>
+                        <button onclick="localStorage.clear(); sessionStorage.clear(); window.location.reload()" style="
+                            background: #ff9800;
+                            color: white;
+                            border: none;
+                            padding: 12px 24px;
+                            border-radius: 6px;
+                            font-size: 16px;
+                            cursor: pointer;
+                        ">Clear Data & Reload</button>
+                    </div>
+                    <p style="font-size: 14px; color: #ccc;">
+                        If the problem persists, please contact support.
+                    </p>
+                </div>
+            `;
+
+            document.body.appendChild(errorContainer);
+        } catch (error) {
+            console.error('❌ Failed to show fatal error UI:', error);
+        }
+    }
+
+    /**
+     * Default error handler
+     */
+    defaultErrorHandler(errorInfo) {
+        const { error, context } = errorInfo;
+        
+        console.group('🚨 Application Error');
+        console.error('Error:', error);
+        console.error('Context:', context);
+        console.error('Error Count:', errorInfo.errorCount);
+        console.groupEnd();
+
+        // Show user-friendly error message for non-critical errors
+        if (errorInfo.errorCount <= 2) {
+            this.showErrorToast(`An error occurred (${errorInfo.errorCount}/${this.maxErrors}). The application is attempting to recover.`);
+        }
+    }
+
+    /**
+     * Default recovery handler
+     */
+    defaultRecoverHandler(errorInfo) {
+        console.log('🔄 Application recovered from error');
+        this.showErrorToast('Application has recovered from the error.');
+    }
+
+    /**
+     * Show error toast notification
+     */
+    showErrorToast(message) {
         try {
-            sessionStorage.clear();
-        } catch (e) {
-            if (window.SmartFarmLogger) {
-                window.SmartFarmLogger.warn('Could not clear sessionStorage:', e);
-            }
-        }
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #ff6b6b;
+                color: white;
+                padding: 12px 20px;
+                border-radius: 6px;
+                font-family: Arial, sans-serif;
+                font-size: 14px;
+                z-index: 10000;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+                max-width: 300px;
+                word-wrap: break-word;
+            `;
+            toast.textContent = message;
 
-        // Clear service worker caches if available
-        if ('caches' in window) {
-            caches.keys().then(names => {
-                names.forEach(name => {
-                    caches.delete(name);
+            document.body.appendChild(toast);
+
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 5000);
+        } catch (error) {
+            console.warn('⚠️ Failed to show error toast:', error.message);
+        }
+    }
+
+    /**
+     * Log error to console with structured format
+     */
+    logError(errorInfo) {
+        const logData = {
+            timestamp: errorInfo.timestamp,
+            error: {
+                name: errorInfo.error.name,
+                message: errorInfo.error.message,
+                stack: errorInfo.error.stack
+            },
+            context: errorInfo.context,
+            environment: {
+                userAgent: errorInfo.userAgent,
+                url: errorInfo.url,
+                errorCount: errorInfo.errorCount
+            }
+        };
+
+        console.group('📊 Error Log');
+        console.table(logData);
+        console.groupEnd();
+
+        // Send to analytics if available
+        if (typeof window.gtag === 'function') {
+            try {
+                window.gtag('event', 'exception', {
+                    description: errorInfo.error.message,
+                    fatal: errorInfo.errorCount >= this.maxErrors
                 });
-            });
+            } catch (analyticsError) {
+                console.warn('⚠️ Failed to send error to analytics:', analyticsError.message);
+            }
         }
     }
 
     /**
-     * Reset error count
+     * Reset error count (useful for testing)
      */
-    resetErrorCount() {
+    reset() {
         this.errorCount = 0;
-        this.lastErrorTime = 0;
+        this.isRecovering = false;
+        console.log('🔄 Error boundary reset');
+    }
+
+    /**
+     * Get current error statistics
+     */
+    getStats() {
+        return {
+            errorCount: this.errorCount,
+            maxErrors: this.maxErrors,
+            isRecovering: this.isRecovering,
+            remainingErrors: this.maxErrors - this.errorCount
+        };
     }
 }
 
-// Initialize error boundary
-window.SmartFarmErrorBoundary = new SmartFarmErrorBoundary();
+// Create global error boundary instance
+window.SmartFarmErrorBoundary = new ErrorBoundary({
+    maxErrors: 5,
+    recoverable: true,
+    logErrors: true,
+    onError: (errorInfo) => {
+        // Custom error handling can be added here
+        console.log('Custom error handler called');
+    },
+    onRecover: (errorInfo) => {
+        // Custom recovery handling can be added here
+        console.log('Custom recovery handler called');
+    }
+});
 
 // Export for module systems
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = SmartFarmErrorBoundary;
+    module.exports = ErrorBoundary;
 }
 
-console.log('🛡️ SmartFarm Error Boundary initialized');
+console.log('🛡️ Error boundary initialized');

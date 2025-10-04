@@ -16,12 +16,13 @@
     "e2e": "playwright test",
     "e2e:ui": "playwright test --ui",
     "e2e:headed": "playwright test --headed",
-    "build": "echo 'Frontend build completed'",
+    "build": "npm run prebuild && echo 'Frontend build completed'",
     "validate:svg": "node scripts/validate-svg.js",
-    "prebuild": "npm run validate:svg",
+    "validate:ids": "node scripts/validate-ids.js",
+    "validate:cors": "node scripts/validate-cors.js",
+    "prebuild": "npm run validate:svg && npm run validate:ids && npm run validate:cors",
     "lhci": "lhci autorun",
-    "lhci:server": "lhci wizard",
-    "prepare": "husky install ../.git/hooks"
+    "lhci:server": "lhci wizard"
   },
   "keywords": [
     "farm",
@@ -32,6 +33,10 @@
   ],
   "author": "SmartFarm Team",
   "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
   "devDependencies": {
     "@axe-core/playwright": "^4.8.2",
     "@lhci/cli": "^0.12.0",
