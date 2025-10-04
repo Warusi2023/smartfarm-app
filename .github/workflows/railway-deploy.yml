@@ -12,40 +12,38 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: 18 }
-      - run: npm ci || true
-      - name: Verify backend path & start script
-        run: npm run preflight
+      - name: Verify backend path & files
+        run: |
+          set -e
+          BACKEND="backend"
+          test -f "$BACKEND/package.json" || (echo "❌ $BACKEND/package.json missing" && exit 2)
+          test -f "$BACKEND/server.cjs"     || (echo "❌ $BACKEND/server.cjs missing" && exit 3)
+          test -f "$BACKEND/package-lock.json" || (echo "❌ $BACKEND/package-lock.json missing (run npm install in backend and commit lockfile)" && exit 4)
+          echo "✅ Preflight OK"
 
   deploy-determined-elegance:
     needs: preflight
     if: ${{ secrets.RAILWAY_TOKEN && secrets.RAILWAY_SERVICE_ID_DETERMINED }}
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend
+    defaults: { run: { working-directory: backend } }
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with:
-          node-version-file: backend/.nvmrc
-      - name: Print environment
+        with: { node-version: 18 }
+      - run: node -v && npm -v && pwd && ls -la
+      - name: Check lockfile and entry
         run: |
-          node -v
-          npm -v
-          pwd
-          ls -la
-          cat package.json
+          test -f package-lock.json || (echo "❌ package-lock.json missing in backend" && exit 10)
+          test -f server.cjs || (echo "❌ server.cjs missing in backend" && exit 11)
       - name: Install
         run: npm ci
-      - name: Sanity-check runtime
+      - name: Sanity-run (local)
         run: |
-          node -e "console.log('require express:', !!require('express'))"
-          node -e "require('./server.cjs'); setTimeout(()=>process.exit(0), 1500)" &
+          node server.cjs &
+          S=$!
           sleep 1
-          curl -f http://localhost:3000/api/health || (echo '❌ health failed locally' && exit 1)
-          kill %1 || true
+          curl -sf http://localhost:3000/api/health || (echo "❌ Local healthcheck failed" && kill $S && exit 12)
+          kill $S || true
       - name: Deploy to Railway (determined-elegance)
         uses: railwayapp/action@v1
         with:
@@ -56,30 +54,25 @@ jobs:
     needs: preflight
     if: ${{ secrets.RAILWAY_TOKEN && secrets.RAILWAY_SERVICE_ID_ENCHANTING }}
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend
+    defaults: { run: { working-directory: backend } }
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with:
-          node-version-file: backend/.nvmrc
-      - name: Print environment
+        with: { node-version: 18 }
+      - run: node -v && npm -v && pwd && ls -la
+      - name: Check lockfile and entry
         run: |
-          node -v
-          npm -v
-          pwd
-          ls -la
-          cat package.json
+          test -f package-lock.json || (echo "❌ package-lock.json missing in backend" && exit 10)
+          test -f server.cjs || (echo "❌ server.cjs missing in backend" && exit 11)
       - name: Install
         run: npm ci
-      - name: Sanity-check runtime
+      - name: Sanity-run (local)
         run: |
-          node -e "console.log('require express:', !!require('express'))"
-          node -e "require('./server.cjs'); setTimeout(()=>process.exit(0), 1500)" &
+          node server.cjs &
+          S=$!
           sleep 1
-          curl -f http://localhost:3000/api/health || (echo '❌ health failed locally' && exit 1)
-          kill %1 || true
+          curl -sf http://localhost:3000/api/health || (echo "❌ Local healthcheck failed" && kill $S && exit 12)
+          kill $S || true
       - name: Deploy to Railway (enchanting-joy)
         uses: railwayapp/action@v1
         with:

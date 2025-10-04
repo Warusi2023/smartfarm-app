@@ -8,7 +8,8 @@
     "prepare": "git rev-parse --is-inside-work-tree >/dev/null 2>&1 && husky install || echo 'husky skipped'",
     "build": "echo \"no TS build\"",
     "start": "node server.cjs",
-    "dev": "node server.cjs"
+    "dev": "node server.cjs",
+    "doctor": "node -e \"console.log(process.version);require('fs').access('server.cjs',0,err=>console.log('server.cjs', err?'MISSING':'OK'));\""
   },
   "dependencies": {
     "cors": "^2.8.5",
