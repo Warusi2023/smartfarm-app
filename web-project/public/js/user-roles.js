@@ -5,9 +5,9 @@ class UserRoleManager {
     constructor() {
         this.currentUser = this.getCurrentUser();
         this.userRoles = {
-            'owner': ['admin', 'debug', 'analytics', 'testing', 'all'],
-            'admin': ['admin', 'analytics', 'testing'],
-            'user': ['basic'],
+            'owner': ['admin', 'debug', 'analytics', 'testing', 'farming', 'all'],
+            'admin': ['admin', 'analytics', 'testing', 'farming'],
+            'user': ['basic', 'farming'],
             'guest': ['view']
         };
         this.featurePermissions = {
@@ -15,6 +15,7 @@ class UserRoleManager {
             'testing': ['owner', 'admin'],
             'analytics': ['owner', 'admin'],
             'admin': ['owner', 'admin'],
+            'farming': ['owner', 'admin', 'user'],
             'basic': ['owner', 'admin', 'user'],
             'view': ['owner', 'admin', 'user', 'guest']
         };
@@ -173,6 +174,7 @@ class UserRoleManager {
         this.toggleElementVisibility('testing-features', 'testing');
         this.toggleElementVisibility('analytics-features', 'analytics');
         this.toggleElementVisibility('admin-features', 'admin');
+        this.toggleElementVisibility('farming-features', 'farming');
         
         // Hide specific buttons
         this.hideButtonsByRole();
@@ -213,6 +215,12 @@ class UserRoleManager {
             this.hideButton('Admin Panel');
             this.hideButton('System Settings');
         }
+        
+        // Show farming features for users and above
+        if (this.hasPermission('farming')) {
+            this.showButton('Crop Management');
+            this.showButton('Livestock Management');
+        }
     }
 
     hideButton(buttonText) {
@@ -221,6 +229,16 @@ class UserRoleManager {
             if (button.textContent.includes(buttonText)) {
                 button.style.display = 'none';
                 button.classList.add('role-hidden');
+            }
+        });
+    }
+
+    showButton(buttonText) {
+        const buttons = document.querySelectorAll('a.nav-link, button');
+        buttons.forEach(button => {
+            if (button.textContent.includes(buttonText)) {
+                button.style.display = '';
+                button.classList.remove('role-hidden');
             }
         });
     }
