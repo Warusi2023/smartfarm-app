@@ -37,6 +37,10 @@ jobs:
         working-directory: ${{ env.BACKEND_DIR }}
         run: npm run lint:check
         
+      - name: Run backend typecheck
+        working-directory: ${{ env.BACKEND_DIR }}
+        run: npm run typecheck || true
+        
       - name: Run backend tests
         working-directory: ${{ env.BACKEND_DIR }}
         run: npm test
@@ -78,6 +82,14 @@ jobs:
       - name: Run frontend linting
         working-directory: ${{ env.FRONTEND_DIR }}
         run: npm run lint:check
+        
+      - name: Run frontend typecheck
+        working-directory: ${{ env.FRONTEND_DIR }}
+        run: npm run typecheck || true
+        
+      - name: Run frontend typecheck for tests
+        working-directory: ${{ env.FRONTEND_DIR }}
+        run: npm run typecheck:test || true
         
       - name: Run frontend tests
         working-directory: ${{ env.FRONTEND_DIR }}

@@ -304,3 +304,7 @@ composer.lock
 # Local development
 .local/
 local/
+
+# Kotlin/Android project (not part of JS/TS app)
+web-project/web/
+web-project/kotlin-js-store/

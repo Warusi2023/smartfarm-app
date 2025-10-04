@@ -21,6 +21,8 @@
     "validate:ids": "node scripts/validate-ids.js",
     "validate:cors": "node scripts/validate-cors.js",
     "test:build": "node scripts/test-build.js",
+    "typecheck": "tsc -p tsconfig.json",
+    "typecheck:test": "tsc -p tsconfig.spec.json",
     "prebuild": "npm run validate:svg && npm run validate:ids && npm run validate:cors",
     "lhci": "lhci autorun",
     "lhci:server": "lhci wizard"
@@ -51,6 +53,9 @@
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
     "jest-axe": "^8.0.0",
+    "@types/jest": "^29.5.8",
+    "@types/node": "^20.9.0",
+    "ts-jest": "^29.1.1",
     "lint-staged": "^15.1.0",
     "prettier": "^3.1.0"
   },

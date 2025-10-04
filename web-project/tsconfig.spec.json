@@ -2,11 +2,12 @@
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "noEmit": true,
-    "types": ["node"]
+    "types": ["node", "jest"]
   },
   "include": [
-    "public/**/*",
-    "types/**/*.d.ts"
+    "tests/**/*",
+    "**/*.spec.*",
+    "**/*.test.*"
   ],
   "exclude": [
     "node_modules",
@@ -16,13 +17,6 @@
     "test-results",
     "playwright-report",
     ".lighthouseci",
-    "tests",
-    "**/*.spec.*",
-    "**/*.test.*",
-    "public/js/ad-error-handler.js",
-    "public/js/ads-provider.js",
-    "public/js/continuous-error-suppression.js",
-    "public/js/error-boundary.js",
     "web/**"
   ]
 }
