@@ -5,21 +5,21 @@
   "private": true,
   "workspaces": [
     "web-project",
-    "backend-api"
+    "backend"
   ],
   "scripts": {
-    "install:backend": "cd backend-api && npm install",
+    "install:backend": "cd backend && npm install",
     "install:frontend": "cd web-project && npm install",
     "install:all": "npm run install:backend && npm run install:frontend",
-    "build:backend": "cd backend-api && npm run build",
+    "build:backend": "cd backend && npm run build",
     "build:frontend": "cd web-project && npm run build",
     "build:all": "npm run build:backend && npm run build:frontend",
-    "test:backend": "cd backend-api && npm test",
+    "test:backend": "cd backend && npm test",
     "test:frontend": "cd web-project && npm test",
     "test:all": "npm run test:backend && npm run test:frontend",
-    "start": "cd backend-api && npm start",
-    "dev": "concurrently \"cd backend-api && npm run dev\" \"cd web-project && npm run dev\"",
-    "lint:backend": "cd backend-api && npm run lint",
+    "start": "cd backend && npm start",
+    "dev": "concurrently \"cd backend && npm run dev\" \"cd web-project && npm run dev\"",
+    "lint:backend": "cd backend && npm run lint",
     "lint:frontend": "cd web-project && npm run lint",
     "lint:all": "npm run lint:backend && npm run lint:frontend"
   },
