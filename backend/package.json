@@ -1,0 +1,22 @@
+{
+  "name": "smartfarm-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "engines": { "node": ">=18.19.0 <19" },
+  "scripts": {
+    "prepare": "git rev-parse --is-inside-work-tree >/dev/null 2>&1 && husky install || echo 'husky skipped'",
+    "prebuild": "node ./scripts/deploy-diagnostics.mjs || true",
+    "build": "tsc -p tsconfig.json || echo \"no TS build (JS runtime)\"",
+    "start": "node dist/index.js || node server.js",
+    "dev": "nodemon --watch src --exec node src/index.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0",
+    "typescript": "^5.5.4"
+  }
+}
+

@@ -23,7 +23,7 @@
     "test:build": "node scripts/test-build.js",
     "typecheck": "tsc -p tsconfig.json",
     "typecheck:test": "tsc -p tsconfig.spec.json",
-    "prebuild": "npm run validate:svg && npm run validate:ids && npm run validate:cors",
+    "prebuild": "node ./scripts/check-svgs.mjs || true && npm run validate:svg && npm run validate:ids && npm run validate:cors",
     "lhci": "lhci autorun",
     "lhci:server": "lhci wizard"
   },

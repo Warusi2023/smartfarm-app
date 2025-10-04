@@ -112,18 +112,27 @@ class DeployDiagnostics {
   checkBackendStructure() {
     console.log('🏗️ Backend Structure Check:');
     
-    const backendPaths = [
-      'backend-api',
-      'backend', 
-      'server',
-      'api'
-    ];
+    const cwd = process.cwd();
+    const isInBackend = cwd.includes('backend') || existsSync('package.json');
     
     let backendPath = null;
-    for (const path of backendPaths) {
-      if (existsSync(path)) {
-        backendPath = path;
-        break;
+    if (isInBackend) {
+      // We're already in the backend directory
+      backendPath = '.';
+    } else {
+      // Look for backend directories from parent
+      const backendPaths = [
+        'backend-api',
+        'backend', 
+        'server',
+        'api'
+      ];
+      
+      for (const path of backendPaths) {
+        if (existsSync(path)) {
+          backendPath = path;
+          break;
+        }
       }
     }
     
@@ -160,13 +169,22 @@ class DeployDiagnostics {
   checkPackageFiles() {
     console.log('📦 Package Configuration Check:');
     
-    const backendPaths = ['backend-api', 'backend', 'server', 'api'];
-    let backendPath = null;
+    const cwd = process.cwd();
+    const isInBackend = cwd.includes('backend') || existsSync('package.json');
     
-    for (const path of backendPaths) {
-      if (existsSync(join(path, 'package.json'))) {
-        backendPath = path;
-        break;
+    let backendPath = null;
+    if (isInBackend) {
+      // We're already in the backend directory
+      backendPath = '.';
+    } else {
+      // Look for backend directories from parent
+      const backendPaths = ['backend-api', 'backend', 'server', 'api'];
+      
+      for (const path of backendPaths) {
+        if (existsSync(join(path, 'package.json'))) {
+          backendPath = path;
+          break;
+        }
       }
     }
     
@@ -220,13 +238,22 @@ class DeployDiagnostics {
   checkBuildConfiguration() {
     console.log('🔧 Build Configuration Check:');
     
-    const backendPaths = ['backend-api', 'backend', 'server', 'api'];
-    let backendPath = null;
+    const cwd = process.cwd();
+    const isInBackend = cwd.includes('backend') || existsSync('package.json');
     
-    for (const path of backendPaths) {
-      if (existsSync(join(path, 'package.json'))) {
-        backendPath = path;
-        break;
+    let backendPath = null;
+    if (isInBackend) {
+      // We're already in the backend directory
+      backendPath = '.';
+    } else {
+      // Look for backend directories from parent
+      const backendPaths = ['backend-api', 'backend', 'server', 'api'];
+      
+      for (const path of backendPaths) {
+        if (existsSync(join(path, 'package.json'))) {
+          backendPath = path;
+          break;
+        }
       }
     }
     
@@ -274,13 +301,22 @@ class DeployDiagnostics {
   checkStartCommands() {
     console.log('🚀 Start Command Check:');
     
-    const backendPaths = ['backend-api', 'backend', 'server', 'api'];
-    let backendPath = null;
+    const cwd = process.cwd();
+    const isInBackend = cwd.includes('backend') || existsSync('package.json');
     
-    for (const path of backendPaths) {
-      if (existsSync(join(path, 'package.json'))) {
-        backendPath = path;
-        break;
+    let backendPath = null;
+    if (isInBackend) {
+      // We're already in the backend directory
+      backendPath = '.';
+    } else {
+      // Look for backend directories from parent
+      const backendPaths = ['backend-api', 'backend', 'server', 'api'];
+      
+      for (const path of backendPaths) {
+        if (existsSync(join(path, 'package.json'))) {
+          backendPath = path;
+          break;
+        }
       }
     }
     
