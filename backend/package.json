@@ -7,7 +7,7 @@
     "prepare": "git rev-parse --is-inside-work-tree >/dev/null 2>&1 && husky install || echo 'husky skipped'",
     "prebuild": "node ./scripts/deploy-diagnostics.mjs || true",
     "build": "tsc -p tsconfig.json || echo \"no TS build (JS runtime)\"",
-    "start": "node dist/index.js || node server.js",
+    "start": "node server.js",
     "dev": "nodemon --watch src --exec node src/index.js"
   },
   "dependencies": {

@@ -24,26 +24,26 @@ jobs:
         with:
           node-version-file: '.nvmrc'
           cache: 'npm'
-          cache-dependency-path: 'backend-api/package-lock.json'
+          cache-dependency-path: 'backend/package-lock.json'
           
       - name: Install dependencies
-        working-directory: backend-api
+        working-directory: backend
         run: npm ci
-        
+
       - name: Run linting
-        working-directory: backend-api
+        working-directory: backend
         run: npm run lint:check
-        
+
       - name: Run typecheck
-        working-directory: backend-api
+        working-directory: backend
         run: npm run typecheck || true
-        
+
       - name: Run tests
-        working-directory: backend-api
+        working-directory: backend
         run: npm test
-        
+
       - name: Run build
-        working-directory: backend-api
+        working-directory: backend
         run: npm run build
         
   # Frontend CI

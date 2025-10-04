@@ -8,7 +8,7 @@ on:
 
 env:
   NODE_VERSION: '18.19.0'
-  BACKEND_DIR: 'backend-api'
+  BACKEND_DIR: 'backend'
   FRONTEND_DIR: 'web-project'
 
 jobs:

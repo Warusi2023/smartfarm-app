@@ -21,7 +21,9 @@
     "dev": "concurrently \"cd backend && npm run dev\" \"cd web-project && npm run dev\"",
     "lint:backend": "cd backend && npm run lint",
     "lint:frontend": "cd web-project && npm run lint",
-    "lint:all": "npm run lint:backend && npm run lint:frontend"
+    "lint:all": "npm run lint:backend && npm run lint:frontend",
+    "audit:env": "node scripts/audit-env.mjs",
+    "audit:build": "node scripts/audit-build.mjs"
   },
   "engines": {
     "node": ">=18.19.0",

@@ -4,12 +4,12 @@ on:
   push:
     branches: [ main, develop ]
     paths:
-      - 'backend-api/**'
+      - 'backend/**'
       - '.github/workflows/backend-ci-cd.yml'
   pull_request:
     branches: [ main ]
     paths:
-      - 'backend-api/**'
+      - 'backend/**'
 
 env:
   NODE_VERSION: '18'
@@ -29,26 +29,26 @@ jobs:
       with:
         node-version: ${{ env.NODE_VERSION }}
         cache: 'npm'
-        cache-dependency-path: backend-api/package-lock.json
+        cache-dependency-path: backend/package-lock.json
         
     - name: Install dependencies
-      working-directory: ./backend-api
+      working-directory: ./backend
       run: npm ci
       
     - name: Run linting
-      working-directory: ./backend-api
+      working-directory: ./backend
       run: npm run lint || echo "Linting not configured"
       
     - name: Run unit tests
-      working-directory: ./backend-api
+      working-directory: ./backend
       run: npm run test:unit
       
     - name: Run integration tests
-      working-directory: ./backend-api
+      working-directory: ./backend
       run: npm run test:integration
       
     - name: Generate coverage report
-      working-directory: ./backend-api
+      working-directory: ./backend
       run: npm run test:coverage
       
     - name: Upload coverage to Codecov
@@ -63,7 +63,7 @@ jobs:
       if: always()
       with:
         name: test-results
-        path: backend-api/coverage/
+        path: backend/coverage/
 
   security-scan:
     name: Security Scan
@@ -78,14 +78,14 @@ jobs:
       with:
         node-version: ${{ env.NODE_VERSION }}
         cache: 'npm'
-        cache-dependency-path: backend-api/package-lock.json
+        cache-dependency-path: backend/package-lock.json
         
     - name: Install dependencies
-      working-directory: ./backend-api
+      working-directory: ./backend
       run: npm ci
       
     - name: Run security audit
-      working-directory: ./backend-api
+      working-directory: ./backend
       run: npm audit --audit-level=high
       
     - name: Run Snyk security scan
@@ -110,21 +110,21 @@ jobs:
       with:
         node-version: ${{ env.NODE_VERSION }}
         cache: 'npm'
-        cache-dependency-path: backend-api/package-lock.json
+        cache-dependency-path: backend/package-lock.json
         
     - name: Install dependencies
-      working-directory: ./backend-api
+      working-directory: ./backend
       run: npm ci --production
       
     - name: Build application
-      working-directory: ./backend-api
+      working-directory: ./backend
       run: npm run build
       
     - name: Upload build artifacts
       uses: actions/upload-artifact@v3
       with:
         name: backend-build
-        path: backend-api/
+        path: backend/
 
   deploy-staging:
     name: Deploy to Staging
