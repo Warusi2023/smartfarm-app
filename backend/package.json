@@ -2,6 +2,7 @@
   "name": "smartfarm-backend",
   "version": "1.0.0",
   "type": "module",
+  "private": true,
   "engines": { "node": ">=18.19.0 <19" },
   "scripts": {
     "prepare": "git rev-parse --is-inside-work-tree >/dev/null 2>&1 && husky install || echo 'husky skipped'",
