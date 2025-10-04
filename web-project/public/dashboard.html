@@ -6002,18 +6002,53 @@
             }, 300000);
         }
 
-        function initializeDashboard() {
-            // Initialize charts
-            initializeCharts();
-            
-            // Check authentication
-            checkAuthentication();
-            
-            // Initialize competitive features
-            initializeCompetitiveFeatures();
-            
-            // Load initial data
-            loadDashboardData();
+        async function initializeDashboard() {
+            try {
+                console.log('🚀 Initializing SmartFarm Dashboard...');
+                
+                // Initialize charts with error handling
+                try {
+                    initializeCharts();
+                    console.log('✅ Charts initialized successfully');
+                } catch (chartError) {
+                    console.warn('⚠️ Chart initialization failed:', chartError);
+                }
+                
+                // Check authentication
+                try {
+                    checkAuthentication();
+                    console.log('✅ Authentication checked');
+                } catch (authError) {
+                    console.warn('⚠️ Authentication check failed:', authError);
+                }
+                
+                // Initialize competitive features
+                try {
+                    initializeCompetitiveFeatures();
+                    console.log('✅ Competitive features initialized');
+                } catch (featuresError) {
+                    console.warn('⚠️ Competitive features initialization failed:', featuresError);
+                }
+                
+                // Load initial data
+                try {
+                    await loadDashboardData();
+                    console.log('✅ Dashboard data loaded');
+                } catch (dataError) {
+                    console.warn('⚠️ Dashboard data loading failed:', dataError);
+                }
+                
+                console.log('🎉 Dashboard initialization completed successfully!');
+                
+            } catch (error) {
+                console.error('❌ Dashboard initialization failed:', error);
+                // Show a user-friendly error message
+                if (typeof showErrorMessage === 'function') {
+                    showErrorMessage('Dashboard initialization failed. Some features may not work properly.');
+                } else {
+                    console.error('showErrorMessage function not available');
+                }
+            }
         }
 
         function checkAuthentication() {
@@ -6090,9 +6125,15 @@
         let costChart = null;
 
         function initializeCharts() {
-            // Yield Chart
-            const yieldCtx = document.getElementById('yieldChart').getContext('2d');
-            yieldChart = new Chart(yieldCtx, {
+            try {
+                // Yield Chart
+                const yieldCtxElement = document.getElementById('yieldChart');
+                if (!yieldCtxElement) {
+                    console.warn('⚠️ yieldChart element not found');
+                    return;
+                }
+                const yieldCtx = yieldCtxElement.getContext('2d');
+                yieldChart = new Chart(yieldCtx, {
                 type: 'line',
                 data: {
                     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
@@ -6138,6 +6179,10 @@
                     }
                 }
             });
+            
+            } catch (error) {
+                console.error('❌ Chart initialization failed:', error);
+            }
         }
 
         function initializeAnalyticsCharts() {
@@ -6198,21 +6243,56 @@
             }
         }
 
-        function loadDashboardData() {
-            // Load data from API or localStorage
-            // This would typically make API calls to your backend
-            console.log('Loading dashboard data...');
-            
-            // Load farm data from localStorage
-            loadFarmData();
-            
-            // Load crops, livestock, and inventory data
-            loadCropsData();
-            loadLivestockData();
-            loadInventoryData();
-            
-            // Update pesticide statistics
-            updatePesticideStatistics();
+        async function loadDashboardData() {
+            try {
+                console.log('📊 Loading dashboard data...');
+                
+                // Load farm data from API or localStorage
+                try {
+                    await loadFarmData();
+                    console.log('✅ Farm data loaded');
+                } catch (error) {
+                    console.warn('⚠️ Farm data loading failed:', error);
+                }
+                
+                // Load crops data
+                try {
+                    await loadCropsData();
+                    console.log('✅ Crops data loaded');
+                } catch (error) {
+                    console.warn('⚠️ Crops data loading failed:', error);
+                }
+                
+                // Load livestock data
+                try {
+                    await loadLivestockData();
+                    console.log('✅ Livestock data loaded');
+                } catch (error) {
+                    console.warn('⚠️ Livestock data loading failed:', error);
+                }
+                
+                // Load inventory data
+                try {
+                    loadInventoryData();
+                    console.log('✅ Inventory data loaded');
+                } catch (error) {
+                    console.warn('⚠️ Inventory data loading failed:', error);
+                }
+                
+                // Update pesticide statistics
+                try {
+                    updatePesticideStatistics();
+                    console.log('✅ Pesticide statistics updated');
+                } catch (error) {
+                    console.warn('⚠️ Pesticide statistics update failed:', error);
+                }
+                
+                console.log('✅ Dashboard data loading completed');
+                
+            } catch (error) {
+                console.error('❌ Dashboard data loading failed:', error);
+                throw error;
+            }
         }
 
         function updatePesticideStatistics() {
@@ -6906,15 +6986,26 @@
         }
 
         function updateAnalyticsCharts() {
-            // Calculate revenue from crops and livestock
-            let cropRevenue = 0;
-            let livestockRevenue = 0;
-            
-            // Simple revenue calculation based on data
-            cropRevenue = crops.length * 250; // $250 per crop type
-            livestockRevenue = livestock.reduce((total, animal) => total + (animal.quantity * 50), 0); // $50 per animal
-            
-            const totalRevenue = cropRevenue + livestockRevenue;
+            try {
+                // Ensure arrays are defined
+                if (typeof crops === 'undefined') {
+                    console.warn('⚠️ Crops array not defined');
+                    return;
+                }
+                if (typeof livestock === 'undefined') {
+                    console.warn('⚠️ Livestock array not defined');
+                    return;
+                }
+                
+                // Calculate revenue from crops and livestock
+                let cropRevenue = 0;
+                let livestockRevenue = 0;
+                
+                // Simple revenue calculation based on data
+                cropRevenue = crops.length * 250; // $250 per crop type
+                livestockRevenue = livestock.reduce((total, animal) => total + (animal.quantity * 50), 0); // $50 per animal
+                
+                const totalRevenue = cropRevenue + livestockRevenue;
             
             // Update revenue chart
             if (revenueChart) {
@@ -6945,6 +7036,10 @@
             }
             
             console.log('Analytics charts updated:', { cropRevenue, livestockRevenue, totalRevenue });
+            
+            } catch (error) {
+                console.error('❌ Analytics charts update failed:', error);
+            }
         }
 
         // Save functions for data persistence
@@ -6954,6 +7049,93 @@
 
         function saveLivestockData() {
             localStorage.setItem('livestockData', JSON.stringify(livestock));
+        }
+
+        function renderLivestockGrid() {
+            const livestockGrid = document.getElementById('livestockGrid');
+            if (!livestockGrid) return;
+
+            livestockGrid.innerHTML = '';
+
+            livestock.forEach(animal => {
+                const animalCard = createLivestockCard(animal);
+                livestockGrid.appendChild(animalCard);
+            });
+        }
+
+        function createLivestockCard(animal) {
+            const card = document.createElement('div');
+            card.className = 'livestock-card';
+            
+            const statusClass = animal.healthStatus ? animal.healthStatus.toLowerCase().replace(' ', '-') : 'healthy';
+            const statusColor = getStatusColor(animal.healthStatus || 'Healthy');
+            
+            card.innerHTML = `
+                <div class="livestock-header">
+                    <div class="livestock-info">
+                        <h5 class="livestock-name">${animal.name}</h5>
+                        <p class="livestock-breed">${animal.breed}</p>
+                    </div>
+                    <div class="status-badge-top">
+                        <span class="status-dot status-${statusClass}"></span>
+                        <span class="status-badge status-${statusClass}">${animal.healthStatus || 'Healthy'}</span>
+                    </div>
+                </div>
+                <div class="livestock-details">
+                    <div class="detail-row">
+                        <i class="fas fa-tag"></i>
+                        <span>ID: L${animal.id.toString().padStart(3, '0')}</span>
+                    </div>
+                    <div class="detail-row">
+                        <i class="fas fa-paw"></i>
+                        <span>Type: ${animal.type}</span>
+                    </div>
+                    <div class="detail-row">
+                        <i class="fas fa-hashtag"></i>
+                        <span>Quantity: ${animal.quantity || 1}</span>
+                    </div>
+                    <div class="detail-row">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>Location: ${animal.location || 'Not specified'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Birth: ${animal.birthDate || 'Unknown'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <i class="fas fa-weight"></i>
+                        <span>Weight: ${animal.weight || 'Not recorded'}</span>
+                    </div>
+                </div>
+                <div class="livestock-actions">
+                    <button class="btn btn-sm btn-outline-primary" onclick="editLivestock(${animal.id})">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button class="btn btn-sm btn-success" onclick="addHealthRecord(${animal.id})">
+                        <i class="fas fa-heartbeat"></i> Health
+                    </button>
+                    <button class="btn btn-sm btn-info" onclick="viewLivestockDetails(${animal.id})">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteLivestock(${animal.id})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `;
+            
+            return card;
+        }
+
+        function updateLivestockStatistics() {
+            const totalAnimals = livestock.length;
+            const healthyAnimals = livestock.filter(animal => animal.healthStatus === 'Healthy').length;
+            const pregnantAnimals = livestock.filter(animal => animal.healthStatus === 'Pregnant').length;
+            const totalValue = livestock.reduce((sum, animal) => sum + (animal.value || 0), 0);
+
+            document.getElementById('totalAnimals').textContent = totalAnimals;
+            document.getElementById('healthyAnimals').textContent = healthyAnimals;
+            document.getElementById('pregnantAnimals').textContent = pregnantAnimals;
+            document.getElementById('totalValue').textContent = totalValue.toLocaleString();
         }
 
         function savePetsData() {
@@ -7604,53 +7786,92 @@
             submitButton.disabled = true;
 
             try {
-                // Get the first farm ID (in a real app, user would select farm)
-                const farmsResponse = await window.SmartFarmAPI.getFarms();
-                if (!farmsResponse.success || !farmsResponse.data.length) {
-                    showErrorMessage('Please create a farm first before adding livestock');
-                    return;
-                }
+                // Check if API is available
+                if (typeof window.SmartFarmAPI !== 'undefined' && window.SmartFarmAPI.isBackendAvailable) {
+                    console.log('🌐 Using API to add livestock');
+                    
+                    // Get the first farm ID (in a real app, user would select farm)
+                    const farmsResponse = await window.SmartFarmAPI.getFarms();
+                    if (!farmsResponse.success || !farmsResponse.data.length) {
+                        showErrorMessage('Please create a farm first before adding livestock');
+                        return;
+                    }
 
-                const farmId = farmsResponse.data[0].id;
-                const today = new Date().toISOString().split('T')[0];
+                    const farmId = farmsResponse.data[0].id;
+                    const today = new Date().toISOString().split('T')[0];
 
-                // Process ear tags
-                const earTags = earTagsText ? earTagsText.split(',').map(tag => tag.trim()).filter(tag => tag) : [];
+                    // Process ear tags
+                    const earTags = earTagsText ? earTagsText.split(',').map(tag => tag.trim()).filter(tag => tag) : [];
 
-                const livestockData = {
-                    name: `${breed} #${quantity}`,
-                    type: type,
-                    farmId: farmId,
-                    breed: breed,
-                    birthDate: today, // Default to today, user can edit later
-                    weight: null,
-                    description: healthNotes || 'No notes'
-                };
+                    const livestockData = {
+                        name: `${breed} #${quantity}`,
+                        type: type,
+                        farmId: farmId,
+                        breed: breed,
+                        birthDate: today, // Default to today, user can edit later
+                        weight: null,
+                        description: healthNotes || 'No notes'
+                    };
 
-                const response = await window.SmartFarmAPI.createLivestock(livestockData);
+                    const response = await window.SmartFarmAPI.createLivestock(livestockData);
 
-                if (response.success) {
+                    if (response.success) {
+                        showSuccessMessage('Livestock added successfully!');
+                        
+                        // Refresh livestock data
+                        await loadLivestockData();
+                    } else {
+                        showErrorMessage(response.error || 'Failed to add livestock');
+                        return;
+                    }
+                } else {
+                    console.log('💾 Using localStorage fallback to add livestock');
+                    
+                    // Fallback to localStorage
+                    const newLivestock = {
+                        id: Date.now(), // Simple ID generation
+                        name: `${breed} #${quantity}`,
+                        type: type,
+                        breed: breed,
+                        quantity: quantity,
+                        location: location,
+                        healthStatus: status,
+                        earTags: earTagsText ? earTagsText.split(',').map(tag => tag.trim()).filter(tag => tag) : [],
+                        gpsLat: gpsLat ? parseFloat(gpsLat) : null,
+                        gpsLng: gpsLng ? parseFloat(gpsLng) : null,
+                        healthNotes: healthNotes || '',
+                        birthDate: new Date().toISOString().split('T')[0],
+                        weight: null,
+                        value: 0,
+                        lastUpdated: new Date().toISOString()
+                    };
+
+                    // Add to livestock array
+                    livestock.push(newLivestock);
+                    saveLivestockData();
+                    
                     showSuccessMessage('Livestock added successfully!');
                     
-                    // Clear form
-                    document.getElementById('livestockType').value = '';
-                    document.getElementById('livestockBreed').value = '';
-                    document.getElementById('livestockQuantity').value = '';
-                    document.getElementById('livestockLocation').value = '';
-                    document.getElementById('livestockStatus').value = '';
-                    document.getElementById('earTags').value = '';
-                    document.getElementById('gpsLat').value = '';
-                    document.getElementById('gpsLng').value = '';
-                    document.getElementById('healthNotes').value = '';
-
-                    // Refresh livestock data
-                    await loadLivestockData();
-                } else {
-                    showErrorMessage(response.error || 'Failed to add livestock');
+                    // Refresh display
+                    renderLivestockGrid();
+                    renderLivestockTable();
+                    updateLivestockStatistics();
                 }
+                
+                // Clear form
+                document.getElementById('livestockType').value = '';
+                document.getElementById('livestockBreed').value = '';
+                document.getElementById('livestockQuantity').value = '';
+                document.getElementById('livestockLocation').value = '';
+                document.getElementById('livestockStatus').value = '';
+                document.getElementById('earTags').value = '';
+                document.getElementById('gpsLat').value = '';
+                document.getElementById('gpsLng').value = '';
+                document.getElementById('healthNotes').value = '';
+
             } catch (error) {
                 console.error('Error adding livestock:', error);
-                showErrorMessage('An error occurred while adding livestock');
+                showErrorMessage('An error occurred while adding livestock: ' + error.message);
             } finally {
                 // Restore button state
                 submitButton.innerHTML = originalText;
@@ -14007,9 +14228,63 @@ INVENTORY SUMMARY:
             try {
                 // Check if API is available
                 if (typeof window.SmartFarmAPI === 'undefined') {
-                    console.warn('⚠️ SmartFarmAPI not available, using fallback');
-                    livestock = [];
+                    console.warn('⚠️ SmartFarmAPI not available, using localStorage fallback');
+                    
+                    // Load from localStorage
+                    const savedLivestock = localStorage.getItem('livestockData');
+                    if (savedLivestock) {
+                        try {
+                            livestock = JSON.parse(savedLivestock);
+                            console.log('✅ Livestock data loaded from localStorage:', livestock.length, 'animals');
+                        } catch (e) {
+                            console.error('Error loading livestock data from localStorage:', e);
+                            livestock = [];
+                        }
+                    } else {
+                        // Initialize with sample data
+                        livestock = [
+                            {
+                                id: 1,
+                                name: 'Angus Bull #001',
+                                type: 'Cattle',
+                                breed: 'Angus Cattle',
+                                quantity: 1,
+                                location: 'Pasture A',
+                                healthStatus: 'Healthy',
+                                birthDate: '2020-03-15',
+                                weight: '650 kg',
+                                value: 2500,
+                                earTags: ['AB001'],
+                                gpsLat: -18.1416,
+                                gpsLng: 178.4419,
+                                healthNotes: 'Excellent breeding bull',
+                                lastUpdated: new Date().toISOString()
+                            },
+                            {
+                                id: 2,
+                                name: 'Holstein Cow #002',
+                                type: 'Cattle',
+                                breed: 'Holstein Dairy',
+                                quantity: 1,
+                                location: 'Barn B',
+                                healthStatus: 'Pregnant',
+                                birthDate: '2019-07-20',
+                                weight: '550 kg',
+                                value: 1800,
+                                earTags: ['HC002'],
+                                gpsLat: -18.1416,
+                                gpsLng: 178.4419,
+                                healthNotes: 'Due to calve in 3 months',
+                                lastUpdated: new Date().toISOString()
+                            }
+                        ];
+                        saveLivestockData();
+                        console.log('✅ Initialized with sample livestock data');
+                    }
+                    
+                    renderLivestockGrid();
                     renderLivestockTable();
+                    updateLivestockStatistics();
                     return;
                 }
 
@@ -14037,13 +14312,17 @@ INVENTORY SUMMARY:
                     console.log('✅ Livestock data loaded successfully:', livestock.length, 'items');
                     
                     // Update UI
+                    renderLivestockGrid();
                     renderLivestockTable();
+                    updateLivestockStatistics();
                     updateAnalyticsCharts();
                 } else {
                     console.warn('⚠️ API returned unsuccessful response:', response);
                     // Initialize with empty array if API fails
                     livestock = [];
+                    renderLivestockGrid();
                     renderLivestockTable();
+                    updateLivestockStatistics();
                 }
             } catch (error) {
                 console.error('❌ Error loading livestock data:', error);
@@ -14055,7 +14334,9 @@ INVENTORY SUMMARY:
                 
                 // Fallback: initialize with empty array
                 livestock = [];
+                renderLivestockGrid();
                 renderLivestockTable();
+                updateLivestockStatistics();
                 
                 // Show user-friendly message
                 if (error.message.includes('Failed to fetch')) {
