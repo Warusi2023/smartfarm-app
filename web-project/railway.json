@@ -1,0 +1,12 @@
+{
+  "build": {
+    "builder": "NIXPACKS",
+    "installCommand": "echo 'No dependencies to install for static site'",
+    "buildCommand": "echo 'Static site build completed'"
+  },
+  "deploy": {
+    "startCommand": "python -m http.server 8080",
+    "healthcheckPath": "/dashboard.html",
+    "healthcheckTimeout": 120
+  }
+}

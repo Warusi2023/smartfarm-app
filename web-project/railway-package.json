@@ -1,0 +1,30 @@
+{
+  "name": "smartfarm-frontend",
+  "version": "1.0.0",
+  "description": "SmartFarm Frontend - Modern Farm Management Dashboard",
+  "main": "public/dashboard.html",
+  "scripts": {
+    "start": "python -m http.server 8080",
+    "build": "echo 'Frontend build completed - static site ready'",
+    "postinstall": "echo 'Frontend dependencies installed successfully'"
+  },
+  "keywords": [
+    "farm",
+    "agriculture",
+    "dashboard",
+    "management",
+    "accessibility"
+  ],
+  "author": "SmartFarm Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "dependencies": {
+    "bootstrap": "^5.3.2",
+    "chart.js": "^4.4.0",
+    "jspdf": "^2.5.1",
+    "qrcode": "^1.5.3"
+  }
+}
