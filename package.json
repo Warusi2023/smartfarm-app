@@ -3,5 +3,6 @@
   "private": true,
   "scripts": {
     "preflight": "node scripts/preflight.mjs"
-  }
+  },
+  "description": "SmartFarm Repository - Railway deployment ready"
 }
