@@ -6,14 +6,16 @@ WORKDIR /app
 # Install system packages
 RUN apk add --no-cache postgresql-client curl
 
-# Copy package files
+# Copy only the essential package files
 COPY package.json ./
 COPY web-project/package.json ./web-project/
 
-# Clean install without dev dependencies
-RUN npm ci --omit=dev --no-audit --no-fund --silent
+# Install only production dependencies for web-project
+WORKDIR /app/web-project
+RUN npm install --omit=dev --no-audit --no-fund --silent
 
-# Copy application code
+# Go back to app directory and copy source code
+WORKDIR /app
 COPY . .
 
 # Create user
@@ -31,5 +33,6 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
   CMD curl -f http://localhost:3000/api/health || exit 1
 
-# Start
+# Start the web-project server
+WORKDIR /app/web-project
 CMD ["npm", "start"]
