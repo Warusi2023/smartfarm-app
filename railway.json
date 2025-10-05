@@ -9,5 +9,5 @@
     "healthcheckPath": "/api/health",
     "healthcheckTimeout": 120
   },
-  "rootDirectory": "backend"
+  "rootDirectory": "backend-api"
 }
