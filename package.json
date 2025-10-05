@@ -1,7 +1,7 @@
 {
-  "name": "smartfarm-static",
-  "version": "3.0.0",
-  "description": "SmartFarm Static Site - Railway Ready",
+  "name": "smartfarm-dashboard-web",
+  "version": "1.0.0",
+  "description": "SmartFarm Dashboard - Clean Railway Deployment",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
