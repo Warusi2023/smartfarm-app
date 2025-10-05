@@ -1,0 +1,16 @@
+{
+  "name": "smartfarm-frontend",
+  "version": "1.0.0",
+  "description": "SmartFarm Frontend - Static Dashboard",
+  "main": "public/dashboard.html",
+  "scripts": {
+    "start": "npx http-server ./public -p $PORT -a 0.0.0.0",
+    "build": "echo 'Static site build completed'"
+  },
+  "dependencies": {
+    "http-server": "^14.1.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

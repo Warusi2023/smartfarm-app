@@ -1,0 +1,12 @@
+{
+  "build": {
+    "builder": "NIXPACKS",
+    "installCommand": "echo 'No dependencies needed for static site'",
+    "buildCommand": "echo 'Static site ready'"
+  },
+  "deploy": {
+    "startCommand": "npx http-server ./public -p $PORT -a 0.0.0.0",
+    "healthcheckPath": "/dashboard.html",
+    "healthcheckTimeout": 120
+  }
+}
