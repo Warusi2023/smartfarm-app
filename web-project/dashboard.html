@@ -662,6 +662,11 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
+    <!-- SmartFarm Configuration Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/environment.js"></script>
+    <script src="js/error-boundary.js"></script>
+    
     <script>
         // Initialize dashboard
         document.addEventListener('DOMContentLoaded', function() {
@@ -671,27 +676,62 @@
         });
 
         function initializeDashboard() {
-            // Initialize charts
-            initializeCharts();
-            
-            // Check authentication
-            checkAuthentication();
-            
-            // Load initial data
-            loadDashboardData();
+            try {
+                console.log('Initializing SmartFarm Dashboard...');
+                
+                // Initialize charts
+                initializeCharts();
+                
+                // Check authentication (with fallback)
+                checkAuthentication();
+                
+                // Load initial data
+                loadDashboardData();
+                
+                console.log('Dashboard initialized successfully');
+            } catch (error) {
+                console.error('Dashboard initialization failed:', error);
+                // Show a user-friendly error message
+                showInitializationError(error);
+            }
+        }
+        
+        function showInitializationError(error) {
+            try {
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'alert alert-warning alert-dismissible fade show';
+                errorDiv.innerHTML = `
+                    <strong>Warning:</strong> Some dashboard features may not work properly. 
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                
+                const mainContent = document.getElementById('mainContent');
+                if (mainContent) {
+                    mainContent.insertBefore(errorDiv, mainContent.firstChild);
+                }
+            } catch (e) {
+                console.error('Failed to show initialization error:', e);
+            }
         }
 
         function checkAuthentication() {
-            const user = localStorage.getItem('smartfarm_user') || sessionStorage.getItem('smartfarm_user');
-            if (!user) {
-                window.location.href = 'login.html';
-                return;
+            try {
+                const user = localStorage.getItem('smartfarm_user') || sessionStorage.getItem('smartfarm_user');
+                if (!user) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+                
+                // Update user info in navbar
+                const userName = user.split('@')[0] || 'Farmer';
+                document.getElementById('userName').textContent = userName;
+                document.getElementById('userAvatar').textContent = userName.charAt(0).toUpperCase();
+            } catch (error) {
+                console.warn('Authentication check failed:', error);
+                // Continue with default values
+                document.getElementById('userName').textContent = 'Farmer';
+                document.getElementById('userAvatar').textContent = 'F';
             }
-            
-            // Update user info in navbar
-            const userName = user.split('@')[0];
-            document.getElementById('userName').textContent = userName;
-            document.getElementById('userAvatar').textContent = userName.charAt(0).toUpperCase();
         }
 
         function updateLastUpdated() {
@@ -700,60 +740,134 @@
         }
 
         function initializeCharts() {
-            // Yield Chart
-            const yieldCtx = document.getElementById('yieldChart').getContext('2d');
-            new Chart(yieldCtx, {
-                type: 'line',
-                data: {
-                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                    datasets: [{
-                        label: 'Yield (tons)',
-                        data: [2.1, 2.3, 2.8, 2.5, 2.9, 3.1],
-                        borderColor: '#4CAF50',
-                        backgroundColor: 'rgba(76, 175, 80, 0.1)',
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    aspectRatio: 2,
-                    plugins: {
-                        legend: {
-                            display: false
+            try {
+                // Yield Chart
+                const yieldCanvas = document.getElementById('yieldChart');
+                if (yieldCanvas && typeof Chart !== 'undefined') {
+                    const yieldCtx = yieldCanvas.getContext('2d');
+                    new Chart(yieldCtx, {
+                        type: 'line',
+                        data: {
+                            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                            datasets: [{
+                                label: 'Yield (tons)',
+                                data: [2.1, 2.3, 2.8, 2.5, 2.9, 3.1],
+                                borderColor: '#4CAF50',
+                                backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                                tension: 0.4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            aspectRatio: 2,
+                            plugins: {
+                                legend: {
+                                    display: false
+                                }
+                            }
                         }
-                    }
+                    });
                 }
-            });
 
-            // Field Status Chart
-            const fieldCtx = document.getElementById('fieldStatusChart').getContext('2d');
-            new Chart(fieldCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Active', 'Harvesting', 'Fallow'],
-                    datasets: [{
-                        data: [6, 2, 0],
-                        backgroundColor: ['#4CAF50', '#FF9800', '#9E9E9E']
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    aspectRatio: 1.5,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
+                // Field Status Chart
+                const fieldCanvas = document.getElementById('fieldStatusChart');
+                if (fieldCanvas && typeof Chart !== 'undefined') {
+                    const fieldCtx = fieldCanvas.getContext('2d');
+                    new Chart(fieldCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Active', 'Harvesting', 'Fallow'],
+                            datasets: [{
+                                data: [6, 2, 0],
+                                backgroundColor: ['#4CAF50', '#FF9800', '#9E9E9E']
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            aspectRatio: 1.5,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom'
+                                }
+                            }
                         }
-                    }
+                    });
                 }
-            });
+                
+                console.log('Charts initialized successfully');
+            } catch (error) {
+                console.warn('Chart initialization failed:', error);
+                // Show placeholder text instead of charts
+                showChartPlaceholders();
+            }
+        }
+        
+        function showChartPlaceholders() {
+            try {
+                const yieldContainer = document.getElementById('yieldChart');
+                const fieldContainer = document.getElementById('fieldStatusChart');
+                
+                if (yieldContainer) {
+                    yieldContainer.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 300px; color: #666;">Chart loading...</div>';
+                }
+                
+                if (fieldContainer) {
+                    fieldContainer.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 300px; color: #666;">Chart loading...</div>';
+                }
+            } catch (error) {
+                console.error('Failed to show chart placeholders:', error);
+            }
         }
 
         function loadDashboardData() {
-            // Load data from API or localStorage
-            // This would typically make API calls to your backend
-            console.log('Loading dashboard data...');
+            try {
+                // Load data from API or localStorage
+                console.log('Loading dashboard data...');
+                
+                // Try to load from localStorage first (offline mode)
+                const savedData = localStorage.getItem('smartfarm_dashboard_data');
+                if (savedData) {
+                    const data = JSON.parse(savedData);
+                    updateDashboardWithData(data);
+                }
+                
+                // Attempt to fetch fresh data from API (optional)
+                if (window.SmartFarmAPIService) {
+                    loadDataFromAPI();
+                }
+            } catch (error) {
+                console.warn('Failed to load dashboard data:', error);
+                // Continue with default static data
+            }
+        }
+        
+        function loadDataFromAPI() {
+            // This would make API calls when the service is available
+            // For now, just log that we're attempting to load from API
+            console.log('Attempting to load data from API...');
+        }
+        
+        function updateDashboardWithData(data) {
+            try {
+                if (data.stats) {
+                    if (data.stats.totalCrops !== undefined) {
+                        document.getElementById('totalCrops').textContent = data.stats.totalCrops;
+                    }
+                    if (data.stats.totalLivestock !== undefined) {
+                        document.getElementById('totalLivestock').textContent = data.stats.totalLivestock;
+                    }
+                    if (data.stats.totalFields !== undefined) {
+                        document.getElementById('totalFields').textContent = data.stats.totalFields;
+                    }
+                    if (data.stats.monthlyYield !== undefined) {
+                        document.getElementById('monthlyYield').textContent = data.stats.monthlyYield;
+                    }
+                }
+            } catch (error) {
+                console.warn('Failed to update dashboard with data:', error);
+            }
         }
 
         // Navigation functions

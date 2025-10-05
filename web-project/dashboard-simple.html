@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Farm Dashboard - SmartFarm</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2e7d32;
+            --secondary-color: #4caf50;
+            --accent-color: #8bc34a;
+            --danger-color: #f44336;
+            --warning-color: #ff9800;
+            --info-color: #2196f3;
+            --dark-color: #424242;
+            --light-color: #f5f5f5;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .sidebar {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            min-height: 100vh;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin: 5px 0;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .main-content {
+            padding: 20px;
+        }
+
+        .dashboard-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .btn-custom {
+            background: var(--accent-color);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-custom:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        .navbar-custom {
+            background: white !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: -250px;
+                top: 0;
+                width: 250px;
+                z-index: 1000;
+                transition: left 0.3s ease;
+            }
+
+            .sidebar.show {
+                left: 0;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light navbar-custom">
+        <div class="container-fluid">
+            <button class="btn btn-outline-primary d-lg-none me-3" id="sidebarToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-leaf me-2"></i>SmartFarm Dashboard
+            </a>
+            <div class="navbar-nav ms-auto">
+                <div class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+                        <div class="user-avatar me-2" id="userAvatar">F</div>
+                        <span id="userName">Farmer</span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#" onclick="editProfile()"><i class="fas fa-user me-2"></i>Profile</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="showSettings()"><i class="fas fa-cog me-2"></i>Settings</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#" onclick="logout()"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-lg-2 col-md-3 sidebar" id="sidebar">
+                <div class="position-sticky pt-3">
+                    <div class="text-center mb-4">
+                        <h5>Farm Management</h5>
+                    </div>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#" onclick="showDashboard()">
+                                <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showFarmManagement()">
+                                <i class="fas fa-tractor me-2"></i>Farm Management
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="crop-management.html">
+                                <i class="fas fa-seedling me-2"></i>Crop Management
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="livestock-management.html">
+                                <i class="fas fa-cow me-2"></i>Livestock
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="inventory-management.html">
+                                <i class="fas fa-boxes me-2"></i>Inventory
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="analytics-dashboard.html">
+                                <i class="fas fa-chart-line me-2"></i>Analytics
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showTasks()">
+                                <i class="fas fa-tasks me-2"></i>Tasks
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showReports()">
+                                <i class="fas fa-file-alt me-2"></i>Reports
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="col-lg-10 col-md-9 main-content" id="mainContent">
+                <!-- Dashboard Overview -->
+                <div id="dashboardView">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2>Farm Dashboard</h2>
+                        <div>
+                            <span class="badge bg-success me-2">Online</span>
+                            <small class="text-muted">Last updated: <span id="lastUpdated"></span></small>
+                        </div>
+                    </div>
+
+                    <!-- Stats Cards -->
+                    <div class="row">
+                        <div class="col-lg-3 col-md-6">
+                            <div class="stat-card">
+                                <div class="stat-number" id="totalCrops">12</div>
+                                <div>Active Crops</div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="stat-card">
+                                <div class="stat-number" id="totalLivestock">45</div>
+                                <div>Livestock</div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="stat-card">
+                                <div class="stat-number" id="totalFields">8</div>
+                                <div>Fields</div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="stat-card">
+                                <div class="stat-number" id="monthlyYield">2.5</div>
+                                <div>Monthly Yield (tons)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Simple Charts Row -->
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <div class="dashboard-card">
+                                <h5 class="mb-3">Crop Yield Trend</h5>
+                                <div class="chart-container" style="height: 300px; display: flex; align-items: center; justify-content: center; background: #f8f9fa; border-radius: 8px;">
+                                    <div class="text-center">
+                                        <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                                        <p class="text-muted">Chart visualization will be available when JavaScript loads properly</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="dashboard-card">
+                                <h5 class="mb-3">Field Status</h5>
+                                <div class="chart-container" style="height: 300px; display: flex; align-items: center; justify-content: center; background: #f8f9fa; border-radius: 8px;">
+                                    <div class="text-center">
+                                        <i class="fas fa-chart-pie fa-3x text-muted mb-3"></i>
+                                        <p class="text-muted">Chart visualization will be available when JavaScript loads properly</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activities -->
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="dashboard-card">
+                                <h5 class="mb-3">Recent Activities</h5>
+                                <div class="activity-list" id="recentActivities">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="bg-success rounded-circle p-2 me-3">
+                                            <i class="fas fa-seedling text-white"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold">New crop planted</div>
+                                            <small class="text-muted">Tomatoes in Field A - 2 hours ago</small>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="bg-info rounded-circle p-2 me-3">
+                                            <i class="fas fa-tint text-white"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold">Irrigation completed</div>
+                                            <small class="text-muted">Field B irrigation - 4 hours ago</small>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="bg-warning rounded-circle p-2 me-3">
+                                            <i class="fas fa-exclamation-triangle text-white"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold">Soil moisture alert</div>
+                                            <small class="text-muted">Field C needs attention - 6 hours ago</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="dashboard-card">
+                                <h5 class="mb-3">Upcoming Tasks</h5>
+                                <div class="task-list" id="upcomingTasks">
+                                    <div class="d-flex justify-content-between align-items-center mb-3 p-3 border rounded">
+                                        <div>
+                                            <div class="fw-bold">Harvest Field A</div>
+                                            <small class="text-muted">Due: Tomorrow</small>
+                                        </div>
+                                        <span class="badge bg-warning text-dark">Pending</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center mb-3 p-3 border rounded">
+                                        <div>
+                                            <div class="fw-bold">Fertilize Field B</div>
+                                            <small class="text-muted">Due: 3 days</small>
+                                        </div>
+                                        <span class="badge bg-success">Scheduled</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center mb-3 p-3 border rounded">
+                                        <div>
+                                            <div class="fw-bold">Check irrigation system</div>
+                                            <small class="text-muted">Due: 5 days</small>
+                                        </div>
+                                        <span class="badge bg-danger">Overdue</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Other Views (initially hidden) -->
+                <div id="farmManagementView" style="display: none;">
+                    <h2>Farm Management</h2>
+                    <div class="dashboard-card">
+                        <h5>Farm Information</h5>
+                        <form id="farmForm">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Farm Name</label>
+                                        <input type="text" class="form-control" id="farmName" value="Green Valley Farm">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Location</label>
+                                        <input type="text" class="form-control" id="farmLocation" value="Suva, Fiji">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Total Area (hectares)</label>
+                                        <input type="number" class="form-control" id="farmArea" value="25.5">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Farm Type</label>
+                                        <select class="form-select" id="farmType">
+                                            <option value="mixed">Mixed Farming</option>
+                                            <option value="crops">Crop Farming</option>
+                                            <option value="livestock">Livestock Farming</option>
+                                            <option value="dairy">Dairy Farming</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-custom" onclick="saveFarmData()">
+                                <i class="fas fa-save me-2"></i>Save Changes
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Simple dashboard initialization without external dependencies
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Simple SmartFarm Dashboard Loading...');
+            
+            try {
+                // Update last updated time
+                updateLastUpdated();
+                setInterval(updateLastUpdated, 60000);
+                
+                // Check authentication
+                checkAuthentication();
+                
+                console.log('Simple dashboard loaded successfully');
+            } catch (error) {
+                console.error('Simple dashboard initialization failed:', error);
+            }
+        });
+
+        function updateLastUpdated() {
+            try {
+                const now = new Date();
+                const lastUpdatedElement = document.getElementById('lastUpdated');
+                if (lastUpdatedElement) {
+                    lastUpdatedElement.textContent = now.toLocaleTimeString();
+                }
+            } catch (error) {
+                console.warn('Failed to update last updated time:', error);
+            }
+        }
+
+        function checkAuthentication() {
+            try {
+                const user = localStorage.getItem('smartfarm_user') || sessionStorage.getItem('smartfarm_user');
+                if (!user) {
+                    // Don't redirect automatically, just show as guest
+                    document.getElementById('userName').textContent = 'Guest';
+                    document.getElementById('userAvatar').textContent = 'G';
+                } else {
+                    const userName = user.split('@')[0] || 'Farmer';
+                    document.getElementById('userName').textContent = userName;
+                    document.getElementById('userAvatar').textContent = userName.charAt(0).toUpperCase();
+                }
+            } catch (error) {
+                console.warn('Authentication check failed:', error);
+                document.getElementById('userName').textContent = 'Farmer';
+                document.getElementById('userAvatar').textContent = 'F';
+            }
+        }
+
+        // Navigation functions
+        function showDashboard() {
+            showView('dashboardView');
+            setActiveNav('dashboard');
+        }
+
+        function showFarmManagement() {
+            showView('farmManagementView');
+            setActiveNav('farm');
+        }
+
+        function showView(viewId) {
+            try {
+                // Hide all views
+                const views = ['dashboardView', 'farmManagementView'];
+                views.forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.style.display = 'none';
+                    }
+                });
+                
+                // Show selected view
+                const selectedView = document.getElementById(viewId);
+                if (selectedView) {
+                    selectedView.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Failed to show view:', error);
+            }
+        }
+
+        function setActiveNav(navItem) {
+            try {
+                // Remove active class from all nav links
+                document.querySelectorAll('.sidebar .nav-link').forEach(link => {
+                    link.classList.remove('active');
+                });
+                
+                // Add active class to clicked nav link
+                if (event && event.target) {
+                    event.target.classList.add('active');
+                }
+            } catch (error) {
+                console.warn('Failed to set active nav:', error);
+            }
+        }
+
+        function saveFarmData() {
+            try {
+                const farmData = {
+                    name: document.getElementById('farmName').value,
+                    location: document.getElementById('farmLocation').value,
+                    area: document.getElementById('farmArea').value,
+                    type: document.getElementById('farmType').value
+                };
+                
+                localStorage.setItem('farmData', JSON.stringify(farmData));
+                alert('Farm data saved successfully!');
+            } catch (error) {
+                console.error('Failed to save farm data:', error);
+                alert('Failed to save farm data. Please try again.');
+            }
+        }
+
+        // User functions
+        function editProfile() {
+            alert('Edit profile functionality will be implemented');
+        }
+
+        function showSettings() {
+            alert('Settings functionality will be implemented');
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('smartfarm_user');
+                sessionStorage.removeItem('smartfarm_user');
+                window.location.href = 'login.html';
+            }
+        }
+
+        // Mobile sidebar toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+            
+            if (sidebarToggle && sidebar) {
+                sidebarToggle.addEventListener('click', function() {
+                    sidebar.classList.toggle('show');
+                });
+            }
+        });
+
+        // Show success message
+        setTimeout(function() {
+            console.log('✅ Simple SmartFarm Dashboard is ready!');
+        }, 1000);
+    </script>
+</body>
+</html>
