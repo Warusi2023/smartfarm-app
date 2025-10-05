@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - SmartFarm</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2c5530;
+            --secondary-color: #4a7c59;
+            --accent-color: #8fbc8f;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        .checkout-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+        }
+
+        .checkout-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .plan-summary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 2rem;
+        }
+
+        .payment-form {
+            padding: 2rem;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(44, 85, 48, 0.25);
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .btn-primary:hover {
+            background: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+
+        .security-badges {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .security-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--success-color);
+            font-size: 0.9rem;
+        }
+
+        .guarantee-box {
+            background: linear-gradient(45deg, #ff6b6b, #feca57);
+            color: white;
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+            margin: 1rem 0;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            margin: 0 1rem;
+        }
+
+        .step-number {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #e9ecef;
+            color: #6c757d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+
+        .step.active .step-number {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .step.completed .step-number {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .step-line {
+            width: 50px;
+            height: 2px;
+            background: #e9ecef;
+            margin: 0 0.5rem;
+        }
+
+        .step.completed + .step .step-line {
+            background: var(--success-color);
+        }
+
+        .payment-method {
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 1rem;
+            margin: 1rem 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .payment-method:hover {
+            border-color: var(--primary-color);
+        }
+
+        .payment-method.selected {
+            border-color: var(--primary-color);
+            background: rgba(44, 85, 48, 0.05);
+        }
+
+        .loading-spinner {
+            display: none;
+        }
+
+        .success-message {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .success-message i {
+            font-size: 4rem;
+            color: var(--success-color);
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background: var(--primary-color);">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-seedling me-2"></i>SmartFarm
+            </a>
+        </div>
+    </nav>
+
+    <div class="checkout-container">
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="checkout-card">
+                    <!-- Step Indicator -->
+                    <div class="step-indicator">
+                        <div class="step completed">
+                            <div class="step-number">1</div>
+                            <span>Plan</span>
+                        </div>
+                        <div class="step-line"></div>
+                        <div class="step active">
+                            <div class="step-number">2</div>
+                            <span>Payment</span>
+                        </div>
+                        <div class="step-line"></div>
+                        <div class="step">
+                            <div class="step-number">3</div>
+                            <span>Complete</span>
+                        </div>
+                    </div>
+
+                    <div class="payment-form">
+                        <h3 class="mb-4">Payment Information</h3>
+                        
+                        <!-- Payment Methods -->
+                        <div class="mb-4">
+                            <h5>Select Payment Method</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="payment-method" onclick="selectPaymentMethod('card')">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-credit-card fa-2x me-3"></i>
+                                            <div>
+                                                <h6>Credit Card</h6>
+                                                <small class="text-muted">Visa, MasterCard, American Express</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="payment-method" onclick="selectPaymentMethod('paypal')">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fab fa-paypal fa-2x me-3"></i>
+                                            <div>
+                                                <h6>PayPal</h6>
+                                                <small class="text-muted">Pay with your PayPal account</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Credit Card Form -->
+                        <div id="cardForm">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <label for="cardNumber" class="form-label">Card Number</label>
+                                    <input type="text" class="form-control" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19">
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-md-6">
+                                    <label for="expiryDate" class="form-label">Expiry Date</label>
+                                    <input type="text" class="form-control" id="expiryDate" placeholder="MM/YY" maxlength="5">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="cvv" class="form-label">CVV</label>
+                                    <input type="text" class="form-control" id="cvv" placeholder="123" maxlength="4">
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-md-12">
+                                    <label for="cardName" class="form-label">Name on Card</label>
+                                    <input type="text" class="form-control" id="cardName" placeholder="John Doe">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- PayPal Form -->
+                        <div id="paypalForm" style="display: none;">
+                            <div class="text-center">
+                                <p>You will be redirected to PayPal to complete your payment.</p>
+                                <button class="btn btn-primary" onclick="processPayPalPayment()">
+                                    <i class="fab fa-paypal me-2"></i>Pay with PayPal
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Billing Information -->
+                        <div class="mt-4">
+                            <h5>Billing Information</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label for="firstName" class="form-label">First Name</label>
+                                    <input type="text" class="form-control" id="firstName" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="lastName" class="form-label">Last Name</label>
+                                    <input type="text" class="form-control" id="lastName" required>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-md-12">
+                                    <label for="email" class="form-label">Email Address</label>
+                                    <input type="email" class="form-control" id="email" required>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-md-12">
+                                    <label for="address" class="form-label">Address</label>
+                                    <input type="text" class="form-control" id="address" required>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-md-6">
+                                    <label for="city" class="form-label">City</label>
+                                    <input type="text" class="form-control" id="city" required>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="state" class="form-label">State</label>
+                                    <input type="text" class="form-control" id="state" required>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="zipCode" class="form-label">ZIP Code</label>
+                                    <input type="text" class="form-control" id="zipCode" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Terms and Conditions -->
+                        <div class="mt-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="terms" required>
+                                <label class="form-check-label" for="terms">
+                                    I agree to the <a href="terms.html" target="_blank">Terms of Service</a> and <a href="privacy.html" target="_blank">Privacy Policy</a>
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="refund" required>
+                                <label class="form-check-label" for="refund">
+                                    I understand the 30-day money-back guarantee policy
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Security Badges -->
+                        <div class="security-badges">
+                            <div class="security-badge">
+                                <i class="fas fa-shield-alt"></i>
+                                <span>SSL Secured</span>
+                            </div>
+                            <div class="security-badge">
+                                <i class="fas fa-lock"></i>
+                                <span>256-bit Encryption</span>
+                            </div>
+                            <div class="security-badge">
+                                <i class="fas fa-credit-card"></i>
+                                <span>PCI Compliant</span>
+                            </div>
+                        </div>
+
+                        <!-- Payment Buttons -->
+                        <div class="d-grid gap-2 mt-4">
+                            <button class="btn btn-primary btn-lg" onclick="processPayment()" id="payButton">
+                                <i class="fas fa-credit-card me-2"></i>Complete Payment
+                            </button>
+                            <button class="btn btn-outline-secondary" onclick="goBack()">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Plans
+                            </button>
+                        </div>
+
+                        <!-- Loading Spinner -->
+                        <div class="loading-spinner text-center mt-4" id="loadingSpinner">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Processing...</span>
+                            </div>
+                            <p class="mt-2">Processing your payment...</p>
+                        </div>
+
+                        <!-- Success Message -->
+                        <div class="success-message" id="successMessage">
+                            <i class="fas fa-check-circle"></i>
+                            <h3>Payment Successful!</h3>
+                            <p>Your subscription has been activated. You will receive a confirmation email shortly.</p>
+                            <button class="btn btn-success" onclick="goToDashboard()">
+                                <i class="fas fa-tachometer-alt me-2"></i>Go to Dashboard
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="col-lg-4">
+                <div class="checkout-card">
+                    <div class="plan-summary">
+                        <h4 id="planName">Professional Plan</h4>
+                        <p id="planDescription">Most popular for serious farmers</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span id="planPrice">$29</span>
+                            <span>/month</span>
+                        </div>
+                    </div>
+                    <div class="p-3">
+                        <h6>What's included:</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success me-2"></i>Up to 10 farms</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Advanced crop management</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Complete livestock tracking</li>
+                            <li><i class="fas fa-check text-success me-2"></i>AI-powered insights</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Weather forecasting</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Geofencing & GPS tracking</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Financial management</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Priority support</li>
+                        </ul>
+                        
+                        <div class="guarantee-box">
+                            <h6><i class="fas fa-shield-alt me-2"></i>30-Day Money-Back Guarantee</h6>
+                            <small>Not satisfied? Get a full refund, no questions asked!</small>
+                        </div>
+
+                        <div class="mt-3">
+                            <div class="d-flex justify-content-between">
+                                <span>Subtotal:</span>
+                                <span id="subtotal">$29.00</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Tax:</span>
+                                <span id="tax">$0.00</span>
+                            </div>
+                            <hr>
+                            <div class="d-flex justify-content-between fw-bold">
+                                <span>Total:</span>
+                                <span id="total">$29.00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        let selectedPaymentMethod = 'card';
+        let selectedPlan = 'professional';
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get plan from URL parameter
+            const urlParams = new URLSearchParams(window.location.search);
+            selectedPlan = urlParams.get('plan') || 'professional';
+            
+            // Update plan summary
+            updatePlanSummary(selectedPlan);
+            
+            // Set default payment method
+            selectPaymentMethod('card');
+        });
+
+        function selectPaymentMethod(method) {
+            selectedPaymentMethod = method;
+            
+            // Update UI
+            document.querySelectorAll('.payment-method').forEach(el => {
+                el.classList.remove('selected');
+            });
+            event.currentTarget.classList.add('selected');
+            
+            // Show/hide forms
+            if (method === 'card') {
+                document.getElementById('cardForm').style.display = 'block';
+                document.getElementById('paypalForm').style.display = 'none';
+            } else {
+                document.getElementById('cardForm').style.display = 'none';
+                document.getElementById('paypalForm').style.display = 'block';
+            }
+        }
+
+        function updatePlanSummary(plan) {
+            const plans = {
+                'free': {
+                    name: 'Free Plan',
+                    description: 'Perfect for getting started',
+                    price: '$0',
+                    features: [
+                        'Up to 2 farms',
+                        'Basic crop management',
+                        'Simple livestock tracking',
+                        'Basic weather data',
+                        'Email support'
+                    ]
+                },
+                'professional': {
+                    name: 'Professional Plan',
+                    description: 'Most popular for serious farmers',
+                    price: '$29',
+                    features: [
+                        'Up to 10 farms',
+                        'Advanced crop management',
+                        'Complete livestock tracking',
+                        'AI-powered insights',
+                        'Weather forecasting',
+                        'Geofencing & GPS tracking',
+                        'Financial management',
+                        'Priority support'
+                    ]
+                },
+                'enterprise': {
+                    name: 'Enterprise Plan',
+                    description: 'For large-scale operations',
+                    price: '$99',
+                    features: [
+                        'Unlimited farms',
+                        'Everything in Professional',
+                        'Multi-user management',
+                        'Advanced analytics',
+                        'Custom integrations',
+                        'White-label options',
+                        'Dedicated support'
+                    ]
+                }
+            };
+
+            const planData = plans[plan];
+            if (planData) {
+                document.getElementById('planName').textContent = planData.name;
+                document.getElementById('planDescription').textContent = planData.description;
+                document.getElementById('planPrice').textContent = planData.price;
+                document.getElementById('subtotal').textContent = planData.price + '.00';
+                document.getElementById('total').textContent = planData.price + '.00';
+            }
+        }
+
+        function processPayment() {
+            // Validate form
+            if (!validateForm()) {
+                return;
+            }
+
+            // Show loading
+            document.getElementById('payButton').style.display = 'none';
+            document.getElementById('loadingSpinner').style.display = 'block';
+
+            // Simulate payment processing
+            setTimeout(() => {
+                // Hide loading
+                document.getElementById('loadingSpinner').style.display = 'none';
+                
+                // Show success
+                document.getElementById('successMessage').style.display = 'block';
+                
+                // Update step indicator
+                document.querySelectorAll('.step')[1].classList.remove('active');
+                document.querySelectorAll('.step')[1].classList.add('completed');
+                document.querySelectorAll('.step')[2].classList.add('active');
+                
+                // Store subscription in localStorage
+                const subscription = {
+                    plan: selectedPlan,
+                    status: 'active',
+                    startDate: new Date().toISOString(),
+                    endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
+                    paymentMethod: selectedPaymentMethod,
+                    refundEligible: true
+                };
+                localStorage.setItem('smartfarm_subscription', JSON.stringify(subscription));
+                
+            }, 3000);
+        }
+
+        function processPayPalPayment() {
+            // Simulate PayPal redirect
+            alert('Redirecting to PayPal... (This is a demo)');
+            processPayment();
+        }
+
+        function validateForm() {
+            const requiredFields = ['firstName', 'lastName', 'email', 'address', 'city', 'state', 'zipCode'];
+            const terms = document.getElementById('terms').checked;
+            const refund = document.getElementById('refund').checked;
+
+            for (let field of requiredFields) {
+                if (!document.getElementById(field).value.trim()) {
+                    alert(`Please fill in the ${field.replace(/([A-Z])/g, ' $1').toLowerCase()}`);
+                    return false;
+                }
+            }
+
+            if (selectedPaymentMethod === 'card') {
+                const cardNumber = document.getElementById('cardNumber').value;
+                const expiryDate = document.getElementById('expiryDate').value;
+                const cvv = document.getElementById('cvv').value;
+                const cardName = document.getElementById('cardName').value;
+
+                if (!cardNumber || !expiryDate || !cvv || !cardName) {
+                    alert('Please fill in all card details');
+                    return false;
+                }
+            }
+
+            if (!terms || !refund) {
+                alert('Please accept the terms and conditions');
+                return false;
+            }
+
+            return true;
+        }
+
+        function goBack() {
+            window.location.href = 'pricing.html';
+        }
+
+        function goToDashboard() {
+            window.location.href = 'dashboard.html';
+        }
+
+        // Format card number
+        document.getElementById('cardNumber').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\s/g, '').replace(/[^0-9]/gi, '');
+            let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+            e.target.value = formattedValue;
+        });
+
+        // Format expiry date
+        document.getElementById('expiryDate').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length >= 2) {
+                value = value.substring(0, 2) + '/' + value.substring(2, 4);
+            }
+            e.target.value = value;
+        });
+
+        // Format CVV
+        document.getElementById('cvv').addEventListener('input', function(e) {
+            e.target.value = e.target.value.replace(/\D/g, '');
+        });
+    </script>
+</body>
+</html>

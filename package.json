@@ -1,8 +1,14 @@
 {
-  "name": "smartfarm-repo",
-  "private": true,
+  "name": "smartfarm-static",
+  "version": "3.0.0",
+  "description": "SmartFarm Static Site - Railway Ready",
   "scripts": {
-    "preflight": "node scripts/preflight.mjs"
+    "start": "npx http-server ./public -p $PORT -a 0.0.0.0 -c-1"
   },
-  "description": "SmartFarm Repository - Railway deployment ready"
+  "dependencies": {
+    "http-server": "^14.1.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
 }

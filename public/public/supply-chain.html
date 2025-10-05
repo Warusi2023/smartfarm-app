@@ -1,0 +1,1845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supply Chain Management - SmartFarm</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #2e7d32;
+            --secondary-color: #4caf50;
+            --accent-color: #8bc34a;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .navbar-custom {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+
+        .main-container {
+            margin-top: 80px;
+            padding: 20px;
+        }
+
+        .dashboard-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .supply-chain-header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .supply-chain-header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .journey-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .journey-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .journey-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            transform: translate(30px, -30px);
+        }
+
+        .journey-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .journey-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .journey-description {
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+
+        .journey-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
+        .timeline-container {
+            position: relative;
+            padding: 20px 0;
+        }
+
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 40px;
+            bottom: -30px;
+            width: 2px;
+            background: #e9ecef;
+        }
+
+        .timeline-item:last-child::before {
+            display: none;
+        }
+
+        .timeline-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #007bff;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            margin-right: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .timeline-content {
+            flex: 1;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .timeline-content h6 {
+            margin-bottom: 10px;
+            color: #495057;
+        }
+
+        .timeline-content p {
+            color: #6c757d;
+            margin-bottom: 10px;
+        }
+
+        .timeline-meta {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+
+        .retail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .retail-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-left: 4px solid #28a745;
+        }
+
+        .retail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .retail-name {
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .retail-status {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .retail-details {
+            margin-bottom: 15px;
+        }
+
+        .retail-details p {
+            margin-bottom: 5px;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .retail-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-supply {
+            background: linear-gradient(135deg, #4caf50, #8bc34a);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-supply:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+            color: white;
+        }
+
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .analytics-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .analytics-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+
+        .analytics-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 5px;
+        }
+
+        .analytics-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light navbar-custom fixed-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="dashboard.html">
+                <i class="fas fa-leaf text-success me-2"></i>SmartFarm
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="dashboard.html">
+                            <i class="fas fa-home me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="supply-chain.html">
+                            <i class="fas fa-truck me-1"></i>Supply Chain
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="sustainability.html">
+                            <i class="fas fa-globe-americas me-1"></i>Sustainability
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="logout()">
+                            <i class="fas fa-sign-out-alt me-1"></i>Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <!-- Header -->
+        <div class="supply-chain-header">
+            <h1>🚛 Supply Chain Management</h1>
+            <p>Complete Farm-to-Table and Farm-to-Counter tracking for all agricultural produce</p>
+        </div>
+
+        <!-- Journey Overview -->
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="journey-card" onclick="showFarmToTableJourney()">
+                    <div class="journey-icon">🌱</div>
+                    <div class="journey-title">Farm-to-Table</div>
+                    <div class="journey-description">Direct delivery from farm to consumer's table</div>
+                    <div class="journey-stats">
+                        <div class="stat-item">
+                            <div class="stat-number">7</div>
+                            <div class="stat-label">Steps</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">24-48h</div>
+                            <div class="stat-label">Time</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">98%</div>
+                            <div class="stat-label">Freshness</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="journey-card" onclick="showFarmToCounterJourney()">
+                    <div class="journey-icon">🏪</div>
+                    <div class="journey-title">Farm-to-Counter</div>
+                    <div class="journey-description">Distribution through retail partners to store counters</div>
+                    <div class="journey-stats">
+                        <div class="stat-item">
+                            <div class="stat-number">8</div>
+                            <div class="stat-label">Steps</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">48-72h</div>
+                            <div class="stat-label">Time</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">95%</div>
+                            <div class="stat-label">Quality</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Supply Chain Analytics -->
+        <div class="dashboard-card">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">📊 Supply Chain Analytics</h5>
+                <button class="btn btn-sm btn-outline-primary" onclick="refreshAnalytics()">
+                    <i class="fas fa-sync-alt me-1"></i>Refresh
+                </button>
+            </div>
+            <div class="analytics-grid">
+                <div class="analytics-card">
+                    <div class="analytics-icon text-primary">🚛</div>
+                    <div class="analytics-number" id="activeShipments">156</div>
+                    <div class="analytics-label">Active Shipments</div>
+                </div>
+                <div class="analytics-card">
+                    <div class="analytics-icon text-success">🏪</div>
+                    <div class="analytics-number" id="retailPartners">23</div>
+                    <div class="analytics-label">Retail Partners</div>
+                </div>
+                <div class="analytics-card">
+                    <div class="analytics-icon text-warning">⏱️</div>
+                    <div class="analytics-number" id="avgDaysTransit">2.3</div>
+                    <div class="analytics-label">Avg Days Transit</div>
+                </div>
+                <div class="analytics-card">
+                    <div class="analytics-icon text-info">🌡️</div>
+                    <div class="analytics-number" id="coldChainIntegrity">99.2%</div>
+                    <div class="analytics-label">Cold Chain Integrity</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Farm-to-Table Journey -->
+        <div class="dashboard-card">
+            <h5 class="mb-3">🌱 Farm-to-Table Journey</h5>
+            <div class="timeline-container">
+                <div class="timeline-item">
+                    <div class="timeline-icon">
+                        <i class="fas fa-seedling"></i>
+                    </div>
+                    <div class="timeline-content">
+                        <h6>Farm Production</h6>
+                        <p>Crops are grown, harvested, and prepared for distribution with organic farming practices.</p>
+                        <div class="timeline-meta">Completed - 3 days ago</div>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-icon">
+                        <i class="fas fa-flask"></i>
+                    </div>
+                    <div class="timeline-content">
+                        <h6>Quality Testing</h6>
+                        <p>Comprehensive quality testing including freshness, safety, and nutritional content verification.</p>
+                        <div class="timeline-meta">Completed - 2 days ago</div>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-icon">
+                        <i class="fas fa-box"></i>
+                    </div>
+                    <div class="timeline-content">
+                        <h6>Eco-Friendly Packaging</h6>
+                        <p>Products are packaged in sustainable, biodegradable materials with QR codes for traceability.</p>
+                        <div class="timeline-meta">Completed - 1 day ago</div>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-icon">
+                        <i class="fas fa-warehouse"></i>
+                    </div>
+                    <div class="timeline-content">
+                        <h6>Cold Storage</h6>
+                        <p>Temperature-controlled storage maintains optimal freshness and extends shelf life.</p>
+                        <div class="timeline-meta">In Progress - Today</div>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-icon">
+                        <i class="fas fa-truck"></i>
+                    </div>
+                    <div class="timeline-content">
+                        <h6>Direct Delivery</h6>
+                        <p>Refrigerated delivery directly to consumers or farmers markets for maximum freshness.</p>
+                        <div class="timeline-meta">Scheduled - Tomorrow</div>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div class="timeline-content">
+                        <h6>Consumer Purchase</h6>
+                        <p>Products available at farmers markets, online platforms, or direct farm sales.</p>
+                        <div class="timeline-meta">Available - Tomorrow</div>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-icon">
+                        <i class="fas fa-utensils"></i>
+                    </div>
+                    <div class="timeline-content">
+                        <h6>Consumer Table</h6>
+                        <p>Fresh, nutritious produce reaches the consumer's table within 24-48 hours of harvest.</p>
+                        <div class="timeline-meta">Expected - Day after tomorrow</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Farm-to-Counter Journey -->
+        <div class="dashboard-card">
+            <h5 class="mb-3">🏪 Farm-to-Counter Journey</h5>
+            <div class="timeline-container">
+                <div class="timeline-item">
+                    <div class="timeline-icon">
+                        <i class="fas fa-seedling"></i>
+                    </div>
+                    <div class="timeline-content">
+                        <h6>Farm Production</h6>
+                        <p>Large-scale production with commercial farming practices and bulk harvesting.</p>
+                        <div class="timeline-meta">Completed - 5 days ago</div>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-icon">
+                        <i class="fas fa-flask"></i>
+                    </div>
+                    <div class="timeline-content">
+                        <h6>Quality Testing</h6>
+                        <p>Batch testing for commercial standards, food safety, and regulatory compliance.</p>
+                        <div class="timeline-meta">Completed - 4 days ago</div>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-icon">
+                        <i class="fas fa-box"></i>
+                    </div>
+                    <div class="timeline-content">
+                        <h6>Commercial Packaging</h6>
+                        <p>Standardized packaging for retail distribution with barcodes and batch information.</p>
+                        <div class="timeline-meta">Completed - 3 days ago</div>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-icon">
+                        <i class="fas fa-thermometer-half"></i>
+                    </div>
+                    <div class="timeline-content">
+                        <h6>Cold Chain Storage</h6>
+                        <p>Industrial cold storage facilities maintain optimal temperature and humidity levels.</p>
+                        <div class="timeline-meta">Completed - 2 days ago</div>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-icon">
+                        <i class="fas fa-truck"></i>
+                    </div>
+                    <div class="timeline-content">
+                        <h6>Refrigerated Transport</h6>
+                        <p>Temperature-controlled transportation to distribution centers and retail partners.</p>
+                        <div class="timeline-meta">In Progress - Today</div>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-icon">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <div class="timeline-content">
+                        <h6>Wholesale Distribution</h6>
+                        <p>Distribution to wholesale centers and retail partner warehouses.</p>
+                        <div class="timeline-meta">Scheduled - Tomorrow</div>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-icon">
+                        <i class="fas fa-store"></i>
+                    </div>
+                    <div class="timeline-content">
+                        <h6>Retail Store Delivery</h6>
+                        <p>Final delivery to retail stores and supermarket chains.</p>
+                        <div class="timeline-meta">Scheduled - Day after tomorrow</div>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-icon">
+                        <i class="fas fa-cash-register"></i>
+                    </div>
+                    <div class="timeline-content">
+                        <h6>Store Counter Display</h6>
+                        <p>Products displayed on store counters and shelves for consumer purchase.</p>
+                        <div class="timeline-meta">Expected - 3 days from now</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Retail Partners -->
+        <div class="dashboard-card">
+            <h5 class="mb-3">🏪 Retail Partners & Distribution Network</h5>
+            <div class="retail-grid">
+                <div class="retail-card">
+                    <div class="retail-header">
+                        <div class="retail-name">FreshMart Supermarket</div>
+                        <div class="retail-status status-active">Active</div>
+                    </div>
+                    <div class="retail-details">
+                        <p><i class="fas fa-store me-2"></i>Supermarket Chain</p>
+                        <p><i class="fas fa-map-marker-alt me-2"></i>Suva, Nadi, Lautoka</p>
+                        <p><i class="fas fa-envelope me-2"></i>freshmart@example.com</p>
+                        <p><i class="fas fa-phone me-2"></i>+679 123 4567</p>
+                        <p><i class="fas fa-calendar me-2"></i>Partnership since Jan 2024</p>
+                    </div>
+                    <div class="retail-actions">
+                        <button class="btn btn-sm btn-outline-primary" onclick="trackShipment('FRESHMART')">
+                            <i class="fas fa-truck me-1"></i>Track Shipment
+                        </button>
+                        <button class="btn btn-sm btn-outline-success" onclick="viewSalesData('FRESHMART')">
+                            <i class="fas fa-chart-line me-1"></i>Sales Data
+                        </button>
+                    </div>
+                </div>
+
+                <div class="retail-card">
+                    <div class="retail-header">
+                        <div class="retail-name">Organic Corner Store</div>
+                        <div class="retail-status status-active">Active</div>
+                    </div>
+                    <div class="retail-details">
+                        <p><i class="fas fa-store me-2"></i>Specialty Organic Store</p>
+                        <p><i class="fas fa-map-marker-alt me-2"></i>Nadi, Fiji</p>
+                        <p><i class="fas fa-envelope me-2"></i>organic@example.com</p>
+                        <p><i class="fas fa-phone me-2"></i>+679 987 6543</p>
+                        <p><i class="fas fa-calendar me-2"></i>Partnership since Jan 2024</p>
+                    </div>
+                    <div class="retail-actions">
+                        <button class="btn btn-sm btn-outline-primary" onclick="trackShipment('ORGANIC')">
+                            <i class="fas fa-truck me-1"></i>Track Shipment
+                        </button>
+                        <button class="btn btn-sm btn-outline-success" onclick="viewSalesData('ORGANIC')">
+                            <i class="fas fa-chart-line me-1"></i>Sales Data
+                        </button>
+                    </div>
+                </div>
+
+                <div class="retail-card">
+                    <div class="retail-header">
+                        <div class="retail-name">Farmers Market Co-op</div>
+                        <div class="retail-status status-active">Active</div>
+                    </div>
+                    <div class="retail-details">
+                        <p><i class="fas fa-store me-2"></i>Farmers Market</p>
+                        <p><i class="fas fa-map-marker-alt me-2"></i>Lautoka, Fiji</p>
+                        <p><i class="fas fa-envelope me-2"></i>coop@example.com</p>
+                        <p><i class="fas fa-phone me-2"></i>+679 555 1234</p>
+                        <p><i class="fas fa-calendar me-2"></i>Partnership since Feb 2024</p>
+                    </div>
+                    <div class="retail-actions">
+                        <button class="btn btn-sm btn-outline-primary" onclick="trackShipment('COOP')">
+                            <i class="fas fa-truck me-1"></i>Track Shipment
+                        </button>
+                        <button class="btn btn-sm btn-outline-success" onclick="viewSalesData('COOP')">
+                            <i class="fas fa-chart-line me-1"></i>Sales Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="text-center">
+            <button class="btn btn-supply me-3" onclick="addNewRetailPartner()">
+                <i class="fas fa-plus me-2"></i>Add Retail Partner
+            </button>
+            <button class="btn btn-supply me-3" onclick="generateSupplyChainReport()">
+                <i class="fas fa-file-pdf me-2"></i>Generate Report
+            </button>
+            <button class="btn btn-supply" onclick="optimizeSupplyChain()">
+                <i class="fas fa-optimize me-2"></i>Optimize Routes
+            </button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script>
+        // Supply Chain Analytics Functions
+        function updateSupplyChainAnalytics() {
+            // Get data from localStorage
+            const partners = JSON.parse(localStorage.getItem('retailPartners') || '[]');
+            const shipments = JSON.parse(localStorage.getItem('activeShipments') || '[]');
+            const optimization = JSON.parse(localStorage.getItem('routeOptimization') || '{}');
+            
+            // Calculate metrics
+            const activePartners = partners.filter(p => p.status === 'Active').length;
+            const totalPartners = partners.length;
+            const activeShipmentsCount = shipments.length || Math.floor(Math.random() * 200) + 100; // Simulate if no data
+            const avgTransitDays = calculateAverageTransitDays();
+            const coldChainIntegrity = calculateColdChainIntegrity();
+            
+            // Update DOM elements
+            document.getElementById('retailPartners').textContent = totalPartners;
+            document.getElementById('activeShipments').textContent = activeShipmentsCount;
+            document.getElementById('avgDaysTransit').textContent = avgTransitDays.toFixed(1);
+            document.getElementById('coldChainIntegrity').textContent = coldChainIntegrity.toFixed(1) + '%';
+            
+            // Add animation effect
+            animateMetricUpdate();
+        }
+        
+        function calculateAverageTransitDays() {
+            // Simulate realistic transit times based on optimization settings
+            const optimization = JSON.parse(localStorage.getItem('routeOptimization') || '{}');
+            let baseTime = 2.5; // Base average transit time
+            
+            if (optimization.settings) {
+                if (optimization.settings.priorityLevel === 'time') {
+                    baseTime = 1.8; // Faster for time priority
+                } else if (optimization.settings.vehicleType === 'electric') {
+                    baseTime = 2.1; // Slightly faster for electric
+                } else if (optimization.settings.vehicleType === 'hybrid') {
+                    baseTime = 2.2; // Slightly faster for hybrid
+                }
+            }
+            
+            // Add some realistic variation
+            return baseTime + (Math.random() - 0.5) * 0.8;
+        }
+        
+        function calculateColdChainIntegrity() {
+            // Simulate cold chain integrity based on various factors
+            let baseIntegrity = 98.5; // Base integrity percentage
+            
+            // Add some realistic variation
+            const variation = (Math.random() - 0.5) * 2;
+            const integrity = baseIntegrity + variation;
+            
+            // Ensure it stays within realistic bounds (95-100%)
+            return Math.max(95, Math.min(100, integrity));
+        }
+        
+        function animateMetricUpdate() {
+            // Add a subtle animation when metrics update
+            const metrics = document.querySelectorAll('.analytics-number');
+            metrics.forEach(metric => {
+                metric.style.transform = 'scale(1.1)';
+                metric.style.transition = 'transform 0.3s ease';
+                setTimeout(() => {
+                    metric.style.transform = 'scale(1)';
+                }, 300);
+            });
+        }
+        
+        function generateSampleShipments() {
+            // Generate sample shipment data for demonstration
+            const sampleShipments = [];
+            const partners = JSON.parse(localStorage.getItem('retailPartners') || '[]');
+            const statuses = ['In Transit', 'Delivered', 'Pending', 'Delayed'];
+            const products = ['Organic Tomatoes', 'Fresh Lettuce', 'Carrots', 'Bell Peppers', 'Spinach'];
+            
+            for (let i = 0; i < 20; i++) {
+                const shipment = {
+                    id: 'SHIP' + Date.now() + i,
+                    partnerId: partners.length > 0 ? partners[Math.floor(Math.random() * partners.length)].id : 'PART' + i,
+                    product: products[Math.floor(Math.random() * products.length)],
+                    quantity: Math.floor(Math.random() * 100) + 10,
+                    status: statuses[Math.floor(Math.random() * statuses.length)],
+                    startDate: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
+                    estimatedDelivery: new Date(Date.now() + Math.random() * 3 * 24 * 60 * 60 * 1000).toISOString(),
+                    temperature: (2 + Math.random() * 4).toFixed(1) + '°C',
+                    location: ['Distribution Center', 'In Transit', 'Near Destination', 'Delivered'][Math.floor(Math.random() * 4)]
+                };
+                sampleShipments.push(shipment);
+            }
+            
+            localStorage.setItem('activeShipments', JSON.stringify(sampleShipments));
+            return sampleShipments;
+        }
+        
+        function refreshAnalytics() {
+            // Refresh all analytics data
+            updateSupplyChainAnalytics();
+            
+            // Show refresh notification
+            showInfoDialog(
+                '📊 Analytics Updated',
+                'Supply chain analytics have been refreshed with the latest data.\n\n• Partner counts updated\n• Shipment data refreshed\n• Transit times recalculated\n• Cold chain integrity updated'
+            );
+        }
+
+        // Professional Dialog System
+        function showInfoDialog(title, message, buttonText = 'OK', callback = null) {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-info text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-info-circle me-2"></i>${title}
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div style="white-space: pre-line;">${message}</div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-info" data-bs-dismiss="modal">${buttonText}</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+                if (callback) callback();
+            });
+        }
+
+        function showConfirmDialog(title, message, confirmText = 'Yes', cancelText = 'No', confirmCallback, cancelCallback = null) {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-warning text-dark">
+                            <h5 class="modal-title">
+                                <i class="fas fa-exclamation-triangle me-2"></i>${title}
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="mb-0">${message}</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">${cancelText}</button>
+                            <button type="button" class="btn btn-warning" id="confirmBtn">${confirmText}</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            // Handle confirm button click
+            document.getElementById('confirmBtn').addEventListener('click', () => {
+                bsModal.hide();
+                if (confirmCallback) confirmCallback();
+            });
+            
+            // Handle cancel
+            if (cancelCallback) {
+                modal.addEventListener('hidden.bs.modal', () => {
+                    cancelCallback();
+                });
+            }
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        // Supply Chain Management Functions
+        function showFarmToTableJourney() {
+            showInfoDialog(
+                '🌱 Farm-to-Table Journey',
+                'This journey represents our direct-to-consumer model:\n\n1. Farm Production - Organic farming practices\n2. Quality Testing - Freshness and safety verification\n3. Eco-Friendly Packaging - Sustainable materials\n4. Cold Storage - Temperature-controlled preservation\n5. Direct Delivery - Fresh to your doorstep\n6. Consumer Purchase - Available at farmers markets\n7. Consumer Table - Fresh within 24-48 hours\n\nBenefits:\n• Maximum freshness\n• Direct farmer-consumer connection\n• Premium pricing\n• Complete transparency'
+            );
+        }
+
+        function showFarmToCounterJourney() {
+            showInfoDialog(
+                '🏪 Farm-to-Counter Journey',
+                'This journey represents our retail distribution model:\n\n1. Farm Production - Commercial-scale farming\n2. Quality Testing - Batch testing for standards\n3. Commercial Packaging - Retail-ready packaging\n4. Cold Chain Storage - Industrial preservation\n5. Refrigerated Transport - Temperature-controlled shipping\n6. Wholesale Distribution - Partner warehouses\n7. Retail Store Delivery - Supermarket chains\n8. Store Counter Display - Available for purchase\n\nBenefits:\n• Wide market reach\n• Scalable distribution\n• Retail partnerships\n• Volume sales'
+            );
+        }
+
+        function trackShipment(partnerId) {
+            const trackingNumber = `SHIP${Date.now()}`;
+            showInfoDialog(
+                `🚛 Tracking Shipment to ${partnerId}`,
+                `Current Status: In Transit\nEstimated Arrival: Tomorrow 2:00 PM\nTracking Number: ${trackingNumber}\n\nReal-time Updates:\n• Left distribution center: 2 hours ago\n• Current location: Highway 1, 45km from destination\n• Temperature: 2°C (Optimal)\n• ETA: 1 hour 30 minutes\n\nYou can track this shipment in real-time through our logistics dashboard.`
+            );
+        }
+
+        function viewSalesData(partnerId) {
+            showInfoDialog(
+                `📊 Sales Data for ${partnerId}`,
+                `Monthly Performance:\n• Total Sales: $12,450\n• Units Sold: 1,250 kg\n• Average Price: $9.96/kg\n• Growth: +15% vs last month\n\nTop Products:\n1. Organic Tomatoes - 450 kg\n2. Fresh Lettuce - 320 kg\n3. Carrots - 280 kg\n4. Bell Peppers - 200 kg\n\nPerformance Rating: Excellent ⭐⭐⭐⭐⭐`
+            );
+        }
+
+        function addNewRetailPartner() {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-success text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-plus me-2"></i>Add New Retail Partner
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="addPartnerForm">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="partnerName" class="form-label">Partner Name *</label>
+                                            <input type="text" class="form-control" id="partnerName" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="storeType" class="form-label">Store Type *</label>
+                                            <select class="form-select" id="storeType" required>
+                                                <option value="">Select Store Type</option>
+                                                <option value="Supermarket">Supermarket</option>
+                                                <option value="Specialty Store">Specialty Store</option>
+                                                <option value="Farmers Market">Farmers Market</option>
+                                                <option value="Restaurant">Restaurant</option>
+                                                <option value="Wholesale">Wholesale</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="contactPerson" class="form-label">Contact Person *</label>
+                                            <input type="text" class="form-control" id="contactPerson" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="email" class="form-label">Email *</label>
+                                            <input type="email" class="form-control" id="email" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="phone" class="form-label">Phone *</label>
+                                            <input type="tel" class="form-control" id="phone" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="address" class="form-label">Address *</label>
+                                            <textarea class="form-control" id="address" rows="3" required></textarea>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="coverageArea" class="form-label">Coverage Area</label>
+                                            <input type="text" class="form-control" id="coverageArea" placeholder="e.g., Suva, Nadi, Lautoka">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="partnershipTerms" class="form-label">Partnership Terms</label>
+                                            <select class="form-select" id="partnershipTerms">
+                                                <option value="Standard">Standard (30 days payment)</option>
+                                                <option value="Premium">Premium (15 days payment)</option>
+                                                <option value="Exclusive">Exclusive (7 days payment)</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="deliverySchedule" class="form-label">Preferred Delivery Schedule</label>
+                                    <select class="form-select" id="deliverySchedule">
+                                        <option value="Daily">Daily</option>
+                                        <option value="3x Weekly">3x Weekly (Mon, Wed, Fri)</option>
+                                        <option value="2x Weekly">2x Weekly (Tue, Thu)</option>
+                                        <option value="Weekly">Weekly</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="qualityStandards" class="form-label">Quality Standards</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="organicCertified" value="organic">
+                                        <label class="form-check-label" for="organicCertified">Organic Certified</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="gmpCertified" value="gmp">
+                                        <label class="form-check-label" for="gmpCertified">GMP Certified</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="haccpCertified" value="haccp">
+                                        <label class="form-check-label" for="haccpCertified">HACCP Certified</label>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="notes" class="form-label">Additional Notes</label>
+                                    <textarea class="form-control" id="notes" rows="3" placeholder="Any additional information..."></textarea>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-success" onclick="saveNewRetailPartner()">
+                                <i class="fas fa-save me-2"></i>Add Partner
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        function saveNewRetailPartner() {
+            const form = document.getElementById('addPartnerForm');
+            const formData = new FormData(form);
+            
+            // Get form values
+            const partnerData = {
+                id: Date.now(),
+                name: document.getElementById('partnerName').value,
+                storeType: document.getElementById('storeType').value,
+                contactPerson: document.getElementById('contactPerson').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                address: document.getElementById('address').value,
+                coverageArea: document.getElementById('coverageArea').value,
+                partnershipTerms: document.getElementById('partnershipTerms').value,
+                deliverySchedule: document.getElementById('deliverySchedule').value,
+                qualityStandards: [],
+                notes: document.getElementById('notes').value,
+                status: 'Pending',
+                dateAdded: new Date().toISOString().split('T')[0]
+            };
+            
+            // Get quality standards
+            if (document.getElementById('organicCertified').checked) partnerData.qualityStandards.push('Organic Certified');
+            if (document.getElementById('gmpCertified').checked) partnerData.qualityStandards.push('GMP Certified');
+            if (document.getElementById('haccpCertified').checked) partnerData.qualityStandards.push('HACCP Certified');
+            
+            // Validate required fields
+            if (!partnerData.name || !partnerData.storeType || !partnerData.contactPerson || !partnerData.email || !partnerData.phone || !partnerData.address) {
+                showInfoDialog('Validation Error', 'Please fill in all required fields', 'OK');
+                return;
+            }
+            
+            // Save to localStorage
+            let partners = JSON.parse(localStorage.getItem('retailPartners') || '[]');
+            partners.push(partnerData);
+            localStorage.setItem('retailPartners', JSON.stringify(partners));
+            
+            // Close modal
+            const modal = document.querySelector('.modal');
+            if (modal) {
+                const bsModal = bootstrap.Modal.getInstance(modal);
+                if (bsModal) {
+                    bsModal.hide();
+                }
+            }
+            
+            // Show success message
+            showInfoDialog(
+                'Partner Added Successfully!',
+                `New retail partner "${partnerData.name}" has been added successfully.\n\nStatus: ${partnerData.status}\nOur team will review the application and contact you within 48 hours.\n\nReference ID: PART${partnerData.id}`
+            );
+            
+            // Update analytics and refresh the page to show new partner
+            updateSupplyChainAnalytics();
+            setTimeout(() => {
+                location.reload();
+            }, 2000);
+        }
+
+        function generateSupplyChainReport() {
+            // Show loading dialog
+            showInfoDialog(
+                '📄 Generating Supply Chain Report...',
+                'Please wait while we generate your comprehensive supply chain report...'
+            );
+            
+            // Simulate report generation delay
+            setTimeout(() => {
+                generateActualReport();
+            }, 2000);
+        }
+
+        function generateActualReport() {
+            // Get data from localStorage
+            const partners = JSON.parse(localStorage.getItem('retailPartners') || '[]');
+            const currentDate = new Date().toLocaleDateString();
+            
+            // Generate report data
+            const reportData = {
+                title: 'SmartFarm Supply Chain Report',
+                generatedDate: currentDate,
+                summary: {
+                    totalPartners: partners.length,
+                    activePartners: partners.filter(p => p.status === 'Active').length,
+                    pendingPartners: partners.filter(p => p.status === 'Pending').length,
+                    totalSales: '$45,230',
+                    averageDeliveryTime: '2.3 hours',
+                    customerSatisfaction: '94%'
+                },
+                partners: partners,
+                metrics: {
+                    farmToTable: {
+                        averageTime: '24-48 hours',
+                        freshnessScore: '98%',
+                        customerSatisfaction: '96%'
+                    },
+                    farmToCounter: {
+                        averageTime: '3-5 days',
+                        distributionEfficiency: '92%',
+                        retailSatisfaction: '91%'
+                    },
+                    coldChain: {
+                        temperatureCompliance: '99.2%',
+                        qualityRetention: '97%',
+                        energyEfficiency: '85%'
+                    },
+                    optimization: {
+                        routeEfficiency: '94%',
+                        fuelSavings: '18%',
+                        carbonReduction: '12%',
+                        costSavings: '$2,340/month'
+                    }
+                }
+            };
+            
+            // Create PDF report using jsPDF
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Set up colors
+            const primaryColor = [46, 125, 50]; // #2e7d32
+            const secondaryColor = [76, 175, 80]; // #4caf50
+            const textColor = [33, 37, 41]; // #212529
+            const lightGray = [248, 249, 250]; // #f8f9fa
+            
+            // Helper function to add text with styling
+            const addText = (text, x, y, options = {}) => {
+                const { fontSize = 12, color = textColor, fontStyle = 'normal', align = 'left' } = options;
+                doc.setFontSize(fontSize);
+                doc.setTextColor(...color);
+                doc.setFont('helvetica', fontStyle);
+                // Ensure text is always a string
+                const textString = text !== null && text !== undefined ? String(text) : '';
+                doc.text(textString, x, y, { align });
+            };
+            
+            // Helper function to add a line
+            const addLine = (x1, y1, x2, y2, color = primaryColor, width = 0.5) => {
+                doc.setDrawColor(...color);
+                doc.setLineWidth(width);
+                doc.line(x1, y1, x2, y2);
+            };
+            
+            // Helper function to add a rectangle
+            const addRect = (x, y, width, height, fillColor = null, strokeColor = primaryColor) => {
+                if (fillColor) {
+                    doc.setFillColor(...fillColor);
+                    doc.rect(x, y, width, height, 'F');
+                }
+                if (strokeColor) {
+                    doc.setDrawColor(...strokeColor);
+                    doc.rect(x, y, width, height, 'S');
+                }
+            };
+            
+            let yPosition = 20;
+            const pageWidth = doc.internal.pageSize.width;
+            const margin = 20;
+            const contentWidth = pageWidth - (margin * 2);
+            
+            // Header
+            addText(reportData.title, pageWidth / 2, yPosition, { 
+                fontSize: 24, 
+                color: primaryColor, 
+                fontStyle: 'bold', 
+                align: 'center' 
+            });
+            yPosition += 10;
+            
+            addText(`Generated on: ${reportData.generatedDate}`, pageWidth / 2, yPosition, { 
+                fontSize: 12, 
+                color: textColor, 
+                align: 'center' 
+            });
+            yPosition += 15;
+            
+            // Add header line
+            addLine(margin, yPosition, pageWidth - margin, yPosition, primaryColor, 1);
+            yPosition += 15;
+            
+            // Executive Summary Section
+            addText('Executive Summary', margin, yPosition, { 
+                fontSize: 18, 
+                color: primaryColor, 
+                fontStyle: 'bold' 
+            });
+            yPosition += 10;
+            
+            // Summary metrics in a grid
+            const metrics = [
+                { label: 'Total Partners', value: reportData.summary.totalPartners },
+                { label: 'Active Partners', value: reportData.summary.activePartners },
+                { label: 'Total Sales', value: reportData.summary.totalSales },
+                { label: 'Customer Satisfaction', value: reportData.summary.customerSatisfaction }
+            ];
+            
+            const metricsPerRow = 2;
+            const metricWidth = (contentWidth - 10) / metricsPerRow;
+            const metricHeight = 25;
+            
+            metrics.forEach((metric, index) => {
+                const row = Math.floor(index / metricsPerRow);
+                const col = index % metricsPerRow;
+                const x = margin + (col * (metricWidth + 10));
+                const y = yPosition + (row * (metricHeight + 10));
+                
+                // Metric box
+                addRect(x, y, metricWidth, metricHeight, lightGray, [200, 200, 200]);
+                
+                // Metric value
+                addText(String(metric.value), x + 10, y + 15, { 
+                    fontSize: 16, 
+                    color: primaryColor, 
+                    fontStyle: 'bold' 
+                });
+                
+                // Metric label
+                addText(metric.label, x + 10, y + 25, { 
+                    fontSize: 10, 
+                    color: textColor 
+                });
+            });
+            
+            yPosition += 60;
+            
+            // Check if we need a new page
+            if (yPosition > 250) {
+                doc.addPage();
+                yPosition = 20;
+            }
+            
+            // Supply Chain Performance Section
+            addText('Supply Chain Performance', margin, yPosition, { 
+                fontSize: 18, 
+                color: primaryColor, 
+                fontStyle: 'bold' 
+            });
+            yPosition += 10;
+            
+            // Farm-to-Table Journey
+            addText('Farm-to-Table Journey', margin, yPosition, { 
+                fontSize: 14, 
+                color: secondaryColor, 
+                fontStyle: 'bold' 
+            });
+            yPosition += 8;
+            
+            addText(`Average Delivery Time: ${reportData.metrics.farmToTable.averageTime}`, margin + 10, yPosition);
+            yPosition += 6;
+            addText(`Freshness Score: ${reportData.metrics.farmToTable.freshnessScore}`, margin + 10, yPosition);
+            yPosition += 6;
+            addText(`Customer Satisfaction: ${reportData.metrics.farmToTable.customerSatisfaction}`, margin + 10, yPosition);
+            yPosition += 10;
+            
+            // Farm-to-Counter Journey
+            addText('Farm-to-Counter Journey', margin, yPosition, { 
+                fontSize: 14, 
+                color: secondaryColor, 
+                fontStyle: 'bold' 
+            });
+            yPosition += 8;
+            
+            addText(`Average Delivery Time: ${reportData.metrics.farmToCounter.averageTime}`, margin + 10, yPosition);
+            yPosition += 6;
+            addText(`Distribution Efficiency: ${reportData.metrics.farmToCounter.distributionEfficiency}`, margin + 10, yPosition);
+            yPosition += 6;
+            addText(`Retail Satisfaction: ${reportData.metrics.farmToCounter.retailSatisfaction}`, margin + 10, yPosition);
+            yPosition += 10;
+            
+            // Cold Chain Integrity
+            addText('Cold Chain Integrity', margin, yPosition, { 
+                fontSize: 14, 
+                color: secondaryColor, 
+                fontStyle: 'bold' 
+            });
+            yPosition += 8;
+            
+            addText(`Temperature Compliance: ${reportData.metrics.coldChain.temperatureCompliance}`, margin + 10, yPosition);
+            yPosition += 6;
+            addText(`Quality Retention: ${reportData.metrics.coldChain.qualityRetention}`, margin + 10, yPosition);
+            yPosition += 6;
+            addText(`Energy Efficiency: ${reportData.metrics.coldChain.energyEfficiency}`, margin + 10, yPosition);
+            yPosition += 10;
+            
+            // Route Optimization
+            addText('Route Optimization', margin, yPosition, { 
+                fontSize: 14, 
+                color: secondaryColor, 
+                fontStyle: 'bold' 
+            });
+            yPosition += 8;
+            
+            addText(`Route Efficiency: ${reportData.metrics.optimization.routeEfficiency}`, margin + 10, yPosition);
+            yPosition += 6;
+            addText(`Fuel Savings: ${reportData.metrics.optimization.fuelSavings}`, margin + 10, yPosition);
+            yPosition += 6;
+            addText(`Carbon Reduction: ${reportData.metrics.optimization.carbonReduction}`, margin + 10, yPosition);
+            yPosition += 6;
+            addText(`Monthly Cost Savings: ${reportData.metrics.optimization.costSavings}`, margin + 10, yPosition);
+            yPosition += 15;
+            
+            // Check if we need a new page for partners table
+            if (yPosition > 200) {
+                doc.addPage();
+                yPosition = 20;
+            }
+            
+            // Retail Partners Table
+            if (partners.length > 0) {
+                addText('Retail Partners', margin, yPosition, { 
+                    fontSize: 18, 
+                    color: primaryColor, 
+                    fontStyle: 'bold' 
+                });
+                yPosition += 10;
+                
+                // Prepare table data
+                const tableData = partners.map(partner => [
+                    String(partner.name || 'N/A'),
+                    String(partner.storeType || 'N/A'),
+                    String(partner.contactPerson || 'N/A'),
+                    String(partner.email || 'N/A'),
+                    String(partner.status || 'N/A'),
+                    String(partner.dateAdded || 'N/A')
+                ]);
+                
+                // Add table using autoTable
+                doc.autoTable({
+                    head: [['Partner Name', 'Store Type', 'Contact Person', 'Email', 'Status', 'Date Added']],
+                    body: tableData,
+                    startY: yPosition,
+                    margin: { left: margin, right: margin },
+                    styles: {
+                        fontSize: 8,
+                        cellPadding: 3,
+                        overflow: 'linebreak',
+                        halign: 'left'
+                    },
+                    headStyles: {
+                        fillColor: primaryColor,
+                        textColor: [255, 255, 255],
+                        fontStyle: 'bold'
+                    },
+                    alternateRowStyles: {
+                        fillColor: [248, 249, 250]
+                    },
+                    columnStyles: {
+                        0: { cellWidth: 30 },
+                        1: { cellWidth: 25 },
+                        2: { cellWidth: 30 },
+                        3: { cellWidth: 35 },
+                        4: { cellWidth: 20 },
+                        5: { cellWidth: 25 }
+                    }
+                });
+                
+                yPosition = doc.lastAutoTable.finalY + 15;
+            }
+            
+            // Footer
+            const pageCount = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                
+                // Footer line
+                addLine(margin, 280, pageWidth - margin, 280, [200, 200, 200], 0.5);
+                
+                // Footer text
+                addText('This report was generated by SmartFarm Supply Chain Management System', 
+                       pageWidth / 2, 285, { 
+                           fontSize: 8, 
+                           color: [108, 117, 125], 
+                           align: 'center' 
+                       });
+                addText('For questions or support, contact: support@smartfarm.com', 
+                       pageWidth / 2, 290, { 
+                           fontSize: 8, 
+                           color: [108, 117, 125], 
+                           align: 'center' 
+                       });
+                
+                // Page number
+                addText(`Page ${i} of ${pageCount}`, pageWidth - margin, 290, { 
+                    fontSize: 8, 
+                    color: [108, 117, 125], 
+                    align: 'right' 
+                });
+            }
+            
+            // Save the PDF
+            const fileName = `SupplyChainReport_${new Date().toISOString().split('T')[0]}.pdf`;
+            doc.save(fileName);
+            
+            // Show success message
+            showInfoDialog(
+                '📄 PDF Report Generated Successfully!',
+                `Your supply chain report has been generated and downloaded as a PDF.\n\nFile: ${fileName}\n\nThe report includes:\n• Executive summary with key metrics\n• Supply chain performance analysis\n• Cold chain integrity statistics\n• Route optimization results\n• Complete partner directory table\n\nYou can open the PDF file in any PDF viewer to view the full report.`
+            );
+        }
+
+        function optimizeSupplyChain() {
+            // Show optimization modal
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-route me-2"></i>Route Optimization
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>Current Route Analysis</h6>
+                                    <div class="mb-3">
+                                        <label class="form-label">Total Routes:</label>
+                                        <input type="text" class="form-control" value="47" readonly>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Average Distance:</label>
+                                        <input type="text" class="form-control" value="45.2 km" readonly>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Average Delivery Time:</label>
+                                        <input type="text" class="form-control" value="3.2 hours" readonly>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Fuel Consumption:</label>
+                                        <input type="text" class="form-control" value="180L/day" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>Optimization Settings</h6>
+                                    <div class="mb-3">
+                                        <label class="form-label">Priority Level:</label>
+                                        <select class="form-select" id="priorityLevel">
+                                            <option value="balanced">Balanced (Time & Cost)</option>
+                                            <option value="time">Time Priority</option>
+                                            <option value="cost">Cost Priority</option>
+                                            <option value="environmental">Environmental Priority</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Vehicle Type:</label>
+                                        <select class="form-select" id="vehicleType">
+                                            <option value="mixed">Mixed Fleet</option>
+                                            <option value="electric">Electric Vehicles</option>
+                                            <option value="hybrid">Hybrid Vehicles</option>
+                                            <option value="diesel">Diesel Vehicles</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Time Window:</label>
+                                        <select class="form-select" id="timeWindow">
+                                            <option value="flexible">Flexible (6 AM - 8 PM)</option>
+                                            <option value="morning">Morning (6 AM - 12 PM)</option>
+                                            <option value="afternoon">Afternoon (12 PM - 6 PM)</option>
+                                            <option value="evening">Evening (6 PM - 8 PM)</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Weather Consideration:</label>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="weatherCheck" checked>
+                                            <label class="form-check-label" for="weatherCheck">Include weather forecast</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Note:</strong> Route optimization will analyze current delivery patterns, traffic conditions, and weather forecasts to suggest the most efficient routes.
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-primary" onclick="runOptimization()">
+                                <i class="fas fa-play me-2"></i>Run Optimization
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        function runOptimization() {
+            // Close the settings modal
+            const modal = document.querySelector('.modal');
+            if (modal) {
+                const bsModal = bootstrap.Modal.getInstance(modal);
+                if (bsModal) {
+                    bsModal.hide();
+                }
+            }
+            
+            // Show optimization progress
+            showInfoDialog(
+                '🚀 Running Route Optimization...',
+                'Please wait while we analyze your delivery routes and optimize them for maximum efficiency...\n\nThis may take a few moments.'
+            );
+            
+            // Simulate optimization process
+            setTimeout(() => {
+                showOptimizationResults();
+            }, 3000);
+        }
+
+        function showOptimizationResults() {
+            // Get optimization settings
+            const priorityLevel = document.getElementById('priorityLevel')?.value || 'balanced';
+            const vehicleType = document.getElementById('vehicleType')?.value || 'mixed';
+            const timeWindow = document.getElementById('timeWindow')?.value || 'flexible';
+            const weatherConsideration = document.getElementById('weatherCheck')?.checked || false;
+            
+            // Calculate optimization results based on settings
+            const results = calculateOptimizationResults(priorityLevel, vehicleType, timeWindow, weatherConsideration);
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-success text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-check-circle me-2"></i>Optimization Complete!
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6 class="text-success">Optimization Results</h6>
+                                    <div class="card mb-3">
+                                        <div class="card-body">
+                                            <h6 class="card-title">Route Efficiency</h6>
+                                            <div class="d-flex justify-content-between">
+                                                <span>Before:</span>
+                                                <span class="text-muted">78%</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <span>After:</span>
+                                                <span class="text-success fw-bold">${results.routeEfficiency}%</span>
+                                            </div>
+                                            <div class="progress mt-2">
+                                                <div class="progress-bar bg-success" style="width: ${results.routeEfficiency}%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="card mb-3">
+                                        <div class="card-body">
+                                            <h6 class="card-title">Delivery Time</h6>
+                                            <div class="d-flex justify-content-between">
+                                                <span>Before:</span>
+                                                <span class="text-muted">3.2 hours</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <span>After:</span>
+                                                <span class="text-success fw-bold">${results.deliveryTime} hours</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <span>Improvement:</span>
+                                                <span class="text-success fw-bold">${results.timeImprovement}%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="card mb-3">
+                                        <div class="card-body">
+                                            <h6 class="card-title">Fuel Consumption</h6>
+                                            <div class="d-flex justify-content-between">
+                                                <span>Before:</span>
+                                                <span class="text-muted">180L/day</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <span>After:</span>
+                                                <span class="text-success fw-bold">${results.fuelConsumption}L/day</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <span>Savings:</span>
+                                                <span class="text-success fw-bold">${results.fuelSavings}%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <h6 class="text-success">Environmental Impact</h6>
+                                    <div class="card mb-3">
+                                        <div class="card-body">
+                                            <h6 class="card-title">Carbon Footprint</h6>
+                                            <div class="d-flex justify-content-between">
+                                                <span>Before:</span>
+                                                <span class="text-muted">45.2 kg CO₂/day</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <span>After:</span>
+                                                <span class="text-success fw-bold">${results.carbonFootprint} kg CO₂/day</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <span>Reduction:</span>
+                                                <span class="text-success fw-bold">${results.carbonReduction}%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="card mb-3">
+                                        <div class="card-body">
+                                            <h6 class="card-title">Cost Savings</h6>
+                                            <div class="d-flex justify-content-between">
+                                                <span>Daily:</span>
+                                                <span class="text-success fw-bold">$${results.dailySavings}</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <span>Monthly:</span>
+                                                <span class="text-success fw-bold">$${results.monthlySavings}</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <span>Annual:</span>
+                                                <span class="text-success fw-bold">$${results.annualSavings}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="card mb-3">
+                                        <div class="card-body">
+                                            <h6 class="card-title">Optimized Routes</h6>
+                                            <div class="d-flex justify-content-between">
+                                                <span>Total Routes:</span>
+                                                <span class="fw-bold">${results.totalRoutes}</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <span>Optimized:</span>
+                                                <span class="text-success fw-bold">${results.optimizedRoutes}</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <span>New Routes:</span>
+                                                <span class="text-primary fw-bold">${results.newRoutes}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-success">
+                                <h6><i class="fas fa-lightbulb me-2"></i>Key Improvements:</h6>
+                                <ul class="mb-0">
+                                    <li>Reduced average delivery time by ${results.timeImprovement}%</li>
+                                    <li>Decreased fuel consumption by ${results.fuelSavings}%</li>
+                                    <li>Improved route efficiency to ${results.routeEfficiency}%</li>
+                                    <li>Reduced carbon footprint by ${results.carbonReduction}%</li>
+                                    <li>Generated $${results.monthlySavings} in monthly savings</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="alert alert-info">
+                                <h6><i class="fas fa-info-circle me-2"></i>Next Steps:</h6>
+                                <ul class="mb-0">
+                                    <li>Review the optimized routes in your delivery dashboard</li>
+                                    <li>Update your delivery schedule to use the new routes</li>
+                                    <li>Monitor performance and adjust as needed</li>
+                                    <li>Consider implementing electric vehicles for further environmental benefits</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-success" onclick="applyOptimization()">
+                                <i class="fas fa-check me-2"></i>Apply Optimization
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        function calculateOptimizationResults(priorityLevel, vehicleType, timeWindow, weatherConsideration) {
+            // Base optimization results
+            let results = {
+                routeEfficiency: 78,
+                deliveryTime: 3.2,
+                timeImprovement: 0,
+                fuelConsumption: 180,
+                fuelSavings: 0,
+                carbonFootprint: 45.2,
+                carbonReduction: 0,
+                dailySavings: 0,
+                monthlySavings: 0,
+                annualSavings: 0,
+                totalRoutes: 47,
+                optimizedRoutes: 0,
+                newRoutes: 0
+            };
+            
+            // Apply optimizations based on settings
+            if (priorityLevel === 'time') {
+                results.timeImprovement = 25;
+                results.routeEfficiency = 89;
+                results.deliveryTime = 2.4;
+            } else if (priorityLevel === 'cost') {
+                results.fuelSavings = 22;
+                results.routeEfficiency = 85;
+                results.deliveryTime = 2.8;
+            } else if (priorityLevel === 'environmental') {
+                results.carbonReduction = 18;
+                results.fuelSavings = 15;
+                results.routeEfficiency = 82;
+            } else { // balanced
+                results.timeImprovement = 18;
+                results.fuelSavings = 16;
+                results.carbonReduction = 12;
+                results.routeEfficiency = 87;
+                results.deliveryTime = 2.6;
+            }
+            
+            // Apply vehicle type optimizations
+            if (vehicleType === 'electric') {
+                results.carbonReduction += 35;
+                results.fuelSavings = 100; // No fuel
+                results.fuelConsumption = 0;
+                results.carbonFootprint = results.carbonFootprint * 0.65;
+            } else if (vehicleType === 'hybrid') {
+                results.fuelSavings += 8;
+                results.carbonReduction += 12;
+                results.fuelConsumption = results.fuelConsumption * 0.92;
+            }
+            
+            // Apply time window optimizations
+            if (timeWindow === 'morning') {
+                results.timeImprovement += 5;
+                results.routeEfficiency += 3;
+            } else if (timeWindow === 'afternoon') {
+                results.timeImprovement += 3;
+                results.routeEfficiency += 2;
+            }
+            
+            // Apply weather consideration
+            if (weatherConsideration) {
+                results.timeImprovement += 2;
+                results.routeEfficiency += 1;
+            }
+            
+            // Calculate derived values
+            results.deliveryTime = (results.deliveryTime * (100 - results.timeImprovement) / 100).toFixed(1);
+            results.fuelConsumption = Math.round(results.fuelConsumption * (100 - results.fuelSavings) / 100);
+            results.carbonFootprint = (results.carbonFootprint * (100 - results.carbonReduction) / 100).toFixed(1);
+            results.optimizedRoutes = Math.round(results.totalRoutes * 0.85);
+            results.newRoutes = Math.round(results.totalRoutes * 0.15);
+            
+            // Calculate savings
+            const baseDailyCost = 450; // Base daily operational cost
+            results.dailySavings = Math.round(baseDailyCost * (results.fuelSavings + results.timeImprovement) / 200);
+            results.monthlySavings = results.dailySavings * 30;
+            results.annualSavings = results.monthlySavings * 12;
+            
+            return results;
+        }
+
+        function applyOptimization() {
+            // Save optimization results to localStorage
+            const optimizationData = {
+                appliedDate: new Date().toISOString(),
+                status: 'Applied',
+                settings: {
+                    priorityLevel: document.getElementById('priorityLevel')?.value || 'balanced',
+                    vehicleType: document.getElementById('vehicleType')?.value || 'mixed',
+                    timeWindow: document.getElementById('timeWindow')?.value || 'flexible',
+                    weatherConsideration: document.getElementById('weatherCheck')?.checked || false
+                }
+            };
+            
+            localStorage.setItem('routeOptimization', JSON.stringify(optimizationData));
+            
+            // Close modal
+            const modal = document.querySelector('.modal');
+            if (modal) {
+                const bsModal = bootstrap.Modal.getInstance(modal);
+                if (bsModal) {
+                    bsModal.hide();
+                }
+            }
+            
+            // Update analytics to reflect optimization changes
+            updateSupplyChainAnalytics();
+            
+            // Show success message
+            showInfoDialog(
+                '✅ Optimization Applied Successfully!',
+                'Your route optimization has been applied and is now active.\n\n• New optimized routes are now in effect\n• Delivery schedules have been updated\n• Cost savings will be reflected in your next billing cycle\n• Analytics have been updated with new performance metrics\n\nOptimization ID: OPT' + Date.now()
+            );
+        }
+
+        function logout() {
+            showConfirmDialog(
+                'Logout',
+                'Are you sure you want to logout?',
+                'Yes, Logout',
+                'Cancel',
+                () => {
+                    localStorage.removeItem('smartfarm_user');
+                    localStorage.removeItem('smartfarm_token');
+                    sessionStorage.removeItem('smartfarm_user');
+                    sessionStorage.removeItem('smartfarm_token');
+                    window.location.href = 'login.html';
+                }
+            );
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Supply Chain Management page loaded');
+            
+            // Initialize analytics
+            updateSupplyChainAnalytics();
+            
+            // Generate sample data if none exists
+            const existingShipments = JSON.parse(localStorage.getItem('activeShipments') || '[]');
+            if (existingShipments.length === 0) {
+                generateSampleShipments();
+                updateSupplyChainAnalytics(); // Update again with new data
+            }
+            
+            // Set up auto-refresh every 30 seconds
+            setInterval(() => {
+                updateSupplyChainAnalytics();
+            }, 30000);
+        });
+    </script>
+</body>
+</html>
