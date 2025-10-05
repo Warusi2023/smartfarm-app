@@ -1,6 +1,6 @@
 [build]
-builder = "nixpacks"
-rootDirectory = "railway-clean"
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile.clean"
 
 [deploy]
 startCommand = "npm start"
