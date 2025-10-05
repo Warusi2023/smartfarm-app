@@ -2,12 +2,11 @@
   "name": "smartfarm-static",
   "version": "3.0.0",
   "description": "SmartFarm Static Site - Railway Ready",
+  "main": "server.js",
   "scripts": {
-    "start": "npx http-server ./public -p $PORT -a 0.0.0.0 -c-1"
+    "start": "node server.js"
   },
-  "dependencies": {
-    "http-server": "^14.1.1"
-  },
+  "dependencies": {},
   "engines": {
     "node": ">=18.0.0"
   }
