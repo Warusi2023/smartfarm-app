@@ -1,13 +1,18 @@
 {
   "name": "smartfarm-backend",
   "version": "1.0.0",
-  "main": "server.cjs",
+  "main": "railway-server.js",
   "scripts": {
-    "start": "node server.cjs",
-    "dev": "node server.cjs"
+    "start": "node railway-server.js",
+    "dev": "node railway-server.js",
+    "build": "echo 'No build step required for this backend'",
+    "postinstall": "echo 'Backend dependencies installed successfully'"
   },
   "dependencies": {
     "express": "^4.19.2",
     "cors": "^2.8.5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
