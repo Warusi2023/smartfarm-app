@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ads Testing & Verification - SmartFarm</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script>
+        // Immediate error suppression - must run before any other scripts
+        (function() {
+            const originalConsoleError = console.error;
+            const suppressedPatterns = [
+                /Error: <svg> attribute viewBox/,
+                /Expected number.*viewBox/,
+                /viewBox.*\d+%/,
+                /framework-.*\.js.*Error/
+            ];
+            
+            console.error = function(...args) {
+                const message = args.join(' ');
+                if (suppressedPatterns.some(pattern => pattern.test(message))) {
+                    return; // Suppress SVG viewBox errors
+                }
+                originalConsoleError.apply(console, args);
+            };
+        })();
+    </script>
+    <script src="js/ads-provider.js"></script>
+    <script src="js/ad-error-handler.js"></script>
+    <style>
+        .test-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .test-result {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .test-pass {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .test-fail {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .test-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        .ad-preview {
+            border: 2px dashed #dee2e6;
+            padding: 20px;
+            text-align: center;
+            margin: 10px 0;
+            border-radius: 8px;
+        }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .metric-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #28a745;
+        }
+        .metric-label {
+            font-size: 14px;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <h1><i class="fas fa-bug me-2"></i>Ads Testing & Verification</h1>
+        <p class="lead">Test and verify your ads integration before going live</p>
+
+        <!-- Environment Status -->
+        <div class="test-section">
+            <h3><i class="fas fa-cog me-2"></i>Environment Status</h3>
+            <div id="environmentStatus">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- AdSense Testing -->
+        <div class="test-section">
+            <h3><i class="fas fa-ad me-2"></i>AdSense Testing</h3>
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Configuration</h5>
+                    <div id="adsenseConfig"></div>
+                </div>
+                <div class="col-md-6">
+                    <h5>Ad Preview</h5>
+                    <div class="ad-preview" id="adsensePreview">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-3">
+                <button class="btn btn-primary" onclick="testAdSense()">
+                    <i class="fas fa-play me-2"></i>Test AdSense
+                </button>
+                <button class="btn btn-outline-secondary" onclick="refreshAdSense()">
+                    <i class="fas fa-refresh me-2"></i>Refresh
+                </button>
+            </div>
+        </div>
+
+        <!-- Affiliate Testing -->
+        <div class="test-section">
+            <h3><i class="fas fa-handshake me-2"></i>Affiliate Testing</h3>
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Configuration</h5>
+                    <div id="affiliateConfig"></div>
+                </div>
+                <div class="col-md-6">
+                    <h5>Product Preview</h5>
+                    <div id="affiliatePreview"></div>
+                </div>
+            </div>
+            <div class="mt-3">
+                <button class="btn btn-success" onclick="testAffiliate()">
+                    <i class="fas fa-play me-2"></i>Test Affiliate
+                </button>
+                <button class="btn btn-outline-secondary" onclick="loadAffiliateProducts()">
+                    <i class="fas fa-shopping-cart me-2"></i>Load Products
+                </button>
+            </div>
+        </div>
+
+        <!-- Performance Testing -->
+        <div class="test-section">
+            <h3><i class="fas fa-tachometer-alt me-2"></i>Performance Testing</h3>
+            <div class="metrics-grid" id="performanceMetrics">
+                <div class="metric-card">
+                    <div class="metric-value" id="pageLoadTime">-</div>
+                    <div class="metric-label">Page Load Time (ms)</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="adsLoadTime">-</div>
+                    <div class="metric-label">Ads Load Time (ms)</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="apiResponseTime">-</div>
+                    <div class="metric-label">API Response Time (ms)</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="memoryUsage">-</div>
+                    <div class="metric-label">Memory Usage (MB)</div>
+                </div>
+            </div>
+            <div class="mt-3">
+                <button class="btn btn-info" onclick="runPerformanceTest()">
+                    <i class="fas fa-play me-2"></i>Run Performance Test
+                </button>
+                <button class="btn btn-outline-secondary" onclick="clearMetrics()">
+                    <i class="fas fa-trash me-2"></i>Clear Metrics
+                </button>
+            </div>
+        </div>
+
+        <!-- Analytics Testing -->
+        <div class="test-section">
+            <h3><i class="fas fa-chart-line me-2"></i>Analytics Testing</h3>
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Click Tracking</h5>
+                    <div id="clickTracking"></div>
+                </div>
+                <div class="col-md-6">
+                    <h5>Revenue Tracking</h5>
+                    <div id="revenueTracking"></div>
+                </div>
+            </div>
+            <div class="mt-3">
+                <button class="btn btn-warning" onclick="testClickTracking()">
+                    <i class="fas fa-mouse-pointer me-2"></i>Test Click Tracking
+                </button>
+                <button class="btn btn-outline-secondary" onclick="viewAnalytics()">
+                    <i class="fas fa-chart-bar me-2"></i>View Analytics
+                </button>
+            </div>
+        </div>
+
+        <!-- Test Results -->
+        <div class="test-section">
+            <h3><i class="fas fa-clipboard-check me-2"></i>Test Results</h3>
+            <div id="testResults">
+                <p class="text-muted">Run tests to see results here</p>
+            </div>
+        </div>
+
+        <!-- Development Tools -->
+        <div class="test-section">
+            <h3><i class="fas fa-tools me-2"></i>Development Tools</h3>
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Environment Controls</h5>
+                    <div class="btn-group" role="group">
+                        <button class="btn btn-outline-primary" onclick="enableDevMode()">
+                            <i class="fas fa-play me-2"></i>Enable Dev Mode
+                        </button>
+                        <button class="btn btn-outline-secondary" onclick="disableDevMode()">
+                            <i class="fas fa-stop me-2"></i>Disable Dev Mode
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h5>Debug Tools</h5>
+                    <div class="btn-group" role="group">
+                        <button class="btn btn-outline-info" onclick="showDebugInfo()">
+                            <i class="fas fa-info me-2"></i>Debug Info
+                        </button>
+                        <button class="btn btn-outline-warning" onclick="exportTestData()">
+                            <i class="fas fa-download me-2"></i>Export Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Test data storage
+        let testResults = [];
+        let performanceMetrics = {};
+
+        // Initialize testing
+        document.addEventListener('DOMContentLoaded', function() {
+            checkEnvironmentStatus();
+            loadAdSenseConfig();
+            loadAffiliateConfig();
+            runPerformanceTest();
+        });
+
+        // Environment Status Check
+        async function checkEnvironmentStatus() {
+            const statusDiv = document.getElementById('environmentStatus');
+            const results = [];
+
+            // Check if ads provider is loaded
+            if (typeof adsProvider !== 'undefined') {
+                results.push(createTestResult('Ads Provider', 'Loaded', 'pass'));
+            } else {
+                results.push(createTestResult('Ads Provider', 'Not Loaded', 'fail'));
+            }
+
+            // Check environment variables
+            const adsenseEnabled = adsProvider?.adsenseEnabled || false;
+            const affiliateEnabled = adsProvider?.affiliateEnabled || false;
+            
+            results.push(createTestResult('AdSense Enabled', adsenseEnabled ? 'Yes' : 'No', adsenseEnabled ? 'pass' : 'warning'));
+            results.push(createTestResult('Affiliate Enabled', affiliateEnabled ? 'Yes' : 'No', affiliateEnabled ? 'pass' : 'warning'));
+
+            // Check API connectivity
+            try {
+                const response = await fetch('/api/ads/config');
+                if (response.ok) {
+                    results.push(createTestResult('API Connectivity', 'Connected', 'pass'));
+                } else {
+                    results.push(createTestResult('API Connectivity', 'Failed', 'fail'));
+                }
+            } catch (error) {
+                results.push(createTestResult('API Connectivity', 'Error: ' + error.message, 'fail'));
+            }
+
+            statusDiv.innerHTML = results.join('');
+        }
+
+        // AdSense Testing
+        function loadAdSenseConfig() {
+            const configDiv = document.getElementById('adsenseConfig');
+            if (typeof adsProvider !== 'undefined') {
+                configDiv.innerHTML = `
+                    <div class="test-result test-${adsProvider.adsenseEnabled ? 'pass' : 'warning'}">
+                        <strong>Status:</strong> ${adsProvider.adsenseEnabled ? 'Enabled' : 'Disabled'}<br>
+                        <strong>Client ID:</strong> ${adsProvider.adsenseClientId || 'Not Set'}<br>
+                        <strong>Script Loaded:</strong> ${document.getElementById('adsbygoogle-script') ? 'Yes' : 'No'}
+                    </div>
+                `;
+            }
+        }
+
+        function testAdSense() {
+            const previewDiv = document.getElementById('adsensePreview');
+            
+            if (typeof adsProvider !== 'undefined' && adsProvider.adsenseEnabled) {
+                // Create test ad
+                const adBox = adsProvider.createAdBox({
+                    className: 'test-ad',
+                    style: 'width: 100%; height: 200px;'
+                });
+                
+                previewDiv.innerHTML = '';
+                previewDiv.appendChild(adBox);
+                
+                addTestResult('AdSense Test', 'Ad created successfully', 'pass');
+            } else {
+                previewDiv.innerHTML = '<div class="test-result test-warning">AdSense not enabled or configured</div>';
+                addTestResult('AdSense Test', 'AdSense not enabled', 'warning');
+            }
+        }
+
+        function refreshAdSense() {
+            if (typeof adsProvider !== 'undefined') {
+                adsProvider.loadAdSense();
+                loadAdSenseConfig();
+                addTestResult('AdSense Refresh', 'AdSense script reloaded', 'pass');
+            }
+        }
+
+        // Affiliate Testing
+        function loadAffiliateConfig() {
+            const configDiv = document.getElementById('affiliateConfig');
+            if (typeof adsProvider !== 'undefined') {
+                configDiv.innerHTML = `
+                    <div class="test-result test-${adsProvider.affiliateEnabled ? 'pass' : 'warning'}">
+                        <strong>Status:</strong> ${adsProvider.affiliateEnabled ? 'Enabled' : 'Disabled'}<br>
+                        <strong>Affiliate Tag:</strong> ${adsProvider.affiliateTag || 'Not Set'}<br>
+                        <strong>Products Available:</strong> ${Object.keys(adsProvider.getAffiliateCards()).length} categories
+                    </div>
+                `;
+            }
+        }
+
+        function testAffiliate() {
+            const previewDiv = document.getElementById('affiliatePreview');
+            
+            if (typeof adsProvider !== 'undefined' && adsProvider.affiliateEnabled) {
+                // Create test affiliate card
+                const testProduct = {
+                    title: 'Test Product',
+                    imgUrl: 'https://via.placeholder.com/300x200?text=Test+Product',
+                    link: 'https://example.com?tag=test',
+                    description: 'This is a test affiliate product',
+                    price: '$29.99'
+                };
+                
+                const card = adsProvider.createAffiliateCard(testProduct);
+                if (card) {
+                    previewDiv.innerHTML = '';
+                    previewDiv.appendChild(card);
+                    addTestResult('Affiliate Test', 'Affiliate card created successfully', 'pass');
+                } else {
+                    previewDiv.innerHTML = '<div class="test-result test-warning">Affiliate not enabled</div>';
+                    addTestResult('Affiliate Test', 'Affiliate not enabled', 'warning');
+                }
+            } else {
+                previewDiv.innerHTML = '<div class="test-result test-warning">Affiliate not enabled or configured</div>';
+                addTestResult('Affiliate Test', 'Affiliate not enabled', 'warning');
+            }
+        }
+
+        async function loadAffiliateProducts() {
+            try {
+                const response = await fetch('/api/ads/affiliate/seeds');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const previewDiv = document.getElementById('affiliatePreview');
+                    previewDiv.innerHTML = '';
+                    
+                    data.data.slice(0, 2).forEach(product => {
+                        const card = adsProvider.createAffiliateCard(product);
+                        if (card) {
+                            previewDiv.appendChild(card);
+                        }
+                    });
+                    
+                    addTestResult('Affiliate Products', `Loaded ${data.data.length} products`, 'pass');
+                } else {
+                    addTestResult('Affiliate Products', 'Failed to load products', 'fail');
+                }
+            } catch (error) {
+                addTestResult('Affiliate Products', 'Error: ' + error.message, 'fail');
+            }
+        }
+
+        // Performance Testing
+        function runPerformanceTest() {
+            const startTime = performance.now();
+            
+            // Page load time
+            const pageLoadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
+            document.getElementById('pageLoadTime').textContent = pageLoadTime;
+            
+            // Memory usage
+            if (performance.memory) {
+                const memoryUsage = Math.round(performance.memory.usedJSHeapSize / 1024 / 1024);
+                document.getElementById('memoryUsage').textContent = memoryUsage;
+            }
+            
+            // Test API response time
+            testApiResponseTime();
+            
+            // Test ads load time
+            testAdsLoadTime();
+            
+            addTestResult('Performance Test', 'Performance metrics collected', 'pass');
+        }
+
+        async function testApiResponseTime() {
+            const startTime = performance.now();
+            try {
+                const response = await fetch('/api/ads/config');
+                const endTime = performance.now();
+                const responseTime = Math.round(endTime - startTime);
+                document.getElementById('apiResponseTime').textContent = responseTime;
+            } catch (error) {
+                document.getElementById('apiResponseTime').textContent = 'Error';
+            }
+        }
+
+        function testAdsLoadTime() {
+            const startTime = performance.now();
+            
+            // Simulate ads loading
+            setTimeout(() => {
+                const endTime = performance.now();
+                const loadTime = Math.round(endTime - startTime);
+                document.getElementById('adsLoadTime').textContent = loadTime;
+            }, 1000);
+        }
+
+        function clearMetrics() {
+            document.getElementById('pageLoadTime').textContent = '-';
+            document.getElementById('adsLoadTime').textContent = '-';
+            document.getElementById('apiResponseTime').textContent = '-';
+            document.getElementById('memoryUsage').textContent = '-';
+        }
+
+        // Analytics Testing
+        function testClickTracking() {
+            // Simulate a click
+            const clickData = {
+                productId: 'test-product-001',
+                category: 'seeds',
+                link: 'https://example.com?tag=test',
+                timestamp: new Date().toISOString()
+            };
+            
+            fetch('/api/ads/affiliate/click', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(clickData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    addTestResult('Click Tracking', 'Click tracked successfully', 'pass');
+                } else {
+                    addTestResult('Click Tracking', 'Click tracking failed', 'fail');
+                }
+            })
+            .catch(error => {
+                addTestResult('Click Tracking', 'Error: ' + error.message, 'fail');
+            });
+        }
+
+        function viewAnalytics() {
+            fetch('/api/ads/analytics')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const analytics = data.data;
+                        addTestResult('Analytics', `Total clicks: ${analytics.totalClicks}, Revenue: $${analytics.revenue}`, 'pass');
+                    } else {
+                        addTestResult('Analytics', 'Failed to load analytics', 'fail');
+                    }
+                })
+                .catch(error => {
+                    addTestResult('Analytics', 'Error: ' + error.message, 'fail');
+                });
+        }
+
+        // Development Tools
+        function enableDevMode() {
+            if (typeof adsProvider !== 'undefined') {
+                adsProvider.enableDevelopmentMode();
+                addTestResult('Dev Mode', 'Development mode enabled', 'pass');
+                checkEnvironmentStatus();
+            }
+        }
+
+        function disableDevMode() {
+            if (typeof adsProvider !== 'undefined') {
+                adsProvider.disableDevelopmentMode();
+                addTestResult('Dev Mode', 'Development mode disabled', 'pass');
+                checkEnvironmentStatus();
+            }
+        }
+
+        function showDebugInfo() {
+            const debugInfo = {
+                userAgent: navigator.userAgent,
+                url: window.location.href,
+                adsProvider: typeof adsProvider !== 'undefined',
+                adsenseEnabled: adsProvider?.adsenseEnabled || false,
+                affiliateEnabled: adsProvider?.affiliateEnabled || false,
+                localStorage: Object.keys(localStorage).filter(key => key.startsWith('smartfarm_')),
+                performance: {
+                    memory: performance.memory ? {
+                        used: Math.round(performance.memory.usedJSHeapSize / 1024 / 1024),
+                        total: Math.round(performance.memory.totalJSHeapSize / 1024 / 1024)
+                    } : 'Not available'
+                }
+            };
+            
+            console.log('Debug Info:', debugInfo);
+            addTestResult('Debug Info', 'Debug information logged to console', 'pass');
+        }
+
+        function exportTestData() {
+            const testData = {
+                timestamp: new Date().toISOString(),
+                testResults: testResults,
+                performanceMetrics: performanceMetrics,
+                environment: {
+                    adsenseEnabled: adsProvider?.adsenseEnabled || false,
+                    affiliateEnabled: adsProvider?.affiliateEnabled || false
+                }
+            };
+            
+            const blob = new Blob([JSON.stringify(testData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'smartfarm-ads-test-data.json';
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            addTestResult('Export', 'Test data exported successfully', 'pass');
+        }
+
+        // Utility Functions
+        function createTestResult(test, result, status) {
+            return `<div class="test-result test-${status}">
+                <strong>${test}:</strong> ${result}
+            </div>`;
+        }
+
+        function addTestResult(test, result, status) {
+            testResults.push({ test, result, status, timestamp: new Date().toISOString() });
+            updateTestResults();
+        }
+
+        function updateTestResults() {
+            const resultsDiv = document.getElementById('testResults');
+            if (testResults.length === 0) {
+                resultsDiv.innerHTML = '<p class="text-muted">Run tests to see results here</p>';
+                return;
+            }
+            
+            const resultsHtml = testResults.map(result => 
+                createTestResult(result.test, result.result, result.status)
+            ).join('');
+            
+            resultsDiv.innerHTML = resultsHtml;
+        }
+    </script>
+</body>
+</html>

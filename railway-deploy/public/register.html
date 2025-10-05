@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - SmartFarm (Updated)</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --primary-dark: #2E7D32;
+            --primary-light: #8BC34A;
+            --secondary-color: #2196F3;
+            --accent-color: #FF9800;
+            --text-dark: #1B5E20;
+            --text-light: #757575;
+            --background-light: #F5F5F5;
+            --white: #FFFFFF;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary-color) 50%, var(--primary-dark) 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .register-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .register-card {
+            background: var(--white);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            max-width: 1000px;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .register-card:hover {
+            box-shadow: var(--shadow-hover);
+            transform: translateY(-5px);
+        }
+
+        .register-left {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            color: var(--white);
+            padding: 60px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .register-left::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .register-left h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .register-left p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .benefit-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .benefit-list li {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            font-size: 1rem;
+        }
+
+        .benefit-list i {
+            margin-right: 15px;
+            font-size: 1.2rem;
+            color: var(--primary-light);
+        }
+
+        .section-divider {
+            margin: 30px 0 20px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #E0E0E0;
+        }
+
+        .section-title {
+            color: var(--primary-dark);
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title i {
+            color: var(--primary-color);
+            margin-right: 8px;
+        }
+
+        .register-right {
+            padding: 60px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .register-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .register-header h3 {
+            color: var(--text-dark);
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .register-header p {
+            color: var(--text-light);
+            font-size: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .form-control {
+            border: 2px solid #E0E0E0;
+            border-radius: 12px;
+            padding: 15px 20px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #FAFAFA;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25);
+            background: var(--white);
+        }
+
+        .form-control.is-invalid {
+            border-color: #dc3545;
+            background: #FFF5F5;
+        }
+
+        .form-control.is-valid {
+            border-color: var(--primary-color);
+            background: #F0FFF4;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+            z-index: 2;
+        }
+
+        .input-with-icon {
+            padding-left: 50px;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-light);
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        .password-toggle:hover {
+            color: var(--primary-color);
+        }
+
+        .form-check {
+            margin-bottom: 25px;
+        }
+
+        .form-check-input:checked {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .form-check-label {
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+
+        .btn-register {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            border: none;
+            border-radius: 12px;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--white);
+            width: 100%;
+            transition: all 0.3s ease;
+            margin-bottom: 25px;
+        }
+
+        .btn-register:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
+        }
+
+        .btn-register:active {
+            transform: translateY(0);
+        }
+
+        .register-footer {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .register-footer a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .register-footer a:hover {
+            color: var(--primary-dark);
+        }
+
+        .alert {
+            border-radius: 12px;
+            border: none;
+            padding: 15px 20px;
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+        }
+
+        .alert-danger {
+            background: #FEF2F2;
+            color: #DC2626;
+            border-left: 4px solid #DC2626;
+        }
+
+        .alert-success {
+            background: #F0FDF4;
+            color: #16A34A;
+            border-left: 4px solid #16A34A;
+        }
+
+        .loading {
+            display: none;
+        }
+
+        .loading.show {
+            display: inline-block;
+        }
+
+        @media (max-width: 768px) {
+            .register-card {
+                margin: 20px;
+                border-radius: 15px;
+            }
+
+            .register-left {
+                padding: 40px 30px;
+            }
+
+            .register-right {
+                padding: 40px 30px;
+            }
+
+            .register-left h2 {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .register-container {
+                padding: 10px;
+            }
+
+            .register-card {
+                margin: 10px;
+            }
+
+            .register-left, .register-right {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <div class="register-card">
+            <!-- Left Side - Benefits -->
+            <div class="row g-0">
+                <div class="col-lg-6">
+                    <div class="register-left">
+                        <h2>Join SmartFarm</h2>
+                        <p>Start your journey to smarter farming today</p>
+                        <ul class="benefit-list">
+                            <li><i class="fas fa-chart-line"></i> Increase yield by up to 30%</li>
+                            <li><i class="fas fa-water"></i> Save water and resources</li>
+                            <li><i class="fas fa-mobile-alt"></i> Manage from anywhere</li>
+                            <li><i class="fas fa-users"></i> Connect with experts</li>
+                            <li><i class="fas fa-shield-alt"></i> Secure data management</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Right Side - Registration Form -->
+                <div class="col-lg-6">
+                    <div class="register-right">
+                        <div class="register-header">
+                            <h3>Create Account</h3>
+                            <p>Start managing your farm intelligently</p>
+                        </div>
+
+                        <!-- Alert Messages -->
+                        <div id="alertContainer"></div>
+
+                        <!-- Registration Form -->
+                        <form id="registerForm" novalidate>
+                            <!-- Personal Information Section -->
+                            <div class="section-divider">
+                                <h6 class="section-title"><i class="fas fa-user me-2"></i>Personal Information</h6>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <i class="fas fa-user input-icon"></i>
+                                        <input type="text" class="form-control input-with-icon" id="firstName" placeholder="First Name *" required>
+                                        <div class="invalid-feedback">
+                                            Please enter your first name.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <i class="fas fa-user input-icon"></i>
+                                        <input type="text" class="form-control input-with-icon" id="lastName" placeholder="Last Name *" required>
+                                        <div class="invalid-feedback">
+                                            Please enter your last name.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <i class="fas fa-envelope input-icon"></i>
+                                        <input type="email" class="form-control input-with-icon" id="email" placeholder="Email Address *" required>
+                                        <div class="invalid-feedback">
+                                            Please enter a valid email address.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <i class="fas fa-phone input-icon"></i>
+                                        <input type="tel" class="form-control input-with-icon" id="phone" placeholder="Phone Number *" required>
+                                        <div class="invalid-feedback">
+                                            Please enter a valid phone number.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <i class="fas fa-user input-icon"></i>
+                                        <input type="text" class="form-control input-with-icon" id="username" placeholder="Username *" required>
+                                        <div class="invalid-feedback">
+                                            Please choose a username.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <i class="fas fa-lock input-icon"></i>
+                                        <input type="password" class="form-control input-with-icon" id="password" placeholder="Password *" required>
+                                        <button type="button" class="password-toggle" onclick="togglePassword('password')">
+                                            <i class="fas fa-eye" id="passwordIcon"></i>
+                                        </button>
+                                        <div class="invalid-feedback">
+                                            Password must be at least 8 characters.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <i class="fas fa-lock input-icon"></i>
+                                <input type="password" class="form-control input-with-icon" id="confirmPassword" placeholder="Confirm Password *" required>
+                                <button type="button" class="password-toggle" onclick="togglePassword('confirmPassword')">
+                                    <i class="fas fa-eye" id="confirmPasswordIcon"></i>
+                                </button>
+                                <div class="invalid-feedback">
+                                    Passwords do not match.
+                                </div>
+                            </div>
+
+                            <!-- Location Information Section -->
+                            <div class="section-divider">
+                                <h6 class="section-title"><i class="fas fa-map-marker-alt me-2"></i>Location Information</h6>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <i class="fas fa-globe input-icon"></i>
+                                        <select class="form-control input-with-icon" id="country" required>
+                                            <option value="">Select Country *</option>
+                                            
+                                            <!-- Pacific Islands -->
+                                            <optgroup label="Pacific Islands">
+                                                <option value="Fiji">Fiji</option>
+                                                <option value="Australia">Australia</option>
+                                                <option value="New Zealand">New Zealand</option>
+                                                <option value="Papua New Guinea">Papua New Guinea</option>
+                                                <option value="Solomon Islands">Solomon Islands</option>
+                                                <option value="Vanuatu">Vanuatu</option>
+                                                <option value="Samoa">Samoa</option>
+                                                <option value="Tonga">Tonga</option>
+                                                <option value="Cook Islands">Cook Islands</option>
+                                                <option value="French Polynesia">French Polynesia</option>
+                                                <option value="New Caledonia">New Caledonia</option>
+                                            </optgroup>
+                                            
+                                            <!-- North America -->
+                                            <optgroup label="North America">
+                                                <option value="United States">United States</option>
+                                                <option value="Canada">Canada</option>
+                                                <option value="Mexico">Mexico</option>
+                                                <option value="Guatemala">Guatemala</option>
+                                                <option value="Belize">Belize</option>
+                                                <option value="El Salvador">El Salvador</option>
+                                                <option value="Honduras">Honduras</option>
+                                                <option value="Nicaragua">Nicaragua</option>
+                                                <option value="Costa Rica">Costa Rica</option>
+                                                <option value="Panama">Panama</option>
+                                                <option value="Cuba">Cuba</option>
+                                                <option value="Jamaica">Jamaica</option>
+                                                <option value="Haiti">Haiti</option>
+                                                <option value="Dominican Republic">Dominican Republic</option>
+                                                <option value="Trinidad and Tobago">Trinidad and Tobago</option>
+                                                <option value="Barbados">Barbados</option>
+                                                <option value="Bahamas">Bahamas</option>
+                                            </optgroup>
+                                            
+                                            <!-- South America -->
+                                            <optgroup label="South America">
+                                                <option value="Brazil">Brazil</option>
+                                                <option value="Argentina">Argentina</option>
+                                                <option value="Chile">Chile</option>
+                                                <option value="Peru">Peru</option>
+                                                <option value="Colombia">Colombia</option>
+                                                <option value="Venezuela">Venezuela</option>
+                                                <option value="Ecuador">Ecuador</option>
+                                                <option value="Bolivia">Bolivia</option>
+                                                <option value="Paraguay">Paraguay</option>
+                                                <option value="Uruguay">Uruguay</option>
+                                                <option value="Guyana">Guyana</option>
+                                                <option value="Suriname">Suriname</option>
+                                                <option value="French Guiana">French Guiana</option>
+                                            </optgroup>
+                                            
+                                            <!-- Europe -->
+                                            <optgroup label="Europe">
+                                                <option value="United Kingdom">United Kingdom</option>
+                                                <option value="Ireland">Ireland</option>
+                                                <option value="France">France</option>
+                                                <option value="Germany">Germany</option>
+                                                <option value="Italy">Italy</option>
+                                                <option value="Spain">Spain</option>
+                                                <option value="Portugal">Portugal</option>
+                                                <option value="Netherlands">Netherlands</option>
+                                                <option value="Belgium">Belgium</option>
+                                                <option value="Switzerland">Switzerland</option>
+                                                <option value="Austria">Austria</option>
+                                                <option value="Sweden">Sweden</option>
+                                                <option value="Norway">Norway</option>
+                                                <option value="Denmark">Denmark</option>
+                                                <option value="Finland">Finland</option>
+                                                <option value="Poland">Poland</option>
+                                                <option value="Czech Republic">Czech Republic</option>
+                                                <option value="Hungary">Hungary</option>
+                                                <option value="Romania">Romania</option>
+                                                <option value="Bulgaria">Bulgaria</option>
+                                                <option value="Croatia">Croatia</option>
+                                                <option value="Slovenia">Slovenia</option>
+                                                <option value="Slovakia">Slovakia</option>
+                                                <option value="Estonia">Estonia</option>
+                                                <option value="Latvia">Latvia</option>
+                                                <option value="Lithuania">Lithuania</option>
+                                                <option value="Greece">Greece</option>
+                                                <option value="Cyprus">Cyprus</option>
+                                                <option value="Malta">Malta</option>
+                                                <option value="Luxembourg">Luxembourg</option>
+                                                <option value="Iceland">Iceland</option>
+                                                <option value="Albania">Albania</option>
+                                                <option value="Montenegro">Montenegro</option>
+                                                <option value="Serbia">Serbia</option>
+                                                <option value="Bosnia and Herzegovina">Bosnia and Herzegovina</option>
+                                                <option value="North Macedonia">North Macedonia</option>
+                                                <option value="Moldova">Moldova</option>
+                                                <option value="Ukraine">Ukraine</option>
+                                                <option value="Belarus">Belarus</option>
+                                                <option value="Russia">Russia</option>
+                                            </optgroup>
+                                            
+                                            <!-- Asia -->
+                                            <optgroup label="Asia">
+                                                <option value="China">China</option>
+                                                <option value="Japan">Japan</option>
+                                                <option value="South Korea">South Korea</option>
+                                                <option value="North Korea">North Korea</option>
+                                                <option value="India">India</option>
+                                                <option value="Pakistan">Pakistan</option>
+                                                <option value="Bangladesh">Bangladesh</option>
+                                                <option value="Sri Lanka">Sri Lanka</option>
+                                                <option value="Nepal">Nepal</option>
+                                                <option value="Bhutan">Bhutan</option>
+                                                <option value="Maldives">Maldives</option>
+                                                <option value="Afghanistan">Afghanistan</option>
+                                                <option value="Iran">Iran</option>
+                                                <option value="Iraq">Iraq</option>
+                                                <option value="Israel">Israel</option>
+                                                <option value="Palestine">Palestine</option>
+                                                <option value="Jordan">Jordan</option>
+                                                <option value="Lebanon">Lebanon</option>
+                                                <option value="Syria">Syria</option>
+                                                <option value="Turkey">Turkey</option>
+                                                <option value="Saudi Arabia">Saudi Arabia</option>
+                                                <option value="United Arab Emirates">United Arab Emirates</option>
+                                                <option value="Qatar">Qatar</option>
+                                                <option value="Kuwait">Kuwait</option>
+                                                <option value="Bahrain">Bahrain</option>
+                                                <option value="Oman">Oman</option>
+                                                <option value="Yemen">Yemen</option>
+                                                <option value="Thailand">Thailand</option>
+                                                <option value="Vietnam">Vietnam</option>
+                                                <option value="Cambodia">Cambodia</option>
+                                                <option value="Laos">Laos</option>
+                                                <option value="Myanmar">Myanmar</option>
+                                                <option value="Malaysia">Malaysia</option>
+                                                <option value="Singapore">Singapore</option>
+                                                <option value="Indonesia">Indonesia</option>
+                                                <option value="Philippines">Philippines</option>
+                                                <option value="Brunei">Brunei</option>
+                                                <option value="Timor-Leste">Timor-Leste</option>
+                                                <option value="Mongolia">Mongolia</option>
+                                                <option value="Kazakhstan">Kazakhstan</option>
+                                                <option value="Uzbekistan">Uzbekistan</option>
+                                                <option value="Turkmenistan">Turkmenistan</option>
+                                                <option value="Tajikistan">Tajikistan</option>
+                                                <option value="Kyrgyzstan">Kyrgyzstan</option>
+                                            </optgroup>
+                                            
+                                            <!-- Africa -->
+                                            <optgroup label="Africa">
+                                                <option value="South Africa">South Africa</option>
+                                                <option value="Egypt">Egypt</option>
+                                                <option value="Nigeria">Nigeria</option>
+                                                <option value="Kenya">Kenya</option>
+                                                <option value="Ethiopia">Ethiopia</option>
+                                                <option value="Ghana">Ghana</option>
+                                                <option value="Morocco">Morocco</option>
+                                                <option value="Algeria">Algeria</option>
+                                                <option value="Tunisia">Tunisia</option>
+                                                <option value="Libya">Libya</option>
+                                                <option value="Sudan">Sudan</option>
+                                                <option value="South Sudan">South Sudan</option>
+                                                <option value="Uganda">Uganda</option>
+                                                <option value="Tanzania">Tanzania</option>
+                                                <option value="Zimbabwe">Zimbabwe</option>
+                                                <option value="Zambia">Zambia</option>
+                                                <option value="Botswana">Botswana</option>
+                                                <option value="Namibia">Namibia</option>
+                                                <option value="Angola">Angola</option>
+                                                <option value="Mozambique">Mozambique</option>
+                                                <option value="Madagascar">Madagascar</option>
+                                                <option value="Mauritius">Mauritius</option>
+                                                <option value="Seychelles">Seychelles</option>
+                                                <option value="Rwanda">Rwanda</option>
+                                                <option value="Burundi">Burundi</option>
+                                                <option value="Malawi">Malawi</option>
+                                                <option value="Lesotho">Lesotho</option>
+                                                <option value="Eswatini">Eswatini</option>
+                                                <option value="Cameroon">Cameroon</option>
+                                                <option value="Gabon">Gabon</option>
+                                                <option value="Congo">Congo</option>
+                                                <option value="Democratic Republic of the Congo">Democratic Republic of the Congo</option>
+                                                <option value="Central African Republic">Central African Republic</option>
+                                                <option value="Chad">Chad</option>
+                                                <option value="Niger">Niger</option>
+                                                <option value="Mali">Mali</option>
+                                                <option value="Burkina Faso">Burkina Faso</option>
+                                                <option value="Senegal">Senegal</option>
+                                                <option value="Gambia">Gambia</option>
+                                                <option value="Guinea">Guinea</option>
+                                                <option value="Sierra Leone">Sierra Leone</option>
+                                                <option value="Liberia">Liberia</option>
+                                                <option value="Ivory Coast">Ivory Coast</option>
+                                                <option value="Togo">Togo</option>
+                                                <option value="Benin">Benin</option>
+                                                <option value="Cape Verde">Cape Verde</option>
+                                                <option value="São Tomé and Príncipe">São Tomé and Príncipe</option>
+                                                <option value="Equatorial Guinea">Equatorial Guinea</option>
+                                            </optgroup>
+                                            
+                                            <!-- Other -->
+                                            <optgroup label="Other">
+                                                <option value="Other">Other</option>
+                                            </optgroup>
+                                        </select>
+                                        <div class="invalid-feedback">
+                                            Please select your country.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <i class="fas fa-map input-icon"></i>
+                                        <input type="text" class="form-control input-with-icon" id="region" placeholder="Region/State *" required>
+                                        <div class="invalid-feedback">
+                                            Please enter your region or state.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <i class="fas fa-city input-icon"></i>
+                                        <input type="text" class="form-control input-with-icon" id="district" placeholder="District/City *" required>
+                                        <div class="invalid-feedback">
+                                            Please enter your district or city.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <i class="fas fa-home input-icon"></i>
+                                        <input type="text" class="form-control input-with-icon" id="village" placeholder="Village/Suburb">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Farm Information Section -->
+                            <div class="section-divider">
+                                <h6 class="section-title"><i class="fas fa-seedling me-2"></i>Farm Information</h6>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <i class="fas fa-tractor input-icon"></i>
+                                        <input type="text" class="form-control input-with-icon" id="farmName" placeholder="Farm Name *" required>
+                                        <div class="invalid-feedback">
+                                            Please enter your farm name.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <i class="fas fa-ruler input-icon"></i>
+                                        <input type="number" class="form-control input-with-icon" id="farmSize" placeholder="Farm Size (Hectares) *" min="0.1" step="0.1" required>
+                                        <div class="invalid-feedback">
+                                            Please enter your farm size.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <i class="fas fa-leaf input-icon"></i>
+                                        <select class="form-control input-with-icon" id="farmType" required>
+                                            <option value="">Select Farm Type *</option>
+                                            <option value="vegetable">Vegetable Farming</option>
+                                            <option value="fruit">Fruit Farming</option>
+                                            <option value="livestock">Livestock Farming</option>
+                                            <option value="mixed">Mixed Farming</option>
+                                            <option value="dairy">Dairy Farming</option>
+                                            <option value="poultry">Poultry Farming</option>
+                                            <option value="aquaculture">Aquaculture</option>
+                                            <option value="horticulture">Horticulture</option>
+                                            <option value="floriculture">Floriculture</option>
+                                            <option value="other">Other</option>
+                                        </select>
+                                        <div class="invalid-feedback">
+                                            Please select your farm type.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <i class="fas fa-calendar input-icon"></i>
+                                        <select class="form-control input-with-icon" id="experience" required>
+                                            <option value="">Farming Experience *</option>
+                                            <option value="beginner">Beginner (0-2 years)</option>
+                                            <option value="intermediate">Intermediate (3-10 years)</option>
+                                            <option value="experienced">Experienced (11-20 years)</option>
+                                            <option value="expert">Expert (20+ years)</option>
+                                        </select>
+                                        <div class="invalid-feedback">
+                                            Please select your experience level.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <i class="fas fa-seedling input-icon"></i>
+                                        <input type="text" class="form-control input-with-icon" id="crops" placeholder="Main Crops/Livestock">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <i class="fas fa-tint input-icon"></i>
+                                        <select class="form-control input-with-icon" id="irrigation">
+                                            <option value="">Irrigation Method</option>
+                                            <option value="rainfed">Rainfed</option>
+                                            <option value="drip">Drip Irrigation</option>
+                                            <option value="sprinkler">Sprinkler</option>
+                                            <option value="flood">Flood Irrigation</option>
+                                            <option value="manual">Manual Watering</option>
+                                            <option value="mixed">Mixed Methods</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Additional Information Section -->
+                            <div class="section-divider">
+                                <h6 class="section-title"><i class="fas fa-info-circle me-2"></i>Additional Information</h6>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <i class="fas fa-graduation-cap input-icon"></i>
+                                        <select class="form-control input-with-icon" id="education">
+                                            <option value="">Education Level</option>
+                                            <option value="primary">Primary School</option>
+                                            <option value="secondary">Secondary School</option>
+                                            <option value="diploma">Diploma/Certificate</option>
+                                            <option value="bachelor">Bachelor's Degree</option>
+                                            <option value="master">Master's Degree</option>
+                                            <option value="phd">PhD</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <i class="fas fa-dollar-sign input-icon"></i>
+                                        <select class="form-control input-with-icon" id="income">
+                                            <option value="">Annual Farm Income Range</option>
+                                            <option value="under-10k">Under FJD 10,000</option>
+                                            <option value="10k-25k">FJD 10,000 - 25,000</option>
+                                            <option value="25k-50k">FJD 25,000 - 50,000</option>
+                                            <option value="50k-100k">FJD 50,000 - 100,000</option>
+                                            <option value="100k-250k">FJD 100,000 - 250,000</option>
+                                            <option value="over-250k">Over FJD 250,000</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <i class="fas fa-store input-icon"></i>
+                                        <select class="form-control input-with-icon" id="marketing">
+                                            <option value="">Primary Marketing Channel</option>
+                                            <option value="local-market">Local Markets</option>
+                                            <option value="supermarkets">Supermarkets</option>
+                                            <option value="restaurants">Restaurants/Hotels</option>
+                                            <option value="export">Export</option>
+                                            <option value="direct-sale">Direct Sales</option>
+                                            <option value="cooperative">Cooperative</option>
+                                            <option value="online">Online Sales</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <i class="fas fa-mobile-alt input-icon"></i>
+                                        <select class="form-control input-with-icon" id="technology">
+                                            <option value="">Technology Usage</option>
+                                            <option value="basic">Basic (Phone calls, SMS)</option>
+                                            <option value="intermediate">Intermediate (Smartphone, Internet)</option>
+                                            <option value="advanced">Advanced (Apps, GPS, Sensors)</option>
+                                            <option value="expert">Expert (IoT, AI, Automation)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <i class="fas fa-exclamation-triangle input-icon"></i>
+                                <textarea class="form-control input-with-icon" id="challenges" placeholder="Main Farming Challenges (e.g., Weather variability, pest control, market access...)" rows="3"></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <i class="fas fa-target input-icon"></i>
+                                <textarea class="form-control input-with-icon" id="goals" placeholder="Farming Goals (e.g., Increase yield by 20%, reduce water usage, expand to new markets...)" rows="3"></textarea>
+                            </div>
+
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="newsletter">
+                                <label class="form-check-label" for="newsletter">
+                                    Subscribe to farming tips, market updates, and SmartFarm newsletter
+                                </label>
+                            </div>
+
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="agreeTerms" required>
+                                <label class="form-check-label" for="agreeTerms">
+                                    I agree to the <a href="terms-of-service.html" target="_blank">Terms of Service</a> and <a href="privacy-policy.html" target="_blank">Privacy Policy</a> *
+                                </label>
+                                <div class="invalid-feedback">
+                                    You must agree to the terms and conditions.
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-register">
+                                <span class="btn-text">Create SmartFarm Account</span>
+                                <span class="loading">
+                                    <i class="fas fa-spinner fa-spin"></i> Creating account...
+                                </span>
+                            </button>
+                        </form>
+
+                        <div class="register-footer">
+                            <p>Already have an account? <a href="login.html">Sign in</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Form validation and submission
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (validateForm()) {
+                performRegistration();
+            }
+        });
+
+        function validateForm() {
+            const firstName = document.getElementById('firstName');
+            const lastName = document.getElementById('lastName');
+            const email = document.getElementById('email');
+            const phone = document.getElementById('phone');
+            const username = document.getElementById('username');
+            const password = document.getElementById('password');
+            const confirmPassword = document.getElementById('confirmPassword');
+            const country = document.getElementById('country');
+            const region = document.getElementById('region');
+            const district = document.getElementById('district');
+            const farmName = document.getElementById('farmName');
+            const farmSize = document.getElementById('farmSize');
+            const farmType = document.getElementById('farmType');
+            const experience = document.getElementById('experience');
+            const agreeTerms = document.getElementById('agreeTerms');
+            
+            let isValid = true;
+
+            // Reset validation states
+            [firstName, lastName, email, phone, username, password, confirmPassword, country, region, district, farmName, farmSize, farmType, experience].forEach(field => {
+                field.classList.remove('is-invalid', 'is-valid');
+            });
+
+            // First name validation
+            if (!firstName.value.trim()) {
+                firstName.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                firstName.classList.add('is-valid');
+            }
+
+            // Last name validation
+            if (!lastName.value.trim()) {
+                lastName.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                lastName.classList.add('is-valid');
+            }
+
+            // Email validation
+            if (!email.value.trim()) {
+                email.classList.add('is-invalid');
+                isValid = false;
+            } else if (!isValidEmail(email.value)) {
+                email.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                email.classList.add('is-valid');
+            }
+
+            // Phone validation
+            if (!phone.value.trim()) {
+                phone.classList.add('is-invalid');
+                isValid = false;
+            } else if (!isValidPhone(phone.value)) {
+                phone.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                phone.classList.add('is-valid');
+            }
+
+            // Username validation
+            if (!username.value.trim()) {
+                username.classList.add('is-invalid');
+                isValid = false;
+            } else if (username.value.length < 3) {
+                username.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                username.classList.add('is-valid');
+            }
+
+            // Password validation
+            if (!password.value.trim()) {
+                password.classList.add('is-invalid');
+                isValid = false;
+            } else if (password.value.length < 8) {
+                password.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                password.classList.add('is-valid');
+            }
+
+            // Confirm password validation
+            if (!confirmPassword.value.trim()) {
+                confirmPassword.classList.add('is-invalid');
+                isValid = false;
+            } else if (confirmPassword.value !== password.value) {
+                confirmPassword.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                confirmPassword.classList.add('is-valid');
+            }
+
+            // Country validation
+            if (!country.value.trim()) {
+                country.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                country.classList.add('is-valid');
+            }
+
+            // Region validation
+            if (!region.value.trim()) {
+                region.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                region.classList.add('is-valid');
+            }
+
+            // District validation
+            if (!district.value.trim()) {
+                district.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                district.classList.add('is-valid');
+            }
+
+            // Farm name validation
+            if (!farmName.value.trim()) {
+                farmName.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                farmName.classList.add('is-valid');
+            }
+
+            // Farm size validation
+            if (!farmSize.value.trim() || farmSize.value <= 0) {
+                farmSize.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                farmSize.classList.add('is-valid');
+            }
+
+            // Farm type validation
+            if (!farmType.value.trim()) {
+                farmType.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                farmType.classList.add('is-valid');
+            }
+
+            // Experience validation
+            if (!experience.value.trim()) {
+                experience.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                experience.classList.add('is-valid');
+            }
+
+            // Terms agreement validation
+            if (!agreeTerms.checked) {
+                agreeTerms.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                agreeTerms.classList.add('is-valid');
+            }
+
+            return isValid;
+        }
+
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        function isValidPhone(phone) {
+            const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
+            return phoneRegex.test(phone.replace(/\s/g, ''));
+        }
+
+        function performRegistration() {
+            const btnText = document.querySelector('.btn-text');
+            const loading = document.querySelector('.loading');
+
+            // Show loading state
+            btnText.style.display = 'none';
+            loading.classList.add('show');
+
+            // Collect form data - only send fields that Railway API expects
+            const formData = {
+                username: document.getElementById('username').value,
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value,
+                firstName: document.getElementById('firstName').value,
+                lastName: document.getElementById('lastName').value,
+                phone: document.getElementById('phone').value
+            };
+
+            // API call to Railway backend
+            const apiUrl = 'https://smartfarm-app-production.up.railway.app/api/auth/register';
+            
+            console.log('Sending registration data:', formData);
+            
+            fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Response data:', data);
+                if (data.status === 'success') {
+                    showAlert('Registration successful! Please check your email to verify your account, then login.', 'success');
+                    
+                    // Clear any existing user data (since they need to verify email first)
+                    localStorage.removeItem('smartfarm_user');
+                    sessionStorage.removeItem('smartfarm_user');
+                    
+                    // Redirect to login page after delay
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 3000);
+                } else {
+                    showAlert(data.message || 'Registration failed. Please try again.', 'danger');
+                    btnText.style.display = 'inline';
+                    loading.classList.remove('show');
+                }
+            })
+            .catch(error => {
+                console.error('Registration error:', error);
+                console.error('Error details:', error.message);
+                showAlert(`Registration failed: ${error.message}. Please try again.`, 'danger');
+                btnText.style.display = 'inline';
+                loading.classList.remove('show');
+            });
+        }
+
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+            const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+            
+            alertContainer.innerHTML = `
+                <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+        }
+
+        function togglePassword(fieldId) {
+            const passwordInput = document.getElementById(fieldId);
+            const passwordIcon = document.getElementById(fieldId + 'Icon');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                passwordIcon.classList.remove('fa-eye');
+                passwordIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                passwordIcon.classList.remove('fa-eye-slash');
+                passwordIcon.classList.add('fa-eye');
+            }
+        }
+
+        // Real-time validation
+        document.getElementById('email').addEventListener('blur', function() {
+            if (this.value.trim() && !isValidEmail(this.value)) {
+                this.classList.add('is-invalid');
+            } else if (this.value.trim()) {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            }
+        });
+
+        document.getElementById('password').addEventListener('blur', function() {
+            if (this.value.trim() && this.value.length < 8) {
+                this.classList.add('is-invalid');
+            } else if (this.value.trim()) {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            }
+            
+            // Also validate confirm password if it has a value
+            const confirmPassword = document.getElementById('confirmPassword');
+            if (confirmPassword.value.trim()) {
+                if (confirmPassword.value !== this.value) {
+                    confirmPassword.classList.add('is-invalid');
+                } else {
+                    confirmPassword.classList.remove('is-invalid');
+                    confirmPassword.classList.add('is-valid');
+                }
+            }
+        });
+
+        document.getElementById('confirmPassword').addEventListener('blur', function() {
+            const password = document.getElementById('password');
+            if (this.value.trim() && this.value !== password.value) {
+                this.classList.add('is-invalid');
+            } else if (this.value.trim()) {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            }
+        });
+    </script>
+</body>
+</html>

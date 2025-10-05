@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Button Debugger - SmartFarm</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script>
+        // Immediate error suppression - must run before any other scripts
+        (function() {
+            const originalConsoleError = console.error;
+            const suppressedPatterns = [
+                /Error: <svg> attribute viewBox/,
+                /Expected number.*viewBox/,
+                /viewBox.*\d+%/,
+                /framework-.*\.js.*Error/
+            ];
+            
+            console.error = function(...args) {
+                const message = args.join(' ');
+                if (suppressedPatterns.some(pattern => pattern.test(message))) {
+                    return; // Suppress SVG viewBox errors
+                }
+                originalConsoleError.apply(console, args);
+            };
+        })();
+    </script>
+    <script src="js/ads-provider.js"></script>
+    <script src="js/ad-error-handler.js"></script>
+    <script src="js/button-handlers.js"></script>
+    <script src="js/user-roles.js"></script>
+    <script src="js/ai-seed-predictor.js"></script>
+    <script src="js/intelligent-weeding.js"></script>
+    <script src="js/qr-traceability.js"></script>
+    <script src="js/identification-diagnosis.js"></script>
+    <style>
+        .debug-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .button-test {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .button-test.pass {
+            border-left: 4px solid #28a745;
+            background: #d4edda;
+        }
+        .button-test.fail {
+            border-left: 4px solid #dc3545;
+            background: #f8d7da;
+        }
+        .button-test.warning {
+            border-left: 4px solid #ffc107;
+            background: #fff3cd;
+        }
+        .button-info {
+            font-family: monospace;
+            font-size: 12px;
+            background: #e9ecef;
+            padding: 5px;
+            border-radius: 4px;
+            margin: 5px 0;
+        }
+        .test-results {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .test-button {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .test-button:hover {
+            background: #f8f9fa;
+            border-color: #007bff;
+        }
+        .test-button:disabled {
+            background: #e9ecef;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <h1><i class="fas fa-bug me-2"></i>SmartFarm Button Debugger</h1>
+        <p class="lead">Test and debug all buttons across the SmartFarm application</p>
+        
+        <!-- Access Control Notice -->
+        <div id="accessNotice" class="alert alert-warning" style="display: none;">
+            <i class="fas fa-lock me-2"></i>
+            <strong>Access Restricted:</strong> This tool is only available to project owners. 
+            <button class="btn btn-sm btn-outline-primary ms-2" onclick="enableOwnerMode()">
+                Enable Owner Mode (Development)
+            </button>
+        </div>
+
+        <!-- Global Status -->
+        <div class="debug-section">
+            <h3><i class="fas fa-globe me-2"></i>Global Status</h3>
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title" id="totalButtons">0</h5>
+                            <p class="card-text">Total Buttons</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title text-success" id="workingButtons">0</h5>
+                            <p class="card-text">Working</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title text-danger" id="brokenButtons">0</h5>
+                            <p class="card-text">Broken</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title text-warning" id="warningButtons">0</h5>
+                            <p class="card-text">Warnings</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="debug-section">
+            <h3><i class="fas fa-tools me-2"></i>Quick Actions</h3>
+            <div class="button-grid">
+                <button class="btn btn-primary" onclick="scanAllButtons()">
+                    <i class="fas fa-search me-2"></i>Scan All Buttons
+                </button>
+                <button class="btn btn-success" onclick="testAllButtons()">
+                    <i class="fas fa-play me-2"></i>Test All Buttons
+                </button>
+                <button class="btn btn-warning" onclick="checkHandlers()">
+                    <i class="fas fa-code me-2"></i>Check Handlers
+                </button>
+                <button class="btn btn-info" onclick="checkCSS()">
+                    <i class="fas fa-paint-brush me-2"></i>Check CSS Issues
+                </button>
+                <button class="btn btn-secondary" onclick="exportReport()">
+                    <i class="fas fa-download me-2"></i>Export Report
+                </button>
+                <button class="btn btn-danger" onclick="clearResults()">
+                    <i class="fas fa-trash me-2"></i>Clear Results
+                </button>
+            </div>
+        </div>
+
+        <!-- Test Results -->
+        <div class="debug-section">
+            <h3><i class="fas fa-clipboard-check me-2"></i>Test Results</h3>
+            <div class="test-results" id="testResults">
+                <p class="text-muted">Click "Scan All Buttons" to start testing</p>
+            </div>
+        </div>
+
+        <!-- Button Categories -->
+        <div class="debug-section">
+            <h3><i class="fas fa-list me-2"></i>Button Categories</h3>
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Dashboard Buttons</h5>
+                    <div id="dashboardButtons"></div>
+                </div>
+                <div class="col-md-6">
+                    <h5>Form Buttons</h5>
+                    <div id="formButtons"></div>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <h5>Navigation Buttons</h5>
+                    <div id="navigationButtons"></div>
+                </div>
+                <div class="col-md-6">
+                    <h5>Action Buttons</h5>
+                    <div id="actionButtons"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Information -->
+        <div class="debug-section">
+            <h3><i class="fas fa-info-circle me-2"></i>System Information</h3>
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Loaded Scripts</h6>
+                    <div id="loadedScripts"></div>
+                </div>
+                <div class="col-md-6">
+                    <h6>Global Functions</h6>
+                    <div id="globalFunctions"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let buttonTests = [];
+        let testResults = [];
+
+        // Initialize debugger
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check access permissions
+            checkAccessPermissions();
+            console.log('🔧 Button Debugger initialized');
+            scanAllButtons();
+            checkSystemInfo();
+        });
+
+        // Check if user has access to debug tools
+        function checkAccessPermissions() {
+            const roleInfo = getRoleInfo();
+            const accessNotice = document.getElementById('accessNotice');
+            const mainContent = document.querySelector('.container');
+            
+            if (!roleInfo.isOwner) {
+                // Hide main content and show access notice
+                if (mainContent) {
+                    mainContent.style.display = 'none';
+                }
+                if (accessNotice) {
+                    accessNotice.style.display = 'block';
+                }
+                console.log('🔒 Access denied: Owner role required');
+            } else {
+                // Show main content and hide access notice
+                if (mainContent) {
+                    mainContent.style.display = 'block';
+                }
+                if (accessNotice) {
+                    accessNotice.style.display = 'none';
+                }
+                console.log('🔓 Access granted: Owner role confirmed');
+            }
+        }
+
+        // Scan all buttons on the page
+        function scanAllButtons() {
+            console.log('🔍 Scanning all buttons...');
+            const buttons = document.querySelectorAll('button, input[type="button"], input[type="submit"], a[onclick]');
+            buttonTests = [];
+            
+            buttons.forEach((button, index) => {
+                const test = analyzeButton(button, index);
+                buttonTests.push(test);
+            });
+            
+            updateButtonCounts();
+            displayButtonCategories();
+            addTestResult('Button Scan', `Found ${buttons.length} buttons`, 'pass');
+        }
+
+        // Analyze individual button
+        function analyzeButton(button, index) {
+            const test = {
+                index: index,
+                element: button,
+                tagName: button.tagName,
+                type: button.type || 'button',
+                text: button.textContent?.trim() || button.value || button.getAttribute('aria-label') || 'No text',
+                onclick: button.onclick ? 'Direct onclick' : null,
+                classList: Array.from(button.classList),
+                id: button.id || null,
+                disabled: button.disabled,
+                visible: isElementVisible(button),
+                hasHandler: false,
+                handlerType: null,
+                issues: [],
+                status: 'unknown'
+            };
+
+            // Check for click handlers
+            if (button.onclick) {
+                test.hasHandler = true;
+                test.handlerType = 'onclick';
+            } else if (button.getAttribute('data-action')) {
+                test.hasHandler = true;
+                test.handlerType = 'data-action';
+            } else if (button.classList.contains('btn') && button.textContent) {
+                // Check if it's a Bootstrap button that might have delegated handlers
+                test.hasHandler = 'unknown';
+                test.handlerType = 'delegated';
+            }
+
+            // Check for common issues
+            if (button.disabled) {
+                test.issues.push('Button is disabled');
+            }
+            if (!test.visible) {
+                test.issues.push('Button is not visible');
+            }
+            if (!test.hasHandler) {
+                test.issues.push('No click handler found');
+            }
+            if (button.style.pointerEvents === 'none') {
+                test.issues.push('Pointer events disabled');
+            }
+
+            // Determine status
+            if (test.issues.length === 0) {
+                test.status = 'pass';
+            } else if (test.issues.some(issue => issue.includes('disabled') || issue.includes('visible'))) {
+                test.status = 'warning';
+            } else {
+                test.status = 'fail';
+            }
+
+            return test;
+        }
+
+        // Test all buttons
+        function testAllButtons() {
+            console.log('🧪 Testing all buttons...');
+            testResults = [];
+            
+            buttonTests.forEach(test => {
+                try {
+                    if (test.element && test.visible && !test.element.disabled) {
+                        // Simulate click
+                        const event = new MouseEvent('click', {
+                            bubbles: true,
+                            cancelable: true,
+                            view: window
+                        });
+                        
+                        test.element.dispatchEvent(event);
+                        addTestResult(`Button: ${test.text}`, 'Click simulated', 'pass');
+                    } else {
+                        addTestResult(`Button: ${test.text}`, `Skipped: ${test.issues.join(', ')}`, 'warning');
+                    }
+                } catch (error) {
+                    addTestResult(`Button: ${test.text}`, `Error: ${error.message}`, 'fail');
+                }
+            });
+        }
+
+        // Check for missing handlers
+        function checkHandlers() {
+            console.log('🔍 Checking for missing handlers...');
+            const missingHandlers = buttonTests.filter(test => !test.hasHandler);
+            
+            if (missingHandlers.length === 0) {
+                addTestResult('Handler Check', 'All buttons have handlers', 'pass');
+            } else {
+                missingHandlers.forEach(test => {
+                    addTestResult(`Missing Handler: ${test.text}`, `No click handler found`, 'fail');
+                });
+            }
+        }
+
+        // Check CSS issues
+        function checkCSS() {
+            console.log('🎨 Checking CSS issues...');
+            const cssIssues = buttonTests.filter(test => 
+                test.element.style.pointerEvents === 'none' ||
+                test.element.style.display === 'none' ||
+                test.element.style.visibility === 'hidden' ||
+                test.element.style.opacity === '0'
+            );
+            
+            if (cssIssues.length === 0) {
+                addTestResult('CSS Check', 'No CSS issues found', 'pass');
+            } else {
+                cssIssues.forEach(test => {
+                    addTestResult(`CSS Issue: ${test.text}`, 'Button has CSS visibility issues', 'warning');
+                });
+            }
+        }
+
+        // Check system information
+        function checkSystemInfo() {
+            const scripts = Array.from(document.scripts).map(script => script.src || 'inline');
+            const globalFunctions = Object.keys(window).filter(key => 
+                typeof window[key] === 'function' && 
+                key.includes('show') || key.includes('handle') || key.includes('on')
+            );
+            
+            document.getElementById('loadedScripts').innerHTML = scripts.map(script => 
+                `<div class="button-info">${script}</div>`
+            ).join('');
+            
+            document.getElementById('globalFunctions').innerHTML = globalFunctions.map(func => 
+                `<div class="button-info">${func}</div>`
+            ).join('');
+        }
+
+        // Update button counts
+        function updateButtonCounts() {
+            const total = buttonTests.length;
+            const working = buttonTests.filter(t => t.status === 'pass').length;
+            const broken = buttonTests.filter(t => t.status === 'fail').length;
+            const warnings = buttonTests.filter(t => t.status === 'warning').length;
+            
+            document.getElementById('totalButtons').textContent = total;
+            document.getElementById('workingButtons').textContent = working;
+            document.getElementById('brokenButtons').textContent = broken;
+            document.getElementById('warningButtons').textContent = warnings;
+        }
+
+        // Display button categories
+        function displayButtonCategories() {
+            const categories = {
+                dashboard: buttonTests.filter(t => t.classList.includes('btn') && t.text.toLowerCase().includes('detail')),
+                form: buttonTests.filter(t => t.type === 'submit' || t.text.toLowerCase().includes('save') || t.text.toLowerCase().includes('add')),
+                navigation: buttonTests.filter(t => t.tagName === 'A' || t.text.toLowerCase().includes('nav')),
+                action: buttonTests.filter(t => t.text.toLowerCase().includes('click') || t.text.toLowerCase().includes('action'))
+            };
+            
+            Object.keys(categories).forEach(category => {
+                const container = document.getElementById(category + 'Buttons');
+                container.innerHTML = categories[category].map(test => 
+                    `<div class="button-test ${test.status}">
+                        <strong>${test.text}</strong>
+                        <div class="button-info">${test.handlerType || 'No handler'} | ${test.issues.join(', ') || 'No issues'}</div>
+                    </div>`
+                ).join('');
+            });
+        }
+
+        // Add test result
+        function addTestResult(test, result, status) {
+            testResults.push({ test, result, status, timestamp: new Date().toISOString() });
+            updateTestResults();
+        }
+
+        // Update test results display
+        function updateTestResults() {
+            const container = document.getElementById('testResults');
+            container.innerHTML = testResults.map(result => 
+                `<div class="button-test ${result.status}">
+                    <strong>${result.test}:</strong> ${result.result}
+                    <small class="text-muted">${new Date(result.timestamp).toLocaleTimeString()}</small>
+                </div>`
+            ).join('');
+        }
+
+        // Utility functions
+        function isElementVisible(element) {
+            const style = window.getComputedStyle(element);
+            return style.display !== 'none' && 
+                   style.visibility !== 'hidden' && 
+                   style.opacity !== '0' &&
+                   element.offsetWidth > 0 && 
+                   element.offsetHeight > 0;
+        }
+
+        function exportReport() {
+            const report = {
+                timestamp: new Date().toISOString(),
+                totalButtons: buttonTests.length,
+                workingButtons: buttonTests.filter(t => t.status === 'pass').length,
+                brokenButtons: buttonTests.filter(t => t.status === 'fail').length,
+                warningButtons: buttonTests.filter(t => t.status === 'warning').length,
+                buttonTests: buttonTests,
+                testResults: testResults
+            };
+            
+            const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'smartfarm-button-debug-report.json';
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            addTestResult('Export', 'Debug report exported', 'pass');
+        }
+
+        function clearResults() {
+            testResults = [];
+            buttonTests = [];
+            updateTestResults();
+            updateButtonCounts();
+            addTestResult('Clear', 'Results cleared', 'pass');
+        }
+
+        // SmartFarm-specific button tests
+        function testSmartFarmButtons() {
+            console.log('🚜 Testing SmartFarm-specific buttons...');
+            
+            // Test dashboard buttons
+            const dashboardButtons = [
+                'showFinancialDetails',
+                'generateQRCode',
+                'addNewProduct',
+                'showQRCodeOptions'
+            ];
+            
+            dashboardButtons.forEach(buttonName => {
+                if (typeof window[buttonName] === 'function') {
+                    addTestResult(`Dashboard: ${buttonName}`, 'Function exists', 'pass');
+                } else {
+                    addTestResult(`Dashboard: ${buttonName}`, 'Function missing', 'fail');
+                }
+            });
+            
+            // Test ads provider
+            if (typeof window.adsProvider !== 'undefined') {
+                addTestResult('Ads Provider', 'Loaded successfully', 'pass');
+            } else {
+                addTestResult('Ads Provider', 'Not loaded', 'fail');
+            }
+            
+            // Test QR traceability
+            if (typeof window.qrTraceability !== 'undefined') {
+                addTestResult('QR Traceability', 'Loaded successfully', 'pass');
+            } else {
+                addTestResult('QR Traceability', 'Not loaded', 'fail');
+            }
+        }
+
+        // Run SmartFarm tests on load
+        setTimeout(testSmartFarmButtons, 1000);
+    </script>
+</body>
+</html>

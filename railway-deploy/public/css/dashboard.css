@@ -1,0 +1,158 @@
+/**
+ * SmartFarm Dashboard Styles
+ * Additional styles for dashboard components
+ */
+
+/* Dashboard-specific styles */
+.dashboard-card {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.dashboard-card h5 {
+    color: #2e7d32;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+/* User management specific styles */
+.user-role-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #e3f2fd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #1976d2;
+}
+
+/* Status indicators */
+.status-active {
+    color: #4caf50;
+}
+
+.status-inactive {
+    color: #f44336;
+}
+
+.status-pending {
+    color: #ff9800;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .dashboard-card {
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .dashboard-card h5 {
+        font-size: 1.1rem;
+    }
+}
+
+/* Loading states */
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #2e7d32;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Form enhancements */
+.form-label {
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 0.5rem;
+}
+
+.form-control:focus {
+    border-color: #2e7d32;
+    box-shadow: 0 0 0 0.2rem rgba(46, 125, 50, 0.25);
+}
+
+/* Button enhancements */
+.btn-primary {
+    background-color: #2e7d32;
+    border-color: #2e7d32;
+}
+
+.btn-primary:hover {
+    background-color: #1b5e20;
+    border-color: #1b5e20;
+}
+
+/* Table enhancements */
+.table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #495057;
+    border-top: none;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(46, 125, 50, 0.05);
+}
+
+/* Modal enhancements */
+.modal-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.modal-title {
+    color: #2e7d32;
+    font-weight: 600;
+}
+
+/* Alert enhancements */
+.alert-success {
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+    color: #155724;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+}
+
+.alert-warning {
+    background-color: #fff3cd;
+    border-color: #ffeaa7;
+    color: #856404;
+}
+
+/* Utility classes */
+.text-truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.border-success {
+    border-color: #2e7d32 !important;
+}
+
+.bg-light-success {
+    background-color: rgba(46, 125, 50, 0.1) !important;
+}

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartFarm Favicon Creator</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px; 
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .favicon-preview {
+            text-align: center;
+            margin: 20px 0;
+        }
+        canvas {
+            border: 1px solid #ddd;
+            margin: 10px;
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+        }
+        .download-section {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .download-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin: 5px;
+            font-size: 14px;
+        }
+        .download-btn:hover {
+            background: #218838;
+        }
+        .instructions {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .step {
+            margin: 8px 0;
+            padding: 8px;
+            background: white;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌱 SmartFarm Favicon Creator</h1>
+        <p>Create a simple favicon for your SmartFarm website</p>
+
+        <div class="instructions">
+            <h3>📋 Quick Setup Instructions</h3>
+            <div class="step"><strong>1.</strong> Click "Create Favicon" below</div>
+            <div class="step"><strong>2.</strong> Download the favicon.ico file</div>
+            <div class="step"><strong>3.</strong> Save it to: <code>web-project/public/images/favicon/favicon.ico</code></div>
+            <div class="step"><strong>4.</strong> Refresh your website - the globe should change to your favicon!</div>
+        </div>
+
+        <div class="text-center">
+            <button onclick="createFavicon()" class="download-btn" style="font-size: 16px; padding: 15px 30px;">
+                🚀 Create Favicon
+            </button>
+        </div>
+
+        <div id="faviconContainer" class="favicon-preview" style="display: none;">
+            <h3>Your SmartFarm Favicon</h3>
+            <div id="preview"></div>
+            <div class="download-section">
+                <a id="downloadIco" class="download-btn" download="favicon.ico">📥 Download favicon.ico</a>
+                <a id="downloadPng" class="download-btn" download="favicon-32x32.png">📥 Download PNG (32x32)</a>
+            </div>
+        </div>
+
+        <div id="successMessage" style="display: none; background: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px; padding: 15px; margin: 20px 0;">
+            <h4>✅ Success!</h4>
+            <p>Your favicon has been created. Download the files above and save them to your <code>images/favicon/</code> folder.</p>
+        </div>
+    </div>
+
+    <script>
+        function createFavicon() {
+            const container = document.getElementById('faviconContainer');
+            const preview = document.getElementById('preview');
+            const successMessage = document.getElementById('successMessage');
+            
+            // Create 32x32 canvas for favicon
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = 32;
+            canvas.height = 32;
+            
+            // Create SmartFarm favicon design
+            // Green circular background
+            ctx.fillStyle = '#2e7d32';
+            ctx.beginPath();
+            ctx.arc(16, 16, 15, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // White "S" for SmartFarm
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 18px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('S', 16, 16);
+            
+            // Dark green border
+            ctx.strokeStyle = '#1b5e20';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(16, 16, 15, 0, 2 * Math.PI);
+            ctx.stroke();
+            
+            // Show preview
+            preview.innerHTML = '';
+            preview.appendChild(canvas);
+            
+            // Create download links
+            const dataURL = canvas.toDataURL('image/png');
+            
+            const downloadIco = document.getElementById('downloadIco');
+            const downloadPng = document.getElementById('downloadPng');
+            
+            downloadIco.href = dataURL;
+            downloadPng.href = dataURL;
+            
+            // Show container and success message
+            container.style.display = 'block';
+            successMessage.style.display = 'block';
+            
+            // Scroll to results
+            container.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // Auto-create on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            createFavicon();
+        });
+    </script>
+</body>
+</html>
