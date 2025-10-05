@@ -1,63 +1,13 @@
-# Railway ignore file - ONLY include railway-clean directory
-# This ensures Railway only sees the railway-clean directory and nothing else
+# Ignore Docker files to force Nixpacks
+Dockerfile
+Dockerfile.*
+.dockerignore
 
-# Ignore everything except railway-clean
-*
-!railway-clean/
-!railway-clean/**
-!railway.json
-!railway.toml
-
-# Explicitly ignore all other directories
-advanced-features/
-android-project/
+# Ignore backend files
+backend/
 web-project/
-backend-api/
-railway-backend/
-railway-minimal/
-keystore-backups/
-launch-prep/
-netlify-deploy/
-screenshots/
-app-store-assets/
-app-store-screenshots/
 
-# Ignore all documentation
-*.md
-
-# Ignore all scripts
-*.ps1
-*.bat
-*.sh
-
-# Ignore all configuration files except Railway ones
-*.gradle
-*.kts
-*.sql
-*.log
-
-# Ignore all build artifacts
-dist/
-build/
+# Ignore development files
 node_modules/
-
-# Ignore all environment files
-.env*
-!.railwayignore
-
-# Ignore all IDE files
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# Ignore all OS files
-.DS_Store
-Thumbs.db
-
-# Ignore all temporary files
-tmp/
-temp/
-*.tmp
-*.temp
+.git/
+*.log

@@ -1,0 +1,11 @@
+[phases.setup]
+nixPkgs = ["nodejs", "npm"]
+
+[phases.install]
+cmds = ["echo 'No dependencies to install for static site'"]
+
+[phases.build]
+cmds = ["echo 'Static site build completed'"]
+
+[start]
+cmd = "node server.js"
