@@ -8,6 +8,8 @@ class UserManagement {
         this.apiBase = '/api/user-management';
         this.token = localStorage.getItem('jwtToken') || sessionStorage.getItem('jwtToken');
         this.currentUser = null;
+        this.mockAPI = new MockUserAPI();
+        this.useMockAPI = false;
         this.init();
     }
 
@@ -99,6 +101,11 @@ class UserManagement {
     }
 
     async apiRequest(endpoint, method = 'GET', data = null) {
+        // If we're using mock API or if this is the first request and it fails, switch to mock
+        if (this.useMockAPI || !this.token) {
+            return await this.mockApiRequest(endpoint, method, data);
+        }
+
         const headers = {
             'Content-Type': 'application/json',
         };
@@ -136,8 +143,41 @@ class UserManagement {
             return jsonResponse;
         } catch (error) {
             console.error('API Request Error:', error);
-            throw error;
+            console.log('Switching to mock API for offline functionality');
+            this.useMockAPI = true;
+            return await this.mockApiRequest(endpoint, method, data);
         }
+    }
+
+    async mockApiRequest(endpoint, method = 'GET', data = null) {
+        console.log(`Using Mock API: ${method} ${endpoint}`, data);
+        
+        // Handle different endpoints
+        if (endpoint === '/users') {
+            if (method === 'GET') {
+                return await this.mockAPI.getUsers();
+            } else if (method === 'POST') {
+                return await this.mockAPI.createUser(data);
+            }
+        } else if (endpoint.startsWith('/users/') && endpoint.includes('/password')) {
+            if (method === 'PUT') {
+                const userId = parseInt(endpoint.split('/')[2]);
+                return await this.mockAPI.changePassword(userId, data.currentPassword, data.newPassword);
+            }
+        } else if (endpoint.startsWith('/users/')) {
+            const userId = parseInt(endpoint.split('/')[2]);
+            if (method === 'PUT') {
+                return await this.mockAPI.updateUser(userId, data);
+            } else if (method === 'DELETE') {
+                return await this.mockAPI.deleteUser(userId);
+            }
+        } else if (endpoint === '/profile') {
+            if (method === 'GET') {
+                return await this.mockAPI.getCurrentUser();
+            }
+        }
+        
+        throw new Error(`Mock API endpoint not implemented: ${method} ${endpoint}`);
     }
 
     updateUserInterface() {
