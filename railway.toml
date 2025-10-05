@@ -1,6 +1,7 @@
 [build]
 builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile.clean"
+buildCommand = "echo 'Forcing clean build - no cached dependencies'"
 
 [deploy]
 startCommand = "npm start"
