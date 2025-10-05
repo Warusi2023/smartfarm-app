@@ -1,11 +1,15 @@
 {
   "name": "smartfarm-frontend",
-  "version": "1.0.0",
-  "description": "SmartFarm Frontend - Static Dashboard",
+  "version": "1.0.1",
+  "description": "SmartFarm Frontend - Static Dashboard (Railway Ready)",
   "scripts": {
-    "start": "npx http-server ./public -p $PORT -a 0.0.0.0 -c-1"
+    "start": "npx http-server ./public -p $PORT -a 0.0.0.0 -c-1",
+    "deploy": "echo 'Deployment ready - No Husky conflicts'"
   },
   "dependencies": {
     "http-server": "^14.1.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
