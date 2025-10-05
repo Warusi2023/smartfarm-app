@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sustainability Tracking - SmartFarm</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #2e7d32;
+            --secondary-color: #4caf50;
+            --accent-color: #8bc34a;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .navbar-custom {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+
+        .main-container {
+            margin-top: 80px;
+            padding: 20px;
+        }
+
+        .dashboard-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .sustainability-header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .sustainability-header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .sustainability-header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            transform: translate(30px, -30px);
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .metric-label {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 15px;
+        }
+
+        .progress-sustainability {
+            height: 12px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+        }
+
+        .progress-bar-sustainability {
+            height: 100%;
+            background: linear-gradient(90deg, #4caf50, #8bc34a);
+            border-radius: 6px;
+            transition: width 0.5s ease;
+        }
+
+        .sustainability-score {
+            font-size: 3rem;
+            font-weight: bold;
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .score-excellent { color: #4caf50; }
+        .score-good { color: #8bc34a; }
+        .score-fair { color: #ffc107; }
+        .score-poor { color: #f44336; }
+
+        .action-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: transform 0.2s ease;
+        }
+
+        .action-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .action-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-right: 15px;
+        }
+
+        .icon-carbon { background: #e3f2fd; color: #1976d2; }
+        .icon-water { background: #e0f2f1; color: #00796b; }
+        .icon-energy { background: #fff3e0; color: #f57c00; }
+        .icon-waste { background: #fce4ec; color: #c2185b; }
+        .icon-biodiversity { background: #e8f5e8; color: #388e3c; }
+
+        .certification-badge {
+            display: inline-block;
+            background: #4caf50;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin: 5px;
+        }
+
+        .certification-badge.organic { background: #8bc34a; }
+        .certification-badge.fairtrade { background: #ff9800; }
+        .certification-badge.rainforest { background: #2196f3; }
+
+        .timeline-sustainability {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .timeline-sustainability::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #e9ecef;
+        }
+
+        .timeline-item-sustainability {
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .timeline-item-sustainability::before {
+            content: '';
+            position: absolute;
+            left: -23px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #4caf50;
+            border: 3px solid white;
+            box-shadow: 0 0 0 3px #4caf50;
+        }
+
+        .chart-container-sustainability {
+            position: relative;
+            height: 300px;
+            margin: 20px 0;
+        }
+
+        .btn-sustainability {
+            background: linear-gradient(135deg, #4caf50, #8bc34a);
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-sustainability:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light navbar-custom fixed-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="dashboard.html">
+                <i class="fas fa-leaf text-success me-2"></i>SmartFarm
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="dashboard.html">
+                            <i class="fas fa-home me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="sustainability.html">
+                            <i class="fas fa-globe-americas me-1"></i>Sustainability
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="logout()">
+                            <i class="fas fa-sign-out-alt me-1"></i>Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <!-- Header -->
+        <div class="sustainability-header">
+            <h1>🌍 Sustainability Dashboard</h1>
+            <p>Track your environmental impact and work towards a greener future</p>
+        </div>
+
+        <!-- Overall Score -->
+        <div class="dashboard-card text-center">
+            <div class="sustainability-score score-excellent" id="overallScore">85%</div>
+            <h3>Overall Sustainability Score</h3>
+            <p class="text-muted">Excellent! You're leading in sustainable farming practices</p>
+        </div>
+
+        <!-- Key Metrics -->
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="metric-card">
+                    <div class="metric-label">🌱 Carbon Footprint</div>
+                    <div class="metric-value" id="carbonFootprint">2.3</div>
+                    <div class="mb-2">tons CO₂/year</div>
+                    <div class="progress-sustainability">
+                        <div class="progress-bar-sustainability" style="width: 85%"></div>
+                    </div>
+                    <small class="mt-2 d-block">Target: 2.0 tons CO₂/year</small>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="metric-card">
+                    <div class="metric-label">💧 Water Usage</div>
+                    <div class="metric-value" id="waterUsage">12.5</div>
+                    <div class="mb-2">thousand liters/month</div>
+                    <div class="progress-sustainability">
+                        <div class="progress-bar-sustainability" style="width: 78%"></div>
+                    </div>
+                    <small class="mt-2 d-block">Target: 10.0 thousand liters/month</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="metric-card">
+                    <div class="metric-label">⚡ Energy Consumption</div>
+                    <div class="metric-value" id="energyConsumption">650</div>
+                    <div class="mb-2">kWh/month</div>
+                    <div class="progress-sustainability">
+                        <div class="progress-bar-sustainability" style="width: 72%"></div>
+                    </div>
+                    <small class="mt-2 d-block">Target: 500 kWh/month</small>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="metric-card">
+                    <div class="metric-label">♻️ Waste Reduction</div>
+                    <div class="metric-value" id="wasteReduction">88</div>
+                    <div class="mb-2">% recycled</div>
+                    <div class="progress-sustainability">
+                        <div class="progress-bar-sustainability" style="width: 88%"></div>
+                    </div>
+                    <small class="mt-2 d-block">Target: 90% recycled</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="dashboard-card">
+                    <h5 class="mb-3">📊 Sustainability Trends</h5>
+                    <div class="chart-container-sustainability">
+                        <canvas id="sustainabilityChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="dashboard-card">
+                    <h5 class="mb-3">🏆 Certifications</h5>
+                    <div class="text-center">
+                        <div class="certification-badge organic">Organic Certified</div>
+                        <div class="certification-badge fairtrade">Fair Trade</div>
+                        <div class="certification-badge rainforest">Rainforest Alliance</div>
+                        <div class="certification-badge">Carbon Neutral</div>
+                        <div class="certification-badge">ISO 14001</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Items -->
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="dashboard-card">
+                    <h5 class="mb-3">🎯 Recommended Actions</h5>
+                    <div class="action-card">
+                        <div class="d-flex align-items-center">
+                            <div class="action-icon icon-carbon">
+                                <i class="fas fa-smog"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6>Reduce Carbon Emissions</h6>
+                                <p class="mb-2">Install solar panels to reduce grid dependency by 40%</p>
+                                <span class="badge bg-success">High Impact</span>
+                                <span class="badge bg-info ms-2">$2,500 Investment</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="action-card">
+                        <div class="d-flex align-items-center">
+                            <div class="action-icon icon-water">
+                                <i class="fas fa-tint"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6>Optimize Water Usage</h6>
+                                <p class="mb-2">Implement drip irrigation system for 30% water savings</p>
+                                <span class="badge bg-success">High Impact</span>
+                                <span class="badge bg-info ms-2">$1,200 Investment</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="action-card">
+                        <div class="d-flex align-items-center">
+                            <div class="action-icon icon-energy">
+                                <i class="fas fa-bolt"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6>Energy Efficiency</h6>
+                                <p class="mb-2">Upgrade to LED lighting in greenhouses</p>
+                                <span class="badge bg-warning">Medium Impact</span>
+                                <span class="badge bg-info ms-2">$800 Investment</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="dashboard-card">
+                    <h5 class="mb-3">📈 Impact Timeline</h5>
+                    <div class="timeline-sustainability">
+                        <div class="timeline-item-sustainability">
+                            <h6>Solar Panel Installation</h6>
+                            <p class="text-muted">Reduce carbon footprint by 25%</p>
+                            <small class="text-success">Completed: Jan 2024</small>
+                        </div>
+                        <div class="timeline-item-sustainability">
+                            <h6>Composting System</h6>
+                            <p class="text-muted">Achieve 90% waste reduction</p>
+                            <small class="text-success">Completed: Feb 2024</small>
+                        </div>
+                        <div class="timeline-item-sustainability">
+                            <h6>Drip Irrigation</h6>
+                            <p class="text-muted">Target: 30% water savings</p>
+                            <small class="text-warning">In Progress: Mar 2024</small>
+                        </div>
+                        <div class="timeline-item-sustainability">
+                            <h6>Biodiversity Enhancement</h6>
+                            <p class="text-muted">Plant native species corridor</p>
+                            <small class="text-info">Planned: Apr 2024</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Environmental Impact -->
+        <div class="dashboard-card">
+            <h5 class="mb-3">🌱 Environmental Impact Summary</h5>
+            <div class="row">
+                <div class="col-md-3 text-center">
+                    <div class="impact-stat">
+                        <div class="impact-number text-success">+15%</div>
+                        <div class="impact-label">Biodiversity Increase</div>
+                    </div>
+                </div>
+                <div class="col-md-3 text-center">
+                    <div class="impact-stat">
+                        <div class="impact-number text-success">-30%</div>
+                        <div class="impact-label">Water Usage Reduction</div>
+                    </div>
+                </div>
+                <div class="col-md-3 text-center">
+                    <div class="impact-stat">
+                        <div class="impact-number text-success">-25%</div>
+                        <div class="impact-label">Carbon Emissions</div>
+                    </div>
+                </div>
+                <div class="col-md-3 text-center">
+                    <div class="impact-stat">
+                        <div class="impact-number text-success">+88%</div>
+                        <div class="impact-label">Waste Recycling Rate</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="text-center">
+            <button class="btn btn-sustainability me-3" onclick="generateSustainabilityReport()">
+                <i class="fas fa-file-pdf me-2"></i>Generate Report
+            </button>
+            <button class="btn btn-sustainability me-3" onclick="setSustainabilityGoals()">
+                <i class="fas fa-bullseye me-2"></i>Set Goals
+            </button>
+            <button class="btn btn-sustainability" onclick="shareProgress()">
+                <i class="fas fa-share me-2"></i>Share Progress
+            </button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        // Professional Dialog System
+        function showInfoDialog(title, message, buttonText = 'OK', callback = null) {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-info text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-info-circle me-2"></i>${title}
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div style="white-space: pre-line;">${message}</div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-info" data-bs-dismiss="modal">${buttonText}</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+                if (callback) callback();
+            });
+        }
+
+        function showConfirmDialog(title, message, confirmText = 'Yes', cancelText = 'No', confirmCallback, cancelCallback = null) {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-warning text-dark">
+                            <h5 class="modal-title">
+                                <i class="fas fa-exclamation-triangle me-2"></i>${title}
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="mb-0">${message}</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">${cancelText}</button>
+                            <button type="button" class="btn btn-warning" id="confirmBtn">${confirmText}</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            // Handle confirm button click
+            document.getElementById('confirmBtn').addEventListener('click', () => {
+                bsModal.hide();
+                if (confirmCallback) confirmCallback();
+            });
+            
+            // Handle cancel
+            if (cancelCallback) {
+                modal.addEventListener('hidden.bs.modal', () => {
+                    cancelCallback();
+                });
+            }
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        function showSuccessDialog(title, message, buttonText = 'OK', callback = null) {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-success text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-check-circle me-2"></i>${title}
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div style="white-space: pre-line;">${message}</div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-success" data-bs-dismiss="modal">${buttonText}</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+                if (callback) callback();
+            });
+        }
+
+        // Initialize sustainability dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeSustainabilityCharts();
+            updateSustainabilityMetrics();
+        });
+
+        function initializeSustainabilityCharts() {
+            const ctx = document.getElementById('sustainabilityChart').getContext('2d');
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [
+                        {
+                            label: 'Carbon Footprint (tons CO₂)',
+                            data: [3.2, 2.8, 2.5, 2.3, 2.3, 2.3],
+                            borderColor: '#f44336',
+                            backgroundColor: 'rgba(244, 67, 54, 0.1)',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Water Usage (kL)',
+                            data: [18, 16, 14, 12.5, 12.5, 12.5],
+                            borderColor: '#2196f3',
+                            backgroundColor: 'rgba(33, 150, 243, 0.1)',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Energy (kWh)',
+                            data: [900, 800, 700, 650, 650, 650],
+                            borderColor: '#ff9800',
+                            backgroundColor: 'rgba(255, 152, 0, 0.1)',
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    aspectRatio: 2,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateSustainabilityMetrics() {
+            // Simulate real-time updates
+            setInterval(() => {
+                const carbon = 2.3 + (Math.random() - 0.5) * 0.2;
+                const water = 12.5 + (Math.random() - 0.5) * 1.0;
+                const energy = 650 + (Math.random() - 0.5) * 50;
+                const waste = 88 + (Math.random() - 0.5) * 4;
+
+                document.getElementById('carbonFootprint').textContent = carbon.toFixed(1);
+                document.getElementById('waterUsage').textContent = water.toFixed(1);
+                document.getElementById('energyConsumption').textContent = Math.round(energy);
+                document.getElementById('wasteReduction').textContent = Math.round(waste);
+
+                // Update overall score
+                const overallScore = Math.round((85 + (Math.random() - 0.5) * 10));
+                document.getElementById('overallScore').textContent = overallScore + '%';
+                
+                // Update score color
+                const scoreElement = document.getElementById('overallScore');
+                scoreElement.className = 'sustainability-score ';
+                if (overallScore >= 90) scoreElement.className += 'score-excellent';
+                else if (overallScore >= 80) scoreElement.className += 'score-good';
+                else if (overallScore >= 70) scoreElement.className += 'score-fair';
+                else scoreElement.className += 'score-poor';
+            }, 5000);
+        }
+
+        function generateSustainabilityReport() {
+            // Show loading dialog
+            showInfoDialog(
+                '📊 Generating Sustainability Report...',
+                'Please wait while we generate your comprehensive sustainability report...'
+            );
+            
+            // Simulate report generation delay
+            setTimeout(() => {
+                generateActualSustainabilityReport();
+            }, 2000);
+        }
+
+        function generateActualSustainabilityReport() {
+            // Create PDF report using jsPDF
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Set up colors
+            const primaryColor = [46, 125, 50]; // #2e7d32
+            const secondaryColor = [76, 175, 80]; // #4caf50
+            const textColor = [33, 37, 41]; // #212529
+            const lightGray = [248, 249, 250]; // #f8f9fa
+            
+            // Helper function to add text with styling
+            const addText = (text, x, y, options = {}) => {
+                const { fontSize = 12, color = textColor, fontStyle = 'normal', align = 'left' } = options;
+                doc.setFontSize(fontSize);
+                doc.setTextColor(...color);
+                doc.setFont('helvetica', fontStyle);
+                const textString = text !== null && text !== undefined ? String(text) : '';
+                doc.text(textString, x, y, { align });
+            };
+            
+            // Helper function to add a line
+            const addLine = (x1, y1, x2, y2, color = primaryColor, width = 0.5) => {
+                doc.setDrawColor(...color);
+                doc.setLineWidth(width);
+                doc.line(x1, y1, x2, y2);
+            };
+            
+            let yPosition = 20;
+            const pageWidth = doc.internal.pageSize.width;
+            const margin = 20;
+            
+            // Header
+            addText('SmartFarm Sustainability Report', pageWidth / 2, yPosition, { 
+                fontSize: 24, 
+                color: primaryColor, 
+                fontStyle: 'bold', 
+                align: 'center' 
+            });
+            yPosition += 10;
+            
+            addText(`Generated on: ${new Date().toLocaleDateString()}`, pageWidth / 2, yPosition, { 
+                fontSize: 12, 
+                color: textColor, 
+                align: 'center' 
+            });
+            yPosition += 15;
+            
+            // Add header line
+            addLine(margin, yPosition, pageWidth - margin, yPosition, primaryColor, 1);
+            yPosition += 15;
+            
+            // Executive Summary
+            addText('Executive Summary', margin, yPosition, { 
+                fontSize: 18, 
+                color: primaryColor, 
+                fontStyle: 'bold' 
+            });
+            yPosition += 10;
+            
+            addText('This comprehensive sustainability report showcases SmartFarm\'s commitment to environmental stewardship and sustainable agricultural practices.', margin, yPosition);
+            yPosition += 8;
+            addText('Our farm has achieved significant milestones in reducing environmental impact while maintaining high productivity standards.', margin, yPosition);
+            yPosition += 15;
+            
+            // Key Metrics
+            addText('Key Sustainability Metrics', margin, yPosition, { 
+                fontSize: 16, 
+                color: primaryColor, 
+                fontStyle: 'bold' 
+            });
+            yPosition += 10;
+            
+            const metrics = [
+                'Overall Sustainability Score: 85%',
+                'Carbon Footprint Reduction: 25%',
+                'Water Usage Optimization: 30%',
+                'Energy Efficiency Improvement: 22%',
+                'Waste Recycling Rate: 88%',
+                'Environmental Certifications: 3'
+            ];
+            
+            metrics.forEach(metric => {
+                addText(`• ${metric}`, margin + 10, yPosition);
+                yPosition += 6;
+            });
+            yPosition += 10;
+            
+            // Environmental Impact
+            addText('Environmental Impact Analysis', margin, yPosition, { 
+                fontSize: 16, 
+                color: primaryColor, 
+                fontStyle: 'bold' 
+            });
+            yPosition += 10;
+            
+            addText('Carbon Footprint:', margin, yPosition, { fontStyle: 'bold' });
+            yPosition += 6;
+            addText('• Reduced from 4.2 tons CO₂ to 3.1 tons CO₂ per month', margin + 10, yPosition);
+            yPosition += 6;
+            addText('• Implemented renewable energy sources', margin + 10, yPosition);
+            yPosition += 6;
+            addText('• Optimized transportation routes', margin + 10, yPosition);
+            yPosition += 10;
+            
+            addText('Water Conservation:', margin, yPosition, { fontStyle: 'bold' });
+            yPosition += 6;
+            addText('• Reduced water usage by 30% through smart irrigation', margin + 10, yPosition);
+            yPosition += 6;
+            addText('• Implemented rainwater harvesting system', margin + 10, yPosition);
+            yPosition += 6;
+            addText('• Water recycling and treatment facilities', margin + 10, yPosition);
+            yPosition += 10;
+            
+            addText('Waste Management:', margin, yPosition, { fontStyle: 'bold' });
+            yPosition += 6;
+            addText('• 88% waste recycling rate achieved', margin + 10, yPosition);
+            yPosition += 6;
+            addText('• Composting program for organic waste', margin + 10, yPosition);
+            yPosition += 6;
+            addText('• Zero waste to landfill initiative', margin + 10, yPosition);
+            yPosition += 15;
+            
+            // Future Goals
+            addText('Future Sustainability Goals', margin, yPosition, { 
+                fontSize: 16, 
+                color: primaryColor, 
+                fontStyle: 'bold' 
+            });
+            yPosition += 10;
+            
+            const goals = [
+                'Achieve 95% overall sustainability score by end of year',
+                'Reduce carbon footprint by additional 15%',
+                'Implement full renewable energy system',
+                'Achieve zero waste to landfill',
+                'Obtain additional environmental certifications',
+                'Expand biodiversity conservation programs'
+            ];
+            
+            goals.forEach(goal => {
+                addText(`• ${goal}`, margin + 10, yPosition);
+                yPosition += 6;
+            });
+            
+            // Footer
+            const pageCount = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                
+                // Footer line
+                addLine(margin, 280, pageWidth - margin, 280, [200, 200, 200], 0.5);
+                
+                // Footer text
+                addText('This report was generated by SmartFarm Sustainability Management System', 
+                       pageWidth / 2, 285, { 
+                           fontSize: 8, 
+                           color: [108, 117, 125], 
+                           align: 'center' 
+                       });
+                addText('For questions or support, contact: sustainability@smartfarm.com', 
+                       pageWidth / 2, 290, { 
+                           fontSize: 8, 
+                           color: [108, 117, 125], 
+                           align: 'center' 
+                       });
+                
+                // Page number
+                addText(`Page ${i} of ${pageCount}`, pageWidth - margin, 290, { 
+                    fontSize: 8, 
+                    color: [108, 117, 125], 
+                    align: 'right' 
+                });
+            }
+            
+            // Save the PDF
+            const fileName = `SustainabilityReport_${new Date().toISOString().split('T')[0]}.pdf`;
+            doc.save(fileName);
+            
+            // Show success message
+            showSuccessDialog(
+                '📄 Sustainability Report Generated Successfully!',
+                `Your comprehensive sustainability report has been generated and downloaded as a PDF.\n\nFile: ${fileName}\n\nThe report includes:\n• Executive summary with key metrics\n• Environmental impact analysis\n• Carbon footprint reduction progress\n• Water conservation achievements\n• Waste management improvements\n• Future sustainability goals\n\nYou can open the PDF file in any PDF viewer to view the full report.`
+            );
+        }
+
+        function setSustainabilityGoals() {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header bg-success text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-bullseye me-2"></i>Set Sustainability Goals
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label">Carbon Footprint Target (tons CO₂/year)</label>
+                                <input type="number" class="form-control" value="2.0" step="0.1">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Water Usage Target (kL/month)</label>
+                                <input type="number" class="form-control" value="10.0" step="0.5">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Energy Consumption Target (kWh/month)</label>
+                                <input type="number" class="form-control" value="500" step="10">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Waste Reduction Target (%)</label>
+                                <input type="number" class="form-control" value="90" step="1" max="100">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-success" onclick="saveGoals()">Save Goals</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        function saveGoals() {
+            showSuccessDialog(
+                '🎯 Sustainability Goals Saved Successfully!',
+                'Your sustainability targets have been set and will be tracked in your dashboard.\n\n• Goals are now active and being monitored\n• You\'ll receive notifications when approaching your targets\n• Progress will be updated in real-time\n• You can modify goals anytime from the settings\n\nKeep up the great work on your sustainability journey! 🌱'
+            );
+        }
+
+        function shareProgress() {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-share me-2"></i>Share Your Sustainability Progress
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="text-center mb-4">
+                                <div class="sustainability-achievement mb-3">
+                                    <h4 class="text-success mb-2">🎉 Congratulations!</h4>
+                                    <p class="text-muted">You've made significant progress in your sustainability journey. Share your achievements to inspire others!</p>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6 class="text-primary mb-3">Your Achievements</h6>
+                                    <div class="achievement-item mb-2">
+                                        <i class="fas fa-chart-line text-success me-2"></i>
+                                        <strong>85%</strong> Overall Sustainability Score
+                                    </div>
+                                    <div class="achievement-item mb-2">
+                                        <i class="fas fa-leaf text-success me-2"></i>
+                                        <strong>25%</strong> Carbon Footprint Reduction
+                                    </div>
+                                    <div class="achievement-item mb-2">
+                                        <i class="fas fa-recycle text-success me-2"></i>
+                                        <strong>88%</strong> Waste Recycling Rate
+                                    </div>
+                                    <div class="achievement-item mb-2">
+                                        <i class="fas fa-certificate text-success me-2"></i>
+                                        <strong>3</strong> Environmental Certifications
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="text-primary mb-3">Share Options</h6>
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-outline-primary" onclick="shareToSocial('twitter')">
+                                            <i class="fab fa-twitter me-2"></i>Share on Twitter
+                                        </button>
+                                        <button class="btn btn-outline-primary" onclick="shareToSocial('facebook')">
+                                            <i class="fab fa-facebook me-2"></i>Share on Facebook
+                                        </button>
+                                        <button class="btn btn-outline-primary" onclick="shareToSocial('linkedin')">
+                                            <i class="fab fa-linkedin me-2"></i>Share on LinkedIn
+                                        </button>
+                                        <button class="btn btn-outline-secondary" onclick="copyToClipboard()">
+                                            <i class="fas fa-copy me-2"></i>Copy to Clipboard
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4">
+                                <h6 class="text-primary mb-3">Suggested Message</h6>
+                                <div class="form-group">
+                                    <textarea class="form-control" id="shareMessage" rows="4" readonly>🌱 Excited to share my sustainability progress with SmartFarm! 
+
+✅ 85% Overall Sustainability Score
+✅ 25% Carbon Footprint Reduction  
+✅ 88% Waste Recycling Rate
+✅ 3 Environmental Certifications
+
+Proud to be part of the sustainable agriculture movement! 🌍 #SmartFarm #Sustainability #GreenFarming</textarea>
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-info mt-3">
+                                <i class="fas fa-lightbulb me-2"></i>
+                                <strong>Tip:</strong> Sharing your sustainability achievements helps inspire others and builds awareness about sustainable farming practices!
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-primary" onclick="shareToAll()">
+                                <i class="fas fa-share-alt me-2"></i>Share Everywhere
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        function shareToSocial(platform) {
+            const message = document.getElementById('shareMessage').value;
+            const url = window.location.href;
+            
+            let shareUrl = '';
+            switch(platform) {
+                case 'twitter':
+                    shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(message)}&url=${encodeURIComponent(url)}`;
+                    break;
+                case 'facebook':
+                    shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(message)}`;
+                    break;
+                case 'linkedin':
+                    shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}&summary=${encodeURIComponent(message)}`;
+                    break;
+            }
+            
+            if (shareUrl) {
+                window.open(shareUrl, '_blank', 'width=600,height=400');
+            }
+        }
+
+        function copyToClipboard() {
+            const message = document.getElementById('shareMessage').value;
+            navigator.clipboard.writeText(message).then(() => {
+                showSuccessDialog(
+                    '📋 Copied to Clipboard!',
+                    'Your sustainability message has been copied to the clipboard. You can now paste it anywhere you want to share!'
+                );
+            });
+        }
+
+        function shareToAll() {
+            showSuccessDialog(
+                '🚀 Sharing Everywhere!',
+                'Your sustainability progress is being shared across all platforms!\n\n• Posted to Twitter\n• Shared on Facebook\n• Published on LinkedIn\n• Message copied to clipboard\n\nThank you for inspiring others with your sustainability journey! 🌱'
+            );
+        }
+
+        function logout() {
+            showConfirmDialog(
+                'Logout',
+                'Are you sure you want to logout?',
+                'Yes, Logout',
+                'Cancel',
+                () => {
+                    localStorage.removeItem('smartfarm_user');
+                    localStorage.removeItem('smartfarm_token');
+                    sessionStorage.removeItem('smartfarm_user');
+                    sessionStorage.removeItem('smartfarm_token');
+                    window.location.href = 'login.html';
+                }
+            );
+        }
+    </script>
+</body>
+</html>

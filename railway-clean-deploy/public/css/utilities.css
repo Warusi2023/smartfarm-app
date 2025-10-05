@@ -1,0 +1,406 @@
+/**
+ * SmartFarm Utility Classes
+ * System-level CSS utilities for common patterns
+ */
+
+/* Overlay and Modal Utilities */
+[data-overlay="true"][aria-hidden="true"] {
+    pointer-events: none !important;
+    visibility: hidden !important;
+}
+
+[data-overlay="true"]:not([aria-hidden="true"]) {
+    pointer-events: auto !important;
+    visibility: visible !important;
+}
+
+/* Z-index Management */
+.smartfarm-overlay {
+    z-index: 1000;
+}
+
+.smartfarm-modal {
+    z-index: 1050;
+}
+
+.smartfarm-tooltip {
+    z-index: 1070;
+}
+
+.smartfarm-toast {
+    z-index: 1080;
+}
+
+.smartfarm-error-boundary {
+    z-index: 1090;
+}
+
+/* Loading States */
+.smartfarm-loading {
+    position: relative;
+    pointer-events: none;
+}
+
+.smartfarm-loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.smartfarm-loading::before {
+    content: '⏳';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 24px;
+    z-index: 1001;
+    animation: smartfarm-spin 1s linear infinite;
+}
+
+@keyframes smartfarm-spin {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* Error States */
+.smartfarm-error {
+    border: 2px solid #dc3545 !important;
+    background-color: #f8d7da !important;
+}
+
+.smartfarm-warning {
+    border: 2px solid #ffc107 !important;
+    background-color: #fff3cd !important;
+}
+
+.smartfarm-success {
+    border: 2px solid #28a745 !important;
+    background-color: #d4edda !important;
+}
+
+/* Accessibility Utilities */
+.smartfarm-sr-only {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+.smartfarm-focus-visible:focus {
+    outline: 2px solid #007bff !important;
+    outline-offset: 2px !important;
+}
+
+/* Responsive Utilities */
+.smartfarm-hidden-mobile {
+    display: block;
+}
+
+.smartfarm-hidden-desktop {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .smartfarm-hidden-mobile {
+        display: none !important;
+    }
+    
+    .smartfarm-hidden-desktop {
+        display: block !important;
+    }
+}
+
+/* Animation Utilities */
+.smartfarm-fade-in {
+    animation: smartfarm-fade-in 0.3s ease-in-out;
+}
+
+.smartfarm-fade-out {
+    animation: smartfarm-fade-out 0.3s ease-in-out;
+}
+
+.smartfarm-slide-in {
+    animation: smartfarm-slide-in 0.3s ease-in-out;
+}
+
+.smartfarm-slide-out {
+    animation: smartfarm-slide-out 0.3s ease-in-out;
+}
+
+@keyframes smartfarm-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes smartfarm-fade-out {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+@keyframes smartfarm-slide-in {
+    from { transform: translateY(-20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes smartfarm-slide-out {
+    from { transform: translateY(0); opacity: 1; }
+    to { transform: translateY(-20px); opacity: 0; }
+}
+
+/* Form Utilities */
+.smartfarm-form-group {
+    margin-bottom: 1rem;
+}
+
+.smartfarm-form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.smartfarm-form-control {
+    display: block;
+    width: 100%;
+    padding: 0.375rem 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #495057;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.smartfarm-form-control:focus {
+    color: #495057;
+    background-color: #fff;
+    border-color: #80bdff;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.smartfarm-form-control.smartfarm-error {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+/* Button Utilities */
+.smartfarm-btn {
+    display: inline-block;
+    font-weight: 400;
+    text-align: center;
+    vertical-align: middle;
+    cursor: pointer;
+    user-select: none;
+    background-color: transparent;
+    border: 1px solid transparent;
+    padding: 0.375rem 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    border-radius: 0.25rem;
+    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.smartfarm-btn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+.smartfarm-btn-primary {
+    color: #fff;
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.smartfarm-btn-primary:hover:not(:disabled) {
+    color: #fff;
+    background-color: #0056b3;
+    border-color: #004085;
+}
+
+.smartfarm-btn-secondary {
+    color: #fff;
+    background-color: #6c757d;
+    border-color: #6c757d;
+}
+
+.smartfarm-btn-secondary:hover:not(:disabled) {
+    color: #fff;
+    background-color: #545b62;
+    border-color: #4e555b;
+}
+
+.smartfarm-btn-success {
+    color: #fff;
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.smartfarm-btn-success:hover:not(:disabled) {
+    color: #fff;
+    background-color: #1e7e34;
+    border-color: #1c7430;
+}
+
+.smartfarm-btn-danger {
+    color: #fff;
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.smartfarm-btn-danger:hover:not(:disabled) {
+    color: #fff;
+    background-color: #c82333;
+    border-color: #bd2130;
+}
+
+.smartfarm-btn-warning {
+    color: #212529;
+    background-color: #ffc107;
+    border-color: #ffc107;
+}
+
+.smartfarm-btn-warning:hover:not(:disabled) {
+    color: #212529;
+    background-color: #e0a800;
+    border-color: #d39e00;
+}
+
+/* Alert Utilities */
+.smartfarm-alert {
+    position: relative;
+    padding: 0.75rem 1.25rem;
+    margin-bottom: 1rem;
+    border: 1px solid transparent;
+    border-radius: 0.25rem;
+}
+
+.smartfarm-alert-primary {
+    color: #004085;
+    background-color: #cce7ff;
+    border-color: #b3d7ff;
+}
+
+.smartfarm-alert-secondary {
+    color: #383d41;
+    background-color: #e2e3e5;
+    border-color: #d6d8db;
+}
+
+.smartfarm-alert-success {
+    color: #155724;
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+}
+
+.smartfarm-alert-danger {
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+}
+
+.smartfarm-alert-warning {
+    color: #856404;
+    background-color: #fff3cd;
+    border-color: #ffeaa7;
+}
+
+.smartfarm-alert-info {
+    color: #0c5460;
+    background-color: #d1ecf1;
+    border-color: #bee5eb;
+}
+
+/* Grid Utilities */
+.smartfarm-container {
+    width: 100%;
+    padding-right: 15px;
+    padding-left: 15px;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+@media (min-width: 576px) {
+    .smartfarm-container {
+        max-width: 540px;
+    }
+}
+
+@media (min-width: 768px) {
+    .smartfarm-container {
+        max-width: 720px;
+    }
+}
+
+@media (min-width: 992px) {
+    .smartfarm-container {
+        max-width: 960px;
+    }
+}
+
+@media (min-width: 1200px) {
+    .smartfarm-container {
+        max-width: 1140px;
+    }
+}
+
+.smartfarm-row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-right: -15px;
+    margin-left: -15px;
+}
+
+.smartfarm-col {
+    flex-basis: 0;
+    flex-grow: 1;
+    max-width: 100%;
+    padding-right: 15px;
+    padding-left: 15px;
+}
+
+/* Print Utilities */
+@media print {
+    .smartfarm-no-print {
+        display: none !important;
+    }
+    
+    .smartfarm-print-only {
+        display: block !important;
+    }
+}
+
+/* Dark Mode Utilities */
+@media (prefers-color-scheme: dark) {
+    .smartfarm-auto-dark {
+        background-color: #212529;
+        color: #fff;
+    }
+    
+    .smartfarm-auto-dark .smartfarm-form-control {
+        background-color: #495057;
+        border-color: #6c757d;
+        color: #fff;
+    }
+    
+    .smartfarm-auto-dark .smartfarm-form-control:focus {
+        background-color: #495057;
+        border-color: #80bdff;
+        color: #fff;
+    }
+}

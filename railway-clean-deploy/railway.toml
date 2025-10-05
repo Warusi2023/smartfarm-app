@@ -1,6 +1,5 @@
 [build]
 builder = "NIXPACKS"
-rootDirectory = "railway-clean-deploy"
 
 [deploy]
 startCommand = "node server.js"

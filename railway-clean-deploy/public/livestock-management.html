@@ -1,0 +1,2186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Livestock Management - SmartFarm</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2e7d32;
+            --secondary-color: #4caf50;
+            --accent-color: #8bc34a;
+            --danger-color: #f44336;
+            --warning-color: #ff9800;
+            --info-color: #2196f3;
+            --dark-color: #424242;
+            --light-color: #f5f5f5;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 40px 0;
+            margin-bottom: 30px;
+        }
+
+        .card-custom {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .card-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-custom {
+            background: var(--accent-color);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-custom:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        .table-custom {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .table-custom th {
+            background: var(--light-color);
+            border: none;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .status-healthy { background: #d4edda; color: #155724; }
+        .status-sick { background: #f8d7da; color: #721c24; }
+        .status-pregnant { background: #fff3cd; color: #856404; }
+        .status-breeding { background: #cce5ff; color: #004085; }
+        .status-sold { background: #e2e3e5; color: #383d41; }
+
+        .livestock-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .livestock-card:hover {
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 12px rgba(46, 125, 50, 0.15);
+        }
+
+        .livestock-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        
+        /* Timeline Styles */
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #e0e0e0;
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 30px;
+        }
+        
+        .timeline-item.active .timeline-marker {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .timeline-item.active .timeline-content {
+            background: #f8f9fa;
+            border-left: 3px solid var(--primary-color);
+        }
+        
+        .timeline-marker {
+            position: absolute;
+            left: -22px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: white;
+            border: 2px solid #e0e0e0;
+            z-index: 1;
+        }
+        
+        .timeline-content {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-left: 10px;
+        }
+        
+        .timeline-content h6 {
+            margin-bottom: 5px;
+            color: var(--primary-color);
+        }
+        
+        .timeline-content p {
+            margin-bottom: 0;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        /* Lifecycle Stage Badges */
+        .lifecycle-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+        
+        .lifecycle-calf { background: #e3f2fd; color: #1976d2; }
+        .lifecycle-heifer { background: #f3e5f5; color: #7b1fa2; }
+        .lifecycle-cow { background: #e8f5e8; color: #2e7d32; }
+        .lifecycle-bull { background: #fff3e0; color: #f57c00; }
+        .lifecycle-steer { background: #fce4ec; color: #c2185b; }
+        .lifecycle-bullock { background: #f1f8e9; color: #558b2f; }
+        
+        /* Production Purpose Indicators */
+        .purpose-dairy { background: #e3f2fd; color: #1976d2; }
+        .purpose-beef { background: #ffebee; color: #d32f2f; }
+        .purpose-breeding { background: #f3e5f5; color: #7b1fa2; }
+        .purpose-dual_purpose { background: #e8f5e8; color: #2e7d32; }
+        .purpose-working { background: #fff3e0; color: #f57c00; }
+        .purpose-pet { background: #fce4ec; color: #c2185b; }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+        }
+
+        /* Breed Suggestions Styling */
+        .breed-input-container {
+            position: relative;
+        }
+
+        .breed-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .breed-suggestion-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #f8f9fa;
+            transition: background-color 0.2s ease;
+        }
+
+        .breed-suggestion-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .breed-suggestion-item:last-child {
+            border-bottom: none;
+        }
+
+        .breed-suggestion-item.highlighted {
+            background-color: #e3f2fd;
+        }
+
+        .breed-category {
+            font-weight: bold;
+            color: #6c757d;
+            font-size: 0.85rem;
+            padding: 8px 15px 5px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .breed-name {
+            font-weight: 500;
+            color: #212529;
+        }
+
+        .breed-details {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-top: 2px;
+        }
+
+        .navbar-custom {
+            background: white !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .modal-custom .modal-content {
+            border-radius: 15px;
+            border: none;
+        }
+
+        .form-control-custom {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 12px 15px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control-custom:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(46, 125, 50, 0.25);
+        }
+
+        .health-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .health-excellent { background-color: #28a745; }
+        .health-good { background-color: #17a2b8; }
+        .health-fair { background-color: #ffc107; }
+        .health-poor { background-color: #dc3545; }
+
+        .weight-chart {
+            height: 250px;
+        }
+
+        /* Livestock Card Styling */
+        .livestock-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .livestock-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .livestock-id {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #2e7d32;
+            margin-bottom: 5px;
+        }
+
+        .livestock-breed {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .livestock-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .livestock-info-label {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .livestock-info-value {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .livestock-value {
+            color: #2e7d32;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .badge-lifecycle {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-right: 5px;
+        }
+
+        .lifecycle-cow { background: #e8f5e8; color: #2e7d32; }
+        .lifecycle-bull { background: #f3e5f5; color: #7b1fa2; }
+        .lifecycle-heifer { background: #f3e5f5; color: #7b1fa2; }
+
+        .badge-purpose {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .purpose-dairy { background: #e3f2fd; color: #1976d2; }
+        .purpose-beef { background: #ffebee; color: #d32f2f; }
+        .purpose-breeding { background: #f3e5f5; color: #7b1fa2; }
+
+        .livestock-status {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-dot.healthy { background: #28a745; }
+        .status-dot.pregnant { background: #ff9800; }
+        .status-dot.sick { background: #dc3545; }
+
+        .status-badge-top {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-badge-top.healthy { background: #d4edda; color: #155724; }
+        .status-badge-top.pregnant { background: #fff3cd; color: #856404; }
+
+        .livestock-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .livestock-actions .btn {
+            flex: 1;
+            padding: 8px 12px;
+            font-size: 0.85rem;
+            border-radius: 6px;
+        }
+
+        .btn-edit { background: #17a2b8; color: white; border: none; }
+        .btn-edit:hover { background: #138496; }
+
+        .btn-health { background: #28a745; color: white; border: none; }
+        .btn-health:hover { background: #218838; }
+
+        .btn-timeline { background: #6c757d; color: white; border: none; }
+        .btn-timeline:hover { background: #5a6268; }
+
+        .btn-delete { background: #dc3545; color: white; border: none; }
+        .btn-delete:hover { background: #c82333; }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light navbar-custom">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="dashboard.html">
+                <i class="fas fa-leaf me-2"></i>SmartFarm
+            </a>
+            <div class="navbar-nav ms-auto">
+                <div class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+                        <div class="user-avatar me-2" id="userAvatar">F</div>
+                        <span id="userName">Farmer</span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="dashboard.html"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a></li>
+                        <li><a class="dropdown-item" href="crop-management.html"><i class="fas fa-seedling me-2"></i>Crop Management</a></li>
+                        <li><a class="dropdown-item" href="livestock-management.html"><i class="fas fa-cow me-2"></i>Livestock</a></li>
+                        <li><a class="dropdown-item" href="inventory-management.html"><i class="fas fa-boxes me-2"></i>Inventory</a></li>
+                        <li><a class="dropdown-item" href="analytics-dashboard.html"><i class="fas fa-chart-line me-2"></i>Analytics</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#" onclick="logout()"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <a href="dashboard.html" class="back-btn me-3">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                    </a>
+                    <h1 class="mb-0">Livestock Management</h1>
+                    <p class="mb-0 mt-2">Manage your livestock, track health, and monitor breeding</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <button class="btn btn-light btn-lg" data-bs-toggle="modal" data-bs-target="#addLivestockModal">
+                        <i class="fas fa-plus me-2"></i>Add New Animal
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Statistics Cards -->
+        <div class="row mb-4">
+            <div class="col-lg-3 col-md-6">
+                <div class="card-custom text-center">
+                    <h3 class="text-primary mb-2" id="totalAnimals">5</h3>
+                    <p class="mb-0">Total Animals</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="card-custom text-center">
+                    <h3 class="text-success mb-2" id="healthyAnimals">4</h3>
+                    <p class="mb-0">Healthy Animals</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="card-custom text-center">
+                    <h3 class="text-warning mb-2" id="pregnantAnimals">1</h3>
+                    <p class="mb-0">Pregnant Animals</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="card-custom text-center">
+                    <h3 class="text-info mb-2" id="totalValue">11800</h3>
+                    <p class="mb-0">Total Value (FJD)</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter and Search -->
+        <div class="card-custom">
+            <div class="row align-items-center">
+                <div class="col-md-3">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" class="form-control" id="searchInput" placeholder="Search animals...">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" id="speciesFilter">
+                        <option value="">All Species</option>
+                        <option value="cattle">Cattle</option>
+                        <option value="pigs">Pigs</option>
+                        <option value="sheep">Sheep</option>
+                        <option value="goats">Goats</option>
+                        <option value="chickens">Chickens</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" id="statusFilter">
+                        <option value="">All Status</option>
+                        <option value="healthy">Healthy</option>
+                        <option value="sick">Sick</option>
+                        <option value="pregnant">Pregnant</option>
+                        <option value="breeding">Breeding</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button class="btn btn-custom w-100" onclick="applyFilters()">
+                        <i class="fas fa-filter me-2"></i>Filter
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Livestock Grid -->
+        <div class="row" id="livestockContainer">
+            <!-- H001 - Cattle -->
+            <div class="col-lg-4 col-md-6">
+                <div class="livestock-card">
+                    <div class="status-badge-top healthy">Healthy</div>
+                    <div class="livestock-id">H001 - Cattle</div>
+                    <div class="livestock-breed">Holstein • female</div>
+                    <div class="livestock-info">
+                        <span class="livestock-info-label">Age</span>
+                        <span class="livestock-info-value">2y 6m</span>
+                    </div>
+                    <div class="livestock-info">
+                        <span class="livestock-info-label">Weight</span>
+                        <span class="livestock-info-value">450.5 kg</span>
+                    </div>
+                    <div class="livestock-info">
+                        <span class="livestock-info-label">Location</span>
+                        <span class="livestock-info-value">Pasture 1</span>
+                    </div>
+                    <div class="livestock-info">
+                        <span class="livestock-info-label">Value</span>
+                        <span class="livestock-value">FJD 2500</span>
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge badge-lifecycle lifecycle-cow">COW</span>
+                        <span class="badge badge-purpose purpose-dairy">DAIRY</span>
+                    </div>
+                    <div class="livestock-status">
+                        <span class="status-dot healthy"></span>
+                        <span>Healthy</span>
+                    </div>
+                    <div class="livestock-actions">
+                        <button class="btn btn-edit"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-health"><i class="fas fa-heart"></i></button>
+                        <button class="btn btn-timeline"><i class="fas fa-chart-line"></i></button>
+                        <button class="btn btn-delete"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- P001 - Pigs -->
+            <div class="col-lg-4 col-md-6">
+                <div class="livestock-card">
+                    <div class="status-badge-top healthy">Healthy</div>
+                    <div class="livestock-id">P001 - Pigs</div>
+                    <div class="livestock-breed">Large White • male</div>
+                    <div class="livestock-info">
+                        <span class="livestock-info-label">Age</span>
+                        <span class="livestock-info-value">1y 8m</span>
+                    </div>
+                    <div class="livestock-info">
+                        <span class="livestock-info-label">Weight</span>
+                        <span class="livestock-info-value">180.2 kg</span>
+                    </div>
+                    <div class="livestock-info">
+                        <span class="livestock-info-label">Location</span>
+                        <span class="livestock-info-value">Pen 2</span>
+                    </div>
+                    <div class="livestock-info">
+                        <span class="livestock-info-label">Value</span>
+                        <span class="livestock-value">FJD 800</span>
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge badge-lifecycle lifecycle-bull">BOAR</span>
+                        <span class="badge badge-purpose purpose-beef">BEEF</span>
+                    </div>
+                    <div class="livestock-status">
+                        <span class="status-dot healthy"></span>
+                        <span>Healthy</span>
+                    </div>
+                    <div class="livestock-actions">
+                        <button class="btn btn-edit"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-health"><i class="fas fa-heart"></i></button>
+                        <button class="btn btn-timeline"><i class="fas fa-chart-line"></i></button>
+                        <button class="btn btn-delete"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- A001 - Cattle (Pregnant) -->
+            <div class="col-lg-4 col-md-6">
+                <div class="livestock-card">
+                    <div class="status-badge-top pregnant">Pregnant</div>
+                    <div class="livestock-id">A001 - Cattle</div>
+                    <div class="livestock-breed">Angus • female</div>
+                    <div class="livestock-info">
+                        <span class="livestock-info-label">Age</span>
+                        <span class="livestock-info-value">3y 1m</span>
+                    </div>
+                    <div class="livestock-info">
+                        <span class="livestock-info-label">Weight</span>
+                        <span class="livestock-info-value">520.8 kg</span>
+                    </div>
+                    <div class="livestock-info">
+                        <span class="livestock-info-label">Location</span>
+                        <span class="livestock-info-value">Pasture 2</span>
+                    </div>
+                    <div class="livestock-info">
+                        <span class="livestock-info-label">Value</span>
+                        <span class="livestock-value">FJD 3200</span>
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge badge-lifecycle lifecycle-cow">COW</span>
+                        <span class="badge badge-purpose purpose-beef">BEEF</span>
+                    </div>
+                    <div class="livestock-status">
+                        <span class="status-dot pregnant"></span>
+                        <span>Pregnant</span>
+                    </div>
+                    <div class="livestock-actions">
+                        <button class="btn btn-edit"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-health"><i class="fas fa-heart"></i></button>
+                        <button class="btn btn-timeline"><i class="fas fa-chart-line"></i></button>
+                        <button class="btn btn-delete"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- A003 - Cattle (Bull) -->
+            <div class="col-lg-4 col-md-6">
+                <div class="livestock-card">
+                    <div class="status-badge-top healthy">Healthy</div>
+                    <div class="livestock-id">A003 - Cattle</div>
+                    <div class="livestock-breed">Hereford • male</div>
+                    <div class="livestock-info">
+                        <span class="livestock-info-label">Age</span>
+                        <span class="livestock-info-value">4y 3m</span>
+                    </div>
+                    <div class="livestock-info">
+                        <span class="livestock-info-label">Weight</span>
+                        <span class="livestock-info-value">750 kg</span>
+                    </div>
+                    <div class="livestock-info">
+                        <span class="livestock-info-label">Location</span>
+                        <span class="livestock-info-value">Bull Pen</span>
+                    </div>
+                    <div class="livestock-info">
+                        <span class="livestock-info-label">Value</span>
+                        <span class="livestock-value">FJD 4500</span>
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge badge-lifecycle lifecycle-bull">BULL</span>
+                        <span class="badge badge-purpose purpose-breeding">BREEDING</span>
+                    </div>
+                    <div class="livestock-status">
+                        <span class="status-dot healthy"></span>
+                        <span>Healthy</span>
+                    </div>
+                    <div class="livestock-actions">
+                        <button class="btn btn-edit"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-health"><i class="fas fa-heart"></i></button>
+                        <button class="btn btn-timeline"><i class="fas fa-chart-line"></i></button>
+                        <button class="btn btn-delete"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- A004 - Cattle (Heifer) -->
+            <div class="col-lg-4 col-md-6">
+                <div class="livestock-card">
+                    <div class="status-badge-top healthy">Healthy</div>
+                    <div class="livestock-id">A004 - Cattle</div>
+                    <div class="livestock-breed">Jersey • female</div>
+                    <div class="livestock-info">
+                        <span class="livestock-info-label">Age</span>
+                        <span class="livestock-info-value">1y 7m</span>
+                    </div>
+                    <div class="livestock-info">
+                        <span class="livestock-info-label">Weight</span>
+                        <span class="livestock-info-value">120.5 kg</span>
+                    </div>
+                    <div class="livestock-info">
+                        <span class="livestock-info-label">Location</span>
+                        <span class="livestock-info-value">Calf Pen</span>
+                    </div>
+                    <div class="livestock-info">
+                        <span class="livestock-info-label">Value</span>
+                        <span class="livestock-value">FJD 800</span>
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge badge-lifecycle lifecycle-heifer">HEIFER</span>
+                        <span class="badge badge-purpose purpose-dairy">DAIRY</span>
+                    </div>
+                    <div class="livestock-status">
+                        <span class="status-dot healthy"></span>
+                        <span>Healthy</span>
+                    </div>
+                    <div class="livestock-actions">
+                        <button class="btn btn-edit"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-health"><i class="fas fa-heart"></i></button>
+                        <button class="btn btn-timeline"><i class="fas fa-chart-line"></i></button>
+                        <button class="btn btn-delete"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- No animals message -->
+        <div id="noAnimalsMessage" class="text-center py-5" style="display: none;">
+            <i class="fas fa-cow fa-3x text-muted mb-3"></i>
+            <h4 class="text-muted">No animals found</h4>
+            <p class="text-muted">Start by adding your first animal to begin tracking and managing your livestock.</p>
+            <button class="btn btn-custom" data-bs-toggle="modal" data-bs-target="#addLivestockModal">
+                <i class="fas fa-plus me-2"></i>Add Your First Animal
+            </button>
+        </div>
+    </div>
+
+    <!-- Add Livestock Modal -->
+    <div class="modal fade modal-custom" id="addLivestockModal" tabindex="-1" aria-labelledby="addLivestockModalLabel" aria-modal="true" role="dialog">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addLivestockModalLabel">Add New Animal</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addLivestockForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Species</label>
+                                    <select class="form-select form-control-custom" id="animalSpecies" required>
+                                        <option value="">Select Species</option>
+                                        <option value="cattle">Cattle</option>
+                                        <option value="pigs">Pigs</option>
+                                        <option value="sheep">Sheep</option>
+                                        <option value="goats">Goats</option>
+                                        <option value="chickens">Chickens</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Breed</label>
+                                    <div class="breed-input-container">
+                                        <input type="text" class="form-control form-control-custom" id="animalBreed" 
+                                               placeholder="Type to search breeds..." 
+                                               autocomplete="off" required>
+                                        <div id="breedSuggestions" class="breed-suggestions"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Tag/ID Number</label>
+                                    <input type="text" class="form-control form-control-custom" id="animalTag" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Sex</label>
+                                    <select class="form-select form-control-custom" id="animalSex" required onchange="updateLifecycleFields()">
+                                        <option value="">Select Sex</option>
+                                        <option value="male">Male</option>
+                                        <option value="female">Female</option>
+                                        <option value="neutered">Neutered</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Birth Date</label>
+                                    <input type="date" class="form-control form-control-custom" id="birthDate" required onchange="updateLifecycleFields()">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Current Weight (kg)</label>
+                                    <input type="number" class="form-control form-control-custom" id="animalWeight" step="0.1" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Production Purpose</label>
+                                    <select class="form-select form-control-custom" id="productionPurpose">
+                                        <option value="">Select Purpose</option>
+                                        <option value="dairy">Dairy</option>
+                                        <option value="beef">Beef</option>
+                                        <option value="breeding">Breeding</option>
+                                        <option value="dual_purpose">Dual Purpose</option>
+                                        <option value="working">Working</option>
+                                        <option value="pet">Pet</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Lifecycle Stage</label>
+                                    <select class="form-select form-control-custom" id="lifecycleStage">
+                                        <option value="">Auto-calculated</option>
+                                        <option value="calf">Calf (0-12 months)</option>
+                                        <option value="heifer">Heifer (12-24 months)</option>
+                                        <option value="cow">Cow (24+ months)</option>
+                                        <option value="bull">Bull (12+ months)</option>
+                                        <option value="steer">Steer (12+ months)</option>
+                                        <option value="bullock">Bullock (12-24 months)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Location/Pen</label>
+                                    <input type="text" class="form-control form-control-custom" id="animalLocation" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Estimated Value (FJD)</label>
+                                    <input type="number" class="form-control form-control-custom" id="animalValue" step="0.01">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Sire Tag (if known)</label>
+                                    <input type="text" class="form-control form-control-custom" id="sireTag">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Dam Tag (if known)</label>
+                                    <input type="text" class="form-control form-control-custom" id="damTag">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row" id="breedingFields" style="display: none;">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Breeding Status</label>
+                                    <select class="form-select form-control-custom" id="breedingStatus">
+                                        <option value="">Select Status</option>
+                                        <option value="open">Open (Available for breeding)</option>
+                                        <option value="bred">Bred (Recently bred)</option>
+                                        <option value="pregnant">Pregnant</option>
+                                        <option value="dry">Dry (Not lactating)</option>
+                                        <option value="lactating">Lactating</option>
+                                        <option value="infertile">Infertile</option>
+                                        <option value="retired">Retired</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">First Calving Date (if applicable)</label>
+                                    <input type="date" class="form-control form-control-custom" id="firstCalvingDate">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Health Notes</label>
+                            <textarea class="form-control form-control-custom" id="healthNotes" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-custom" onclick="saveNewLivestock()">
+                        <i class="fas fa-save me-2"></i>Save Animal
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Livestock Modal -->
+    <div class="modal fade modal-custom" id="editLivestockModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Animal</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editLivestockForm">
+                        <input type="hidden" id="editAnimalId">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Species</label>
+                                    <select class="form-select form-control-custom" id="editAnimalSpecies" required>
+                                        <option value="">Select Species</option>
+                                        <option value="cattle">Cattle</option>
+                                        <option value="pigs">Pigs</option>
+                                        <option value="sheep">Sheep</option>
+                                        <option value="goats">Goats</option>
+                                        <option value="chickens">Chickens</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Breed</label>
+                                    <div class="breed-input-container">
+                                        <input type="text" class="form-control form-control-custom" id="editAnimalBreed" 
+                                               placeholder="Type to search breeds..." 
+                                               autocomplete="off" required>
+                                        <div id="editBreedSuggestions" class="breed-suggestions"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Tag/ID Number</label>
+                                    <input type="text" class="form-control form-control-custom" id="editAnimalTag" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Health Status</label>
+                                    <select class="form-select form-control-custom" id="editHealthStatus" required>
+                                        <option value="healthy">Healthy</option>
+                                        <option value="sick">Sick</option>
+                                        <option value="pregnant">Pregnant</option>
+                                        <option value="breeding">Breeding</option>
+                                        <option value="sold">Sold</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Current Weight (kg)</label>
+                                    <input type="number" class="form-control form-control-custom" id="editAnimalWeight" step="0.1" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Estimated Value (FJD)</label>
+                                    <input type="number" class="form-control form-control-custom" id="editAnimalValue" step="0.01">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Health Notes</label>
+                            <textarea class="form-control form-control-custom" id="editHealthNotes" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-custom" onclick="updateLivestock()">
+                        <i class="fas fa-save me-2"></i>Update Animal
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Include AI advisory database -->
+    <script src="js/ai-advisory-database.js"></script>
+    <!-- Include config -->
+    <script src="js/config.js"></script>
+    <script src="js/api-service.js"></script>
+    <!-- Include modal accessibility helper -->
+    <script src="js/modal-accessibility.js"></script>
+    
+    <script>
+        // Comprehensive Dog Breeds Database
+        const dogBreedsDatabase = {
+            'Working Dogs': [
+                { name: 'German Shepherd', size: 'Large', temperament: 'Confident, Courageous', lifespan: '9-13 years', origin: 'Germany' },
+                { name: 'Rottweiler', size: 'Large', temperament: 'Loyal, Confident', lifespan: '9-10 years', origin: 'Germany' },
+                { name: 'Doberman Pinscher', size: 'Large', temperament: 'Loyal, Fearless', lifespan: '10-13 years', origin: 'Germany' },
+                { name: 'Boxer', size: 'Large', temperament: 'Playful, Devoted', lifespan: '10-12 years', origin: 'Germany' },
+                { name: 'Great Dane', size: 'Giant', temperament: 'Friendly, Patient', lifespan: '7-10 years', origin: 'Germany' },
+                { name: 'Mastiff', size: 'Giant', temperament: 'Courageous, Dignified', lifespan: '6-10 years', origin: 'England' },
+                { name: 'Saint Bernard', size: 'Giant', temperament: 'Gentle, Friendly', lifespan: '8-10 years', origin: 'Switzerland' },
+                { name: 'Bernese Mountain Dog', size: 'Large', temperament: 'Good-natured, Calm', lifespan: '7-10 years', origin: 'Switzerland' },
+                { name: 'Siberian Husky', size: 'Large', temperament: 'Loyal, Mischievous', lifespan: '12-14 years', origin: 'Siberia' },
+                { name: 'Alaskan Malamute', size: 'Large', temperament: 'Affectionate, Loyal', lifespan: '10-14 years', origin: 'Alaska' },
+                { name: 'Akita', size: 'Large', temperament: 'Dignified, Courageous', lifespan: '10-13 years', origin: 'Japan' },
+                { name: 'Shiba Inu', size: 'Medium', temperament: 'Alert, Active', lifespan: '13-16 years', origin: 'Japan' }
+            ],
+            'Sporting Dogs': [
+                { name: 'Golden Retriever', size: 'Large', temperament: 'Friendly, Intelligent', lifespan: '10-12 years', origin: 'Scotland' },
+                { name: 'Labrador Retriever', size: 'Large', temperament: 'Outgoing, Active', lifespan: '10-14 years', origin: 'Canada' },
+                { name: 'Cocker Spaniel', size: 'Medium', temperament: 'Gentle, Smart', lifespan: '12-15 years', origin: 'England' },
+                { name: 'English Springer Spaniel', size: 'Medium', temperament: 'Friendly, Eager', lifespan: '12-14 years', origin: 'England' },
+                { name: 'Brittany', size: 'Medium', temperament: 'Bright, Energetic', lifespan: '12-14 years', origin: 'France' },
+                { name: 'Pointer', size: 'Large', temperament: 'Even-tempered, Hard-working', lifespan: '12-15 years', origin: 'England' },
+                { name: 'Weimaraner', size: 'Large', temperament: 'Friendly, Fearless', lifespan: '10-13 years', origin: 'Germany' },
+                { name: 'Vizsla', size: 'Large', temperament: 'Affectionate, Energetic', lifespan: '12-14 years', origin: 'Hungary' },
+                { name: 'Irish Setter', size: 'Large', temperament: 'Outgoing, Sweet-natured', lifespan: '12-15 years', origin: 'Ireland' },
+                { name: 'German Shorthaired Pointer', size: 'Large', temperament: 'Friendly, Intelligent', lifespan: '12-14 years', origin: 'Germany' }
+            ],
+            'Hound Dogs': [
+                { name: 'Beagle', size: 'Medium', temperament: 'Friendly, Curious', lifespan: '13-16 years', origin: 'England' },
+                { name: 'Bloodhound', size: 'Large', temperament: 'Stubborn, Affectionate', lifespan: '10-12 years', origin: 'Belgium' },
+                { name: 'Basset Hound', size: 'Medium', temperament: 'Charming, Patient', lifespan: '12-13 years', origin: 'France' },
+                { name: 'Dachshund', size: 'Small', temperament: 'Spunky, Clever', lifespan: '12-16 years', origin: 'Germany' },
+                { name: 'Greyhound', size: 'Large', temperament: 'Gentle, Independent', lifespan: '10-13 years', origin: 'Egypt' },
+                { name: 'Whippet', size: 'Medium', temperament: 'Calm, Affectionate', lifespan: '12-15 years', origin: 'England' },
+                { name: 'Afghan Hound', size: 'Large', temperament: 'Independent, Dignified', lifespan: '12-18 years', origin: 'Afghanistan' },
+                { name: 'Saluki', size: 'Large', temperament: 'Gentle, Dignified', lifespan: '12-14 years', origin: 'Middle East' },
+                { name: 'Rhodesian Ridgeback', size: 'Large', temperament: 'Loyal, Independent', lifespan: '10-12 years', origin: 'South Africa' }
+            ],
+            'Terrier Dogs': [
+                { name: 'Jack Russell Terrier', size: 'Small', temperament: 'Stubborn, Fearless', lifespan: '13-16 years', origin: 'England' },
+                { name: 'Bull Terrier', size: 'Medium', temperament: 'Playful, Charming', lifespan: '12-13 years', origin: 'England' },
+                { name: 'Staffordshire Bull Terrier', size: 'Medium', temperament: 'Fearless, Affectionate', lifespan: '12-14 years', origin: 'England' },
+                { name: 'Scottish Terrier', size: 'Small', temperament: 'Independent, Confident', lifespan: '12-15 years', origin: 'Scotland' },
+                { name: 'West Highland White Terrier', size: 'Small', temperament: 'Hardy, Self-confident', lifespan: '13-15 years', origin: 'Scotland' },
+                { name: 'Border Terrier', size: 'Small', temperament: 'Obedient, Good-natured', lifespan: '12-15 years', origin: 'England' },
+                { name: 'Airedale Terrier', size: 'Large', temperament: 'Friendly, Courageous', lifespan: '11-14 years', origin: 'England' },
+                { name: 'Cairn Terrier', size: 'Small', temperament: 'Alert, Cheerful', lifespan: '13-15 years', origin: 'Scotland' }
+            ],
+            'Toy Dogs': [
+                { name: 'Chihuahua', size: 'Small', temperament: 'Graceful, Alert', lifespan: '14-16 years', origin: 'Mexico' },
+                { name: 'Pomeranian', size: 'Small', temperament: 'Inquisitive, Bold', lifespan: '12-16 years', origin: 'Germany' },
+                { name: 'Yorkshire Terrier', size: 'Small', temperament: 'Bold, Confident', lifespan: '11-15 years', origin: 'England' },
+                { name: 'Maltese', size: 'Small', temperament: 'Gentle, Playful', lifespan: '12-15 years', origin: 'Malta' },
+                { name: 'Shih Tzu', size: 'Small', temperament: 'Affectionate, Playful', lifespan: '10-18 years', origin: 'China' },
+                { name: 'Pug', size: 'Small', temperament: 'Charming, Mischievous', lifespan: '13-15 years', origin: 'China' },
+                { name: 'Boston Terrier', size: 'Small', temperament: 'Friendly, Bright', lifespan: '11-13 years', origin: 'USA' },
+                { name: 'French Bulldog', size: 'Small', temperament: 'Adaptable, Playful', lifespan: '10-12 years', origin: 'France' },
+                { name: 'Cavalier King Charles Spaniel', size: 'Small', temperament: 'Affectionate, Gentle', lifespan: '9-14 years', origin: 'England' },
+                { name: 'Papillon', size: 'Small', temperament: 'Happy, Alert', lifespan: '13-16 years', origin: 'France' }
+            ],
+            'Non-Sporting Dogs': [
+                { name: 'Poodle', size: 'Medium', temperament: 'Active, Alert', lifespan: '12-15 years', origin: 'Germany' },
+                { name: 'Bulldog', size: 'Medium', temperament: 'Calm, Friendly', lifespan: '8-10 years', origin: 'England' },
+                { name: 'Dalmatian', size: 'Large', temperament: 'Energetic, Playful', lifespan: '11-13 years', origin: 'Croatia' },
+                { name: 'Schnauzer', size: 'Medium', temperament: 'Obedient, Alert', lifespan: '12-15 years', origin: 'Germany' },
+                { name: 'Bichon Frise', size: 'Small', temperament: 'Cheerful, Curious', lifespan: '12-15 years', origin: 'France' },
+                { name: 'Lhasa Apso', size: 'Small', temperament: 'Confident, Smart', lifespan: '12-15 years', origin: 'Tibet' },
+                { name: 'Tibetan Spaniel', size: 'Small', temperament: 'Self-confident, Reserved', lifespan: '12-15 years', origin: 'Tibet' },
+                { name: 'Chinese Crested', size: 'Small', temperament: 'Alert, Lively', lifespan: '13-18 years', origin: 'China' }
+            ],
+            'Herding Dogs': [
+                { name: 'Border Collie', size: 'Medium', temperament: 'Tenacious, Keen', lifespan: '12-15 years', origin: 'Scotland' },
+                { name: 'Australian Shepherd', size: 'Medium', temperament: 'Smart, Work-focused', lifespan: '12-13 years', origin: 'USA' },
+                { name: 'Collie', size: 'Large', temperament: 'Graceful, Devoted', lifespan: '12-14 years', origin: 'Scotland' },
+                { name: 'Shetland Sheepdog', size: 'Small', temperament: 'Playful, Energetic', lifespan: '12-13 years', origin: 'Scotland' },
+                { name: 'Welsh Corgi', size: 'Small', temperament: 'Alert, Affectionate', lifespan: '12-15 years', origin: 'Wales' },
+                { name: 'Old English Sheepdog', size: 'Large', temperament: 'Adaptable, Intelligent', lifespan: '10-12 years', origin: 'England' },
+                { name: 'Belgian Malinois', size: 'Large', temperament: 'Confident, Hard-working', lifespan: '14-16 years', origin: 'Belgium' },
+                { name: 'German Shepherd', size: 'Large', temperament: 'Confident, Courageous', lifespan: '9-13 years', origin: 'Germany' }
+            ]
+        };
+
+        // Other Animal Breeds Database
+        const otherBreedsDatabase = {
+            'Cattle': [
+                'Holstein', 'Jersey', 'Guernsey', 'Ayrshire', 'Brown Swiss', 'Angus', 'Hereford', 'Charolais', 
+                'Limousin', 'Simmental', 'Brahman', 'Shorthorn', 'Devon', 'South Devon', 'Normande', 'Highland',
+                'Belted Galloway', 'Texas Longhorn', 'Chianina', 'Maine-Anjou'
+            ],
+            'Goats': [
+                'Nubian', 'Saanen', 'Toggenburg', 'Alpine', 'Oberhasli', 'LaMancha', 'Boer', 'Kiko', 'Spanish',
+                'Pygmy', 'Angora', 'Cashmere', 'Fainting', 'Nigerian Dwarf', 'Kinder', 'Oberhasli'
+            ],
+            'Sheep': [
+                'Dorset', 'Suffolk', 'Hampshire', 'Rambouillet', 'Merino', 'Cheviot', 'Columbia', 'Corriedale',
+                'Finn', 'Romney', 'Southdown', 'Targhee', 'Border Leicester', 'Jacob', 'Katahdin'
+            ],
+            'Pigs': [
+                'Yorkshire', 'Hampshire', 'Duroc', 'Berkshire', 'Chester White', 'Poland China', 'Spotted',
+                'Tamworth', 'Gloucestershire Old Spot', 'Large Black', 'Mangalitsa', 'Kunekune'
+            ],
+            'Horses': [
+                'Quarter Horse', 'Thoroughbred', 'Arabian', 'Paint Horse', 'Appaloosa', 'Morgan', 'Tennessee Walking Horse',
+                'Standardbred', 'Mustang', 'Friesian', 'Clydesdale', 'Percheron', 'Belgian', 'Shire', 'Welsh Pony'
+            ],
+            'Chickens': [
+                'Rhode Island Red', 'Leghorn', 'Plymouth Rock', 'Wyandotte', 'Orpington', 'Sussex', 'Australorp',
+                'Brahma', 'Cochin', 'Silkie', 'Polish', 'Frizzle', 'Easter Egger', 'Marans', 'Welsummer'
+            ],
+            'Ducks': [
+                'Pekin', 'Rouen', 'Khaki Campbell', 'Indian Runner', 'Muscovy', 'Cayuga', 'Buff', 'Saxony',
+                'Welsh Harlequin', 'Ancona', 'Magpie', 'Swedish Blue'
+            ],
+            'Geese': [
+                'Embden', 'Toulouse', 'Chinese', 'African', 'Sebastopol', 'Pilgrim', 'Roman', 'Buff'
+            ],
+            'Turkeys': [
+                'Broad Breasted White', 'Broad Breasted Bronze', 'Narragansett', 'Bourbon Red', 'Royal Palm',
+                'Slate', 'Black', 'White Holland'
+            ],
+            'Cats': [
+                'Persian', 'Maine Coon', 'Siamese', 'Ragdoll', 'British Shorthair', 'Scottish Fold', 'Sphynx',
+                'Abyssinian', 'American Shorthair', 'Bengal', 'Birman', 'Bombay', 'Burmese', 'Devon Rex',
+                'Himalayan', 'Manx', 'Norwegian Forest Cat', 'Oriental Shorthair', 'Russian Blue', 'Siberian'
+            ],
+            'Rabbits': [
+                'Holland Lop', 'Netherland Dwarf', 'Mini Rex', 'Lionhead', 'Flemish Giant', 'English Lop',
+                'French Lop', 'American Fuzzy Lop', 'Jersey Wooly', 'Mini Lop', 'Polish', 'Rex', 'Satin'
+            ]
+        };
+
+        // Breed suggestion functionality
+        function initializeBreedSuggestions() {
+            const breedInputs = ['animalBreed', 'editAnimalBreed'];
+            
+            breedInputs.forEach(inputId => {
+                const input = document.getElementById(inputId);
+                const suggestionsContainer = document.getElementById(inputId === 'animalBreed' ? 'breedSuggestions' : 'editBreedSuggestions');
+                
+                if (input && suggestionsContainer) {
+                    input.addEventListener('input', (e) => {
+                        const query = e.target.value.toLowerCase();
+                        if (query.length >= 2) {
+                            showBreedSuggestions(query, suggestionsContainer, input);
+                        } else {
+                            hideBreedSuggestions(suggestionsContainer);
+                        }
+                    });
+                    
+                    input.addEventListener('blur', () => {
+                        setTimeout(() => hideBreedSuggestions(suggestionsContainer), 200);
+                    });
+                    
+                    input.addEventListener('focus', (e) => {
+                        if (e.target.value.length >= 2) {
+                            showBreedSuggestions(e.target.value.toLowerCase(), suggestionsContainer, input);
+                        }
+                    });
+                }
+            });
+        }
+
+        function showBreedSuggestions(query, container, input) {
+            const suggestions = [];
+            
+            // Search in dog breeds
+            Object.entries(dogBreedsDatabase).forEach(([category, breeds]) => {
+                breeds.forEach(breed => {
+                    if (breed.name.toLowerCase().includes(query)) {
+                        suggestions.push({
+                            name: breed.name,
+                            category: category,
+                            size: breed.size,
+                            temperament: breed.temperament,
+                            lifespan: breed.lifespan,
+                            origin: breed.origin
+                        });
+                    }
+                });
+            });
+            
+            // Search in other animal breeds
+            Object.entries(otherBreedsDatabase).forEach(([species, breeds]) => {
+                breeds.forEach(breed => {
+                    if (breed.toLowerCase().includes(query)) {
+                        suggestions.push({
+                            name: breed,
+                            category: species,
+                            size: '',
+                            temperament: '',
+                            lifespan: '',
+                            origin: ''
+                        });
+                    }
+                });
+            });
+            
+            // Limit to 10 suggestions
+            const limitedSuggestions = suggestions.slice(0, 10);
+            
+            if (limitedSuggestions.length > 0) {
+                container.innerHTML = limitedSuggestions.map(suggestion => `
+                    <div class="breed-suggestion-item" onclick="selectBreed('${suggestion.name}', '${input.id}')">
+                        <div class="breed-name">${suggestion.name}</div>
+                        <div class="breed-details">
+                            ${suggestion.category}${suggestion.size ? ' • ' + suggestion.size : ''}${suggestion.temperament ? ' • ' + suggestion.temperament : ''}
+                        </div>
+                    </div>
+                `).join('');
+                container.style.display = 'block';
+            } else {
+                hideBreedSuggestions(container);
+            }
+        }
+
+        function hideBreedSuggestions(container) {
+            container.style.display = 'none';
+        }
+
+        function selectBreed(breedName, inputId) {
+            const input = document.getElementById(inputId);
+            const suggestionsContainer = document.getElementById(inputId === 'animalBreed' ? 'breedSuggestions' : 'editBreedSuggestions');
+            
+            if (input) {
+                input.value = breedName;
+                hideBreedSuggestions(suggestionsContainer);
+            }
+        }
+
+        // Sample livestock data
+        let livestock = [
+            {
+                id: 1,
+                species: "cattle",
+                breed: "Holstein",
+                tag: "H001",
+                sex: "female",
+                birthDate: "2023-03-15",
+                weight: 450.5,
+                location: "Pasture 1",
+                value: 2500,
+                healthStatus: "healthy",
+                sireTag: "H005",
+                damTag: "H012",
+                healthNotes: "Excellent condition, regular vaccinations up to date",
+                productionPurpose: "dairy",
+                lifecycleStage: "heifer",
+                breedingStatus: "open",
+                firstCalvingDate: null
+            },
+            {
+                id: 2,
+                species: "pigs",
+                breed: "Large White",
+                tag: "P001",
+                sex: "male",
+                birthDate: "2024-01-20",
+                weight: 180.2,
+                location: "Pen 2",
+                value: 800,
+                healthStatus: "healthy",
+                sireTag: "P005",
+                damTag: "P010",
+                healthNotes: "Growing well, good appetite"
+            },
+            {
+                id: 3,
+                species: "cattle",
+                breed: "Angus",
+                tag: "A001",
+                sex: "female",
+                birthDate: "2022-08-10",
+                weight: 520.8,
+                location: "Pasture 2",
+                value: 3200,
+                healthStatus: "pregnant",
+                sireTag: "A003",
+                damTag: "A008",
+                healthNotes: "Pregnant, expected due date in 3 months",
+                productionPurpose: "beef",
+                lifecycleStage: "cow",
+                breedingStatus: "pregnant",
+                firstCalvingDate: "2024-05-15",
+                lastCalvingDate: "2024-05-15"
+            },
+            {
+                id: 4,
+                species: "cattle",
+                breed: "Hereford",
+                tag: "A003",
+                sex: "male",
+                birthDate: "2021-06-20",
+                weight: 750.0,
+                location: "Bull Pen",
+                value: 4500,
+                healthStatus: "healthy",
+                sireTag: "A005",
+                damTag: "A010",
+                healthNotes: "Breeding bull, excellent genetics",
+                productionPurpose: "breeding",
+                lifecycleStage: "bull",
+                breedingStatus: null
+            },
+            {
+                id: 5,
+                species: "cattle",
+                breed: "Jersey",
+                tag: "A004",
+                sex: "female",
+                birthDate: "2024-02-10",
+                weight: 120.5,
+                location: "Calf Pen",
+                value: 800,
+                healthStatus: "healthy",
+                sireTag: "A003",
+                damTag: "A002",
+                healthNotes: "Young calf, weaned recently",
+                productionPurpose: "dairy",
+                lifecycleStage: "calf",
+                breedingStatus: null
+            }
+        ];
+
+        // Cattle Lifecycle Management Functions
+        function updateLifecycleFields() {
+            const sex = document.getElementById('animalSex').value;
+            const birthDate = document.getElementById('birthDate').value;
+            const breed = document.getElementById('animalBreed').value;
+            const breedingFields = document.getElementById('breedingFields');
+            const lifecycleStage = document.getElementById('lifecycleStage');
+            const productionPurpose = document.getElementById('productionPurpose');
+            
+            // Show/hide breeding fields for female cattle
+            if (sex === 'female') {
+                breedingFields.style.display = 'block';
+            } else {
+                breedingFields.style.display = 'none';
+            }
+            
+            // Auto-calculate lifecycle stage if birth date is provided
+            if (birthDate && sex) {
+                const calculatedStage = calculateLifecycleStage(birthDate, sex);
+                lifecycleStage.value = calculatedStage;
+                
+                // Auto-suggest production purpose based on breed and sex
+                if (breed) {
+                    const suggestedPurpose = getRecommendedProductionPurpose(breed, sex);
+                    if (suggestedPurpose && !productionPurpose.value) {
+                        productionPurpose.value = suggestedPurpose;
+                    }
+                }
+            }
+        }
+        
+        function calculateLifecycleStage(birthDate, sex) {
+            const birth = new Date(birthDate);
+            const now = new Date();
+            const ageInMonths = (now.getFullYear() - birth.getFullYear()) * 12 + (now.getMonth() - birth.getMonth());
+            
+            if (ageInMonths < 12) {
+                return 'calf';
+            } else if (sex === 'female') {
+                if (ageInMonths < 24) {
+                    return 'heifer';
+                } else {
+                    return 'cow';
+                }
+            } else if (sex === 'male') {
+                if (ageInMonths < 24) {
+                    return 'bullock';
+                } else {
+                    return 'bull';
+                }
+            } else if (sex === 'neutered') {
+                return 'steer';
+            }
+            
+            return '';
+        }
+        
+        function getRecommendedProductionPurpose(breed, sex) {
+            const breedLower = breed.toLowerCase();
+            
+            // Dairy breeds
+            if (breedLower.includes('holstein') || breedLower.includes('friesian') ||
+                breedLower.includes('jersey') || breedLower.includes('guernsey') ||
+                breedLower.includes('ayrshire') || breedLower.includes('brown swiss')) {
+                return sex === 'female' ? 'dairy' : 'beef';
+            }
+            
+            // Beef breeds
+            if (breedLower.includes('angus') || breedLower.includes('hereford') ||
+                breedLower.includes('charolais') || breedLower.includes('limousin') ||
+                breedLower.includes('simmental') || breedLower.includes('brahman')) {
+                return 'beef';
+            }
+            
+            // Dual purpose breeds
+            if (breedLower.includes('shorthorn') || breedLower.includes('devon') ||
+                breedLower.includes('south devon') || breedLower.includes('normande')) {
+                return sex === 'female' ? 'dual_purpose' : 'beef';
+            }
+            
+            // Default recommendations
+            return sex === 'female' ? 'dual_purpose' : 'beef';
+        }
+        
+        function getBreedingTimeline(birthDate) {
+            const birth = new Date(birthDate);
+            const targetBreedingAge = 15; // months
+            const gestationPeriod = 9.5; // months
+            const targetCalvingAge = targetBreedingAge + gestationPeriod;
+            
+            const targetBreedingDate = new Date(birth);
+            targetBreedingDate.setMonth(targetBreedingDate.getMonth() + targetBreedingAge);
+            
+            const targetCalvingDate = new Date(birth);
+            targetCalvingDate.setMonth(targetCalvingDate.getMonth() + targetCalvingAge);
+            
+            return {
+                recommendedBreedingAge: targetBreedingAge,
+                recommendedBreedingDate: targetBreedingDate.toISOString().split('T')[0],
+                expectedCalvingDate: targetCalvingDate.toISOString().split('T')[0],
+                gestationPeriod: gestationPeriod
+            };
+        }
+        
+        function showLifecycleTimeline(animalId) {
+            const animal = livestock.find(a => a.id === animalId);
+            if (!animal) return;
+            
+            const timeline = getBreedingTimeline(animal.birthDate);
+            const currentStage = calculateLifecycleStage(animal.birthDate, animal.sex);
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-timeline me-2"></i>Cattle Lifecycle Timeline - ${animal.tag}
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <h6>Current Status</h6>
+                                    <ul class="list-unstyled">
+                                        <li><strong>Current Stage:</strong> ${currentStage.charAt(0).toUpperCase() + currentStage.slice(1)}</li>
+                                        <li><strong>Age:</strong> ${calculateAge(animal.birthDate)}</li>
+                                        <li><strong>Sex:</strong> ${animal.sex.charAt(0).toUpperCase() + animal.sex.slice(1)}</li>
+                                        <li><strong>Breed:</strong> ${animal.breed}</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>Production Purpose</h6>
+                                    <p><strong>Recommended:</strong> ${getRecommendedProductionPurpose(animal.breed, animal.sex).replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</p>
+                                </div>
+                            </div>
+                            
+                            <div class="timeline-container">
+                                <h6>Lifecycle Timeline</h6>
+                                <div class="timeline">
+                                    <div class="timeline-item ${currentStage === 'calf' ? 'active' : ''}">
+                                        <div class="timeline-marker"></div>
+                                        <div class="timeline-content">
+                                            <h6>Calf (0-12 months)</h6>
+                                            <p>Initial growth phase, weaning at 6-8 months</p>
+                                        </div>
+                                    </div>
+                                    <div class="timeline-item ${currentStage === 'heifer' || currentStage === 'bullock' ? 'active' : ''}">
+                                        <div class="timeline-marker"></div>
+                                        <div class="timeline-content">
+                                            <h6>${animal.sex === 'female' ? 'Heifer' : 'Bullock'} (12-24 months)</h6>
+                                            <p>${animal.sex === 'female' ? 'Pre-breeding phase, target breeding at 15 months' : 'Young male, can be castrated to become steer'}</p>
+                                        </div>
+                                    </div>
+                                    <div class="timeline-item ${currentStage === 'cow' || currentStage === 'bull' || currentStage === 'steer' ? 'active' : ''}">
+                                        <div class="timeline-marker"></div>
+                                        <div class="timeline-content">
+                                            <h6>${animal.sex === 'female' ? 'Cow' : animal.sex === 'neutered' ? 'Steer' : 'Bull'} (24+ months)</h6>
+                                            <p>${animal.sex === 'female' ? 'Mature female, can produce milk and calves' : animal.sex === 'neutered' ? 'Castrated male, raised for beef production' : 'Mature male, used for breeding'}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            ${animal.sex === 'female' ? `
+                            <div class="mt-4">
+                                <h6>Breeding Timeline</h6>
+                                <div class="alert alert-info">
+                                    <strong>Recommended Breeding Age:</strong> ${timeline.recommendedBreedingAge} months<br>
+                                    <strong>Target Breeding Date:</strong> ${timeline.recommendedBreedingDate}<br>
+                                    <strong>Expected Calving:</strong> ${timeline.expectedCalvingDate}<br>
+                                    <strong>Gestation Period:</strong> ${timeline.gestationPeriod} months
+                                </div>
+                            </div>
+                            ` : ''}
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Check authentication first
+            checkAuthentication();
+            await loadLivestock();
+            updateStatistics();
+            initializeBreedSuggestions();
+        });
+
+        function checkAuthentication() {
+            const user = localStorage.getItem('smartfarm_user') || sessionStorage.getItem('smartfarm_user');
+            const token = localStorage.getItem('smartfarm_token') || sessionStorage.getItem('smartfarm_token');
+            
+            if (!user) {
+                console.log('No user found, redirecting to login');
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // Check if session is still valid (for non-remember me users)
+            const rememberMe = localStorage.getItem('smartfarm_remember');
+            if (!rememberMe) {
+                const loginTime = sessionStorage.getItem('smartfarm_loginTime');
+                if (loginTime) {
+                    const sessionAge = Date.now() - new Date(loginTime).getTime();
+                    const maxSessionAge = 24 * 60 * 60 * 1000; // 24 hours
+                    if (sessionAge > maxSessionAge) {
+                        console.log('Session expired, redirecting to login');
+                        sessionStorage.clear();
+                        window.location.href = 'login.html';
+                        return;
+                    }
+                }
+            }
+            
+            console.log('User authenticated for livestock management:', user);
+        }
+
+        async function loadLivestock() {
+            try {
+                console.log('🐄 Loading livestock data...');
+                
+                // Load from API if available
+                if (window.SmartFarmAPI) {
+                    const response = await window.SmartFarmAPI.getLivestock();
+                    if (response.success) {
+                        console.log('✅ Livestock data loaded from API:', response.data.length, 'animals');
+                        livestock = response.data;
+                    } else {
+                        console.warn('⚠️ API returned unsuccessful response:', response);
+                        // Keep existing livestock data
+                    }
+                } else {
+                    console.warn('⚠️ SmartFarmAPI not available, using local data');
+                }
+            } catch (error) {
+                console.error('❌ Error loading livestock data:', error);
+                // Keep existing livestock data
+            }
+
+            const container = document.getElementById('livestockContainer');
+            const noAnimalsMessage = document.getElementById('noAnimalsMessage');
+            
+            if (livestock.length === 0) {
+                container.innerHTML = '';
+                noAnimalsMessage.style.display = 'block';
+                return;
+            }
+            
+            noAnimalsMessage.style.display = 'none';
+            container.innerHTML = '';
+            
+            livestock.forEach(animal => {
+                const animalCard = createLivestockCard(animal);
+                container.appendChild(animalCard);
+            });
+        }
+
+        function createLivestockCard(animal) {
+            const col = document.createElement('div');
+            col.className = 'col-lg-4 col-md-6 mb-4';
+            
+            const statusClass = getStatusClass(animal.healthStatus);
+            const statusText = getStatusText(animal.healthStatus);
+            const age = calculateAge(animal.birthDate);
+            const healthIndicator = getHealthIndicator(animal.healthStatus);
+            
+            // Calculate lifecycle stage for cattle
+            let lifecycleInfo = '';
+            let productionPurposeInfo = '';
+            let timelineButton = '';
+            
+            if (animal.species === 'cattle') {
+                const lifecycleStage = calculateLifecycleStage(animal.birthDate, animal.sex);
+                const productionPurpose = animal.productionPurpose || getRecommendedProductionPurpose(animal.breed, animal.sex);
+                
+                lifecycleInfo = `
+                    <div class="mb-2">
+                        <small class="text-muted">Lifecycle Stage:</small>
+                        <span class="lifecycle-badge lifecycle-${lifecycleStage}">${lifecycleStage.charAt(0).toUpperCase() + lifecycleStage.slice(1)}</span>
+                    </div>
+                `;
+                
+                productionPurposeInfo = `
+                    <div class="mb-2">
+                        <small class="text-muted">Purpose:</small>
+                        <span class="lifecycle-badge purpose-${productionPurpose}">${productionPurpose.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
+                    </div>
+                `;
+                
+                timelineButton = `
+                    <button class="btn btn-sm btn-outline-info flex-fill" onclick="showLifecycleTimeline(${animal.id})">
+                        <i class="fas fa-timeline me-1"></i>Timeline
+                    </button>
+                `;
+            }
+            
+            col.innerHTML = `
+                <div class="livestock-card">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h5 class="mb-1">${animal.tag} - ${animal.species.charAt(0).toUpperCase() + animal.species.slice(1)}</h5>
+                            <p class="text-muted mb-0">${animal.breed} • ${animal.sex}</p>
+                        </div>
+                        <span class="status-badge ${statusClass}">${statusText}</span>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <small class="text-muted">Age:</small>
+                            <div class="fw-bold">${age}</div>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">Weight:</small>
+                            <div class="fw-bold">${animal.weight} kg</div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <small class="text-muted">Location:</small>
+                            <div class="fw-bold">${animal.location}</div>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">Value:</small>
+                            <div class="fw-bold">FJD ${animal.value}</div>
+                        </div>
+                    </div>
+                    
+                    ${lifecycleInfo}
+                    ${productionPurposeInfo}
+                    
+                    <div class="mb-3">
+                        <small class="text-muted">Health Status:</small>
+                        <div class="d-flex align-items-center">
+                            <span class="health-indicator ${healthIndicator}"></span>
+                            <span class="fw-bold">${statusText}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-outline-primary flex-fill" onclick="editLivestock(${animal.id})">
+                            <i class="fas fa-edit me-1"></i>Edit
+                        </button>
+                        <button class="btn btn-sm btn-outline-success flex-fill" onclick="addHealthRecord(${animal.id})">
+                            <i class="fas fa-heartbeat me-1"></i>Health
+                        </button>
+                        <button class="btn btn-sm btn-outline-info" onclick="getAILivestockAdvice(${animal.id})" title="Get AI Health Advice">
+                            <i class="fas fa-robot"></i>
+                        </button>
+                        ${timelineButton}
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteLivestock(${animal.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            return col;
+        }
+
+        function calculateAge(birthDate) {
+            const birth = new Date(birthDate);
+            const now = new Date();
+            const ageInMonths = Math.floor((now - birth) / (1000 * 60 * 60 * 24 * 30.44));
+            
+            if (ageInMonths < 12) {
+                return `${ageInMonths} months`;
+            } else {
+                const years = Math.floor(ageInMonths / 12);
+                const months = ageInMonths % 12;
+                return months > 0 ? `${years}y ${months}m` : `${years} years`;
+            }
+        }
+
+        function getStatusClass(status) {
+            const classes = {
+                'healthy': 'status-healthy',
+                'sick': 'status-sick',
+                'pregnant': 'status-pregnant',
+                'breeding': 'status-breeding',
+                'sold': 'status-sold'
+            };
+            return classes[status] || 'status-healthy';
+        }
+
+        function getStatusText(status) {
+            return status.charAt(0).toUpperCase() + status.slice(1);
+        }
+
+        function getHealthIndicator(status) {
+            const indicators = {
+                'healthy': 'health-excellent',
+                'sick': 'health-poor',
+                'pregnant': 'health-good',
+                'breeding': 'health-good',
+                'sold': 'health-fair'
+            };
+            return indicators[status] || 'health-good';
+        }
+
+        function updateStatistics() {
+            document.getElementById('totalAnimals').textContent = livestock.length;
+            document.getElementById('healthyAnimals').textContent = livestock.filter(a => a.healthStatus === 'healthy').length;
+            document.getElementById('pregnantAnimals').textContent = livestock.filter(a => a.healthStatus === 'pregnant').length;
+            document.getElementById('totalValue').textContent = livestock.reduce((sum, a) => sum + a.value, 0).toFixed(0);
+        }
+
+        async function saveNewLivestock() {
+            const animalData = {
+                species: document.getElementById('animalSpecies').value,
+                breed: document.getElementById('animalBreed').value,
+                tag: document.getElementById('animalTag').value,
+                sex: document.getElementById('animalSex').value,
+                birthDate: document.getElementById('birthDate').value,
+                weight: parseFloat(document.getElementById('animalWeight').value),
+                location: document.getElementById('animalLocation').value,
+                value: parseFloat(document.getElementById('animalValue').value) || 0,
+                healthStatus: 'healthy',
+                sireTag: document.getElementById('sireTag').value,
+                damTag: document.getElementById('damTag').value,
+                healthNotes: document.getElementById('healthNotes').value
+            };
+
+            // Validate required fields
+            if (!animalData.species || !animalData.breed || !animalData.tag || !animalData.sex || !animalData.birthDate) {
+                showAlert('Please fill in all required fields', 'error');
+                return;
+            }
+
+            try {
+                console.log('🐄 Saving livestock:', animalData);
+                
+                // Save to backend API
+                if (window.SmartFarmAPI) {
+                    const response = await window.SmartFarmAPI.createLivestock(animalData);
+                    if (response.success) {
+                        console.log('✅ Livestock saved successfully:', response.data);
+                        
+                        // Add to local array for immediate display
+                        livestock.push(response.data);
+                        await loadLivestock();
+                        updateStatistics();
+                        
+                        // Close modal and reset form
+                        bootstrap.Modal.getInstance(document.getElementById('addLivestockModal')).hide();
+                        document.getElementById('addLivestockForm').reset();
+                        
+                        // Show success message
+                        showAlert('Animal added successfully!', 'success');
+                    } else {
+                        throw new Error(response.error || 'Failed to save livestock');
+                    }
+                } else {
+                    throw new Error('SmartFarmAPI not available');
+                }
+            } catch (error) {
+                console.error('❌ Error saving livestock:', error);
+                
+                if (error.message.includes('Failed to fetch')) {
+                    showAlert('Unable to connect to server. Please check your internet connection.', 'error');
+                } else if (error.message.includes('SmartFarmAPI not available')) {
+                    showAlert('Backend service unavailable. Please try again later.', 'error');
+                } else {
+                    showAlert('Failed to save animal: ' + error.message, 'error');
+                }
+            }
+        }
+
+        function editLivestock(id) {
+            const animal = livestock.find(a => a.id === id);
+            if (!animal) return;
+            
+            // Populate edit form
+            document.getElementById('editAnimalId').value = animal.id;
+            document.getElementById('editAnimalSpecies').value = animal.species;
+            document.getElementById('editAnimalBreed').value = animal.breed;
+            document.getElementById('editAnimalTag').value = animal.tag;
+            document.getElementById('editHealthStatus').value = animal.healthStatus;
+            document.getElementById('editAnimalWeight').value = animal.weight;
+            document.getElementById('editAnimalValue').value = animal.value;
+            document.getElementById('editHealthNotes').value = animal.healthNotes;
+            
+            // Show modal
+            new bootstrap.Modal(document.getElementById('editLivestockModal')).show();
+        }
+
+        function updateLivestock() {
+            const id = parseInt(document.getElementById('editAnimalId').value);
+            const animalIndex = livestock.findIndex(a => a.id === id);
+            
+            if (animalIndex === -1) return;
+            
+            livestock[animalIndex] = {
+                ...livestock[animalIndex],
+                species: document.getElementById('editAnimalSpecies').value,
+                breed: document.getElementById('editAnimalBreed').value,
+                tag: document.getElementById('editAnimalTag').value,
+                healthStatus: document.getElementById('editHealthStatus').value,
+                weight: parseFloat(document.getElementById('editAnimalWeight').value),
+                value: parseFloat(document.getElementById('editAnimalValue').value) || 0,
+                healthNotes: document.getElementById('editHealthNotes').value
+            };
+            
+            loadLivestock();
+            updateStatistics();
+            
+            // Close modal
+            bootstrap.Modal.getInstance(document.getElementById('editLivestockModal')).hide();
+            
+            // Show success message
+            showAlert('Animal updated successfully!', 'success');
+        }
+
+        function deleteLivestock(id) {
+            if (confirm('Are you sure you want to delete this animal? This action cannot be undone.')) {
+                livestock = livestock.filter(a => a.id !== id);
+                loadLivestock();
+                updateStatistics();
+                showAlert('Animal deleted successfully!', 'success');
+            }
+        }
+
+        function addHealthRecord(id) {
+            alert('Health record functionality will be implemented in the next version');
+        }
+
+        async function getAILivestockAdvice(animalId) {
+            try {
+                const animal = livestock.find(a => a.id === animalId);
+                if (!animal) {
+                    showAlert('Animal not found!', 'error');
+                    return;
+                }
+
+                // Show loading message
+                showAlert('Getting AI health advice...', 'info');
+
+                // Get AI recommendations
+                const response = await fetch(window.SmartFarmConfig.getApiUrl(`/api/ai-advisory/livestock-health/${animalId}`));
+                if (!response.ok) {
+                    throw new Error('Failed to get AI recommendations');
+                }
+
+                const data = await response.json();
+                const recommendations = data.data;
+
+                // Show AI advice modal
+                showAILivestockAdviceModal(animal, recommendations);
+            } catch (error) {
+                console.error('Error getting AI livestock advice:', error);
+                showAlert('Failed to get AI advice. Please try again.', 'error');
+            }
+        }
+
+        function showAILivestockAdviceModal(animal, recommendations) {
+            const modalHtml = `
+                <div class="modal fade" id="aiLivestockAdviceModal" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">
+                                    <i class="fas fa-robot me-2"></i>AI Health Advice for ${animal.animalType}
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6>Animal Information</h6>
+                                        <p><strong>Breed:</strong> ${animal.breed || 'Mixed'}</p>
+                                        <p><strong>Age Group:</strong> ${recommendations.ageGroup.toUpperCase()}</p>
+                                        <p><strong>Age:</strong> ${animal.age || 0} months</p>
+                                        <p><strong>Health Status:</strong> ${animal.healthStatus || 'Healthy'}</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6>AI Health Recommendations</h6>
+                                        ${Object.entries(recommendations.schedule).map(([type, items]) => `
+                                            <div class="card mb-3">
+                                                <div class="card-header">
+                                                    <h6 class="mb-0">${type.toUpperCase()}</h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    ${items.map(item => `
+                                                        <div class="mb-3">
+                                                            <h6>${item.vaccine || item.treatment || item.supplement}</h6>
+                                                            <p><strong>Timing:</strong> ${item.timing}</p>
+                                                            <p><strong>Method:</strong> ${item.method}</p>
+                                                            <p><strong>Frequency:</strong> ${item.frequency || 'N/A'}</p>
+                                                            <p><strong>Conditions:</strong> ${item.conditions || 'N/A'}</p>
+                                                            <p><strong>Notes:</strong> ${item.notes}</p>
+                                                        </div>
+                                                    `).join('')}
+                                                </div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-primary" onclick="applyAILivestockRecommendations(${animal.id})">Apply Recommendations</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Remove existing modal if any
+            const existingModal = document.getElementById('aiLivestockAdviceModal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+
+            // Add new modal to body
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('aiLivestockAdviceModal'));
+            modal.show();
+        }
+
+        function applyAILivestockRecommendations(animalId) {
+            showAlert('AI health recommendations applied! Consider scheduling veterinary appointments.', 'success');
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('aiLivestockAdviceModal'));
+            if (modal) {
+                modal.hide();
+            }
+        }
+
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const speciesFilter = document.getElementById('speciesFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            
+            let filteredLivestock = livestock;
+            
+            if (searchTerm) {
+                filteredLivestock = filteredLivestock.filter(animal => 
+                    animal.tag.toLowerCase().includes(searchTerm) ||
+                    animal.breed.toLowerCase().includes(searchTerm) ||
+                    animal.species.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            if (speciesFilter) {
+                filteredLivestock = filteredLivestock.filter(animal => animal.species === speciesFilter);
+            }
+            
+            if (statusFilter) {
+                filteredLivestock = filteredLivestock.filter(animal => animal.healthStatus === statusFilter);
+            }
+            
+            // Update display with filtered livestock
+            const container = document.getElementById('livestockContainer');
+            const noAnimalsMessage = document.getElementById('noAnimalsMessage');
+            
+            if (filteredLivestock.length === 0) {
+                container.innerHTML = '';
+                noAnimalsMessage.style.display = 'block';
+                return;
+            }
+            
+            noAnimalsMessage.style.display = 'none';
+            container.innerHTML = '';
+            
+            filteredLivestock.forEach(animal => {
+                const animalCard = createLivestockCard(animal);
+                container.appendChild(animalCard);
+            });
+        }
+
+        function showAlert(message, type) {
+            // Create and show alert
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+            alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            document.body.appendChild(alertDiv);
+            
+            // Auto remove after 3 seconds
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 3000);
+        }
+
+        // Modal focus management - CRITICAL: Fix aria-hidden focus conflict
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize modal accessibility first
+            if (window.fixAllModalAccessibility) {
+                window.fixAllModalAccessibility();
+            }
+            
+            const addLivestockModal = document.getElementById('addLivestockModal');
+            if (addLivestockModal) {
+                console.log('🔧 Setting up static modal with enhanced focus management');
+                
+                // CRITICAL: Intercept Bootstrap's modal hide event to prevent focus conflict
+                addLivestockModal.addEventListener('hide.bs.modal', function() {
+                    console.log('🔧 Static modal hide event - removing focus to prevent aria-hidden conflict');
+                    
+                    // Remove focus from any focused element in the modal BEFORE Bootstrap sets aria-hidden
+                    const focusedElement = this.querySelector(':focus');
+                    if (focusedElement) {
+                        focusedElement.blur();
+                        console.log('🔧 Removed focus from:', focusedElement);
+                    }
+                    
+                    // Also check for any buttons that might retain focus
+                    const buttons = this.querySelectorAll('button');
+                    buttons.forEach(button => {
+                        if (document.activeElement === button) {
+                            button.blur();
+                            console.log('🔧 Removed focus from button:', button);
+                        }
+                    });
+                });
+                
+                // Let ModalAccessibility handle the rest
+                if (window.ModalAccessibility && typeof window.ModalAccessibility.setupStaticModals === 'function') {
+                    window.ModalAccessibility.setupStaticModals();
+                } else {
+                    console.warn('⚠️ ModalAccessibility or setupStaticModals not available, using fallback');
+                    // Fallback: manually set up the modal
+                    addLivestockModal.setAttribute('aria-modal', 'true');
+                    addLivestockModal.setAttribute('role', 'dialog');
+                    if (!addLivestockModal.hasAttribute('tabindex')) {
+                        addLivestockModal.setAttribute('tabindex', '-1');
+                    }
+                }
+                
+                // CRITICAL: Global focus validation to catch any remaining issues
+                document.addEventListener('focusin', function(event) {
+                    const modal = event.target.closest('.modal');
+                    if (modal && modal.getAttribute('aria-hidden') === 'true') {
+                        console.warn('⚠️ Focus detected on hidden modal element, removing focus:', event.target);
+                        event.target.blur();
+                        
+                        // Move focus to a safe element
+                        const safeElement = document.querySelector('button:not(.modal *)');
+                        if (safeElement) {
+                            safeElement.focus();
+                        }
+                    }
+                });
+                
+                // CRITICAL: MutationObserver to detect aria-hidden changes and fix focus conflicts
+                const observer = new MutationObserver(function(mutations) {
+                    mutations.forEach(function(mutation) {
+                        if (mutation.type === 'attributes' && mutation.attributeName === 'aria-hidden') {
+                            const modal = mutation.target;
+                            if (modal.classList.contains('modal') && modal.getAttribute('aria-hidden') === 'true') {
+                                console.log('🔧 Detected aria-hidden="true" on modal, checking for focus conflicts');
+                                
+                                // Check if any element inside the modal has focus
+                                const focusedElement = modal.querySelector(':focus');
+                                if (focusedElement) {
+                                    console.warn('⚠️ Focus conflict detected, removing focus from:', focusedElement);
+                                    focusedElement.blur();
+                                }
+                            }
+                        }
+                    });
+                });
+                
+                // Observe the modal for aria-hidden changes
+                observer.observe(addLivestockModal, {
+                    attributes: true,
+                    attributeFilter: ['aria-hidden']
+                });
+            }
+        });
+
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', applyFilters);
+        document.getElementById('speciesFilter').addEventListener('change', applyFilters);
+        document.getElementById('statusFilter').addEventListener('change', applyFilters);
+
+        // Authentication functions
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('smartfarm_user');
+                sessionStorage.removeItem('smartfarm_user');
+                window.location.href = 'login.html';
+            }
+        }
+
+        // Check authentication on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuthentication();
+        });
+
+        function checkAuthentication() {
+            const user = localStorage.getItem('smartfarm_user') || sessionStorage.getItem('smartfarm_user');
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // Update user info in navbar
+            const userName = user.split('@')[0];
+            document.getElementById('userName').textContent = userName;
+            document.getElementById('userAvatar').textContent = userName.charAt(0).toUpperCase();
+        }
+    </script>
+</body>
+</html>
