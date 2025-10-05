@@ -1,7 +1,7 @@
 {
   "name": "smartfarm-railway-deploy",
   "version": "2.0.0",
-  "description": "SmartFarm Railway Deployment - Clean Build",
+  "description": "SmartFarm Railway Deployment - Static Site Only",
   "scripts": {
     "start": "npx http-server ./public -p $PORT -a 0.0.0.0 -c-1"
   },

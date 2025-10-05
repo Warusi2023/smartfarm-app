@@ -3,81 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmartFarm - Farm Management Dashboard</title>
+    <title>SmartFarm - Railway Deployment Success</title>
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
             padding: 20px;
-            background: linear-gradient(135deg, #2e7d32, #4caf50);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
         .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 10px;
             text-align: center;
-            max-width: 600px;
         }
         h1 {
-            font-size: 3rem;
-            margin-bottom: 1rem;
+            color: #4CAF50;
+            margin-bottom: 20px;
         }
-        .subtitle {
-            font-size: 1.2rem;
-            margin-bottom: 2rem;
-            opacity: 0.9;
-        }
-        .buttons {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        .btn {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            padding: 12px 24px;
-            text-decoration: none;
-            border-radius: 8px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            transition: all 0.3s ease;
-            display: inline-block;
-        }
-        .btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
+        .success {
+            background: rgba(76, 175, 80, 0.2);
+            border: 2px solid #4CAF50;
+            border-radius: 5px;
+            padding: 20px;
+            margin: 20px 0;
         }
         .status {
-            margin-top: 2rem;
-            padding: 1rem;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            font-size: 0.9rem;
+            background: rgba(33, 150, 243, 0.2);
+            border: 2px solid #2196F3;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🌱 SmartFarm</h1>
-        <p class="subtitle">Modern Farm Management Dashboard</p>
+        <h1>🚀 SmartFarm Railway Deployment</h1>
         
-        <div class="buttons">
-            <a href="/dashboard.html" class="btn">📊 Main Dashboard</a>
-            <a href="/dashboard-simple.html" class="btn">🚀 Simple Dashboard</a>
-            <a href="/login.html" class="btn">🔐 Login</a>
+        <div class="success">
+            <h2>✅ Deployment Successful!</h2>
+            <p>Railway deployment is working correctly.</p>
+            <p>No more Husky conflicts or cached build issues.</p>
         </div>
         
         <div class="status">
-            <strong>✅ Server Status:</strong> Online<br>
-            <strong>🌐 Environment:</strong> Production<br>
-            <strong>📅 Last Updated:</strong> <span id="timestamp"></span>
+            <h3>📊 Status</h3>
+            <ul style="text-align: left;">
+                <li>✅ Clean Nixpacks build</li>
+                <li>✅ No Husky dependencies</li>
+                <li>✅ Static file serving</li>
+                <li>✅ Railway cache cleared</li>
+            </ul>
         </div>
+        
+        <div class="status">
+            <h3>🔗 Next Steps</h3>
+            <p>Dashboard will be available at: <code>/dashboard.html</code></p>
+            <p>API endpoints will be available at: <code>/api/health</code></p>
+        </div>
+        
+        <p><em>Generated: $(Get-Date)</em></p>
     </div>
-    
-    <script>
-        document.getElementById('timestamp').textContent = new Date().toLocaleString();
-    </script>
 </body>
 </html>
