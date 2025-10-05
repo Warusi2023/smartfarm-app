@@ -4,7 +4,8 @@
   "description": "SmartFarm Frontend - Modern Farm Management Dashboard",
   "main": "public/dashboard.html",
   "scripts": {
-    "dev": "python -m http.server 8080",
+    "start": "node server.js",
+    "dev": "node server.js",
     "lint": "eslint public/js/**/*.js --fix",
     "lint:check": "eslint public/js/**/*.js",
     "format": "prettier --write public/**/*.{js,html,css,json,md}",
