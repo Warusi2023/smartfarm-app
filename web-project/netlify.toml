@@ -1,9 +1,9 @@
 [build]
   # Build command for static site
-  command = "npm run build"
+  command = "echo 'No build needed - serving static files'"
   
   # Publish directory
-  publish = "dist"
+  publish = "public"
   
   # Environment variables
   [build.environment]
