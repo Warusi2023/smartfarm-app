@@ -38,6 +38,9 @@ android {
             useSupportLibrary = true
         }
         
+        // Memory optimization settings
+        multiDexEnabled = true
+        
         buildConfigField("String", "MAPS_API_KEY", "\"${localProperties.getProperty("MAPS_API_KEY", "YOUR_MAPS_API_KEY_HERE")}\"")
         
         // Manifest placeholders for API keys
@@ -127,6 +130,9 @@ dependencies {
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
     implementation("androidx.activity:activity-compose:1.8.2")
+    
+    // MultiDex support for large apps
+    implementation("androidx.multidex:multidex:2.0.1")
     
     // Compose
     implementation(platform("androidx.compose:compose-bom:2024.02.00"))
