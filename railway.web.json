@@ -1,19 +1,18 @@
 {
   "build": {
-    "builder": "NIXPACKS",
-    "installCommand": "npm install -g serve",
-    "buildCommand": "echo 'No build needed - serving static files'"
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "Dockerfile"
   },
   "deploy": {
-    "startCommand": "serve public -p $PORT",
     "healthcheckPath": "/",
     "healthcheckTimeout": 120
   },
-  "rootDirectory": "web-project",
+  "rootDirectory": ".",
   "environment": {
-    "VITE_API_URL": "https://smartfarm-app-production.up.railway.app/api",
-    "APP_BUILD_TAG": "railway",
+    "NODE_ENV": "production",
+    "PORT": "3000",
     "CI": "1",
-    "HUSKY": "0"
+    "HUSKY": "0",
+    "CORS_ORIGINS": "https://web-production-86d39.up.railway.app"
   }
 }
