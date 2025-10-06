@@ -3,7 +3,8 @@
   "version": "1.0.1",
   "description": "SmartFarm Frontend - Static Dashboard (Railway Ready)",
   "scripts": {
-    "start": "npx http-server ./public -p $PORT -a 0.0.0.0 -c-1",
+    "start": "node server.js",
+    "dev": "npx http-server ./public -p 8080 -a 0.0.0.0 -c-1",
     "deploy": "echo 'Deployment ready - No Husky conflicts'"
   },
   "dependencies": {

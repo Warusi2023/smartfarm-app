@@ -1,8 +1,14 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const config = require('./config');
 
-const PORT = process.env.PORT || 8080;
+// Ensure PORT is a number
+const portNumber = parseInt(config.port, 10);
+if (isNaN(portNumber)) {
+    console.error('Invalid PORT environment variable:', config.port);
+    process.exit(1);
+}
 
 // MIME types
 const mimeTypes = {
@@ -28,9 +34,9 @@ const server = http.createServer((req, res) => {
 
     let filePath = '.' + req.url;
     if (filePath === './') {
-        filePath = './public/index.html';
-    } else if (!filePath.startsWith('./public/')) {
-        filePath = './public' + req.url;
+        filePath = path.join(config.publicDir, config.indexFile);
+    } else if (!filePath.startsWith('./' + config.publicDir + '/')) {
+        filePath = path.join(config.publicDir, req.url);
     }
 
     const extname = String(path.extname(filePath)).toLowerCase();
@@ -40,7 +46,7 @@ const server = http.createServer((req, res) => {
         if (error) {
             if (error.code === 'ENOENT') {
                 // File not found, try to serve index.html for SPA routing
-                fs.readFile('./public/index.html', (error, content) => {
+                fs.readFile(path.join(config.publicDir, config.indexFile), (error, content) => {
                     if (error) {
                         res.writeHead(404, { 'Content-Type': 'text/html' });
                         res.end('<h1>404 - File Not Found</h1>', 'utf-8');
@@ -60,9 +66,11 @@ const server = http.createServer((req, res) => {
     });
 });
 
-server.listen(PORT, () => {
-    console.log(`🚀 SmartFarm Web Server running on http://localhost:${PORT}`);
-    console.log(`📁 Serving files from ./public/`);
-    console.log(`🌐 Dashboard: http://localhost:${PORT}/dashboard.html`);
-    console.log(`📊 Simple Dashboard: http://localhost:${PORT}/dashboard-simple.html`);
+server.listen(portNumber, () => {
+    console.log(`🚀 SmartFarm Web Server running on http://localhost:${portNumber}`);
+    console.log(`📁 Serving files from ${config.publicDir}/`);
+    console.log(`🌐 Dashboard: http://localhost:${portNumber}/dashboard.html`);
+    console.log(`📊 Simple Dashboard: http://localhost:${portNumber}/dashboard-simple.html`);
+    console.log(`🔧 Environment: ${config.nodeEnv}`);
+    console.log(`📊 Log Level: ${config.logLevel}`);
 });
