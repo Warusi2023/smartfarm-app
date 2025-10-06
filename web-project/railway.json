@@ -5,7 +5,7 @@
     "buildCommand": "echo 'Static site ready'"
   },
   "deploy": {
-    "startCommand": "npx http-server ./public -p $PORT -a 0.0.0.0 -c-1",
+    "startCommand": "node server.js",
     "healthcheckPath": "/",
     "healthcheckTimeout": 60
   }
