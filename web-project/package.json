@@ -1,19 +1,16 @@
 {
-  "name": "smartfarm-frontend",
-  "version": "1.0.2",
-  "description": "SmartFarm Frontend - Static Dashboard (Railway Ready)",
+  "name": "smartfarm-web",
+  "version": "1.0.0",
+  "private": true,
   "scripts": {
-    "start": "node server.js",
-    "dev": "npx http-server ./public -p 8080 -a 0.0.0.0 -c-1",
-    "build": "echo 'Static site build completed - files ready in public/'",
-    "deploy": "echo 'Deployment ready - No Husky conflicts'",
-    "railway": "node server.js",
-    "netlify": "npm run build"
+    "build": "vite build",
+    "preview": "vite preview --strictPort --port 4173",
+    "start": "npx --yes serve -s dist -l $PORT"
+  },
+  "devDependencies": {
+    "vite": "^5.4.0"
   },
   "dependencies": {
-    "http-server": "^14.1.1"
-  },
-  "engines": {
-    "node": ">=18.0.0"
+    "serve": "^14.2.1"
   }
 }
