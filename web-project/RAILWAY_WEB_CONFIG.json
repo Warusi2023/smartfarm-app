@@ -1,0 +1,8 @@
+{
+  "NODE_ENV": "production",
+  "PORT": "3000",
+  "LOG_LEVEL": "info",
+  "VITE_API_URL": "https://smartfarm-backend.railway.app",
+  "VITE_API_BASE_URL": "https://smartfarm-backend.railway.app",
+  "NEXT_PUBLIC_API_BASE_URL": "https://smartfarm-backend.railway.app"
+}
