@@ -1,17 +1,21 @@
+# SmartFarm Frontend - Netlify Configuration
+# Optimized for static site deployment
+
 [build]
   # Build command for static site
   command = "npm run build"
   
-  # Publish directory
+  # Publish directory (where your built files are)
   publish = "public"
   
-  # Environment variables
+  # Environment variables for build
   [build.environment]
     NODE_VERSION = "18"
+    NPM_VERSION = "9"
 
+# Development settings
 [dev]
-  # Local development settings
-  command = "python -m http.server 8080"
+  command = "npm run dev"
   port = 8080
   publish = "public"
 
@@ -29,7 +33,7 @@
     X-Content-Type-Options = "nosniff"
     X-XSS-Protection = "1; mode=block"
     Referrer-Policy = "strict-origin-when-cross-origin"
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; img-src 'self' data: https:; font-src 'self' https://cdnjs.cloudflare.com; connect-src 'self' https://api.railway.app https://smartfarm-api.railway.app; frame-ancestors 'none';"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; img-src 'self' data: https:; font-src 'self' https://cdnjs.cloudflare.com; connect-src 'self' https://api.railway.app https://smartfarm-backend.railway.app https://smartfarm-app-production.up.railway.app; frame-ancestors 'none';"
 
 [[headers]]
   for = "*.js"
@@ -46,22 +50,20 @@
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
 
-# Functions (if needed for serverless functions)
+# Form handling
+[forms]
+  # Enable form detection
+  [forms.settings]
+
+# Functions directory (if you add serverless functions later)
 [functions]
   directory = "netlify/functions"
 
-# Plugins
+# Plugins for optimization
 [[plugins]]
   package = "@netlify/plugin-lighthouse"
-
   [plugins.inputs.thresholds]
     performance = 0.8
     accessibility = 0.9
     best-practices = 0.8
     seo = 0.8
-
-# Form handling (if needed)
-[forms]
-  # Enable form detection
-  [forms.settings]
-    # Add any form-specific settings here
