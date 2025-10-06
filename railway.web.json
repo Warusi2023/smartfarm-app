@@ -1,11 +1,11 @@
 {
   "build": {
     "builder": "NIXPACKS",
-    "installCommand": "npm ci",
-    "buildCommand": "npm run build"
+    "installCommand": "npm install -g serve",
+    "buildCommand": "echo 'No build needed - serving static files'"
   },
   "deploy": {
-    "startCommand": "npm run start",
+    "startCommand": "serve public -p $PORT",
     "healthcheckPath": "/",
     "healthcheckTimeout": 120
   },

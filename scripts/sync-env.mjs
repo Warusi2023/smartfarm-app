@@ -1,630 +1,147 @@
-#!/usr/bin/env node
+import { existsSync, mkdirSync, writeFileSync, readFileSync } from "fs";
+import { join } from "path";
 
-/**
- * SmartFarm Environment Variables Synchronization Script
- * 
- * This script:
- * 1. Analyzes current environment configuration
- * 2. Creates missing .env.production files
- * 3. Synchronizes variables between frontend and backend
- * 4. Ensures Railway deployment compatibility
- * 5. Automatically updates Netlify environment variables via API
- * 6. Triggers frontend redeployment on Netlify
- */
+const BACKEND_CANDIDATES = ["backend-api", "backend", "server", "api"];
+const FRONTEND_CANDIDATES = ["web-project", "frontend", "web", "app"];
 
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import https from 'https';
-import http from 'http';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const projectRoot = path.join(__dirname, '..');
-
-// Color codes for console output
-const colors = {
-    reset: '\x1b[0m',
-    red: '\x1b[31m',
-    green: '\x1b[32m',
-    yellow: '\x1b[33m',
-    blue: '\x1b[34m',
-    magenta: '\x1b[35m',
-    cyan: '\x1b[36m',
-    white: '\x1b[37m',
-    bold: '\x1b[1m'
-};
-
-// Logging functions
-const log = {
-    info: (msg) => console.log(`${colors.blue}ℹ${colors.reset} ${msg}`),
-    success: (msg) => console.log(`${colors.green}✅${colors.reset} ${msg}`),
-    warning: (msg) => console.log(`${colors.yellow}⚠️${colors.reset} ${msg}`),
-    error: (msg) => console.log(`${colors.red}❌${colors.reset} ${msg}`),
-    header: (msg) => console.log(`\n${colors.bold}${colors.cyan}${msg}${colors.reset}`),
-    step: (msg) => console.log(`${colors.magenta}→${colors.reset} ${msg}`)
-};
-
-// Configuration
-const config = {
-    // Railway deployment URLs (update these with your actual URLs)
-    railwayBackendUrl: 'https://smartfarm-backend.railway.app',
-    railwayFrontendUrl: 'https://smartfarm-web-production.up.railway.app',
-    
-    // Netlify configuration (add your details here)
-    netlify: {
-        siteId: process.env.NETLIFY_SITE_ID || '', // Your Netlify site ID
-        accessToken: process.env.NETLIFY_ACCESS_TOKEN || '', // Your Netlify access token
-        enabled: process.env.NETLIFY_AUTO_UPDATE === 'true' || false
-    },
-    
-    // Ports
-    frontendPort: 3000,
-    backendPort: 8080,
-    
-    // CORS origins
-    corsOrigins: [
-        'https://smartfarm-web-production.up.railway.app',
-        'https://smartfarm-app-production.up.railway.app',
-        'https://www.smartfarm-app.com',
-        'https://smartfarm-app.com',
-        'http://localhost:3000',
-        'http://localhost:8080'
-    ].join(',')
-};
-
-/**
- * Generate a secure random string for secrets
- */
-function generateSecret(length = 64) {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
-    let result = '';
-    for (let i = 0; i < length; i++) {
-        result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return result;
-}
-
-/**
- * Ensure directory exists
- */
-function ensureDir(dirPath) {
-    if (!fs.existsSync(dirPath)) {
-        fs.mkdirSync(dirPath, { recursive: true });
-        log.success(`Created directory: ${dirPath}`);
-    }
-}
-
-/**
- * Write environment file
- */
-function writeEnvFile(filePath, content, description) {
+function findDir(cands) {
+  for (const d of cands) {
     try {
-        ensureDir(path.dirname(filePath));
-        fs.writeFileSync(filePath, content);
-        log.success(`Created ${description}: ${filePath}`);
-        return true;
-    } catch (error) {
-        log.error(`Failed to create ${description}: ${error.message}`);
-        return false;
-    }
+      if (existsSync(join(d))) return d;
+    } catch {}
+  }
+  return null;
+}
+
+const backendDir = findDir(BACKEND_CANDIDATES);
+const frontendDir = findDir(FRONTEND_CANDIDATES);
+
+if (!backendDir) {
+  console.error("❌ Backend folder not found (tried:", BACKEND_CANDIDATES.join(", "), ")");
+  process.exit(2);
+}
+if (!frontendDir) {
+  console.error("❌ Frontend folder not found (tried:", FRONTEND_CANDIDATES.join(", "), ")");
+  process.exit(3);
+}
+
+function ensureDir(d) { try { mkdirSync(d, { recursive: true }); } catch {} }
+
+function setDefault(v, fallback) {
+  return (v && String(v).trim().length) ? String(v).trim() : fallback;
 }
 
 /**
- * Read existing environment file
+ * You can override these from CI/Actions by setting env:
+ *   BACKEND_PUBLIC_URL, FRONTEND_PUBLIC_URL, CORS_ORIGIN, FRONTEND_ORIGIN
  */
-function readEnvFile(filePath) {
-    if (!fs.existsSync(filePath)) {
-        return {};
-    }
-    
-    const content = fs.readFileSync(filePath, 'utf8');
-    const env = {};
-    
-    content.split('\n').forEach(line => {
-        line = line.trim();
-        if (line && !line.startsWith('#') && line.includes('=')) {
-            const [key, ...valueParts] = line.split('=');
-            env[key.trim()] = valueParts.join('=').trim();
-        }
-    });
-    
-    return env;
-}
+const BACKEND_PUBLIC_URL = setDefault(
+  process.env.BACKEND_PUBLIC_URL,
+  "https://smartfarm-app-production.up.railway.app"
+); // change if your actual host differs
+const FRONTEND_PUBLIC_URL = setDefault(
+  process.env.FRONTEND_PUBLIC_URL,
+  "https://smartfarm-web-production.up.railway.app"
+);
+const API_URL = `${BACKEND_PUBLIC_URL.replace(/\/$/, "")}/api`;
+const CORS_ORIGIN = setDefault(process.env.CORS_ORIGIN, FRONTEND_PUBLIC_URL);
 
-/**
- * Create backend .env.production file
- */
-function createBackendProductionEnv() {
-    const backendEnvPath = path.join(projectRoot, 'backend-api', '.env.production');
-    
-    const content = `# SmartFarm Backend - Production Environment Variables
-# Generated by sync-env.mjs on ${new Date().toISOString()}
+const BACKEND_ENV = [
+  "NODE_ENV=production",
+  "PORT=3000",
+  `CORS_ORIGIN=${CORS_ORIGIN}`
+].join("\n") + "\n";
 
-# Server Configuration
-NODE_ENV=production
-PORT=${config.backendPort}
-HOST=0.0.0.0
-RAILWAY_ENVIRONMENT=production
+const FRONTEND_KEYS = [
+  // Most frameworks:
+  `VITE_API_URL=${API_URL}`,
+  `NEXT_PUBLIC_API_URL=${API_URL}`,
+  `REACT_APP_API_URL=${API_URL}`,
+  "NODE_ENV=production"
+];
+const FRONTEND_ENV = FRONTEND_KEYS.join("\n") + "\n";
 
-# JWT Configuration
-JWT_SECRET=${generateSecret(64)}
-JWT_EXPIRES_IN=24h
+// Write .env.production for backend & frontend
+const backendEnvPath = join(backendDir, ".env.production");
+const frontendEnvPath = join(frontendDir, ".env.production");
+writeFileSync(backendEnvPath, BACKEND_ENV);
+writeFileSync(frontendEnvPath, FRONTEND_ENV);
 
-# Database Configuration (Railway PostgreSQL)
-DATABASE_URL=\${DATABASE_URL}
-DB_TYPE=postgresql
+// Write/patch railway.json for both services
+const backendRailway = {
+  build: { builder: "NIXPACKS", installCommand: "npm ci", buildCommand: "npm run build" },
+  deploy: { startCommand: "npm run start", healthcheckPath: "/api/health", healthcheckTimeout: 120 },
+  rootDirectory: backendDir
+};
+const frontendRailway = {
+  build: { builder: "NIXPACKS", installCommand: "npm ci", buildCommand: "npm run build" },
+  deploy: { startCommand: "npm run start", healthcheckPath: "/", healthcheckTimeout: 120 },
+  rootDirectory: frontendDir
+};
+writeFileSync("railway.backend.json", JSON.stringify(backendRailway, null, 2) + "\n");
+writeFileSync("railway.frontend.json", JSON.stringify(frontendRailway, null, 2) + "\n");
 
-# CORS Configuration
-CORS_ORIGIN=${config.corsOrigins}
-CORS_CREDENTIALS=true
+// Optional Procfile for backend clarity
+const procfilePath = join(backendDir, "Procfile");
+writeFileSync(procfilePath, "web: npm run start\n");
 
-# Security Configuration
-HELMET_ENABLED=true
-RATE_LIMIT_ENABLED=true
-RATE_LIMIT_WINDOW_MS=900000
-RATE_LIMIT_MAX_REQUESTS=100
+// Final report
+const report = `
+SMARTFARM ENV SYNC SUMMARY
+==========================
+Backend dir   : ${backendDir}
+Frontend dir  : ${frontendDir}
 
-# Logging Configuration
-LOG_LEVEL=info
-LOG_FORMAT=combined
+Backend .env.production
+-----------------------
+${BACKEND_ENV}
 
-# File Upload Configuration
-MAX_FILE_SIZE=10485760
-UPLOAD_PATH=./uploads
+Frontend .env.production
+------------------------
+${FRONTEND_ENV}
 
-# External API Keys (Add your actual keys)
-WEATHER_API_KEY=\${WEATHER_API_KEY}
-MAPS_API_KEY=\${MAPS_API_KEY}
+Railway files created at repo root:
+- railway.backend.json (use this for the backend service)
+- railway.frontend.json (use this for the web service)
 
-# Feature Flags
-FEATURE_GEOFENCING=true
-FEATURE_AI_ADVISORY=true
-FEATURE_BYPRODUCTS=true
-FEATURE_SUBSCRIPTIONS=true
-FEATURE_ADS=false
+ACTION REQUIRED in Railway Dashboard:
+------------------------------------
+For the Backend service (smartfarm-app):
+  • Set Environment Variables:
+      NODE_ENV=production
+      PORT=3000
+      CORS_ORIGIN=${CORS_ORIGIN}
+  • Healthcheck: /api/health
+  • Root Directory: ${backendDir}
+  • Start Command: npm run start
+  • Install Command: npm ci
+  • Build Command: npm run build
 
-# Monitoring Configuration
-ENABLE_METRICS=true
-METRICS_PORT=9090
+For the Frontend service (web):
+  • Set Environment Variables (depending on your framework, at least one is used):
+      VITE_API_URL=${API_URL}
+      NEXT_PUBLIC_API_URL=${API_URL}
+      REACT_APP_API_URL=${API_URL}
+      NODE_ENV=production
+  • Root Directory: ${frontendDir}
+  • Build Command: npm run build
+  • Start Command: npm run start (or the correct framework dev server/adapter)
+  • If using Netlify instead of Railway web, copy the same env vars into Netlify.
 
-# Cache Configuration (if using Redis)
-REDIS_URL=\${REDIS_URL}
-CACHE_TTL=3600
+IMPORTANT:
+- If your actual Railway backend hostname is different, re-run with:
+    BACKEND_PUBLIC_URL="https://<YOUR-BACKEND-HOST>" node scripts/sync-env.mjs
+- Frontend must call the API via ${API_URL}
+- Backend must allow CORS from ${CORS_ORIGIN}
+
+Next:
+  1) Commit .env.production files (if your policy allows; otherwise keep local and set the same values in Railway/Netlify dashboards).
+  2) In GitHub → Secrets, set:
+       RAILWAY_TOKEN
+       RAILWAY_SERVICE_ID_BACKEND
+       RAILWAY_SERVICE_ID_FRONTEND (if deploying web via Railway)
 `;
 
-    return writeEnvFile(backendEnvPath, content, 'Backend .env.production');
-}
-
-/**
- * Create frontend .env.production file
- */
-function createFrontendProductionEnv() {
-    const frontendEnvPath = path.join(projectRoot, 'web-project', '.env.production');
-    
-    const content = `# SmartFarm Frontend - Production Environment Variables
-# Generated by sync-env.mjs on ${new Date().toISOString()}
-
-# Environment Configuration
-NODE_ENV=production
-RAILWAY_ENVIRONMENT=production
-MODE=production
-
-# Server Configuration
-PORT=${config.frontendPort}
-
-# API Configuration
-VITE_API_URL=${config.railwayBackendUrl}
-VITE_API_BASE_URL=${config.railwayBackendUrl}
-NEXT_PUBLIC_API_BASE_URL=${config.railwayBackendUrl}
-
-# External API Keys (Add your actual keys)
-VITE_OPENWEATHER_API_KEY=\${WEATHER_API_KEY}
-VITE_WEATHER_API_KEY=\${WEATHER_API_KEY}
-VITE_MAPS_API_KEY=\${MAPS_API_KEY}
-WEATHER_API_KEY=\${WEATHER_API_KEY}
-GOOGLE_MAPS_API_KEY=\${MAPS_API_KEY}
-
-# Security Configuration
-JWT_SECRET=\${JWT_SECRET}
-SESSION_SECRET=\${SESSION_SECRET}
-
-# CORS Configuration
-CORS_ORIGINS=${config.corsOrigins}
-
-# Feature Flags
-VITE_FEATURE_GEOFENCING=true
-VITE_FEATURE_AI_ADVISORY=true
-VITE_FEATURE_BYPRODUCTS=true
-VITE_FEATURE_SUBSCRIPTIONS=true
-VITE_FEATURE_ADS=false
-VITE_DEMO_ENABLED=false
-
-# Logging Configuration
-VITE_LOG_LEVEL=info
-LOG_LEVEL=info
-
-# Database (if frontend needs direct access)
-DATABASE_URL=\${DATABASE_URL}
-`;
-
-    return writeEnvFile(frontendEnvPath, content, 'Frontend .env.production');
-}
-
-/**
- * Create Railway deployment configuration files
- */
-function createRailwayConfigs() {
-    // Backend railway.json
-    const backendRailwayPath = path.join(projectRoot, 'backend-api', 'railway.json');
-    const backendRailwayConfig = {
-        "$schema": "https://railway.app/railway.schema.json",
-        "build": {
-            "builder": "NIXPACKS",
-            "buildCommand": "npm run build"
-        },
-        "deploy": {
-            "startCommand": "npm start",
-            "healthcheckPath": "/api/health",
-            "healthcheckTimeout": 300,
-            "restartPolicyType": "ON_FAILURE",
-            "restartPolicyMaxRetries": 10
-        }
-    };
-
-    // Frontend railway.json
-    const frontendRailwayPath = path.join(projectRoot, 'web-project', 'railway.json');
-    const frontendRailwayConfig = {
-        "$schema": "https://railway.app/railway.schema.json",
-        "build": {
-            "builder": "NIXPACKS",
-            "buildCommand": "echo 'Frontend build completed'"
-        },
-        "deploy": {
-            "startCommand": "node server.js",
-            "healthcheckPath": "/",
-            "healthcheckTimeout": 60,
-            "restartPolicyType": "ON_FAILURE",
-            "restartPolicyMaxRetries": 10
-        }
-    };
-
-    const backendSuccess = writeEnvFile(backendRailwayPath, JSON.stringify(backendRailwayConfig, null, 2), 'Backend railway.json');
-    const frontendSuccess = writeEnvFile(frontendRailwayPath, JSON.stringify(frontendRailwayConfig, null, 2), 'Frontend railway.json');
-
-    return backendSuccess && frontendSuccess;
-}
-
-/**
- * Make HTTP request with promise support
- */
-function makeRequest(options, data = null) {
-    return new Promise((resolve, reject) => {
-        const protocol = options.protocol === 'https:' ? https : http;
-        
-        const req = protocol.request(options, (res) => {
-            let responseData = '';
-            
-            res.on('data', (chunk) => {
-                responseData += chunk;
-            });
-            
-            res.on('end', () => {
-                try {
-                    const parsedData = responseData ? JSON.parse(responseData) : {};
-                    resolve({
-                        statusCode: res.statusCode,
-                        headers: res.headers,
-                        data: parsedData
-                    });
-                } catch (error) {
-                    resolve({
-                        statusCode: res.statusCode,
-                        headers: res.headers,
-                        data: responseData
-                    });
-                }
-            });
-        });
-        
-        req.on('error', (error) => {
-            reject(error);
-        });
-        
-        if (data) {
-            req.write(JSON.stringify(data));
-        }
-        
-        req.end();
-    });
-}
-
-/**
- * Get current Netlify environment variables
- */
-async function getNetlifyEnvVars() {
-    if (!config.netlify.enabled || !config.netlify.siteId || !config.netlify.accessToken) {
-        log.warning('Netlify integration disabled or credentials missing');
-        return null;
-    }
-    
-    const options = {
-        protocol: 'https:',
-        hostname: 'api.netlify.com',
-        path: `/api/v1/sites/${config.netlify.siteId}/env`,
-        method: 'GET',
-        headers: {
-            'Authorization': `Bearer ${config.netlify.accessToken}`,
-            'Content-Type': 'application/json'
-        }
-    };
-    
-    try {
-        const response = await makeRequest(options);
-        if (response.statusCode === 200) {
-            log.success('Retrieved current Netlify environment variables');
-            return response.data;
-        } else {
-            log.error(`Failed to get Netlify env vars: ${response.statusCode} ${JSON.stringify(response.data)}`);
-            return null;
-        }
-    } catch (error) {
-        log.error(`Error getting Netlify env vars: ${error.message}`);
-        return null;
-    }
-}
-
-/**
- * Update Netlify environment variables
- */
-async function updateNetlifyEnvVars(envVars) {
-    if (!config.netlify.enabled || !config.netlify.siteId || !config.netlify.accessToken) {
-        log.warning('Netlify integration disabled or credentials missing');
-        return false;
-    }
-    
-    // Get current env vars to avoid overwriting existing ones
-    const currentVars = await getNetlifyEnvVars();
-    const existingVars = {};
-    
-    if (currentVars) {
-        currentVars.forEach(variable => {
-            existingVars[variable.key] = variable.value;
-        });
-    }
-    
-    // Merge new variables with existing ones
-    const updatedVars = { ...existingVars, ...envVars };
-    
-    // Convert to Netlify format
-    const netlifyVars = Object.entries(updatedVars).map(([key, value]) => ({
-        key,
-        value,
-        scopes: ['builds', 'functions', 'runtime']
-    }));
-    
-    const options = {
-        protocol: 'https:',
-        hostname: 'api.netlify.com',
-        path: `/api/v1/sites/${config.netlify.siteId}/env`,
-        method: 'PUT',
-        headers: {
-            'Authorization': `Bearer ${config.netlify.accessToken}`,
-            'Content-Type': 'application/json'
-        }
-    };
-    
-    try {
-        const response = await makeRequest(options, netlifyVars);
-        if (response.statusCode === 200) {
-            log.success(`Updated ${netlifyVars.length} Netlify environment variables`);
-            return true;
-        } else {
-            log.error(`Failed to update Netlify env vars: ${response.statusCode} ${JSON.stringify(response.data)}`);
-            return false;
-        }
-    } catch (error) {
-        log.error(`Error updating Netlify env vars: ${error.message}`);
-        return false;
-    }
-}
-
-/**
- * Trigger Netlify deployment
- */
-async function triggerNetlifyDeployment() {
-    if (!config.netlify.enabled || !config.netlify.siteId || !config.netlify.accessToken) {
-        log.warning('Netlify integration disabled or credentials missing');
-        return false;
-    }
-    
-    const options = {
-        protocol: 'https:',
-        hostname: 'api.netlify.com',
-        path: `/api/v1/sites/${config.netlify.siteId}/deploys`,
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${config.netlify.accessToken}`,
-            'Content-Type': 'application/json'
-        }
-    };
-    
-    const deployData = {
-        title: `Environment sync - ${new Date().toISOString()}`,
-        clear_cache: true
-    };
-    
-    try {
-        const response = await makeRequest(options, deployData);
-        if (response.statusCode === 201) {
-            log.success(`Triggered Netlify deployment: ${response.data.url}`);
-            return response.data;
-        } else {
-            log.error(`Failed to trigger Netlify deployment: ${response.statusCode} ${JSON.stringify(response.data)}`);
-            return false;
-        }
-    } catch (error) {
-        log.error(`Error triggering Netlify deployment: ${error.message}`);
-        return false;
-    }
-}
-
-/**
- * Validate configuration
- */
-function validateConfiguration() {
-    log.header('🔍 Validating Configuration');
-    
-    const issues = [];
-    
-    // Check if Railway URLs are properly configured
-    if (!config.railwayBackendUrl.includes('railway.app')) {
-        log.warning('Railway backend URL should be a Railway domain.');
-        issues.push('Railway backend URL needs to be updated');
-    }
-    
-    if (!config.railwayFrontendUrl.includes('railway.app') && !config.railwayFrontendUrl.includes('netlify.app')) {
-        log.warning('Railway frontend URL should be a Railway or Netlify domain.');
-        issues.push('Railway frontend URL needs to be updated');
-    }
-    
-    // Check port conflicts
-    if (config.frontendPort === config.backendPort) {
-        log.error('Frontend and backend ports are the same! This will cause conflicts.');
-        issues.push('Port conflict detected');
-    }
-    
-    if (issues.length > 0) {
-        log.warning(`Found ${issues.length} configuration issues:`);
-        issues.forEach(issue => log.warning(`  - ${issue}`));
-        return false;
-    }
-    
-    log.success('Configuration validation passed');
-    return true;
-}
-
-/**
- * Main synchronization function
- */
-async function synchronizeEnvironment() {
-    log.header('🚀 SmartFarm Environment Synchronization');
-    log.info('Starting environment variable synchronization...');
-    
-    // Validate configuration
-    if (!validateConfiguration()) {
-        log.error('Configuration validation failed. Please fix issues before proceeding.');
-        process.exit(1);
-    }
-    
-    log.step('Creating backend .env.production');
-    const backendSuccess = createBackendProductionEnv();
-    
-    log.step('Creating frontend .env.production');
-    const frontendSuccess = createFrontendProductionEnv();
-    
-    log.step('Creating Railway configuration files');
-    const railwaySuccess = createRailwayConfigs();
-    
-    // Summary
-    log.header('📋 Synchronization Summary');
-    
-    if (backendSuccess) {
-        log.success('Backend .env.production created successfully');
-    } else {
-        log.error('Failed to create backend .env.production');
-    }
-    
-    if (frontendSuccess) {
-        log.success('Frontend .env.production created successfully');
-    } else {
-        log.error('Failed to create frontend .env.production');
-    }
-    
-    if (railwaySuccess) {
-        log.success('Railway configuration files created successfully');
-    } else {
-        log.error('Failed to create Railway configuration files');
-    }
-    
-    // Step 6: Update Netlify environment variables (if enabled)
-    if (config.netlify.enabled) {
-        log.header('🌐 Updating Netlify Environment Variables');
-        
-        // Prepare frontend environment variables for Netlify
-        const netlifyEnvVars = {
-            'NODE_ENV': frontendEnv.NODE_ENV,
-            'VITE_API_URL': frontendEnv.VITE_API_URL,
-            'VITE_API_BASE_URL': frontendEnv.VITE_API_BASE_URL,
-            'VITE_OPENWEATHER_API_KEY': frontendEnv.VITE_OPENWEATHER_API_KEY,
-            'VITE_MAPS_API_KEY': frontendEnv.VITE_MAPS_API_KEY,
-            'VITE_LOG_LEVEL': frontendEnv.VITE_LOG_LEVEL
-        };
-        
-        // Remove undefined values
-        Object.keys(netlifyEnvVars).forEach(key => {
-            if (netlifyEnvVars[key] === undefined) {
-                delete netlifyEnvVars[key];
-            }
-        });
-        
-        log.step('Updating Netlify environment variables...');
-        const netlifyUpdateSuccess = await updateNetlifyEnvVars(netlifyEnvVars);
-        
-        if (netlifyUpdateSuccess) {
-            log.step('Triggering Netlify deployment...');
-            const deploymentSuccess = await triggerNetlifyDeployment();
-            
-            if (deploymentSuccess) {
-                log.success('Netlify deployment triggered successfully');
-            } else {
-                log.warning('Netlify deployment trigger failed, but variables were updated');
-            }
-        } else {
-            log.warning('Netlify environment variables update failed');
-        }
-    } else {
-        log.info('Netlify integration disabled - set NETLIFY_AUTO_UPDATE=true to enable');
-    }
-    
-    // Next steps
-    log.header('🎯 Next Steps');
-    log.info('1. Update Railway URLs in scripts/sync-env.mjs with your actual deployment URLs');
-    log.info('2. Add your actual API keys to the .env.production files');
-    log.info('3. Set the generated secrets in your Railway dashboard');
-    log.info('4. Redeploy your applications');
-    log.info('5. Test API connectivity');
-    
-    if (config.netlify.enabled) {
-        log.info('6. Netlify environment variables have been updated automatically');
-        log.info('7. Netlify deployment has been triggered');
-    } else {
-        log.info('6. To enable automatic Netlify updates, set NETLIFY_AUTO_UPDATE=true');
-        log.info('   and configure NETLIFY_SITE_ID and NETLIFY_ACCESS_TOKEN');
-    }
-    
-    // Railway-specific instructions
-    log.header('🚂 Railway Deployment Instructions');
-    log.info('For smartfarm-app component, add these variables:');
-    log.info('  - NODE_ENV=production');
-    log.info('  - PORT=8080');
-    log.info('  - DATABASE_URL=<your_postgresql_url>');
-    log.info('  - JWT_SECRET=<generated_secret>');
-    log.info('  - WEATHER_API_KEY=<your_openweather_key>');
-    log.info('  - MAPS_API_KEY=<your_google_maps_key>');
-    
-    log.info('\nFor web component, add these variables:');
-    log.info('  - NODE_ENV=production');
-    log.info('  - PORT=3000');
-    log.info('  - VITE_API_URL=https://smartfarm-app-production.up.railway.app');
-    log.info('  - VITE_OPENWEATHER_API_KEY=<your_openweather_key>');
-    log.info('  - VITE_MAPS_API_KEY=<your_google_maps_key>');
-    
-    log.success('\n✅ Environment synchronization completed!');
-}
-
-// Run the synchronization
-synchronizeEnvironment().catch(error => {
-    log.error(`Synchronization failed: ${error.message}`);
-    process.exit(1);
-});
+writeFileSync("scripts/env-audit-report.md", report);
+console.log(report);
+console.log("✅ Environment variables synchronized. Edit hostnames if needed and re-run.");
