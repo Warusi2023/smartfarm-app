@@ -6,7 +6,7 @@
     "node": ">=18.17 <=22"
   },
   "scripts": {
-    "prepare": "node -e \"if(process.env.HUSKY==='0'||process.env.CI){process.exit(0)}\" && husky install",
+    "prepare": "node -e \"if(!process.env.HUSKY || process.env.HUSKY==='1'){try{require('child_process').execSync('npx husky install',{stdio:'inherit'})}catch(e){console.log('husky skipped:', e?.message||e)}} else {console.log('HUSKY=0 — skipping husky install') }\"",
     "prebuild": "node scripts/fix-svg-viewbox.mjs",
     "build": "vite build",
     "preview": "vite preview --strictPort --port 4173",
@@ -14,7 +14,7 @@
   },
   "devDependencies": {
     "esbuild": "0.21.5",
-    "husky": "^9.1.7",
+    "husky": "^9.0.0",
     "typescript": "5.6.3",
     "vite": "5.4.20"
   },

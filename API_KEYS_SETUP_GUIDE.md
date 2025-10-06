@@ -1,142 +1,114 @@
-# 🔑 API Keys Setup Guide
+# API Keys Setup Guide for Railway
 
-## 🚨 **CRITICAL: Fix CORS Issue First!**
+## 🔐 **Security First - Never Share Your API Keys**
 
-Your backend is currently configured for `https://www.smartfarm-app.com` but your actual frontend is `https://dulcet-sawine-92d6a8.netlify.app`.
+**⚠️ IMPORTANT**: Never share your actual API keys in chat, code, or public repositories. They should be treated as passwords.
 
-### **Fix CORS in Railway Dashboard:**
-1. Go to your Railway dashboard
-2. Find your service settings
-3. Add/Update this environment variable:
-```
-CORS_ORIGIN=https://dulcet-sawine-92d6a8.netlify.app
-```
+## 📋 **Railway Environment Variables Setup**
 
-## 🔑 **API Keys Setup**
+### **Step 1: Access Railway Dashboard**
+1. Go to [railway.app](https://railway.app)
+2. Navigate to your `smartfarm-app-production` service
+3. Click on **Variables** tab
 
-### **1. Google Maps API Key**
-**Purpose**: Location services, maps, geolocation
+### **Step 2: Add Each Variable One by One**
 
-**How to get it:**
+Click **+ New Variable** for each of these:
+
+#### **Google API Keys:**
+- **Variable Name**: `GOOGLE_API_KEY`
+- **Value**: `[Your main Google API key]`
+
+- **Variable Name**: `GOOGLE_MAPS_API_KEY` 
+- **Value**: `[Your Google Maps API key]`
+
+- **Variable Name**: `GOOGLE_GEOCODING_API_KEY`
+- **Value**: `[Your Google Geocoding API key]`
+
+- **Variable Name**: `GOOGLE_PLACES_API_KEY`
+- **Value**: `[Your Google Places API key]`
+
+#### **Weather API Key:**
+- **Variable Name**: `OPENWEATHER_API_KEY`
+- **Value**: `[Your OpenWeather API key]`
+
+#### **Firebase Configuration:**
+- **Variable Name**: `FIREBASE_PROJECT_ID`
+- **Value**: `[Your Firebase project ID]`
+
+- **Variable Name**: `FIREBASE_API_KEY`
+- **Value**: `[Your Firebase API key]`
+
+- **Variable Name**: `FIREBASE_AUTH_DOMAIN`
+- **Value**: `[Your Firebase auth domain]`
+
+- **Variable Name**: `FIREBASE_STORAGE_BUCKET`
+- **Value**: `[Your Firebase storage bucket]`
+
+### **Step 3: Essential Variables (Don't Forget These)**
+
+Also add these required variables:
+
+- **Variable Name**: `NODE_ENV`
+- **Value**: `production`
+
+- **Variable Name**: `CI`
+- **Value**: `1`
+
+- **Variable Name**: `HUSKY`
+- **Value**: `0`
+
+- **Variable Name**: `CORS_ORIGIN`
+- **Value**: `https://web-production-86d39.up.railway.app`
+
+## 🔍 **How to Find Your API Keys**
+
+### **Google API Keys:**
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project or select existing
-3. Enable "Maps JavaScript API" and "Geocoding API"
-4. Go to "Credentials" → "Create Credentials" → "API Key"
-5. Copy the API key
+2. Select your project
+3. Go to **APIs & Services** → **Credentials**
+4. Copy the API keys you created
 
-**Set in Railway:**
-```
-MAPS_API_KEY=your_google_maps_api_key_here
-```
-
-**Set in Netlify:**
-```
-VITE_GOOGLE_MAPS_API_KEY=your_google_maps_api_key_here
-```
-
-### **2. OpenWeather API Key**
-**Purpose**: Weather forecasts, climate data
-
-**How to get it:**
+### **OpenWeather API Key:**
 1. Go to [OpenWeatherMap](https://openweathermap.org/api)
-2. Sign up for a free account
-3. Go to "API Keys" section
+2. Sign in to your account
+3. Go to **API Keys** section
 4. Copy your API key
 
-**Set in Railway:**
-```
-WEATHER_API_KEY=your_openweather_api_key_here
-```
+### **Firebase Configuration:**
+1. Go to [Firebase Console](https://console.firebase.google.com/)
+2. Select your project
+3. Go to **Project Settings** → **General**
+4. Scroll down to **Your apps** section
+5. Click on your web app or create one
+6. Copy the configuration values
 
-**Set in Netlify:**
-```
-VITE_OPENWEATHER_API_KEY=your_openweather_api_key_here
-```
+## ✅ **Verification Checklist**
 
-### **3. OpenAI API Key**
-**Purpose**: AI chat features, expert advice
+After adding all variables, check:
 
-**How to get it:**
-1. Go to [OpenAI Platform](https://platform.openai.com/)
-2. Sign up or log in
-3. Go to "API Keys" section
-4. Create a new API key
-5. Copy the key (starts with `sk-`)
+- [ ] All 12 API key variables are added
+- [ ] All 4 essential variables are added
+- [ ] No typos in variable names
+- [ ] Values are correct (no extra spaces)
+- [ ] All variables are marked as "Secret" (recommended)
 
-**Set in Railway:**
-```
-OPENAI_API_KEY=your_openai_api_key_here
-```
+## 🚀 **After Setup**
 
-**Set in Netlify:**
-```
-VITE_OPENAI_API_KEY=your_openai_api_key_here
-```
+1. **Redeploy**: Trigger a new deployment
+2. **Test**: Visit `https://smartfarm-app-production.up.railway.app/api/health`
+3. **Check Logs**: Verify no API key errors in Railway logs
 
-### **4. JWT Secret (Backend Only)**
-**Purpose**: User authentication security
+## 🛡️ **Security Best Practices**
 
-**Generate a secure secret:**
-```bash
-# Use this command to generate a secure JWT secret
-node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
-```
+1. **Never commit API keys** to version control
+2. **Use Railway's secret variables** (they're encrypted)
+3. **Rotate keys regularly** for security
+4. **Monitor API usage** to detect unauthorized access
+5. **Set up API key restrictions** in Google Cloud Console
 
-**Set in Railway:**
-```
-JWT_SECRET=your_generated_jwt_secret_here
-```
+## 🆘 **If You Need Help**
 
-## 🚀 **Complete Environment Variables Setup**
-
-### **Railway Dashboard Environment Variables:**
-```
-CORS_ORIGIN=https://dulcet-sawine-92d6a8.netlify.app
-NODE_ENV=production
-PORT=3000
-JWT_SECRET=your_generated_jwt_secret_here
-WEATHER_API_KEY=your_openweather_api_key_here
-MAPS_API_KEY=your_google_maps_api_key_here
-OPENAI_API_KEY=your_openai_api_key_here
-```
-
-### **Netlify Dashboard Environment Variables:**
-```
-VITE_API_URL=https://smartfarm-app-production.up.railway.app
-VITE_GOOGLE_MAPS_API_KEY=your_google_maps_api_key_here
-VITE_OPENWEATHER_API_KEY=your_openweather_api_key_here
-VITE_OPENAI_API_KEY=your_openai_api_key_here
-```
-
-## 🧪 **Testing Your Setup**
-
-### **1. Test CORS Fix:**
-```bash
-curl -H "Origin: https://dulcet-sawine-92d6a8.netlify.app" https://smartfarm-app-production.up.railway.app/api/health
-```
-
-### **2. Test Frontend:**
-Visit: `https://dulcet-sawine-92d6a8.netlify.app`
-
-### **3. Test API Integration:**
-Check if the frontend can successfully call backend APIs
-
-## 📋 **Priority Order:**
-1. **FIRST**: Fix CORS issue in Railway
-2. **SECOND**: Set up Google Maps API (for location features)
-3. **THIRD**: Set up OpenWeather API (for weather data)
-4. **FOURTH**: Set up OpenAI API (for AI features)
-5. **FIFTH**: Generate and set JWT secret
-
-## 🔒 **Security Notes:**
-- Never commit API keys to your repository
-- Use environment variables for all sensitive data
-- Regularly rotate your API keys
-- Monitor API usage to avoid unexpected charges
-
-## 🆘 **Need Help?**
-If you encounter any issues:
-1. Check Railway logs for backend errors
-2. Check Netlify logs for frontend errors
-3. Verify environment variables are set correctly
-4. Test API endpoints individually
+- **Missing Keys**: Check the service dashboards for your API keys
+- **Wrong Values**: Double-check the variable names and values
+- **Still Not Working**: Check Railway logs for specific error messages
