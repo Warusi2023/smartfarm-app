@@ -1,11 +1,12 @@
 {
   "name": "smartfarm-frontend",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "SmartFarm Frontend - Static Dashboard (Railway Ready)",
   "scripts": {
     "start": "node server.js",
     "dev": "npx http-server ./public -p 8080 -a 0.0.0.0 -c-1",
-    "deploy": "echo 'Deployment ready - No Husky conflicts'"
+    "deploy": "echo 'Deployment ready - No Husky conflicts'",
+    "railway": "node server.js"
   },
   "dependencies": {
     "http-server": "^14.1.1"
