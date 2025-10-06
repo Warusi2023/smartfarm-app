@@ -3,11 +3,13 @@
   command = "npm run build"
   
   # Publish directory
-  publish = "public"
+  publish = "dist"
   
   # Environment variables
   [build.environment]
     NODE_VERSION = "18"
+    VITE_API_URL = "https://smartfarm-app-production.up.railway.app/api"
+    APP_BUILD_TAG = "netlify"
 
 [dev]
   # Local development settings

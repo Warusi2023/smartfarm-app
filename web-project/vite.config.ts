@@ -1,20 +1,13 @@
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  base: "/",               // ensure absolute asset paths
-  build: {
-    outDir: "dist",
-    sourcemap: true
-  },
-  server: {
-    host: true,
-    port: 5173
-  },
-  preview: {
-    host: true,
-    port: 4173
+  base: "/",
+  build: { 
+    outDir: "dist", 
+    sourcemap: true 
   },
   define: {
-    "process.env": {}      // avoid process undefined errors on client
-  }
+    "process.env": {}
+  },
+  envPrefix: ['VITE_', 'NEXT_PUBLIC_', 'REACT_APP_']
 });
