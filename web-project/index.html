@@ -8,6 +8,10 @@
   <body>
     <div id="app"></div>
     <script type="module">
+      // at the very top
+      import "./src/svg-sanitizer";
+      import "./src/quiet-externals";
+      
       import API_URL from "./src/env.ts";
       const el = document.getElementById("app");
       el.innerHTML = "<h1>SmartFarm Web</h1><p>API: " + API_URL + "</p>";

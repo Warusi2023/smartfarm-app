@@ -3,14 +3,11 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "prebuild": "node ../scripts/fix-svg-viewbox.mjs",
     "build": "vite build",
     "preview": "vite preview --strictPort --port 4173",
     "start": "npx --yes serve -s dist -l $PORT"
   },
-  "devDependencies": {
-    "vite": "^5.4.0"
-  },
-  "dependencies": {
-    "serve": "^14.2.1"
-  }
+  "devDependencies": { "vite": "^5.4.0" },
+  "dependencies": { "serve": "^14.2.1" }
 }
