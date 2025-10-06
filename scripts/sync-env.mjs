@@ -8,11 +8,15 @@
  * 2. Creates missing .env.production files
  * 3. Synchronizes variables between frontend and backend
  * 4. Ensures Railway deployment compatibility
+ * 5. Automatically updates Netlify environment variables via API
+ * 6. Triggers frontend redeployment on Netlify
  */
 
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import https from 'https';
+import http from 'http';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -46,6 +50,13 @@ const config = {
     // Railway deployment URLs (update these with your actual URLs)
     railwayBackendUrl: 'https://smartfarm-backend.railway.app',
     railwayFrontendUrl: 'https://smartfarm-web-production.up.railway.app',
+    
+    // Netlify configuration (add your details here)
+    netlify: {
+        siteId: process.env.NETLIFY_SITE_ID || '', // Your Netlify site ID
+        accessToken: process.env.NETLIFY_ACCESS_TOKEN || '', // Your Netlify access token
+        enabled: process.env.NETLIFY_AUTO_UPDATE === 'true' || false
+    },
     
     // Ports
     frontendPort: 3000,
@@ -285,6 +296,180 @@ function createRailwayConfigs() {
 }
 
 /**
+ * Make HTTP request with promise support
+ */
+function makeRequest(options, data = null) {
+    return new Promise((resolve, reject) => {
+        const protocol = options.protocol === 'https:' ? https : http;
+        
+        const req = protocol.request(options, (res) => {
+            let responseData = '';
+            
+            res.on('data', (chunk) => {
+                responseData += chunk;
+            });
+            
+            res.on('end', () => {
+                try {
+                    const parsedData = responseData ? JSON.parse(responseData) : {};
+                    resolve({
+                        statusCode: res.statusCode,
+                        headers: res.headers,
+                        data: parsedData
+                    });
+                } catch (error) {
+                    resolve({
+                        statusCode: res.statusCode,
+                        headers: res.headers,
+                        data: responseData
+                    });
+                }
+            });
+        });
+        
+        req.on('error', (error) => {
+            reject(error);
+        });
+        
+        if (data) {
+            req.write(JSON.stringify(data));
+        }
+        
+        req.end();
+    });
+}
+
+/**
+ * Get current Netlify environment variables
+ */
+async function getNetlifyEnvVars() {
+    if (!config.netlify.enabled || !config.netlify.siteId || !config.netlify.accessToken) {
+        log.warning('Netlify integration disabled or credentials missing');
+        return null;
+    }
+    
+    const options = {
+        protocol: 'https:',
+        hostname: 'api.netlify.com',
+        path: `/api/v1/sites/${config.netlify.siteId}/env`,
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${config.netlify.accessToken}`,
+            'Content-Type': 'application/json'
+        }
+    };
+    
+    try {
+        const response = await makeRequest(options);
+        if (response.statusCode === 200) {
+            log.success('Retrieved current Netlify environment variables');
+            return response.data;
+        } else {
+            log.error(`Failed to get Netlify env vars: ${response.statusCode} ${JSON.stringify(response.data)}`);
+            return null;
+        }
+    } catch (error) {
+        log.error(`Error getting Netlify env vars: ${error.message}`);
+        return null;
+    }
+}
+
+/**
+ * Update Netlify environment variables
+ */
+async function updateNetlifyEnvVars(envVars) {
+    if (!config.netlify.enabled || !config.netlify.siteId || !config.netlify.accessToken) {
+        log.warning('Netlify integration disabled or credentials missing');
+        return false;
+    }
+    
+    // Get current env vars to avoid overwriting existing ones
+    const currentVars = await getNetlifyEnvVars();
+    const existingVars = {};
+    
+    if (currentVars) {
+        currentVars.forEach(variable => {
+            existingVars[variable.key] = variable.value;
+        });
+    }
+    
+    // Merge new variables with existing ones
+    const updatedVars = { ...existingVars, ...envVars };
+    
+    // Convert to Netlify format
+    const netlifyVars = Object.entries(updatedVars).map(([key, value]) => ({
+        key,
+        value,
+        scopes: ['builds', 'functions', 'runtime']
+    }));
+    
+    const options = {
+        protocol: 'https:',
+        hostname: 'api.netlify.com',
+        path: `/api/v1/sites/${config.netlify.siteId}/env`,
+        method: 'PUT',
+        headers: {
+            'Authorization': `Bearer ${config.netlify.accessToken}`,
+            'Content-Type': 'application/json'
+        }
+    };
+    
+    try {
+        const response = await makeRequest(options, netlifyVars);
+        if (response.statusCode === 200) {
+            log.success(`Updated ${netlifyVars.length} Netlify environment variables`);
+            return true;
+        } else {
+            log.error(`Failed to update Netlify env vars: ${response.statusCode} ${JSON.stringify(response.data)}`);
+            return false;
+        }
+    } catch (error) {
+        log.error(`Error updating Netlify env vars: ${error.message}`);
+        return false;
+    }
+}
+
+/**
+ * Trigger Netlify deployment
+ */
+async function triggerNetlifyDeployment() {
+    if (!config.netlify.enabled || !config.netlify.siteId || !config.netlify.accessToken) {
+        log.warning('Netlify integration disabled or credentials missing');
+        return false;
+    }
+    
+    const options = {
+        protocol: 'https:',
+        hostname: 'api.netlify.com',
+        path: `/api/v1/sites/${config.netlify.siteId}/deploys`,
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${config.netlify.accessToken}`,
+            'Content-Type': 'application/json'
+        }
+    };
+    
+    const deployData = {
+        title: `Environment sync - ${new Date().toISOString()}`,
+        clear_cache: true
+    };
+    
+    try {
+        const response = await makeRequest(options, deployData);
+        if (response.statusCode === 201) {
+            log.success(`Triggered Netlify deployment: ${response.data.url}`);
+            return response.data;
+        } else {
+            log.error(`Failed to trigger Netlify deployment: ${response.statusCode} ${JSON.stringify(response.data)}`);
+            return false;
+        }
+    } catch (error) {
+        log.error(`Error triggering Netlify deployment: ${error.message}`);
+        return false;
+    }
+}
+
+/**
  * Validate configuration
  */
 function validateConfiguration() {
@@ -362,6 +547,46 @@ async function synchronizeEnvironment() {
         log.error('Failed to create Railway configuration files');
     }
     
+    // Step 6: Update Netlify environment variables (if enabled)
+    if (config.netlify.enabled) {
+        log.header('🌐 Updating Netlify Environment Variables');
+        
+        // Prepare frontend environment variables for Netlify
+        const netlifyEnvVars = {
+            'NODE_ENV': frontendEnv.NODE_ENV,
+            'VITE_API_URL': frontendEnv.VITE_API_URL,
+            'VITE_API_BASE_URL': frontendEnv.VITE_API_BASE_URL,
+            'VITE_OPENWEATHER_API_KEY': frontendEnv.VITE_OPENWEATHER_API_KEY,
+            'VITE_MAPS_API_KEY': frontendEnv.VITE_MAPS_API_KEY,
+            'VITE_LOG_LEVEL': frontendEnv.VITE_LOG_LEVEL
+        };
+        
+        // Remove undefined values
+        Object.keys(netlifyEnvVars).forEach(key => {
+            if (netlifyEnvVars[key] === undefined) {
+                delete netlifyEnvVars[key];
+            }
+        });
+        
+        log.step('Updating Netlify environment variables...');
+        const netlifyUpdateSuccess = await updateNetlifyEnvVars(netlifyEnvVars);
+        
+        if (netlifyUpdateSuccess) {
+            log.step('Triggering Netlify deployment...');
+            const deploymentSuccess = await triggerNetlifyDeployment();
+            
+            if (deploymentSuccess) {
+                log.success('Netlify deployment triggered successfully');
+            } else {
+                log.warning('Netlify deployment trigger failed, but variables were updated');
+            }
+        } else {
+            log.warning('Netlify environment variables update failed');
+        }
+    } else {
+        log.info('Netlify integration disabled - set NETLIFY_AUTO_UPDATE=true to enable');
+    }
+    
     // Next steps
     log.header('🎯 Next Steps');
     log.info('1. Update Railway URLs in scripts/sync-env.mjs with your actual deployment URLs');
@@ -369,6 +594,14 @@ async function synchronizeEnvironment() {
     log.info('3. Set the generated secrets in your Railway dashboard');
     log.info('4. Redeploy your applications');
     log.info('5. Test API connectivity');
+    
+    if (config.netlify.enabled) {
+        log.info('6. Netlify environment variables have been updated automatically');
+        log.info('7. Netlify deployment has been triggered');
+    } else {
+        log.info('6. To enable automatic Netlify updates, set NETLIFY_AUTO_UPDATE=true');
+        log.info('   and configure NETLIFY_SITE_ID and NETLIFY_ACCESS_TOKEN');
+    }
     
     // Railway-specific instructions
     log.header('🚂 Railway Deployment Instructions');

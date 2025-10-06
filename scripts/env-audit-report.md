@@ -138,13 +138,43 @@ Both frontend and backend are configured to use conflicting ports, which will ca
 3. ✅ Set up automated environment synchronization
 4. ✅ Create deployment health checks
 
+## 🌐 **Netlify Integration**
+
+The sync script now includes **automatic Netlify integration** that:
+
+- ✅ **Updates Netlify environment variables** automatically
+- ✅ **Triggers new deployments** when variables change
+- ✅ **Preserves existing variables** (no overwrites)
+- ✅ **Provides detailed logging** of all operations
+
+### Setup Netlify Integration:
+
+1. **Get credentials** from your Netlify dashboard:
+   - Site ID (from Site Settings → General → Site Details)
+   - Personal Access Token (with sites:read and sites:write scopes)
+
+2. **Configure environment variables**:
+   ```bash
+   NETLIFY_AUTO_UPDATE=true
+   NETLIFY_SITE_ID=your_site_id_here
+   NETLIFY_ACCESS_TOKEN=your_access_token_here
+   ```
+
+3. **Run the enhanced sync script**:
+   ```bash
+   node scripts/sync-env.mjs
+   ```
+
+See `scripts/NETLIFY_INTEGRATION_SETUP.md` for detailed setup instructions.
+
 ## 🔧 **Next Steps**
 
 1. **Run the synchronization script**: `node scripts/sync-env.mjs`
-2. **Verify Railway deployment URLs**
-3. **Test API connectivity**
-4. **Monitor deployment logs**
-5. **Validate CORS configuration**
+2. **Configure Netlify integration** (optional but recommended)
+3. **Verify Railway deployment URLs**
+4. **Test API connectivity**
+5. **Monitor deployment logs**
+6. **Validate CORS configuration**
 
 ---
 
