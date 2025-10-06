@@ -9,5 +9,9 @@
     "healthcheckPath": "/api/health",
     "healthcheckTimeout": 120
   },
-  "rootDirectory": "backend"
+  "rootDirectory": "backend",
+  "environment": {
+    "CI": "1",
+    "HUSKY": "0"
+  }
 }

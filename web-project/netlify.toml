@@ -10,6 +10,8 @@
     NODE_VERSION = "18"
     VITE_API_URL = "https://smartfarm-app-production.up.railway.app/api"
     APP_BUILD_TAG = "netlify"
+    CI = "true"
+    HUSKY = "0"
 
 [dev]
   # Local development settings

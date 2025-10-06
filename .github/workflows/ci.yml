@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    
+    - name: Install dependencies (root)
+      run: npm ci
+      env:
+        CI: true
+        HUSKY: 0
+    
+    - name: Install dependencies (web-project)
+      run: npm ci
+      working-directory: ./web-project
+      env:
+        CI: true
+        HUSKY: 0
+    
+    - name: Install dependencies (backend)
+      run: npm ci
+      working-directory: ./backend
+      env:
+        CI: true
+        HUSKY: 0
+    
+    - name: Build web-project
+      run: npm run build
+      working-directory: ./web-project
+      env:
+        CI: true
+        HUSKY: 0
+        VITE_API_URL: https://test-api.example.com/api
+    
+    - name: Test backend
+      run: npm test --if-present
+      working-directory: ./backend
+      env:
+        CI: true
+        HUSKY: 0

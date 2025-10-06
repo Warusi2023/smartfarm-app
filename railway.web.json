@@ -12,6 +12,8 @@
   "rootDirectory": "web-project",
   "environment": {
     "VITE_API_URL": "https://smartfarm-app-production.up.railway.app/api",
-    "APP_BUILD_TAG": "railway"
+    "APP_BUILD_TAG": "railway",
+    "CI": "1",
+    "HUSKY": "0"
   }
 }

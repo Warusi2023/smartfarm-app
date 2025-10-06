@@ -3,16 +3,20 @@
   "version": "1.0.0",
   "main": "railway-server.js",
   "scripts": {
+    "prepare": "node -e \"if(process.env.HUSKY==='0'||process.env.CI){process.exit(0)}\" && husky install",
     "start": "node railway-server.js",
     "dev": "node railway-server.js",
     "build": "echo 'No build step required for this backend'",
     "postinstall": "echo 'Backend dependencies installed successfully'"
   },
   "dependencies": {
-    "express": "^4.19.2",
-    "cors": "^2.8.5"
+    "cors": "^2.8.5",
+    "express": "^4.19.2"
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "husky": "9.1.7"
   }
 }

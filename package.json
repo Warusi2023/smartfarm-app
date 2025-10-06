@@ -4,11 +4,13 @@
   "description": "SmartFarm Dashboard - Clean Railway Deployment",
   "main": "server.js",
   "scripts": {
-    "prepare": "node -e \"if(process.env.HUSKY==='0'||process.env.CI){process.exit(0)}\" && husky install",
+    "prepare": "husky",
     "start": "node server.js"
   },
-  "dependencies": {},
   "engines": {
     "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7"
   }
 }
