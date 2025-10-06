@@ -1,24 +1,22 @@
-# ---------- Production runtime for Node.js static server ----------
-FROM node:20-alpine AS production
+# Simple static file server for SmartFarm
+FROM node:20-alpine
+
 WORKDIR /app
 
-# Copy the web-project files
-COPY web-project/package*.json ./
+# Copy only the necessary files
 COPY web-project/server.js ./
 COPY web-project/config.js ./
 COPY web-project/public ./public
 
-# Install only production dependencies
-RUN npm ci --omit=dev && npm cache clean --force
+# Install only serve for static file serving
+RUN npm install -g serve@14.2.1
 
 # Set environment variables
 ENV NODE_ENV=production
 ENV PORT=3000
-ENV HUSKY=0
-ENV CI=1
 
-# Expose the port
+# Expose port
 EXPOSE 3000
 
-# Start the Node.js server
+# Start the server
 CMD ["node", "server.js"]

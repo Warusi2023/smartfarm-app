@@ -4,14 +4,9 @@
   "description": "SmartFarm Dashboard - Clean Railway Deployment",
   "main": "server.js",
   "scripts": {
-    "prepare": "node -e \"if(!process.env.HUSKY || process.env.HUSKY==='1'){try{require('child_process').execSync('npx husky install',{stdio:'inherit'})}catch(e){console.log('husky skipped:', e?.message||e)}} else {console.log('HUSKY=0 — skipping husky install') }\"",
-    "postinstall": "node -e \"console.log('postinstall OK')\"",
     "start": "node server.js"
   },
   "engines": {
     "node": ">=18.0.0"
-  },
-  "devDependencies": {
-    "husky": "^9.0.0"
   }
 }

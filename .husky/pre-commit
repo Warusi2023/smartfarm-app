@@ -1,6 +1,0 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-
-# Run linting and type checking for web-project
-cd web-project
-npm run build --if-present
