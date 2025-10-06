@@ -2,12 +2,25 @@
   "name": "smartfarm-web",
   "version": "1.0.0",
   "private": true,
+  "engines": {
+    "node": ">=18.17 <=22"
+  },
   "scripts": {
-    "prebuild": "node ../scripts/fix-svg-viewbox.mjs",
+    "prebuild": "node scripts/fix-svg-viewbox.mjs",
     "build": "vite build",
     "preview": "vite preview --strictPort --port 4173",
-    "start": "npx --yes serve -s dist -l $PORT"
+    "start": "npx --yes serve -s dist -l ${PORT:-4173}"
   },
-  "devDependencies": { "vite": "^5.4.0" },
-  "dependencies": { "serve": "^14.2.1" }
+  "devDependencies": {
+    "vite": "5.4.20",
+    "esbuild": "0.21.5",
+    "typescript": "5.6.3"
+  },
+  "dependencies": {
+    "serve": "14.2.1"
+  },
+  "overrides": {
+    "@esbuild/*": "0.21.5"
+  },
+  "packageManager": "npm@10"
 }
