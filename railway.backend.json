@@ -3,11 +3,11 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "cd backend && node bootstrap.cjs",
+    "startCommand": "node server.cjs",
     "healthcheckPath": "/api/health",
     "healthcheckTimeout": 120
   },
-  "rootDirectory": ".",
+  "rootDirectory": "backend",
   "environment": {
     "CI": "1",
     "HUSKY": "0",
