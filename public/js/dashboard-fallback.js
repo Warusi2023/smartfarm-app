@@ -11,10 +11,13 @@ class DashboardFallback {
     }
 
     setupFallback() {
-        // Set a timeout to show dashboard if error boundary triggers
+        // Check if API is available immediately
+        this.checkAPIAndShowFallback();
+        
+        // Set a shorter timeout as backup
         this.fallbackTimeout = setTimeout(() => {
             this.showDashboardFallback();
-        }, 5000); // 5 seconds timeout
+        }, 2000); // 2 seconds timeout
 
         // Listen for successful dashboard initialization
         window.addEventListener('dashboardInitialized', () => {
@@ -23,6 +26,26 @@ class DashboardFallback {
 
         // Override error boundary to be less aggressive
         this.setupErrorBoundaryOverride();
+    }
+
+    async checkAPIAndShowFallback() {
+        try {
+            // Check if API is available
+            const response = await fetch('https://smartfarm-app-production.up.railway.app/api/health', {
+                method: 'GET',
+                mode: 'cors',
+                timeout: 3000
+            });
+            
+            if (!response.ok) {
+                throw new Error('API not available');
+            }
+            
+            console.log('API is available, allowing main dashboard to load');
+        } catch (error) {
+            console.log('API not available, showing fallback immediately');
+            this.showDashboardFallback();
+        }
     }
 
     setupErrorBoundaryOverride() {
@@ -86,14 +109,14 @@ class DashboardFallback {
                         <h2 style="color: #2e7d32; margin-top: 0;">Dashboard Status</h2>
                         <p>✅ Dashboard is running in fallback mode</p>
                         <p>⚠️ Some advanced features may be limited</p>
-                        <p>🔄 <button onclick="window.location.reload()" style="
+                        <p>🔄 <button onclick="tryFullDashboard()" style="
                             background: #4CAF50;
                             color: white;
                             border: none;
                             padding: 8px 16px;
                             border-radius: 4px;
                             cursor: pointer;
-                        ">Refresh Page</button></p>
+                        ">Try Full Dashboard</button></p>
                     </div>
 
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
@@ -209,11 +232,57 @@ class DashboardFallback {
             fallback.remove();
         }
     }
+
+    // Try to load full dashboard
+    async tryFullDashboard() {
+        console.log('Attempting to load full dashboard...');
+        
+        // Show loading message
+        const statusDiv = document.querySelector('#dashboard-fallback h2').parentElement;
+        statusDiv.innerHTML = `
+            <h2 style="color: #2e7d32; margin-top: 0;">Dashboard Status</h2>
+            <p>🔄 Checking API availability...</p>
+            <p>⏳ Please wait while we try to load the full dashboard</p>
+        `;
+        
+        try {
+            // Check API availability
+            const response = await fetch('https://smartfarm-app-production.up.railway.app/api/health', {
+                method: 'GET',
+                mode: 'cors',
+                timeout: 5000
+            });
+            
+            if (response.ok) {
+                console.log('API is available, reloading page for full dashboard');
+                window.location.reload();
+            } else {
+                throw new Error('API not responding');
+            }
+        } catch (error) {
+            console.log('API still not available, staying in fallback mode');
+            statusDiv.innerHTML = `
+                <h2 style="color: #2e7d32; margin-top: 0;">Dashboard Status</h2>
+                <p>❌ API still not available</p>
+                <p>⚠️ Staying in fallback mode</p>
+                <p>🔄 <button onclick="tryFullDashboard()" style="
+                    background: #4CAF50;
+                    color: white;
+                    border: none;
+                    padding: 8px 16px;
+                    border-radius: 4px;
+                    cursor: pointer;
+                ">Try Again</button></p>
+            `;
+        }
+    }
 }
 
 // Initialize fallback system
 window.addEventListener('DOMContentLoaded', () => {
     window.dashboardFallback = new DashboardFallback();
+    // Make tryFullDashboard globally available
+    window.tryFullDashboard = () => window.dashboardFallback.tryFullDashboard();
 });
 
 // Export for module systems

@@ -3633,6 +3633,21 @@
             }
         }
 
+        // Check API availability
+        async function checkAPIAvailability() {
+            try {
+                const response = await fetch('https://smartfarm-app-production.up.railway.app/api/health', {
+                    method: 'GET',
+                    mode: 'cors',
+                    timeout: 3000
+                });
+                return response.ok;
+            } catch (error) {
+                console.log('API availability check failed:', error.message);
+                return false;
+            }
+        }
+
         // Initialize URL routing
         function initializeURLRouting() {
             try {
@@ -3669,6 +3684,19 @@
         // Initialize dashboard
         document.addEventListener('DOMContentLoaded', async function() {
             try {
+                // Check if we're in fallback mode - if so, don't initialize main dashboard
+                if (document.getElementById('dashboard-fallback')) {
+                    console.log('Fallback mode active, skipping main dashboard initialization');
+                    return;
+                }
+
+                // Check API availability before initializing
+                const apiAvailable = await checkAPIAvailability();
+                if (!apiAvailable) {
+                    console.log('API not available, skipping main dashboard initialization');
+                    return;
+                }
+
                 // Verify all required functions are defined
                 verifyRequiredFunctions();
                 

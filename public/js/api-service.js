@@ -116,8 +116,14 @@ class SmartFarmAPIService {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 
-    // Show server unavailable banner
+    // Show server unavailable banner (but only if not in fallback mode)
     showServerUnavailableBanner() {
+        // Don't show banner if we're in fallback mode
+        if (document.getElementById('dashboard-fallback')) {
+            console.log('In fallback mode, not showing server unavailable banner');
+            return;
+        }
+
         // Remove existing banner if present
         const existingBanner = document.getElementById('server-unavailable-banner');
         if (existingBanner) {
