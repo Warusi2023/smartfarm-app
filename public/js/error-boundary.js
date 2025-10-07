@@ -188,9 +188,15 @@ class ErrorBoundary {
     }
 
     /**
-     * Show fatal error UI
+     * Show fatal error UI - but only for truly critical errors
      */
     showFatalError() {
+        // Don't show fatal error for API failures or common issues
+        if (this.errorCount < 15) {
+            console.log('Suppressing fatal error - not enough critical errors');
+            return;
+        }
+        
         try {
             const errorContainer = document.createElement('div');
             errorContainer.id = 'fatal-error-container';
@@ -383,13 +389,33 @@ window.SmartFarmErrorBoundary = new ErrorBoundary({
             if (message.includes('Failed to fetch') || 
                 message.includes('NetworkError') || 
                 message.includes('API') ||
-                message.includes('CORS')) {
+                message.includes('CORS') ||
+                message.includes('404') ||
+                message.includes('500')) {
                 console.log('API error handled gracefully, not counting toward fatal error limit');
-                this.errorCount = Math.max(0, this.errorCount - 1); // Don't count API errors
+                // Don't count API errors toward fatal limit
+                if (window.SmartFarmErrorBoundary) {
+                    window.SmartFarmErrorBoundary.errorCount = Math.max(0, window.SmartFarmErrorBoundary.errorCount - 1);
+                }
                 return;
             }
         }
-        console.log('Custom error handler called');
+        
+        // Also ignore common non-critical errors
+        const message = errorInfo.error?.message || '';
+        if (message.includes('ResizeObserver') ||
+            message.includes('Non-Error promise rejection') ||
+            message.includes('Script error') ||
+            message.includes('Loading chunk') ||
+            message.includes('Loading CSS chunk')) {
+            console.log('Non-critical error ignored:', message);
+            if (window.SmartFarmErrorBoundary) {
+                window.SmartFarmErrorBoundary.errorCount = Math.max(0, window.SmartFarmErrorBoundary.errorCount - 1);
+            }
+            return;
+        }
+        
+        console.log('Custom error handler called for:', message);
     },
     onRecover: (errorInfo) => {
         // Custom recovery handling can be added here

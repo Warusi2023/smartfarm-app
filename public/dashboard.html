@@ -53,6 +53,7 @@
     <script src="js/user-roles.js"></script>
     <script src="js/log.js"></script>
     <script src="js/error-boundary.js"></script>
+    <script src="js/dashboard-fallback.js"></script>
     <script src="js/api-service.js"></script>
     <script src="js/performance-optimizer.js"></script>
     <script src="js/accessibility-enhancer.js"></script>
@@ -3716,9 +3717,12 @@
                 console.error('Error loading livestock data:', error);
             }
             
-            // Initialize ads
-            initializeAds();
-        });
+                // Initialize ads
+                initializeAds();
+                
+                // Signal successful initialization
+                window.dispatchEvent(new CustomEvent('dashboardInitialized'));
+            });
         
         // Initialize ads function
         function initializeAds() {
