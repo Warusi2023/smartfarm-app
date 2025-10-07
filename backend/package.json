@@ -3,8 +3,8 @@
   "private": true,
   "type": "commonjs",
   "scripts": {
-    "start": "node bootstrap.cjs",
-    "dev": "node bootstrap.cjs",
+    "start": "node server.cjs",
+    "dev": "node server.cjs",
     "build": "echo \"(backend) nothing to build\""
   },
   "engines": { "node": ">=18 <=22" },

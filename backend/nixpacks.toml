@@ -8,5 +8,5 @@ cmds = ["npm ci --only=production"]
 cmds = ["npm run build"]
 
 [start]
-cmd = "node bootstrap.cjs"
+cmd = "node server.cjs"
 
