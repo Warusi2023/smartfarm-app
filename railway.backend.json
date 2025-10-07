@@ -5,13 +5,17 @@
     "buildCommand": "npm run build"
   },
   "deploy": {
-    "startCommand": "npm run start",
+    "startCommand": "node bootstrap.cjs",
     "healthcheckPath": "/api/health",
     "healthcheckTimeout": 120
   },
   "rootDirectory": "backend",
   "environment": {
     "CI": "1",
-    "HUSKY": "0"
+    "HUSKY": "0",
+    "API_NAME": "SmartFarm",
+    "API_VERSION": "v1",
+    "CORS_ORIGIN": "https://smartfarm-app.netlify.app,https://web-production-86d39.up.railway.app",
+    "NODE_ENV": "production"
   }
 }
