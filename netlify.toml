@@ -67,12 +67,12 @@
     "best-practices" = 0.8
     seo = 0.8
 
-# Branch deploy configuration
+# Branch deploy configuration - no build needed for static files
 [context.production]
-  command = "npm run build:production"
+  command = "echo 'No build needed - serving static files'"
 
 [context.deploy-preview]
-  command = "npm run build:preview"
+  command = "echo 'No build needed - serving static files'"
 
 [context.branch-deploy]
-  command = "npm run build:development"
+  command = "echo 'No build needed - serving static files'"

@@ -4,9 +4,16 @@
   "description": "SmartFarm Dashboard - Clean Railway Deployment",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "build": "echo 'No build needed - serving static files'",
+    "build:production": "echo 'No build needed - serving static files'",
+    "build:preview": "echo 'No build needed - serving static files'",
+    "build:development": "echo 'No build needed - serving static files'"
   },
   "engines": {
     "node": ">=18.0.0"
-  }
+  },
+  "keywords": ["smartfarm", "dashboard", "agriculture", "farming"],
+  "author": "SmartFarm Team",
+  "license": "MIT"
 }
