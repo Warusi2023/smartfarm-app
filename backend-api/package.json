@@ -1,12 +1,13 @@
 {
   "name": "smartfarm-backend",
   "version": "1.0.0",
+  "type": "commonjs",
   "description": "SmartFarm Backend API - Express.js server with Sequelize ORM",
-  "main": "server.js",
+  "main": "railway-server.js",
   "scripts": {
     "prebuild:diagnostics": "node ../../scripts/deploy-diagnostics.mjs || node ./scripts/deploy-diagnostics.mjs || exit 1",
-    "start": "node server.cjs",
-    "dev": "nodemon server.js",
+    "start": "node railway-server.js",
+    "dev": "nodemon railway-server.js",
     "build": "echo 'Backend build completed - no compilation needed'",
     "test": "jest",
     "test:watch": "jest --watch",
@@ -34,6 +35,7 @@
   "license": "MIT",
   "dependencies": {
     "express": "^4.19.2",
+    "cors": "^2.8.5",
     "sequelize": "^6.35.2",
     "pg": "^8.11.3",
     "pg-hstore": "^2.3.4",
@@ -41,7 +43,6 @@
     "jsonwebtoken": "^9.0.2",
     "express-validator": "^7.0.1",
     "helmet": "^7.1.0",
-    "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express-rate-limit": "^7.1.5",
     "compression": "^1.7.4",
