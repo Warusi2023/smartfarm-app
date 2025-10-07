@@ -2,9 +2,9 @@
   "name": "smartfarm-dashboard-web",
   "version": "1.0.0",
   "description": "SmartFarm Dashboard - Clean Railway Deployment",
-  "main": "server.js",
+  "main": "web-server.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "node web-server.js",
     "build": "echo 'No build needed - serving static files'",
     "build:production": "echo 'No build needed - serving static files'",
     "build:preview": "echo 'No build needed - serving static files'",

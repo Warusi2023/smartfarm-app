@@ -1,7 +1,15 @@
 [build]
-builder = "NIXPACKS"
-rootDirectory = "railway-clean-deploy"
+builder = "nixpacks"
 
 [deploy]
-startCommand = "node server.js"
-healthcheckPath = "/health"
+startCommand = "node bootstrap.cjs"
+healthcheckPath = "/api/health"
+healthcheckTimeout = 120
+
+[env]
+NODE_ENV = "production"
+CI = "1"
+HUSKY = "0"
+API_NAME = "SmartFarm"
+API_VERSION = "v1"
+CORS_ORIGIN = "https://smartfarm-app.netlify.app,https://web-production-86d39.up.railway.app"
