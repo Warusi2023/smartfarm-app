@@ -3,7 +3,18 @@ const cors = require("cors");
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+
+// CORS configuration - allow requests from frontend domains
+const corsOrigins = process.env.CORS_ORIGIN?.split(",") || "*";
+app.use(cors({
+  origin: corsOrigins,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  credentials: true,
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"]
+}));
+
+// Log CORS configuration
+console.log('🌐 CORS configured for origins:', corsOrigins);
 
 // Health check endpoint
 app.get("/api/health", (req, res) => {
@@ -227,7 +238,19 @@ app.use((req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
+
+// Startup logging
+console.log('🚀 Starting SmartFarm Backend...');
+console.log('🔧 Environment Configuration:');
+console.log(`  NODE_ENV: ${process.env.NODE_ENV || 'development'}`);
+console.log(`  PORT: ${PORT}`);
+console.log(`  CORS_ORIGIN: ${process.env.CORS_ORIGIN || 'not set (allowing all origins)'}`);
+console.log(`  CI: ${process.env.CI || 'not set'}`);
+console.log(`  HUSKY: ${process.env.HUSKY || 'not set'}`);
+
 app.listen(PORT, "0.0.0.0", () => {
-  console.log(`[SmartFarm Backend] Server running on port ${PORT}`);
-  console.log(`[SmartFarm Backend] Health check: http://localhost:${PORT}/api/health`);
+  console.log(`✅ [SmartFarm Backend] Server running on port ${PORT}`);
+  console.log(`✅ [SmartFarm Backend] Health check: http://localhost:${PORT}/api/health`);
+  console.log(`✅ [SmartFarm Backend] API docs: http://localhost:${PORT}/api`);
+  console.log('✅ Ready to accept requests!');
 });

@@ -13,6 +13,6 @@
     "PORT": "3000",
     "CI": "1",
     "HUSKY": "0",
-    "CORS_ORIGINS": "https://web-production-86d39.up.railway.app"
+    "CORS_ORIGINS": "https://smartfarm-app.netlify.app,https://web-production-86d39.up.railway.app"
   }
 }
