@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartFarm Dashboard Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .test-section {
+            border: 1px solid #ddd;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 4px;
+        }
+        #test-results {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 SmartFarm Dashboard Test Suite</h1>
+    
+    <div class="test-container">
+        <h2>Test Controls</h2>
+        <button onclick="runAllTests()">Run All Tests</button>
+        <button onclick="testAPIConnection()">Test API Connection</button>
+        <button onclick="testErrorHandling()">Test Error Handling</button>
+        <button onclick="testLocalStorageFallback()">Test localStorage Fallback</button>
+        <button onclick="clearResults()">Clear Results</button>
+    </div>
+
+    <div class="test-container">
+        <h2>Test Results</h2>
+        <div id="test-results"></div>
+    </div>
+
+    <div class="test-container">
+        <h2>Dashboard Links</h2>
+        <p><a href="https://smartfarm-app.com/dashboard" target="_blank">🌐 Live Dashboard</a></p>
+        <p><a href="https://web-production-86d39.up.railway.app/dashboard.html" target="_blank">🚀 Railway Dashboard</a></p>
+        <p><a href="http://localhost:3000/dashboard.html" target="_blank">🏠 Local Dashboard</a></p>
+    </div>
+
+    <script>
+        let testResults = [];
+
+        function addResult(test, status, message, details = '') {
+            const result = {
+                test,
+                status,
+                message,
+                details,
+                timestamp: new Date().toISOString()
+            };
+            testResults.push(result);
+            displayResult(result);
+        }
+
+        function displayResult(result) {
+            const resultsDiv = document.getElementById('test-results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result ${result.status}`;
+            
+            resultDiv.innerHTML = `
+                <strong>${result.test}</strong> - ${result.message}
+                ${result.details ? `<br><small>${result.details}</small>` : ''}
+                <br><small>${result.timestamp}</small>
+            `;
+            
+            resultsDiv.appendChild(resultDiv);
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+
+        function clearResults() {
+            document.getElementById('test-results').innerHTML = '';
+            testResults = [];
+        }
+
+        async function testAPIConnection() {
+            addResult('API Connection', 'info', 'Testing API connection...');
+            
+            try {
+                // Test if SmartFarmAPI is available
+                if (typeof window.SmartFarmAPI === 'undefined') {
+                    addResult('API Connection', 'warning', 'SmartFarmAPI not available - testing fallback');
+                    return;
+                }
+
+                // Test health endpoint
+                const healthResponse = await window.SmartFarmAPI.healthCheck();
+                if (healthResponse.success) {
+                    addResult('API Connection', 'success', 'API health check passed', 
+                        `Response: ${JSON.stringify(healthResponse.data)}`);
+                } else {
+                    addResult('API Connection', 'error', 'API health check failed', 
+                        `Error: ${healthResponse.error}`);
+                }
+            } catch (error) {
+                addResult('API Connection', 'error', 'API connection failed', 
+                    `Error: ${error.message}`);
+            }
+        }
+
+        async function testErrorHandling() {
+            addResult('Error Handling', 'info', 'Testing error handling...');
+            
+            try {
+                // Test error boundary
+                if (typeof window.SmartFarmErrorBoundary === 'undefined') {
+                    addResult('Error Handling', 'error', 'Error boundary not available');
+                    return;
+                }
+
+                const stats = window.SmartFarmErrorBoundary.getStats();
+                addResult('Error Handling', 'success', 'Error boundary initialized', 
+                    `Max errors: ${stats.maxErrors}, Current: ${stats.errorCount}`);
+
+                // Test API error handling
+                if (typeof window.SmartFarmAPI !== 'undefined') {
+                    try {
+                        // This should fail gracefully
+                        await window.SmartFarmAPI.request('/nonexistent-endpoint');
+                    } catch (error) {
+                        addResult('Error Handling', 'success', 'API error handled gracefully', 
+                            `Error: ${error.message}`);
+                    }
+                }
+
+            } catch (error) {
+                addResult('Error Handling', 'error', 'Error handling test failed', 
+                    `Error: ${error.message}`);
+            }
+        }
+
+        function testLocalStorageFallback() {
+            addResult('localStorage Fallback', 'info', 'Testing localStorage fallback...');
+            
+            try {
+                // Test localStorage availability
+                if (typeof Storage === 'undefined') {
+                    addResult('localStorage Fallback', 'error', 'localStorage not supported');
+                    return;
+                }
+
+                // Test storing and retrieving data
+                const testData = { test: 'data', timestamp: Date.now() };
+                localStorage.setItem('testData', JSON.stringify(testData));
+                
+                const retrieved = JSON.parse(localStorage.getItem('testData'));
+                if (retrieved.test === testData.test) {
+                    addResult('localStorage Fallback', 'success', 'localStorage working correctly');
+                } else {
+                    addResult('localStorage Fallback', 'error', 'localStorage data mismatch');
+                }
+
+                // Clean up
+                localStorage.removeItem('testData');
+
+                // Test dashboard data fallback functions
+                if (typeof loadFarmDataFromStorage === 'function') {
+                    addResult('localStorage Fallback', 'success', 'Farm data fallback function available');
+                } else {
+                    addResult('localStorage Fallback', 'warning', 'Farm data fallback function not found');
+                }
+
+                if (typeof loadCropsDataFromStorage === 'function') {
+                    addResult('localStorage Fallback', 'success', 'Crops data fallback function available');
+                } else {
+                    addResult('localStorage Fallback', 'warning', 'Crops data fallback function not found');
+                }
+
+            } catch (error) {
+                addResult('localStorage Fallback', 'error', 'localStorage test failed', 
+                    `Error: ${error.message}`);
+            }
+        }
+
+        async function testDashboardLoad() {
+            addResult('Dashboard Load', 'info', 'Testing dashboard load...');
+            
+            try {
+                // Test if dashboard elements exist
+                const dashboardElements = [
+                    'sidebar',
+                    'main-content',
+                    'farm-stats',
+                    'crops-section',
+                    'livestock-section'
+                ];
+
+                let foundElements = 0;
+                dashboardElements.forEach(elementId => {
+                    if (document.getElementById(elementId)) {
+                        foundElements++;
+                    }
+                });
+
+                if (foundElements > 0) {
+                    addResult('Dashboard Load', 'success', 
+                        `Found ${foundElements}/${dashboardElements.length} dashboard elements`);
+                } else {
+                    addResult('Dashboard Load', 'warning', 'No dashboard elements found - may not be on dashboard page');
+                }
+
+                // Test if required functions exist
+                const requiredFunctions = [
+                    'loadFarmData',
+                    'loadCropsData', 
+                    'loadLivestockData',
+                    'updateCropStatistics',
+                    'updateLivestockStatistics'
+                ];
+
+                let foundFunctions = 0;
+                requiredFunctions.forEach(funcName => {
+                    if (typeof window[funcName] === 'function') {
+                        foundFunctions++;
+                    }
+                });
+
+                if (foundFunctions > 0) {
+                    addResult('Dashboard Load', 'success', 
+                        `Found ${foundFunctions}/${requiredFunctions.length} required functions`);
+                } else {
+                    addResult('Dashboard Load', 'error', 'Required functions not found');
+                }
+
+            } catch (error) {
+                addResult('Dashboard Load', 'error', 'Dashboard load test failed', 
+                    `Error: ${error.message}`);
+            }
+        }
+
+        async function runAllTests() {
+            clearResults();
+            addResult('Test Suite', 'info', 'Starting comprehensive dashboard test...');
+            
+            await testAPIConnection();
+            await testErrorHandling();
+            testLocalStorageFallback();
+            await testDashboardLoad();
+            
+            addResult('Test Suite', 'success', 'All tests completed!');
+        }
+
+        // Auto-run basic tests on page load
+        window.addEventListener('load', () => {
+            addResult('Test Suite', 'info', 'Test page loaded - ready for testing');
+        });
+    </script>
+</body>
+</html>

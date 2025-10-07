@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Fixes Verification</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        .test-item { margin: 10px 0; padding: 10px; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .warning { background: #fff3cd; color: #856404; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin: 5px; }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Dashboard Fixes Verification</h1>
+        
+        <div id="results"></div>
+        
+        <button onclick="runVerification()">Run Verification</button>
+        <button onclick="clearResults()">Clear</button>
+        
+        <h2>Test Links</h2>
+        <p><a href="http://localhost:8080/dashboard.html" target="_blank">Local Dashboard</a></p>
+        <p><a href="http://localhost:8080/test-dashboard.html" target="_blank">Test Suite</a></p>
+    </div>
+
+    <script>
+        function addResult(test, status, message) {
+            const resultsDiv = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `test-item ${status}`;
+            div.innerHTML = `<strong>${test}:</strong> ${message}`;
+            resultsDiv.appendChild(div);
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+
+        function runVerification() {
+            clearResults();
+            
+            // Test 1: Check if we can load the dashboard
+            addResult('Dashboard Load', 'info', 'Testing dashboard accessibility...');
+            
+            fetch('http://localhost:8080/dashboard.html')
+                .then(response => {
+                    if (response.ok) {
+                        addResult('Dashboard Load', 'success', 'Dashboard loads successfully');
+                    } else {
+                        addResult('Dashboard Load', 'error', `Dashboard load failed: ${response.status}`);
+                    }
+                })
+                .catch(error => {
+                    addResult('Dashboard Load', 'error', `Dashboard load error: ${error.message}`);
+                });
+
+            // Test 2: Check if test files exist
+            addResult('Test Files', 'info', 'Checking test files...');
+            
+            fetch('http://localhost:8080/test-dashboard.html')
+                .then(response => {
+                    if (response.ok) {
+                        addResult('Test Files', 'success', 'Test suite available');
+                    } else {
+                        addResult('Test Files', 'warning', 'Test suite not found');
+                    }
+                })
+                .catch(error => {
+                    addResult('Test Files', 'warning', 'Test suite check failed');
+                });
+
+            // Test 3: Check if fixes are in place
+            addResult('Code Fixes', 'info', 'Verifying code fixes...');
+            
+            fetch('http://localhost:8080/dashboard.html')
+                .then(response => response.text())
+                .then(html => {
+                    let fixesFound = 0;
+                    let totalFixes = 4;
+                    
+                    // Check for error boundary tolerance increase
+                    if (html.includes('maxErrors: 10')) {
+                        addResult('Error Boundary', 'success', 'Error tolerance increased to 10');
+                        fixesFound++;
+                    } else {
+                        addResult('Error Boundary', 'error', 'Error tolerance not increased');
+                    }
+                    
+                    // Check for localStorage fallback functions
+                    if (html.includes('loadFarmDataFromStorage')) {
+                        addResult('Farm Data Fallback', 'success', 'Farm data fallback function added');
+                        fixesFound++;
+                    } else {
+                        addResult('Farm Data Fallback', 'error', 'Farm data fallback function missing');
+                    }
+                    
+                    // Check for crops data fallback
+                    if (html.includes('loadCropsDataFromStorage')) {
+                        addResult('Crops Data Fallback', 'success', 'Crops data fallback function added');
+                        fixesFound++;
+                    } else {
+                        addResult('Crops Data Fallback', 'error', 'Crops data fallback function missing');
+                    }
+                    
+                    // Check for API error handling
+                    if (html.includes('try {') && html.includes('await loadFarmData()')) {
+                        addResult('API Error Handling', 'success', 'API error handling added');
+                        fixesFound++;
+                    } else {
+                        addResult('API Error Handling', 'error', 'API error handling missing');
+                    }
+                    
+                    addResult('Overall Fixes', fixesFound === totalFixes ? 'success' : 'warning', 
+                        `${fixesFound}/${totalFixes} fixes verified`);
+                })
+                .catch(error => {
+                    addResult('Code Fixes', 'error', `Failed to verify fixes: ${error.message}`);
+                });
+        }
+
+        // Auto-run verification on page load
+        window.addEventListener('load', () => {
+            addResult('Verification', 'info', 'Ready to verify dashboard fixes');
+        });
+    </script>
+</body>
+</html>
