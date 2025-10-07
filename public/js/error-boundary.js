@@ -373,11 +373,22 @@ class ErrorBoundary {
 
 // Create global error boundary instance
 window.SmartFarmErrorBoundary = new ErrorBoundary({
-    maxErrors: 5,
+    maxErrors: 10, // Increased from 5 to 10 to be more tolerant
     recoverable: true,
     logErrors: true,
     onError: (errorInfo) => {
-        // Custom error handling can be added here
+        // Custom error handling - don't show fatal error for API failures
+        if (errorInfo.context && errorInfo.context.type === 'promise') {
+            const message = errorInfo.error?.message || '';
+            if (message.includes('Failed to fetch') || 
+                message.includes('NetworkError') || 
+                message.includes('API') ||
+                message.includes('CORS')) {
+                console.log('API error handled gracefully, not counting toward fatal error limit');
+                this.errorCount = Math.max(0, this.errorCount - 1); // Don't count API errors
+                return;
+            }
+        }
         console.log('Custom error handler called');
     },
     onRecover: (errorInfo) => {

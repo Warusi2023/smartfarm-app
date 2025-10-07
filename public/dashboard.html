@@ -3697,10 +3697,24 @@
             // Initialize URL routing
             initializeURLRouting();
             
-            // Load data from API
-            await loadFarmData();
-            await loadCropsData();
-            await loadLivestockData();
+            // Load data from API with error handling
+            try {
+                await loadFarmData();
+            } catch (error) {
+                console.error('Error loading farm data:', error);
+            }
+            
+            try {
+                await loadCropsData();
+            } catch (error) {
+                console.error('Error loading crops data:', error);
+            }
+            
+            try {
+                await loadLivestockData();
+            } catch (error) {
+                console.error('Error loading livestock data:', error);
+            }
             
             // Initialize ads
             initializeAds();
@@ -6937,15 +6951,38 @@
         // Load farm data from API
         async function loadFarmData() {
             try {
+                // Check if API is available
+                if (typeof window.SmartFarmAPI === 'undefined') {
+                    console.warn('⚠️ SmartFarmAPI not available, using localStorage fallback');
+                    loadFarmDataFromStorage();
+                    return;
+                }
+
                 const response = await window.SmartFarmAPI.getFarms();
                 if (response.success) {
                     // Update farm data in UI
                     updateFarmDisplay(response.data);
                 } else {
-                    console.error('Failed to load farm data:', response.error);
+                    console.error('Failed to load farm data from API:', response.error);
+                    // Fallback to localStorage
+                    loadFarmDataFromStorage();
                 }
             } catch (error) {
-                console.error('Error loading farm data:', error);
+                console.error('Error loading farm data from API:', error);
+                // Fallback to localStorage
+                loadFarmDataFromStorage();
+            }
+        }
+
+        function loadFarmDataFromStorage() {
+            const savedFarmData = localStorage.getItem('farmData');
+            if (savedFarmData) {
+                try {
+                    const farmData = JSON.parse(savedFarmData);
+                    console.log('✅ Farm data loaded from localStorage:', farmData);
+                } catch (e) {
+                    console.error('Error loading farm data from localStorage:', e);
+                }
             }
         }
 
@@ -14197,6 +14234,13 @@ INVENTORY SUMMARY:
         // Load crops data from API
         async function loadCropsData() {
             try {
+                // Check if API is available
+                if (typeof window.SmartFarmAPI === 'undefined') {
+                    console.warn('⚠️ SmartFarmAPI not available, using localStorage fallback');
+                    loadCropsDataFromStorage();
+                    return;
+                }
+
                 const response = await window.SmartFarmAPI.getCrops();
                 if (response.success) {
                     // Update crops array for backward compatibility
@@ -14215,10 +14259,29 @@ INVENTORY SUMMARY:
                     renderCropsTable();
                     updateAnalyticsCharts();
                 } else {
-                    console.error('Failed to load crops data:', response.error);
+                    console.error('Failed to load crops data from API:', response.error);
+                    // Fallback to localStorage
+                    loadCropsDataFromStorage();
                 }
             } catch (error) {
-                console.error('Error loading crops data:', error);
+                console.error('Error loading crops data from API:', error);
+                // Fallback to localStorage
+                loadCropsDataFromStorage();
+            }
+        }
+
+        function loadCropsDataFromStorage() {
+            const savedCrops = localStorage.getItem('cropsData');
+            if (savedCrops) {
+                try {
+                    crops = JSON.parse(savedCrops);
+                    console.log('✅ Crops data loaded from localStorage:', crops.length, 'crops');
+                    renderCropsTable();
+                    updateAnalyticsCharts();
+                } catch (e) {
+                    console.error('Error loading crops data from localStorage:', e);
+                    crops = [];
+                }
             }
         }
 
