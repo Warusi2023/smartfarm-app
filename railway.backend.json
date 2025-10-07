@@ -1,15 +1,13 @@
 {
   "build": {
-    "builder": "NIXPACKS",
-    "installCommand": "npm ci",
-    "buildCommand": "npm run build"
+    "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "node bootstrap.cjs",
+    "startCommand": "cd backend && node bootstrap.cjs",
     "healthcheckPath": "/api/health",
     "healthcheckTimeout": 120
   },
-  "rootDirectory": "backend",
+  "rootDirectory": ".",
   "environment": {
     "CI": "1",
     "HUSKY": "0",
