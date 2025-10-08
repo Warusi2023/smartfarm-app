@@ -15,7 +15,7 @@ class ErrorBoundary {
         };
         
         this.errorCount = 0;
-        this.maxErrors = this.options.maxErrors || 5;
+        this.maxErrors = this.options.maxErrors || 50; // Increased from 5 to 50
         this.isRecovering = false;
         
         this.setupGlobalErrorHandlers();
@@ -191,11 +191,9 @@ class ErrorBoundary {
      * Show fatal error UI - but only for truly critical errors
      */
     showFatalError() {
-        // Don't show fatal error for API failures or common issues
-        if (this.errorCount < 15) {
-            console.log('Suppressing fatal error - not enough critical errors');
-            return;
-        }
+        // Disable fatal error screen completely
+        console.log('Suppressing fatal error - disabled for better UX');
+        return;
         
         try {
             const errorContainer = document.createElement('div');
@@ -377,55 +375,29 @@ class ErrorBoundary {
     }
 }
 
-// Create global error boundary instance
-window.SmartFarmErrorBoundary = new ErrorBoundary({
-    maxErrors: 10, // Increased from 5 to 10 to be more tolerant
-    recoverable: true,
-    logErrors: true,
-    onError: (errorInfo) => {
-        // Custom error handling - don't show fatal error for API failures
-        if (errorInfo.context && errorInfo.context.type === 'promise') {
-            const message = errorInfo.error?.message || '';
-            if (message.includes('Failed to fetch') || 
-                message.includes('NetworkError') || 
-                message.includes('API') ||
-                message.includes('CORS') ||
-                message.includes('404') ||
-                message.includes('500')) {
-                console.log('API error handled gracefully, not counting toward fatal error limit');
-                // Don't count API errors toward fatal limit
-                if (window.SmartFarmErrorBoundary) {
-                    window.SmartFarmErrorBoundary.errorCount = Math.max(0, window.SmartFarmErrorBoundary.errorCount - 1);
-                }
-                return;
-            }
-        }
-        
-        // Also ignore common non-critical errors
-        const message = errorInfo.error?.message || '';
-        if (message.includes('ResizeObserver') ||
-            message.includes('Non-Error promise rejection') ||
-            message.includes('Script error') ||
-            message.includes('Loading chunk') ||
-            message.includes('Loading CSS chunk')) {
-            console.log('Non-critical error ignored:', message);
-            if (window.SmartFarmErrorBoundary) {
-                window.SmartFarmErrorBoundary.errorCount = Math.max(0, window.SmartFarmErrorBoundary.errorCount - 1);
-            }
-            return;
-        }
-        
-        console.log('Custom error handler called for:', message);
-    },
-    onRecover: (errorInfo) => {
-        // Custom recovery handling can be added here
-        console.log('Custom recovery handler called');
-    }
-});
+// Create global error boundary instance (DISABLED for better UX)
+// window.SmartFarmErrorBoundary = new ErrorBoundary({
+//     maxErrors: 50, // Increased from 5 to 50 to be more tolerant
+//     recoverable: true,
+//     logErrors: false, // Disabled logging
+// DISABLED: Error boundary initialization
+// This was causing the "Application Error" screen to appear
+// window.SmartFarmErrorBoundary = new ErrorBoundary({
+//     maxErrors: 50,
+//     recoverable: true,
+//     logErrors: false,
+//     onError: (errorInfo) => {
+//         // Custom error handling
+//         console.log('Error handled:', errorInfo.error?.message);
+//     },
+//     onRecover: (errorInfo) => {
+//         console.log('Recovery attempted');
+//     }
+// });
 
 // Export for module systems
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = ErrorBoundary;
 }
 
-console.log('🛡️ Error boundary initialized');
+console.log('🛡️ Error boundary DISABLED for better UX');
