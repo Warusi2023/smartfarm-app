@@ -14,10 +14,10 @@ class DashboardFallback {
         // Check if API is available immediately
         this.checkAPIAndShowFallback();
         
-        // Set a shorter timeout as backup
+        // Set a longer timeout to reduce flickering
         this.fallbackTimeout = setTimeout(() => {
             this.showDashboardFallback();
-        }, 2000); // 2 seconds timeout
+        }, 5000); // 5 seconds timeout (increased from 2s)
 
         // Listen for successful dashboard initialization
         window.addEventListener('dashboardInitialized', () => {

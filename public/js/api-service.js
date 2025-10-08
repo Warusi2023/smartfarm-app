@@ -45,7 +45,7 @@ class SmartFarmAPIService {
     // Generic API request method with retry logic and error handling
     async request(endpoint, options = {}, retryCount = 0) {
         const url = `${this.baseURL}/api${endpoint}`;
-        const maxRetries = 3;
+        const maxRetries = 2; // Reduced from 3 to 2
         const config = {
             headers: {
                 'Content-Type': 'application/json',
@@ -82,17 +82,19 @@ class SmartFarmAPIService {
         } catch (error) {
             console.error(`❌ API Error: ${url}`, error);
             
-            // Retry logic with exponential backoff
+            // Retry logic with SLOWER exponential backoff
             if (retryCount < maxRetries && this.shouldRetry(error)) {
-                const delay = Math.pow(2, retryCount) * 1000; // 1s, 2s, 4s
+                const delay = Math.pow(2, retryCount) * 3000; // 3s, 6s (slower retries)
                 console.log(`🔄 Retrying in ${delay}ms (attempt ${retryCount + 1}/${maxRetries})`);
                 
                 await this.delay(delay);
                 return this.request(endpoint, options, retryCount + 1);
             }
             
-            // Show server unavailable banner after all retries failed
-            this.showServerUnavailableBanner();
+            // Show server unavailable banner after all retries failed (only once)
+            if (retryCount >= maxRetries) {
+                this.showServerUnavailableBanner();
+            }
             
             return {
                 success: false,
