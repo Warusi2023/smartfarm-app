@@ -8,7 +8,7 @@
   # Environment variables
   [build.environment]
     NODE_VERSION = "18"
-    VITE_API_URL = "https://smartfarm-app-production.up.railway.app/api"
+    VITE_API_URL = "https://smartfarm-app-production.up.railway.app"
     APP_BUILD_TAG = "netlify"
     CI = "true"
     HUSKY = "0"

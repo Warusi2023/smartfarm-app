@@ -7007,6 +7007,46 @@
         }
 
         // Load farm data from API
+        // Safe DOM manipulation utility
+        function safeSetText(selector, text) {
+            const el = document.querySelector(selector);
+            if (el) {
+                try {
+                    el.textContent = String(text || '0');
+                } catch (error) {
+                    console.warn('Error setting text for', selector, error);
+                }
+            } else {
+                console.warn('Element not found:', selector);
+            }
+        }
+
+        function safeSetHTML(selector, html) {
+            const el = document.querySelector(selector);
+            if (el) {
+                try {
+                    el.innerHTML = html;
+                } catch (error) {
+                    console.warn('Error setting HTML for', selector, error);
+                }
+            } else {
+                console.warn('Element not found:', selector);
+            }
+        }
+
+        function safeSetValue(selector, value) {
+            const el = document.querySelector(selector);
+            if (el) {
+                try {
+                    el.value = String(value || '');
+                } catch (error) {
+                    console.warn('Error setting value for', selector, error);
+                }
+            } else {
+                console.warn('Element not found:', selector);
+            }
+        }
+
         async function loadFarmData() {
             try {
                 // Check if API is available
@@ -7017,18 +7057,41 @@
                 }
 
                 const response = await window.SmartFarmAPI.getFarms();
-                if (response.success) {
-                    // Update farm data in UI
+                if (response && response.success && response.data) {
+                    console.log('✅ Farm data loaded from API:', response.data);
+                    // Update farm data in UI safely
                     updateFarmDisplay(response.data);
                 } else {
-                    console.error('Failed to load farm data from API:', response.error);
+                    console.warn('⚠️ API returned unsuccessful response:', response);
                     // Fallback to localStorage
                     loadFarmDataFromStorage();
                 }
             } catch (error) {
-                console.error('Error loading farm data from API:', error);
+                console.error('❌ Error loading farm data from API:', error);
                 // Fallback to localStorage
                 loadFarmDataFromStorage();
+            }
+        }
+
+        function updateFarmDisplay(farmData) {
+            try {
+                if (!farmData || !Array.isArray(farmData) || farmData.length === 0) {
+                    console.warn('No farm data to display');
+                    safeSetText('#farm-count', '0');
+                    return;
+                }
+
+                const farm = farmData[0]; // Use first farm
+                safeSetValue('#farmName', farm.name || '');
+                safeSetValue('#farmLocation', farm.location || '');
+                safeSetValue('#farmArea', farm.area || '');
+                safeSetValue('#farmType', farm.type || '');
+                safeSetText('#farm-count', farmData.length.toString());
+                
+                console.log('✅ Farm display updated successfully');
+            } catch (error) {
+                console.error('Error updating farm display:', error);
+                safeSetText('#farm-count', '0');
             }
         }
 
@@ -14485,7 +14548,7 @@ INVENTORY SUMMARY:
                     
                     console.log('✅ Livestock data loaded successfully:', livestock.length, 'items');
                     
-                    // Update UI
+                    // Update UI safely
                     renderLivestockGrid();
                     renderLivestockTable();
                     updateLivestockStatistics();
@@ -14516,6 +14579,25 @@ INVENTORY SUMMARY:
                 if (error.message.includes('Failed to fetch')) {
                     console.warn('🌐 Network error - backend may be unavailable');
                 }
+            }
+        }
+
+        function updateLivestockStatistics() {
+            try {
+                if (!Array.isArray(livestock)) {
+                    livestock = [];
+                }
+                
+                safeSetText('#livestock-count', livestock.length.toString());
+                safeSetText('#healthy-livestock', livestock.filter(l => l.healthStatus === 'Healthy').length.toString());
+                safeSetText('#total-livestock-value', livestock.reduce((sum, l) => sum + (l.value || 0), 0).toString());
+                
+                console.log('✅ Livestock statistics updated');
+            } catch (error) {
+                console.error('Error updating livestock statistics:', error);
+                safeSetText('#livestock-count', '0');
+                safeSetText('#healthy-livestock', '0');
+                safeSetText('#total-livestock-value', '0');
             }
         }
 
