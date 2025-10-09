@@ -1,34 +1,5 @@
-# Ignore everything except what we need for deployment
-backend/
-web-project/
-android-project/
-advanced-features/
-docs/
-e2e/
-scripts/
-tests/
-launch-prep/
-app-store-assets/
-app-store-screenshots/
-keystore-backups/
-netlify-deploy/
-railway-clean/
-my-web-service/
-
-# Ignore all markdown files
-*.md
-
-# Ignore all PowerShell scripts
-*.ps1
-
-# Ignore all batch files
-*.bat
-
-# Ignore logs
-*.log
-
-# Ignore node_modules
-node_modules/
-
-# Ignore git
-.git/
+# Ignore everything except backend directory and railway.toml
+*
+!backend/
+!backend/**
+!railway.toml
