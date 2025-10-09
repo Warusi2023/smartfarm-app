@@ -10,6 +10,7 @@ healthcheckTimeout = 120
 builder = "NIXPACKS"
 
 [deploy]
+startCommand = "node server-simple.cjs"
 healthcheckPath = "/api/health"
 healthcheckTimeout = 120
 restartPolicyType = "ON_FAILURE"
