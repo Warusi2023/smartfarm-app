@@ -13,6 +13,8 @@ const PORT = process.env.PORT || 3000;
 const allowedOrigins = [
     'https://smartfarmfiji.com',
     'https://www.smartfarmfiji.com',
+    'https://smartfarm-app.com',
+    'https://www.smartfarm-app.com',
     'https://smartfarm-app.netlify.app',
     'http://localhost:3000',
     'http://localhost:8080'
