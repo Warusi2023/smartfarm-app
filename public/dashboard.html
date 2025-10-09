@@ -9107,12 +9107,12 @@
                                 </select>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">Last Vet Visit</label>
-                                <input type="date" class="form-control" id="lastVetVisit" value="${pet.lastVetVisit || ''}">
+                                <label class="form-label" for="petLastVetVisit">Last Vet Visit</label>
+                                <input type="date" class="form-control" id="petLastVetVisit" value="${pet.lastVetVisit || ''}">
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">Health Notes</label>
-                                <textarea class="form-control" id="healthNotes" rows="3" placeholder="Enter any health notes or observations...">${pet.notes || ''}</textarea>
+                                <label class="form-label" for="petHealthNotes">Health Notes</label>
+                                <textarea class="form-control" id="petHealthNotes" rows="3" placeholder="Enter any health notes or observations...">${pet.notes || ''}</textarea>
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -13229,8 +13229,8 @@ INVENTORY SUMMARY:
                                         </label>
                                     </div>
                                     <div class="form-check mb-3">
-                                        <input class="form-check-input" type="checkbox" id="weatherAlerts" checked>
-                                        <label class="form-check-label" for="weatherAlerts">
+                                        <input class="form-check-input" type="checkbox" id="notificationWeatherAlerts" checked>
+                                        <label class="form-check-label" for="notificationWeatherAlerts">
                                             Weather Alerts
                                         </label>
                                     </div>
@@ -14213,7 +14213,7 @@ INVENTORY SUMMARY:
                                 <div class="col-md-6">
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="fas fa-search"></i></span>
-                                        <input type="text" class="form-control" id="cropSearch" placeholder="Search crops..." onkeyup="filterCrops()">
+                                        <input type="text" class="form-control" id="cropSearchFilter" placeholder="Search crops..." onkeyup="filterCrops()">
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -14310,7 +14310,7 @@ INVENTORY SUMMARY:
         }
 
         function filterCrops() {
-            const searchTerm = document.getElementById('cropSearch').value.toLowerCase();
+            const searchTerm = document.getElementById('cropSearchFilter').value.toLowerCase();
             const categoryFilter = document.getElementById('categoryFilter').value;
             const categories = document.querySelectorAll('.crop-category');
             
@@ -14874,7 +14874,7 @@ INVENTORY SUMMARY:
                                 <div class="col-md-6">
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="fas fa-search"></i></span>
-                                        <input type="text" class="form-control" id="livestockSearch" placeholder="Search livestock..." onkeyup="filterLivestock()">
+                                        <input type="text" class="form-control" id="livestockSearchFilter" placeholder="Search livestock..." onkeyup="filterLivestock()">
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -14965,7 +14965,7 @@ INVENTORY SUMMARY:
         }
 
         function filterLivestock() {
-            const searchTerm = document.getElementById('livestockSearch').value.toLowerCase();
+            const searchTerm = document.getElementById('livestockSearchFilter').value.toLowerCase();
             const categoryFilter = document.getElementById('livestockCategoryFilter').value;
             const categories = document.querySelectorAll('.livestock-category');
             
