@@ -5,9 +5,10 @@
   "private": true,
   "type": "commonjs",
   "scripts": {
-    "start": "node server.cjs",
-    "start:prod": "NODE_ENV=production node server.cjs",
-    "dev": "nodemon server.cjs",
+    "start": "node server-simple.cjs",
+    "start:prod": "NODE_ENV=production node server-simple.cjs",
+    "start:full": "node server-production.cjs",
+    "dev": "nodemon server-simple.cjs",
     "build": "echo \"(backend) nothing to build\"",
     "health": "node -e \"fetch('http://127.0.0.1:'+(process.env.PORT||3000)+'/api/health').then(r=>r.text()).then(console.log).catch(console.error)\"",
     "db:migrate": "node scripts/migrate.js",

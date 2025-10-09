@@ -1,14 +1,13 @@
 # SmartFarm Backend Railway Configuration
 [service]
 name = "smartfarm-backend"
-root = "."
-start = "node server-production.cjs"
+root = "backend"
+start = "node server-simple.cjs"
 healthcheckPath = "/api/health"
 healthcheckTimeout = 120
 
 [build]
-builder = "DOCKERFILE"
-dockerfilePath = "Dockerfile"
+builder = "NIXPACKS"
 
 [deploy]
 healthcheckPath = "/api/health"
