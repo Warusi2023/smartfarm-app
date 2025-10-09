@@ -12,7 +12,7 @@ class SmartFarmEnvironment {
     loadConfiguration() {
         return {
             // API Configuration
-            API_BASE_URL: window.VITE_API_URL || 'https://smartfarm-app-production.up.railway.app',
+            API_BASE_URL: window.VITE_API_URL || 'https://smartfarm-backend.railway.app',
             
             // Environment Detection
             IS_PRODUCTION: window.location.hostname === 'www.smartfarm-app.com' || 
