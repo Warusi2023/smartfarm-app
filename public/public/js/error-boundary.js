@@ -166,7 +166,6 @@ class ErrorBoundary {
             const criticalScripts = [
                 'js/api-service.js',
                 'js/error-boundary.js',
-                'js/ad-error-handler.js'
             ];
 
             for (const scriptSrc of criticalScripts) {
