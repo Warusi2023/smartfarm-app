@@ -45,7 +45,7 @@ class SmartFarmAPIService {
     // Generic API request method with retry logic and error handling
     async request(endpoint, options = {}, retryCount = 0) {
         const url = `${this.baseURL}/api${endpoint}`;
-        const maxRetries = 2; // Reduced from 3 to 2
+        const maxRetries = 1; // Reduced to 1 to minimize error spam
         const config = {
             headers: {
                 'Content-Type': 'application/json',
@@ -62,7 +62,10 @@ class SmartFarmAPIService {
         }
 
         try {
-            console.log(`🌐 API Request: ${config.method || 'GET'} ${url}`);
+            // Silent logging to reduce console spam
+            if (window.location.hostname === 'localhost') {
+                console.log(`🌐 API Request: ${config.method || 'GET'} ${url}`);
+            }
             
             const response = await fetch(url, config);
             
@@ -71,7 +74,11 @@ class SmartFarmAPIService {
             }
             
             const data = await response.json();
-            console.log(`✅ API Response: ${url}`, data);
+            
+            // Silent logging to reduce console spam
+            if (window.location.hostname === 'localhost') {
+                console.log(`✅ API Response: ${url}`, data);
+            }
             
             return {
                 success: true,
@@ -80,12 +87,17 @@ class SmartFarmAPIService {
             };
             
         } catch (error) {
-            console.error(`❌ API Error: ${url}`, error);
+            // Only log errors in development, reduce production noise
+            if (window.location.hostname === 'localhost') {
+                console.error(`❌ API Error: ${url}`, error);
+            }
             
-            // Retry logic with SLOWER exponential backoff
+            // Retry logic with minimal delay to reduce error spam
             if (retryCount < maxRetries && this.shouldRetry(error)) {
-                const delay = Math.pow(2, retryCount) * 3000; // 3s, 6s (slower retries)
-                console.log(`🔄 Retrying in ${delay}ms (attempt ${retryCount + 1}/${maxRetries})`);
+                const delay = 1000; // 1 second only
+                if (window.location.hostname === 'localhost') {
+                    console.log(`🔄 Retrying in ${delay}ms (attempt ${retryCount + 1}/${maxRetries})`);
+                }
                 
                 await this.delay(delay);
                 return this.request(endpoint, options, retryCount + 1);

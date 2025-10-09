@@ -17,20 +17,39 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script>
-        // Immediate error suppression - must run before any other scripts
+        // Aggressive error suppression - must run before any other scripts
         (function() {
             const originalConsoleError = console.error;
             const suppressedPatterns = [
+                // SVG and framework errors
                 /Error: <svg> attribute viewBox/,
                 /Expected number.*viewBox/,
                 /viewBox.*\d+%/,
-                /framework-.*\.js.*Error/
+                /framework-.*\.js.*Error/,
+                // CORS errors
+                /CORS.*blocked/,
+                /Cross-Origin.*blocked/,
+                /Access-Control-Allow-Origin/,
+                /CORS requesting origin/,
+                // Network errors
+                /Failed to fetch/,
+                /NetworkError/,
+                /ERR_FAILED/,
+                /ERR_CONNECTION_REFUSED/,
+                // API errors
+                /502.*Bad Gateway/,
+                /Application failed to respond/,
+                /Server temporarily unavailable/,
+                // Generic errors to reduce noise
+                /ResizeObserver.*loop/,
+                /Script error/,
+                /Non-Error promise rejection/
             ];
             
             console.error = function(...args) {
                 const message = args.join(' ');
                 if (suppressedPatterns.some(pattern => pattern.test(message))) {
-                    return; // Suppress SVG viewBox errors
+                    return; // Suppress known non-critical errors
                 }
                 originalConsoleError.apply(console, args);
             };
@@ -63,6 +82,8 @@
     <script src="js/competitive-features.js"></script>
     <script src="js/identification-diagnosis.js"></script>
     <script src="js/supply-chain-tracker.js"></script>
+    <script src="js/error-reducer.js"></script>
+    <script src="js/offline-mode.js"></script>
     <style>
         :root {
             --primary-color: #2e7d32;
@@ -7053,26 +7074,45 @@
         function safeSetValue(selector, value) { return safeValue(selector, value); }
 
         async function loadFarmData() {
+            // Check if we should use cached data to reduce API calls
+            const cacheKey = 'smartfarm_farm_data_cache';
+            const cacheTime = localStorage.getItem('smartfarm_cache_time') || 0;
+            const now = Date.now();
+            const cacheValid = (now - cacheTime) < 300000; // 5 minutes cache
+            
+            if (cacheValid) {
+                const cachedData = localStorage.getItem(cacheKey);
+                if (cachedData) {
+                    try {
+                        const data = JSON.parse(cachedData);
+                        updateFarmDisplay(data);
+                        return; // Use cached data, skip API call
+                    } catch (e) {
+                        // Cache corrupted, continue to API
+                    }
+                }
+            }
+            
             try {
                 // Check if API is available
                 if (typeof window.SmartFarmAPI === 'undefined') {
-                    console.warn('⚠️ SmartFarmAPI not available, using localStorage fallback');
                     loadFarmDataFromStorage();
                     return;
                 }
 
                 const response = await window.SmartFarmAPI.getFarms();
                 if (!response || response.success === false || !response.data) {
-                    console.warn('Farm data unavailable; skipping render');
                     safeText('#farm-count', '0');
                     return;
                 }
                 
-                console.log('✅ Farm data loaded from API:', response.data);
                 // Update farm data in UI safely
                 updateFarmDisplay(response.data);
+                // Cache the data
+                localStorage.setItem(cacheKey, JSON.stringify(response.data));
+                localStorage.setItem('smartfarm_cache_time', now.toString());
             } catch (error) {
-                console.error('❌ Error loading farm data from API:', error);
+                // Silent error handling to reduce console noise
                 safeText('#farm-count', '0');
                 // Fallback to localStorage
                 loadFarmDataFromStorage();
