@@ -1,11 +1,39 @@
-const express = require('express');
-const app = express();
+// Test script to verify server-simple.cjs works
+const http = require('http');
 
-app.get('/api/health', (req, res) => {
-  res.json({ ok: true, message: 'Test server is working' });
-});
+const PORT = process.env.PORT || 3000;
 
-const PORT = 3001;
-app.listen(PORT, () => {
-  console.log(`Test server running on http://localhost:${PORT}`);
-});
+// Test the server
+const server = require('./server-simple.cjs');
+
+console.log(`✅ Server loaded successfully`);
+console.log(`🚀 Server should be running on port ${PORT}`);
+console.log(`🔗 Test health check: http://localhost:${PORT}/api/health`);
+
+// Test health endpoint after 2 seconds
+setTimeout(() => {
+    const options = {
+        hostname: 'localhost',
+        port: PORT,
+        path: '/api/health',
+        method: 'GET'
+    };
+
+    const req = http.request(options, (res) => {
+        console.log(`📊 Health check status: ${res.statusCode}`);
+        res.on('data', (chunk) => {
+            console.log(`📋 Response: ${chunk}`);
+        });
+        res.on('end', () => {
+            console.log('✅ Health check completed');
+            process.exit(0);
+        });
+    });
+
+    req.on('error', (err) => {
+        console.error(`❌ Health check failed: ${err.message}`);
+        process.exit(1);
+    });
+
+    req.end();
+}, 2000);
