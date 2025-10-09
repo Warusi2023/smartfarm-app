@@ -85,6 +85,9 @@
             min-height: 100vh;
             color: white;
             transition: all 0.3s ease;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
         }
 
         .sidebar .nav-link {
@@ -1105,6 +1108,29 @@
             font-weight: 600;
         }
 
+        /* Status Indicator */
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ffc107;
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.online {
+            background: #28a745;
+        }
+
+        .status-indicator.offline {
+            background: #dc3545;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
         .content-ad {
             margin: 20px 0;
             text-align: center;
@@ -1282,6 +1308,35 @@
                             </a>
                         </li>
                     </ul>
+                    
+                    <!-- Quick Actions -->
+                    <div class="mt-4">
+                        <h6 class="text-white-50 mb-3">Quick Actions</h6>
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-outline-light btn-sm" onclick="addNewCrop()">
+                                <i class="fas fa-plus me-1"></i>Add Crop
+                            </button>
+                            <button class="btn btn-outline-light btn-sm" onclick="addNewLivestock()">
+                                <i class="fas fa-plus me-1"></i>Add Livestock
+                            </button>
+                            <button class="btn btn-outline-light btn-sm" onclick="createTask()">
+                                <i class="fas fa-plus me-1"></i>Create Task
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- System Status -->
+                    <div class="mt-4">
+                        <div class="card bg-transparent border-light">
+                            <div class="card-body p-2">
+                                <small class="text-white-50">System Status</small>
+                                <div class="d-flex align-items-center">
+                                    <div class="status-indicator me-2" id="systemStatus"></div>
+                                    <small class="text-white" id="statusText">Checking...</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     
                     <!-- Ads Section -->
                     <div class="sidebar-ads mt-4" id="sidebarAds">
@@ -13257,6 +13312,59 @@ INVENTORY SUMMARY:
         document.getElementById('sidebarToggle').addEventListener('click', function() {
             document.getElementById('sidebar').classList.toggle('show');
         });
+
+        // System status check
+        function checkSystemStatus() {
+            const statusIndicator = document.getElementById('systemStatus');
+            const statusText = document.getElementById('statusText');
+            
+            if (!statusIndicator || !statusText) return;
+            
+            // Check API status
+            fetch('https://smartfarm-app-production.up.railway.app/api/health')
+                .then(response => {
+                    if (response.ok) {
+                        statusIndicator.className = 'status-indicator online';
+                        statusText.textContent = 'Online';
+                    } else {
+                        throw new Error('API not responding');
+                    }
+                })
+                .catch(error => {
+                    statusIndicator.className = 'status-indicator offline';
+                    statusText.textContent = 'Offline';
+                });
+        }
+
+        // Quick action functions
+        function addNewCrop() {
+            if (typeof showCropManagement === 'function') {
+                showCropManagement();
+            } else {
+                alert('Crop management will be available soon!');
+            }
+        }
+
+        function addNewLivestock() {
+            if (typeof showLivestockManagement === 'function') {
+                showLivestockManagement();
+            } else {
+                alert('Livestock management will be available soon!');
+            }
+        }
+
+        function createTask() {
+            if (typeof showTasks === 'function') {
+                showTasks();
+            } else {
+                alert('Task management will be available soon!');
+            }
+        }
+
+        // Initialize system status check
+        checkSystemStatus();
+        // Check status every 30 seconds
+        setInterval(checkSystemStatus, 30000);
 
         // Add debug panel for authentication issues (only in development)
         if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
