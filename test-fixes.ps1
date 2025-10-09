@@ -123,3 +123,4 @@ Write-Host "• Clean dependencies installation" -ForegroundColor White
 Write-Host "• Proper environment configuration" -ForegroundColor White
 Write-Host "• Optimized Android memory settings" -ForegroundColor White
 Write-Host "• MultiDex support for large apps" -ForegroundColor White
+

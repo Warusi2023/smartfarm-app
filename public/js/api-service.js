@@ -12,9 +12,9 @@ class SmartFarmAPIService {
     }
 
     getApiBaseUrl() {
-        // Try environment variables first, then config, then default
-        return window.VITE_API_BASE_URL || 
-               window.NEXT_PUBLIC_API_BASE_URL || 
+        // Use unified configuration approach
+        return window.VITE_API_URL || 
+               (window as any).__SMARTFARM_API_BASE__ ||
                window.SmartFarmConfig?.API_BASE_URL || 
                'https://smartfarm-app-production.up.railway.app';
     }
