@@ -26,27 +26,31 @@ if (process.env.CORS_ORIGINS) {
     customOrigins.forEach(origin => ALLOWED_ORIGINS.add(origin));
 }
 
-// Force CORS headers to override Railway's defaults
+// BULLETPROOF CORS - Set headers on EVERY response
 app.use((req, res, next) => {
     const origin = req.headers.origin;
     
-    // Always set CORS headers to override Railway's defaults
-    if (origin && ALLOWED_ORIGINS.has(origin)) {
-        res.setHeader('Access-Control-Allow-Origin', origin);
-    } else {
-        // Default to first allowed origin if no valid origin
-        res.setHeader('Access-Control-Allow-Origin', 'https://www.smartfarm-app.com');
-    }
+    // ALWAYS set CORS headers - even if origin is missing
+    const allowedOrigin = (origin && ALLOWED_ORIGINS.has(origin)) 
+        ? origin 
+        : 'https://www.smartfarm-app.com';
     
-    res.setHeader('Vary', 'Origin');
+    // Set headers immediately
+    res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-    res.setHeader('Access-Control-Max-Age', '86400'); // 24 hours
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
+    res.setHeader('Access-Control-Expose-Headers', 'Content-Length, Content-Type');
+    res.setHeader('Access-Control-Max-Age', '86400');
+    res.setHeader('Vary', 'Origin');
     
-    // Handle preflight requests
+    // Log CORS info for debugging
+    console.log(`[CORS] ${req.method} ${req.path} - Origin: ${origin || 'none'} - Allowed: ${allowedOrigin}`);
+    
+    // Handle preflight OPTIONS requests immediately
     if (req.method === 'OPTIONS') {
-        res.status(204).end();
-        return;
+        console.log('[CORS] Preflight request handled');
+        return res.status(204).end();
     }
     
     next();
@@ -161,9 +165,19 @@ app.use('/api/*', (req, res) => {
     });
 });
 
-// Global error handler
+// Global error handler (ensure CORS headers even on errors)
 app.use((err, req, res, next) => {
     console.error('Error:', err);
+    
+    // Ensure CORS headers are set even on error responses
+    const origin = req.headers.origin;
+    const allowedOrigin = (origin && ALLOWED_ORIGINS.has(origin)) 
+        ? origin 
+        : 'https://www.smartfarm-app.com';
+    
+    res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    
     res.status(err.status || 500).json({
         success: false,
         error: process.env.NODE_ENV === 'production' ? 'Internal server error' : err.message,
