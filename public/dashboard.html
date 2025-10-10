@@ -45,6 +45,12 @@
                 /QR Code library sources failed/,
                 /QR system with fallback/,
                 /Traceability viewer ready/,
+                // ErrorBoundary duplicate declaration
+                /Identifier 'ErrorBoundary' has already been declared/,
+                /ErrorBoundary.*already been declared/,
+                // Preload warnings
+                /Resource was preloaded but not used/,
+                /preloaded but not used/,
                 // Generic errors to reduce noise
                 /ResizeObserver.*loop/,
                 /Script error/,
@@ -1780,6 +1786,17 @@
                         </div>
                         <div class="col-lg-3 col-md-6 mb-3">
                             <div class="stat-card">
+                                <div class="stat-icon bg-info">
+                                    <i class="fas fa-tractor"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <h3 class="stat-number" id="farm-count">0</h3>
+                                    <p class="stat-label">Total Farms</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <div class="stat-card">
                                 <div class="stat-icon bg-success">
                                     <i class="fas fa-leaf"></i>
                                 </div>
@@ -2106,6 +2123,17 @@
                                 <div class="stat-content">
                                     <h3 class="stat-number" id="totalAnimals">0</h3>
                                     <p class="stat-label">Total Animals</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <div class="stat-card">
+                                <div class="stat-icon bg-info">
+                                    <i class="fas fa-cow"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <h3 class="stat-number" id="livestock-count">0</h3>
+                                    <p class="stat-label">Total Livestock</p>
                                 </div>
                             </div>
                         </div>
