@@ -4,7 +4,6 @@
  */
 
 const express = require('express');
-const cors = require('cors');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -15,6 +14,8 @@ const ALLOWED_ORIGINS = new Set([
     'https://smartfarm-app.netlify.app',                  // Netlify preview
     'https://smartfarm-backend.railway.app',              // if you use this domain for API
     'https://smartfarm-app-production.up.railway.app',    // default Railway domain (if used)
+    'https://railway.com',                                // Railway's own domain (required)
+    'https://www.railway.com',                            // Railway's www domain
     'http://localhost:3000',                              // local dev
     'http://localhost:8080',                              // local dev
 ]);
@@ -25,18 +26,29 @@ if (process.env.CORS_ORIGINS) {
     customOrigins.forEach(origin => ALLOWED_ORIGINS.add(origin));
 }
 
+// Force CORS headers to override Railway's defaults
 app.use((req, res, next) => {
     const origin = req.headers.origin;
+    
+    // Always set CORS headers to override Railway's defaults
     if (origin && ALLOWED_ORIGINS.has(origin)) {
         res.setHeader('Access-Control-Allow-Origin', origin);
-        res.setHeader('Vary', 'Origin');
+    } else {
+        // Default to first allowed origin if no valid origin
+        res.setHeader('Access-Control-Allow-Origin', 'https://www.smartfarm-app.com');
     }
+    
+    res.setHeader('Vary', 'Origin');
     res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    // If you need cookies across sites:
-    // res.setHeader('Access-Control-Allow-Credentials', 'true');
-
-    if (req.method === 'OPTIONS') return res.status(204).end();
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+    res.setHeader('Access-Control-Max-Age', '86400'); // 24 hours
+    
+    // Handle preflight requests
+    if (req.method === 'OPTIONS') {
+        res.status(204).end();
+        return;
+    }
+    
     next();
 });
 

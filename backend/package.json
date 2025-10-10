@@ -14,8 +14,7 @@
     "npm": ">=8.0.0"
   },
   "dependencies": {
-    "express": "^4.19.2",
-    "cors": "^2.8.5"
+    "express": "^4.19.2"
   },
   "keywords": [
     "smartfarm",

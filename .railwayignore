@@ -1,4 +1,4 @@
-# Ignore everything except backend directory and railway.toml
+# Ignore everything except backend
 *
 !backend/
 !backend/**
