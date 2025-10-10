@@ -9,43 +9,43 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// CORS configuration
-const allowedOrigins = [
-    'https://smartfarmfiji.com',
-    'https://www.smartfarmfiji.com',
-    'https://smartfarm-app.com',
-    'https://www.smartfarm-app.com',
-    'https://smartfarm-app.netlify.app',
-    'http://localhost:3000',
-    'http://localhost:8080'
-];
+/** Allow only known web origins */
+const ALLOWED_ORIGINS = new Set([
+    'https://www.smartfarm-app.com',                      // your Netlify/custom domain
+    'https://smartfarm-app.netlify.app',                  // Netlify preview
+    'https://smartfarm-backend.railway.app',              // if you use this domain for API
+    'https://smartfarm-app-production.up.railway.app',    // default Railway domain (if used)
+    'http://localhost:3000',                              // local dev
+    'http://localhost:8080',                              // local dev
+]);
 
 // Add custom origins from environment
 if (process.env.CORS_ORIGINS) {
     const customOrigins = process.env.CORS_ORIGINS.split(',').map(s => s.trim());
-    allowedOrigins.push(...customOrigins);
+    customOrigins.forEach(origin => ALLOWED_ORIGINS.add(origin));
 }
 
-app.use(cors({
-    origin: allowedOrigins,
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key']
-}));
+app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    if (origin && ALLOWED_ORIGINS.has(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+        res.setHeader('Vary', 'Origin');
+    }
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    // If you need cookies across sites:
+    // res.setHeader('Access-Control-Allow-Credentials', 'true');
+
+    if (req.method === 'OPTIONS') return res.status(204).end();
+    next();
+});
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Health check endpoint
-app.get('/api/health', (req, res) => {
-    res.json({
-        ok: true,
-        service: process.env.API_NAME || 'SmartFarm',
-        version: process.env.API_VERSION || 'v1',
-        environment: process.env.NODE_ENV || 'production',
-        timestamp: Date.now(),
-        database: 'not_configured'
-    });
+/** Fast health for Railway */
+app.get('/api/health', (_req, res) => {
+    res.json({ ok: true, service: 'SmartFarm', ts: Date.now() });
 });
 
 // Basic API endpoints
@@ -164,7 +164,7 @@ const server = app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 SmartFarm API server running on port ${PORT}`);
     console.log(`📊 Environment: ${process.env.NODE_ENV || 'production'}`);
     console.log(`🔗 Health check: http://localhost:${PORT}/api/health`);
-    console.log(`🌐 CORS Origins: ${allowedOrigins.join(', ')}`);
+    console.log(`🌐 CORS Origins: ${Array.from(ALLOWED_ORIGINS).join(', ')}`);
 });
 
 // Graceful shutdown

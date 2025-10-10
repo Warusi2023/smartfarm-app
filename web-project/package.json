@@ -8,6 +8,7 @@
   "scripts": {
     "prebuild": "node scripts/fix-svg-viewbox.mjs",
     "build": "vite build",
+    "postbuild": "node scripts/fix-svg-viewbox.mjs",
     "preview": "vite preview --strictPort --port 4173",
     "start": "npx --yes serve -s dist -l ${PORT:-4173}"
   },
