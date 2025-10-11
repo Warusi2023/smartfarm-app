@@ -12,11 +12,16 @@ class SmartFarmAPIService {
     }
 
     getApiBaseUrl() {
-        // Use unified configuration approach
-        return window.VITE_API_URL || 
-               (window as any).__SMARTFARM_API_BASE__ ||
-               window.SmartFarmConfig?.API_BASE_URL || 
-               'https://smartfarm-app-production.up.railway.app';
+        // Use single source of truth from api-config.js
+        if (window.SmartFarmApiConfig) {
+            return window.SmartFarmApiConfig.baseUrl;
+        }
+        
+        // Fallback if api-config.js not loaded yet
+        return window.VITE_API_BASE_URL || 
+               window.VITE_API_URL || 
+               (window).__SMARTFARM_API_BASE__ ||
+               'https://smartfarm-backend.railway.app';
     }
 
     // Authentication token management

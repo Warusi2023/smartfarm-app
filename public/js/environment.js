@@ -11,10 +11,12 @@ class SmartFarmEnvironment {
 
     loadConfiguration() {
         return {
-            // API Configuration - unified approach
-                  API_BASE_URL: window.VITE_API_URL || 
-                                (window as any).__SMARTFARM_API_BASE__ ||
-                                'https://smartfarm-app-production.up.railway.app',
+            // API Configuration - unified approach (single source of truth)
+                  API_BASE_URL: window.SmartFarmApiConfig?.baseUrl || 
+                                window.VITE_API_BASE_URL || 
+                                window.VITE_API_URL || 
+                                (window).__SMARTFARM_API_BASE__ ||
+                                'https://smartfarm-backend.railway.app',
             
             // Environment Detection
             IS_PRODUCTION: window.location.hostname === 'www.smartfarm-app.com' || 
