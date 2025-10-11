@@ -12,6 +12,10 @@
   [build.environment]
     NODE_VERSION = "18"
     NPM_VERSION = "9"
+    VITE_API_URL = "https://smartfarm-app-production.up.railway.app"
+    APP_BUILD_TAG = "netlify"
+    CI = "true"
+    HUSKY = "0"
 
 # Development settings
 [dev]

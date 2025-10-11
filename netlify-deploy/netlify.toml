@@ -1,6 +1,33 @@
 [build]
-publish = .`n
+  publish = "public"
+  command = "echo 'No build needed - serving static files'"
+
+[build.environment]
+  NODE_VERSION = "18"
+  VITE_API_URL = "https://smartfarm-app-production.up.railway.app"
+  APP_BUILD_TAG = "netlify"
+  CI = "true"
+  HUSKY = "0"
+
+# API redirects to Railway backend
 [[redirects]]
-from = "/*"
-to = "/index.html"
-status = 200
+  from = "/api/*"
+  to = "https://smartfarm-app-production.up.railway.app/api/:splat"
+  status = 200
+  force = true
+  headers = {X-From = "Netlify Edge"}
+
+# Redirect rules for SPA
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Headers for security and performance
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"

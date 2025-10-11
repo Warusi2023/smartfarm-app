@@ -10,7 +10,7 @@ function triggerNetlifyDeploy() {
     console.log('🚀 Triggering Netlify deployment...');
     
     const postData = JSON.stringify({
-        trigger_title: 'Manual deployment trigger from Cursor',
+        trigger_title: 'API Configuration Fix - Railway Backend Sync',
         trigger_branch: 'main'
     });
 
