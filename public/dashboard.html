@@ -6362,6 +6362,8 @@
         function updateUserInfo(user) {
             let userName = 'Farmer';
             let userInitial = 'F';
+            let userPicture = null;
+            let userProvider = null;
             
             try {
                 // Parse user data if it's a JSON string
@@ -6378,9 +6380,13 @@
                 if (typeof userData === 'object' && userData.firstName && userData.lastName) {
                     userName = `${userData.firstName} ${userData.lastName}`;
                     userInitial = userData.firstName.charAt(0).toUpperCase();
+                    userPicture = userData.picture;
+                    userProvider = userData.provider;
                 } else if (typeof userData === 'object' && userData.email) {
                     userName = userData.email.split('@')[0];
                     userInitial = userName.charAt(0).toUpperCase();
+                    userPicture = userData.picture;
+                    userProvider = userData.provider;
                 } else if (typeof userData === 'string') {
                     userName = userData.split('@')[0];
                     userInitial = userName.charAt(0).toUpperCase();
@@ -6396,12 +6402,31 @@
             
             if (userNameElement) {
                 userNameElement.textContent = userName;
-            }
-            if (userAvatarElement) {
-                userAvatarElement.textContent = userInitial;
+                
+                // Add provider indicator for social login users
+                if (userProvider) {
+                    const providerIcon = userProvider === 'google' ? '🔍' : userProvider === 'facebook' ? '📘' : '';
+                    userNameElement.innerHTML = `${userName} ${providerIcon}`;
+                }
             }
             
-            console.log('✅ User info updated:', userName);
+            if (userAvatarElement) {
+                if (userPicture) {
+                    // Use profile picture for social login users
+                    userAvatarElement.style.backgroundImage = `url(${userPicture})`;
+                    userAvatarElement.style.backgroundSize = 'cover';
+                    userAvatarElement.style.backgroundPosition = 'center';
+                    userAvatarElement.textContent = '';
+                } else {
+                    // Use initials for regular users
+                    userAvatarElement.style.backgroundImage = '';
+                    userAvatarElement.style.backgroundSize = '';
+                    userAvatarElement.style.backgroundPosition = '';
+                    userAvatarElement.textContent = userInitial;
+                }
+            }
+            
+            console.log('✅ User info updated:', userName, userProvider ? `(${userProvider})` : '');
         }
         
         async function checkApiAvailability() {

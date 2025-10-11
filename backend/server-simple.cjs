@@ -143,6 +143,95 @@ app.post('/api/auth/login', (req, res) => {
     });
 });
 
+// Social login verification endpoints
+app.post('/api/auth/verify-google', (req, res) => {
+    const { credential } = req.body;
+    
+    if (!credential) {
+        return res.status(400).json({
+            success: false,
+            error: 'Google credential is required',
+            code: 'MISSING_CREDENTIAL'
+        });
+    }
+    
+    try {
+        // In a real app, you'd verify the JWT token with Google's servers
+        // For demo purposes, we'll decode it and return user info
+        const payload = JSON.parse(Buffer.from(credential.split('.')[1], 'base64').toString());
+        
+        const user = {
+            email: payload.email,
+            firstName: payload.given_name,
+            lastName: payload.family_name,
+            picture: payload.picture,
+            provider: 'google',
+            googleId: payload.sub
+        };
+        
+        const token = 'google-jwt-' + Date.now();
+        
+        res.status(200).json({
+            success: true,
+            message: 'Google login successful',
+            data: {
+                user,
+                token
+            }
+        });
+    } catch (error) {
+        console.error('Google token verification error:', error);
+        res.status(400).json({
+            success: false,
+            error: 'Invalid Google credential',
+            code: 'INVALID_CREDENTIAL'
+        });
+    }
+});
+
+app.post('/api/auth/verify-facebook', (req, res) => {
+    const { accessToken } = req.body;
+    
+    if (!accessToken) {
+        return res.status(400).json({
+            success: false,
+            error: 'Facebook access token is required',
+            code: 'MISSING_TOKEN'
+        });
+    }
+    
+    try {
+        // In a real app, you'd verify the access token with Facebook's Graph API
+        // For demo purposes, we'll simulate a successful verification
+        const user = {
+            email: 'demo@facebook.com',
+            firstName: 'Demo',
+            lastName: 'User',
+            picture: 'https://via.placeholder.com/100x100/1877f2/ffffff?text=F',
+            provider: 'facebook',
+            facebookId: 'demo-facebook-id'
+        };
+        
+        const token = 'facebook-jwt-' + Date.now();
+        
+        res.status(200).json({
+            success: true,
+            message: 'Facebook login successful',
+            data: {
+                user,
+                token
+            }
+        });
+    } catch (error) {
+        console.error('Facebook token verification error:', error);
+        res.status(400).json({
+            success: false,
+            error: 'Invalid Facebook access token',
+            code: 'INVALID_TOKEN'
+        });
+    }
+});
+
 // Protected routes (basic implementation)
 app.get('/api/farms', (req, res) => {
     res.json({
