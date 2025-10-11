@@ -5,7 +5,7 @@ window.SmartFarmConfig = {
                         window.VITE_API_BASE_URL || 
                         window.VITE_API_URL || 
                         (window).__SMARTFARM_API_BASE__ ||
-                        'https://smartfarm-backend.railway.app',
+                        'https://smartfarm-app-production.up.railway.app',
     
     // Get full API URL for a given endpoint
     getApiUrl: function(endpoint) {

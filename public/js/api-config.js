@@ -10,7 +10,7 @@
      * Canonical Backend URL
      * IMPORTANT: Change this ONE place to update entire frontend
      */
-    const PRODUCTION_API_BASE = 'https://smartfarm-backend.railway.app';
+    const PRODUCTION_API_BASE = 'https://smartfarm-app-production.up.railway.app';
     
     /**
      * Get API Base URL from environment or use production default
