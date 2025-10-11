@@ -10,14 +10,17 @@ const PORT = process.env.PORT || 3000;
 
 /** Allow only known web origins */
 const ALLOWED_ORIGINS = new Set([
-    'https://www.smartfarm-app.com',                      // your Netlify/custom domain
+    'https://www.smartfarm-app.com',                      // your Netlify/custom domain (PRIMARY)
+    'https://smartfarm-app.com',                          // your Netlify/custom domain (no www)
     'https://smartfarm-app.netlify.app',                  // Netlify preview
-    'https://smartfarm-backend.railway.app',              // if you use this domain for API
     'https://smartfarm-app-production.up.railway.app',    // default Railway domain (if used)
+    'https://smartfarm-backend.railway.app',              // if you use this domain for API
     'https://railway.com',                                // Railway's own domain (required)
     'https://www.railway.com',                            // Railway's www domain
+    'https://railway.app',                                // Railway app domain
     'http://localhost:3000',                              // local dev
     'http://localhost:8080',                              // local dev
+    'http://localhost:4173',                              // local dev (vite preview)
 ]);
 
 // Add custom origins from environment
@@ -30,26 +33,36 @@ if (process.env.CORS_ORIGINS) {
 app.use((req, res, next) => {
     const origin = req.headers.origin;
     
-    // ALWAYS set CORS headers - even if origin is missing
-    const allowedOrigin = (origin && ALLOWED_ORIGINS.has(origin)) 
-        ? origin 
-        : 'https://www.smartfarm-app.com';
+    // Determine allowed origin
+    let allowedOrigin;
+    if (origin && ALLOWED_ORIGINS.has(origin)) {
+        // If origin is in our allowed list, use it
+        allowedOrigin = origin;
+    } else if (origin && origin.includes('smartfarm-app')) {
+        // If origin contains smartfarm-app, allow it (for various domains)
+        allowedOrigin = origin;
+    } else {
+        // Default fallback to primary domain
+        allowedOrigin = 'https://www.smartfarm-app.com';
+    }
     
-    // Set headers immediately
+    // Set CORS headers IMMEDIATELY (before any processing)
     res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
     res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
-    res.setHeader('Access-Control-Expose-Headers', 'Content-Length, Content-Type');
-    res.setHeader('Access-Control-Max-Age', '86400');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, X-Auth-Token, X-API-Key');
+    res.setHeader('Access-Control-Expose-Headers', 'Content-Length, Content-Type, X-Total-Count');
+    res.setHeader('Access-Control-Max-Age', '86400'); // 24 hours
     res.setHeader('Vary', 'Origin');
     
-    // Log CORS info for debugging
-    console.log(`[CORS] ${req.method} ${req.path} - Origin: ${origin || 'none'} - Allowed: ${allowedOrigin}`);
+    // Log CORS info for debugging (only in development)
+    if (process.env.NODE_ENV !== 'production' || process.env.DEBUG_CORS === 'true') {
+        console.log(`[CORS] ${req.method} ${req.path} - Origin: ${origin || 'none'} - Allowed: ${allowedOrigin}`);
+    }
     
     // Handle preflight OPTIONS requests immediately
     if (req.method === 'OPTIONS') {
-        console.log('[CORS] Preflight request handled');
+        console.log('[CORS] Preflight request handled successfully');
         return res.status(204).end();
     }
     
@@ -171,12 +184,20 @@ app.use((err, req, res, next) => {
     
     // Ensure CORS headers are set even on error responses
     const origin = req.headers.origin;
-    const allowedOrigin = (origin && ALLOWED_ORIGINS.has(origin)) 
-        ? origin 
-        : 'https://www.smartfarm-app.com';
+    let allowedOrigin;
+    if (origin && ALLOWED_ORIGINS.has(origin)) {
+        allowedOrigin = origin;
+    } else if (origin && origin.includes('smartfarm-app')) {
+        allowedOrigin = origin;
+    } else {
+        allowedOrigin = 'https://www.smartfarm-app.com';
+    }
     
     res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
     res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, X-Auth-Token, X-API-Key');
+    res.setHeader('Vary', 'Origin');
     
     res.status(err.status || 500).json({
         success: false,
