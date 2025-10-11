@@ -5,7 +5,7 @@
   "private": true,
   "type": "commonjs",
   "scripts": {
-    "start": "node server-simple.cjs",
+    "start": "node server.js",
     "build": "echo \"(backend) nothing to build\"",
     "health": "node -e \"fetch('http://127.0.0.1:'+(process.env.PORT||3000)+'/api/health').then(r=>r.text()).then(console.log).catch(console.error)\""
   },
@@ -14,7 +14,8 @@
     "npm": ">=8.0.0"
   },
   "dependencies": {
-    "express": "^4.19.2"
+    "express": "^4.19.2",
+    "cors": "^2.8.5"
   },
   "keywords": [
     "smartfarm",
