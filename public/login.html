@@ -520,7 +520,10 @@
             btnText.style.display = 'none';
             loading.classList.add('show');
 
-            // API call to backend
+            // API call to backend with timeout
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+            
             fetch('https://smartfarm-app-production.up.railway.app/api/auth/login', {
                 method: 'POST',
                 headers: {
@@ -529,12 +532,14 @@
                 body: JSON.stringify({
                     email: email,
                     password: password
-                })
+                }),
+                signal: controller.signal
             })
             .then(response => {
+                clearTimeout(timeoutId);
                 if (!response.ok) {
                     // If backend is not available, try fallback authentication
-                    console.log('Backend not available, trying fallback authentication...');
+                    console.log('Backend not available (status:', response.status, '), trying fallback authentication...');
                     return handleFallbackLogin(email, password, rememberMe);
                 }
                 return response.json();
@@ -621,10 +626,11 @@
                 }
             })
             .catch(error => {
+                clearTimeout(timeoutId);
                 console.error('Login error:', error);
-                console.log('Network error, trying fallback authentication...');
+                console.log('Network error or timeout, trying fallback authentication...');
                 
-                // Try fallback authentication on network errors
+                // Try fallback authentication on network errors or timeouts
                 handleFallbackLogin(email, password, rememberMe)
                     .then(data => {
                         if (data.status === 'success') {
@@ -779,12 +785,8 @@
                 });
             }
             
-            if (password.length < 6) {
-                return Promise.resolve({
-                    status: 'error',
-                    message: 'Password must be at least 6 characters long'
-                });
-            }
+            // Remove password length restriction for demo mode
+            console.log('Demo mode: accepting any password length');
             
             // For demo purposes, accept any valid email/password combination
             // In production, this would be replaced with proper authentication
