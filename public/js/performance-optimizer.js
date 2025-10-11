@@ -9,7 +9,44 @@ class PerformanceOptimizer {
         this.apiCache = new Map();
         this.lazyLoadObserver = null;
         this.debounceTimers = new Map();
+        this.railwayErrorCount = 0;
+        this.maxRailwayErrors = 5; // Suppress after 5 errors
+        this.suppressRailwayErrors();
         this.init();
+    }
+    
+    // Suppress Railway-related errors to reduce console spam
+    suppressRailwayErrors() {
+        const originalConsoleError = console.error;
+        const self = this;
+        
+        console.error = function(...args) {
+            const message = args.join(' ');
+            
+            // Check if it's a Railway-related error
+            const isRailwayError = message && (
+                message.includes('smartfarm-app-production.up.railway.app') ||
+                message.includes('railway.app') ||
+                message.includes('502') ||
+                message.includes('503') ||
+                message.includes('Failed to fetch') ||
+                message.includes('NetworkError when attempting to fetch') ||
+                message.includes('Backend temporarily unavailable')
+            );
+            
+            if (isRailwayError) {
+                self.railwayErrorCount++;
+                
+                // Only log first few Railway errors, then suppress
+                if (self.railwayErrorCount <= self.maxRailwayErrors) {
+                    console.warn('Railway backend issue detected (will suppress further errors):', message);
+                }
+                return; // Suppress the error
+            }
+            
+            // For non-Railway errors, use original console.error
+            originalConsoleError.apply(console, args);
+        };
     }
 
     init() {
@@ -162,16 +199,57 @@ class PerformanceOptimizer {
                 
                 // Cache successful responses
                 if (response.ok && (options.method === 'GET' || !options.method)) {
-                    const data = await response.clone().json();
-                    this.apiCache.set(cacheKey, {
-                        data,
-                        timestamp: Date.now()
-                    });
+                    try {
+                        const data = await response.clone().json();
+                        this.apiCache.set(cacheKey, {
+                            data,
+                            timestamp: Date.now()
+                        });
+                    } catch (jsonError) {
+                        // Silently ignore JSON parsing errors for caching
+                        console.warn('Failed to cache response:', jsonError.message);
+                    }
                 }
                 
                 return response;
             } catch (error) {
-                console.error('API request failed:', error);
+                // Check if it's a Railway backend error (502, 503, or network error)
+                const isRailwayError = error.message && (
+                    error.message.includes('502') ||
+                    error.message.includes('503') ||
+                    error.message.includes('Failed to fetch') ||
+                    error.message.includes('NetworkError') ||
+                    url.includes('railway.app')
+                );
+                
+                if (isRailwayError) {
+                    // Return cached data if available for Railway errors
+                    const cached = this.apiCache.get(cacheKey);
+                    if (cached) {
+                        console.warn('Railway backend unavailable, using cached data');
+                        return new Response(JSON.stringify(cached.data), {
+                            status: 200,
+                            headers: { 'Content-Type': 'application/json', 'X-From-Cache': 'true' }
+                        });
+                    }
+                    
+                    // Return empty success response to prevent UI crashes
+                    console.warn('Railway backend unavailable, no cache available');
+                    return new Response(JSON.stringify({ 
+                        success: false, 
+                        error: 'Backend temporarily unavailable',
+                        cached: false 
+                    }), {
+                        status: 503,
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                }
+                
+                // For other errors, only log in development
+                if (window.location.hostname === 'localhost') {
+                    console.error('API request failed:', error);
+                }
+                
                 throw error;
             }
         };
