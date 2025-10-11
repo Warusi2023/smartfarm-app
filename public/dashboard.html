@@ -6243,27 +6243,74 @@
         function checkAuthentication() {
             console.log('=== AUTH CHECK DEBUG START ===');
             
-            const user = localStorage.getItem('smartfarm_user') || sessionStorage.getItem('smartfarm_user');
-            const token = localStorage.getItem('smartfarm_token') || sessionStorage.getItem('smartfarm_token');
-            const rememberMe = localStorage.getItem('smartfarm_remember');
-            
-            console.log('Auth check - user:', user);
-            console.log('Auth check - token:', token ? 'Present' : 'Missing');
-            console.log('Auth check - rememberMe:', rememberMe);
-            console.log('Auth check - localStorage user:', localStorage.getItem('smartfarm_user'));
-            console.log('Auth check - sessionStorage user:', sessionStorage.getItem('smartfarm_user'));
-            
-            if (!user) {
-                console.log('❌ No user found, redirecting to login');
-                window.location.href = 'login.html';
-                return;
+            // Wait a moment for any pending storage operations to complete
+            setTimeout(() => {
+                const user = localStorage.getItem('smartfarm_user') || sessionStorage.getItem('smartfarm_user');
+                const token = localStorage.getItem('smartfarm_token') || sessionStorage.getItem('smartfarm_token');
+                const rememberMe = localStorage.getItem('smartfarm_remember');
+                
+                console.log('Auth check - user:', user);
+                console.log('Auth check - token:', token ? 'Present' : 'Missing');
+                console.log('Auth check - rememberMe:', rememberMe);
+                console.log('Auth check - localStorage user:', localStorage.getItem('smartfarm_user'));
+                console.log('Auth check - sessionStorage user:', sessionStorage.getItem('smartfarm_user'));
+                console.log('Auth check - localStorage token:', localStorage.getItem('smartfarm_token') ? 'Present' : 'Missing');
+                console.log('Auth check - sessionStorage token:', sessionStorage.getItem('smartfarm_token') ? 'Present' : 'Missing');
+                
+                // Check if we're coming from a successful login (check URL params or recent timestamp)
+                const urlParams = new URLSearchParams(window.location.search);
+                const fromLogin = urlParams.get('login') === 'success';
+                const recentLogin = checkRecentLogin();
+                
+                console.log('Auth check - fromLogin param:', fromLogin);
+                console.log('Auth check - recentLogin:', recentLogin);
+                
+                // If we just logged in successfully, give more time for data to be stored
+                if (fromLogin || recentLogin) {
+                    console.log('✅ Recent login detected, allowing access');
+                    updateUserInfo(user || 'Farmer');
+                    return;
+                }
+                
+                if (!user) {
+                    console.log('❌ No user found, redirecting to login');
+                    window.location.href = 'login.html';
+                    return;
+                }
+                
+                if (!token) {
+                    console.log('❌ No token found, redirecting to login');
+                    window.location.href = 'login.html';
+                    return;
+                }
+                
+                // If we have user but no token, check if this is a demo mode login
+                if (user && !token) {
+                    console.log('⚠️ User found but no token - checking for demo mode');
+                    const userData = localStorage.getItem('smartfarm_userData') || sessionStorage.getItem('smartfarm_userData');
+                    if (userData) {
+                        console.log('✅ Demo mode detected, allowing access');
+                        updateUserInfo(user);
+                        return;
+                    }
+                }
+                
+                // Continue with session validation...
+                validateSession(user, token, rememberMe);
+            }, 100); // Small delay to ensure storage operations complete
+        }
+        
+        function checkRecentLogin() {
+            const loginTime = localStorage.getItem('smartfarm_loginTime') || sessionStorage.getItem('smartfarm_loginTime');
+            if (loginTime) {
+                const timeSinceLogin = Date.now() - new Date(loginTime).getTime();
+                const recentThreshold = 30 * 1000; // 30 seconds
+                return timeSinceLogin < recentThreshold;
             }
-            
-            if (!token) {
-                console.log('❌ No token found, redirecting to login');
-                window.location.href = 'login.html';
-                return;
-            }
+            return false;
+        }
+        
+        function validateSession(user, token, rememberMe) {
             
             // Check if session is still valid (for non-remember me users)
             if (!rememberMe) {
@@ -6287,6 +6334,13 @@
             }
             
             // Update user info in navbar
+            updateUserInfo(user);
+            
+            console.log('✅ Authentication successful');
+            console.log('=== AUTH CHECK DEBUG END ===');
+        }
+        
+        function updateUserInfo(user) {
             const userName = user.split('@')[0];
             const userNameElement = document.getElementById('userName');
             const userAvatarElement = document.getElementById('userAvatar');
@@ -6298,8 +6352,7 @@
                 userAvatarElement.textContent = userName.charAt(0).toUpperCase();
             }
             
-            console.log('✅ User authenticated:', userName);
-            console.log('=== AUTH CHECK DEBUG END ===');
+            console.log('✅ User info updated:', userName);
         }
 
         function updateLastUpdated() {

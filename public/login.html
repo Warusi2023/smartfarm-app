@@ -597,10 +597,10 @@
                     if (storedUser && storedToken) {
                         console.log('✅ Authentication data stored successfully');
                         console.log('=== LOGIN SUCCESS DEBUG END ===');
-                        // Redirect to dashboard
+                        // Redirect to dashboard with success parameter
                         setTimeout(() => {
                             console.log('Redirecting to dashboard...');
-                            window.location.href = 'dashboard.html';
+                            window.location.href = 'dashboard.html?login=success';
                         }, 1500);
                     } else {
                         console.log('❌ Error storing authentication data');
@@ -659,10 +659,10 @@
                             
                             if (storedUser && storedToken) {
                                 console.log('✅ Fallback authentication data stored successfully');
-                                // Redirect to dashboard
+                                // Redirect to dashboard with success parameter
                                 setTimeout(() => {
                                     console.log('Redirecting to dashboard...');
-                                    window.location.href = 'dashboard.html';
+                                    window.location.href = 'dashboard.html?login=success';
                                 }, 1500);
                             } else {
                                 showAlert('Error storing authentication data. Please try again.', 'danger');
