@@ -17,14 +17,15 @@ const STATIC_FILES = [
     '/register.html',
     '/css/utilities.css',
     '/js/api-service.js',
+    '/js/api-config.js',
     '/js/user-roles.js',
     '/js/performance-optimizer.js',
+    '/js/qr-disabled.js',
     '/images/logo/logo.png',
     '/images/favicon/favicon.ico',
     'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css',
     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
-    'https://cdn.jsdelivr.net/npm/chart.js',
-    'https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js'
+    'https://cdn.jsdelivr.net/npm/chart.js'
 ];
 
 // API endpoints to cache
