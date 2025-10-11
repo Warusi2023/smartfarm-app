@@ -2,7 +2,7 @@
 [service]
 name = "smartfarm-backend"
 root = "backend"
-start = "node server.js"
+start = "node server-simple.cjs"
 healthcheckPath = "/api/health"
 healthcheckTimeout = 120
 
