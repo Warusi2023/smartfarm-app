@@ -583,8 +583,7 @@
                         storage.setItem('smartfarm_userData', JSON.stringify(userData));
                     }
 
-                    // Store login timestamp
-                    const loginTime = new Date().toISOString();
+                    // Store login timestamp (reusing existing loginTime variable)
                     if (rememberMe) {
                         localStorage.setItem('smartfarm_loginTime', loginTime);
                     } else {
@@ -655,8 +654,7 @@
                             const storage = rememberMe ? localStorage : sessionStorage;
                             storage.setItem('smartfarm_userData', JSON.stringify(data.data));
 
-                            // Store login timestamp
-                            const loginTime = new Date().toISOString();
+                            // Store login timestamp (reusing existing loginTime variable)
                             if (rememberMe) {
                                 localStorage.setItem('smartfarm_loginTime', loginTime);
                             } else {
