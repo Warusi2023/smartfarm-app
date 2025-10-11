@@ -14,14 +14,19 @@ class SmartFarmAPIService {
     getApiBaseUrl() {
         // Use single source of truth from api-config.js
         if (window.SmartFarmApiConfig) {
-            return window.SmartFarmApiConfig.baseUrl;
+            const url = window.SmartFarmApiConfig.baseUrl;
+            console.log('[API Service] Using SmartFarmApiConfig URL:', url);
+            return url;
         }
         
         // Fallback if api-config.js not loaded yet
-        return window.VITE_API_BASE_URL || 
+        const fallbackUrl = window.VITE_API_BASE_URL || 
                window.VITE_API_URL || 
                (window).__SMARTFARM_API_BASE__ ||
                'https://smartfarm-app-production.up.railway.app';
+        
+        console.log('[API Service] Using fallback URL:', fallbackUrl);
+        return fallbackUrl;
     }
 
     // Authentication token management

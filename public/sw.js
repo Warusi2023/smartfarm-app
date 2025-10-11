@@ -3,10 +3,10 @@
  * Comprehensive caching and offline support
  */
 
-const CACHE_NAME = 'smartfarm-v1.0.0';
-const STATIC_CACHE = 'smartfarm-static-v1.0.0';
-const DYNAMIC_CACHE = 'smartfarm-dynamic-v1.0.0';
-const API_CACHE = 'smartfarm-api-v1.0.0';
+const CACHE_NAME = 'smartfarm-v1.0.1';
+const STATIC_CACHE = 'smartfarm-static-v1.0.1';
+const DYNAMIC_CACHE = 'smartfarm-dynamic-v1.0.1';
+const API_CACHE = 'smartfarm-api-v1.0.1';
 
 // Files to cache immediately
 const STATIC_FILES = [

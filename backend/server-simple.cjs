@@ -42,8 +42,12 @@ app.use((req, res, next) => {
         // If origin contains smartfarm-app, allow it (for various domains)
         allowedOrigin = origin;
     } else {
-        // Default fallback to primary domain
-        allowedOrigin = 'https://www.smartfarm-app.com';
+        // Default fallback to primary domain - but check if it's a smartfarm domain
+        if (origin && origin.includes('smartfarm')) {
+            allowedOrigin = origin; // Allow any smartfarm domain
+        } else {
+            allowedOrigin = 'https://www.smartfarm-app.com';
+        }
     }
     
     // Set CORS headers IMMEDIATELY (before any processing)
