@@ -6284,6 +6284,13 @@
                     return;
                 }
                 
+                // If we have user data but no token, still allow access (demo mode)
+                if (user && !token) {
+                    console.log('✅ User found without token (demo mode), allowing access');
+                    updateUserInfo(user);
+                    return;
+                }
+                
                 if (!user) {
                     console.log('❌ No user found, redirecting to login');
                     window.location.href = 'login.html';
@@ -6353,7 +6360,37 @@
         }
         
         function updateUserInfo(user) {
-            const userName = user.split('@')[0];
+            let userName = 'Farmer';
+            let userInitial = 'F';
+            
+            try {
+                // Parse user data if it's a JSON string
+                let userData = user;
+                if (typeof user === 'string') {
+                    try {
+                        userData = JSON.parse(user);
+                    } catch (e) {
+                        // If parsing fails, treat as a simple string (email)
+                        userData = { email: user };
+                    }
+                }
+                
+                if (typeof userData === 'object' && userData.firstName && userData.lastName) {
+                    userName = `${userData.firstName} ${userData.lastName}`;
+                    userInitial = userData.firstName.charAt(0).toUpperCase();
+                } else if (typeof userData === 'object' && userData.email) {
+                    userName = userData.email.split('@')[0];
+                    userInitial = userName.charAt(0).toUpperCase();
+                } else if (typeof userData === 'string') {
+                    userName = userData.split('@')[0];
+                    userInitial = userName.charAt(0).toUpperCase();
+                }
+            } catch (error) {
+                console.warn('Error parsing user data:', error);
+                userName = 'Farmer';
+                userInitial = 'F';
+            }
+            
             const userNameElement = document.getElementById('userName');
             const userAvatarElement = document.getElementById('userAvatar');
             
@@ -6361,7 +6398,7 @@
                 userNameElement.textContent = userName;
             }
             if (userAvatarElement) {
-                userAvatarElement.textContent = userName.charAt(0).toUpperCase();
+                userAvatarElement.textContent = userInitial;
             }
             
             console.log('✅ User info updated:', userName);

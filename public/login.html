@@ -551,17 +551,21 @@
                     showAlert('Login successful! Redirecting to dashboard...', 'success');
                     
                     // Store login state and token
+                    const loginTime = new Date().toISOString();
                     if (rememberMe) {
                         localStorage.setItem('smartfarm_remember', 'true');
-                        localStorage.setItem('smartfarm_user', email);
+                        localStorage.setItem('smartfarm_user', JSON.stringify(data.data.user));
                         if (data.token) {
                             localStorage.setItem('smartfarm_token', data.token);
                         }
+                        localStorage.setItem('smartfarm_loginTime', loginTime);
                     } else {
-                        sessionStorage.setItem('smartfarm_user', email);
+                        sessionStorage.setItem('smartfarm_remember', 'false');
+                        sessionStorage.setItem('smartfarm_user', JSON.stringify(data.data.user));
                         if (data.token) {
                             sessionStorage.setItem('smartfarm_token', data.token);
                         }
+                        sessionStorage.setItem('smartfarm_loginTime', loginTime);
                     }
 
                     // Store user data with country for currency
@@ -634,13 +638,17 @@
                             showAlert('Login successful (Demo Mode)! Redirecting to dashboard...', 'success');
                             
                             // Store login state and token
+                            const loginTime = new Date().toISOString();
                             if (rememberMe) {
                                 localStorage.setItem('smartfarm_remember', 'true');
-                                localStorage.setItem('smartfarm_user', email);
+                                localStorage.setItem('smartfarm_user', JSON.stringify(data.data));
                                 localStorage.setItem('smartfarm_token', data.token);
+                                localStorage.setItem('smartfarm_loginTime', loginTime);
                             } else {
-                                sessionStorage.setItem('smartfarm_user', email);
+                                sessionStorage.setItem('smartfarm_remember', 'false');
+                                sessionStorage.setItem('smartfarm_user', JSON.stringify(data.data));
                                 sessionStorage.setItem('smartfarm_token', data.token);
+                                sessionStorage.setItem('smartfarm_loginTime', loginTime);
                             }
 
                             // Store user data
