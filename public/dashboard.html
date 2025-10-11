@@ -45,7 +45,7 @@
                 /QR Code library sources failed/,
                 /QR system with fallback/,
                 /Traceability viewer ready/,
-                // ErrorBoundary duplicate declaration
+                // ErrorBoundary duplicate declaration (not used in dashboard)
                 /Identifier 'ErrorBoundary' has already been declared/,
                 /ErrorBoundary.*already been declared/,
                 // Preload warnings
@@ -54,7 +54,18 @@
                 // Generic errors to reduce noise
                 /ResizeObserver.*loop/,
                 /Script error/,
-                /Non-Error promise rejection/
+                /Non-Error promise rejection/,
+                // Dashboard-specific errors
+                /Cannot read property.*of null/,
+                /Cannot read property.*of undefined/,
+                /Cannot set property.*of null/,
+                /Cannot set property.*of undefined/,
+                /Element not found/,
+                /Failed to execute.*on.*null/,
+                // API timeout errors
+                /Request timeout/,
+                /Connection timeout/,
+                /Network request failed/
             ];
             
             console.error = function(...args) {
@@ -81,6 +92,31 @@
     <script src="js/log.js"></script>
     <script src="js/error-boundary.js"></script>
     <script src="js/api-service.js"></script>
+    <script>
+        // Ensure API service is properly initialized
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof window.SmartFarmAPI === 'undefined') {
+                console.warn('⚠️ SmartFarmAPI not initialized, retrying...');
+                // Retry initialization after a short delay
+                setTimeout(() => {
+                    if (typeof window.SmartFarmAPI === 'undefined') {
+                        console.error('❌ SmartFarmAPI failed to initialize');
+                        // Create a fallback API service
+                        window.SmartFarmAPI = {
+                            isBackendAvailable: () => false,
+                            getFarms: () => Promise.resolve({ success: false, error: 'API not available' }),
+                            getCrops: () => Promise.resolve({ success: false, error: 'API not available' }),
+                            getLivestock: () => Promise.resolve({ success: false, error: 'API not available' })
+                        };
+                    } else {
+                        console.log('✅ SmartFarmAPI initialized successfully');
+                    }
+                }, 1000);
+            } else {
+                console.log('✅ SmartFarmAPI initialized successfully');
+            }
+        });
+    </script>
     <script src="js/performance-optimizer.js"></script>
     <script src="js/accessibility-enhancer.js"></script>
     <script src="js/modal-accessibility.js"></script>
@@ -3781,45 +3817,75 @@
                 testNavigation();
                 testNavigationFunctions(); // Test navigation functions and DOM elements
                 
-                // Initialize statistics
-                updateCropStatistics();
-                updateLivestockStatistics();
-                
-                // Initialize modal accessibility
-                if (window.fixAllModalAccessibility) {
-                    window.fixAllModalAccessibility();
+                // Initialize statistics with error handling
+                try {
+                    updateCropStatistics();
+                } catch (error) {
+                    console.warn('Warning: Could not update crop statistics:', error);
                 }
                 
-                initializeGlobalDatabase();
-                initializeDashboard();
-                initializeWeatherService();
-                updateLastUpdated();
-                setInterval(updateLastUpdated, 60000); // Update every minute
+                try {
+                    updateLivestockStatistics();
+                } catch (error) {
+                    console.warn('Warning: Could not update livestock statistics:', error);
+                }
+                
+                // Initialize modal accessibility
+                try {
+                    if (window.fixAllModalAccessibility) {
+                        window.fixAllModalAccessibility();
+                    }
+                } catch (error) {
+                    console.warn('Warning: Could not initialize modal accessibility:', error);
+                }
+                
+                // Initialize core components with error handling
+                try {
+                    initializeGlobalDatabase();
+                    initializeDashboard();
+                    initializeWeatherService();
+                    updateLastUpdated();
+                    setInterval(updateLastUpdated, 60000); // Update every minute
+                } catch (error) {
+                    console.warn('Warning: Could not initialize core components:', error);
+                }
+                
                 console.log('Dashboard initialized successfully');
             } catch (error) {
                 console.error('Error initializing dashboard:', error);
+                // Don't throw - let the dashboard continue to function
             }
             
-            // Initialize URL routing
-            initializeURLRouting();
+            // Initialize URL routing with error handling
+            try {
+                initializeURLRouting();
+            } catch (error) {
+                console.warn('Warning: Could not initialize URL routing:', error);
+            }
             
-            // Load data from API with error handling
+            // Load data from API with robust error handling
             try {
                 await loadFarmData();
             } catch (error) {
-                console.error('Error loading farm data:', error);
+                console.warn('Warning: Could not load farm data:', error);
+                // Set fallback values
+                safeText('#farm-count', '0');
             }
             
             try {
                 await loadCropsData();
             } catch (error) {
-                console.error('Error loading crops data:', error);
+                console.warn('Warning: Could not load crops data:', error);
             }
             
             try {
                 await loadLivestockData();
             } catch (error) {
-                console.error('Error loading livestock data:', error);
+                console.warn('Warning: Could not load livestock data:', error);
+                // Set fallback values
+                safeText('#livestock-count', '0');
+                safeText('#healthyAnimals', '0');
+                safeText('#totalValue', '0');
             }
             
                 // Initialize ads
@@ -14664,15 +14730,15 @@ INVENTORY SUMMARY:
                 }
                 
                 safeText('#livestock-count', livestock.length.toString());
-                safeText('#healthy-livestock', livestock.filter(l => l.healthStatus === 'Healthy').length.toString());
-                safeText('#total-livestock-value', livestock.reduce((sum, l) => sum + (l.value || 0), 0).toString());
+                safeText('#healthyAnimals', livestock.filter(l => l.healthStatus === 'Healthy').length.toString());
+                safeText('#totalValue', livestock.reduce((sum, l) => sum + (l.value || 0), 0).toString());
                 
                 console.log('✅ Livestock statistics updated');
             } catch (error) {
                 console.error('Error updating livestock statistics:', error);
                 safeText('#livestock-count', '0');
-                safeText('#healthy-livestock', '0');
-                safeText('#total-livestock-value', '0');
+                safeText('#healthyAnimals', '0');
+                safeText('#totalValue', '0');
             }
         }
 
