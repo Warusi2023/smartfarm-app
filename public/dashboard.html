@@ -3863,6 +3863,17 @@
                 console.warn('Warning: Could not initialize URL routing:', error);
             }
             
+            // Check API availability first
+            try {
+                const apiAvailable = await checkApiAvailability();
+                if (!apiAvailable) {
+                    console.warn('⚠️ API not available, using offline mode');
+                    showApiUnavailableMessage();
+                }
+            } catch (error) {
+                console.warn('Warning: Could not check API availability:', error);
+            }
+            
             // Load data from API with robust error handling
             try {
                 await loadFarmData();
@@ -6353,6 +6364,68 @@
             }
             
             console.log('✅ User info updated:', userName);
+        }
+        
+        async function checkApiAvailability() {
+            try {
+                if (typeof window.SmartFarmAPI === 'undefined') {
+                    console.log('⚠️ SmartFarmAPI not available');
+                    return false;
+                }
+                
+                const response = await window.SmartFarmAPI.healthCheck();
+                return response && response.success;
+            } catch (error) {
+                console.warn('API availability check failed:', error);
+                return false;
+            }
+        }
+        
+        function showApiUnavailableMessage() {
+            // Remove existing message if present
+            const existingMessage = document.getElementById('api-unavailable-message');
+            if (existingMessage) {
+                existingMessage.remove();
+            }
+            
+            // Create message
+            const message = document.createElement('div');
+            message.id = 'api-unavailable-message';
+            message.style.cssText = `
+                position: fixed;
+                top: 70px;
+                left: 20px;
+                right: 20px;
+                background: #fff3cd;
+                border: 1px solid #ffeaa7;
+                color: #856404;
+                padding: 15px;
+                border-radius: 8px;
+                z-index: 1000;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                font-family: Arial, sans-serif;
+            `;
+            message.innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <div style="display: flex; align-items: center;">
+                        <i class="fas fa-exclamation-triangle" style="margin-right: 10px; color: #f39c12;"></i>
+                        <div>
+                            <strong>API Temporarily Unavailable</strong><br>
+                            <small>Some features may not work properly. Data will be loaded from cache when possible.</small>
+                        </div>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove()" style="background: none; border: none; color: #856404; cursor: pointer; font-size: 18px; padding: 0; margin-left: 15px;">&times;</button>
+                </div>
+            `;
+            
+            document.body.appendChild(message);
+            
+            // Auto-remove after 10 seconds
+            setTimeout(() => {
+                if (message.parentElement) {
+                    message.remove();
+                }
+            }, 10000);
         }
 
         function updateLastUpdated() {

@@ -16,7 +16,7 @@ class SmartFarmAPIService {
         return window.VITE_API_URL || 
                (window as any).__SMARTFARM_API_BASE__ ||
                window.SmartFarmConfig?.API_BASE_URL || 
-               'https://smartfarm-backend.railway.app';
+               'https://smartfarm-app-production.up.railway.app';
     }
 
     // Authentication token management

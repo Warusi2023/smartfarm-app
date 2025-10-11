@@ -3,7 +3,7 @@ window.SmartFarmConfig = {
     // API Base URL - use environment variable or fallback to production URL
         API_BASE_URL: window.VITE_API_URL || 
                         (window as any).__SMARTFARM_API_BASE__ ||
-                        'https://smartfarm-backend.railway.app',
+                        'https://smartfarm-app-production.up.railway.app',
     
     // Get full API URL for a given endpoint
     getApiUrl: function(endpoint) {
