@@ -6285,6 +6285,13 @@
                     return;
                 }
                 
+                // Additional check: if we have valid auth data, allow access regardless of URL params
+                if (user && token) {
+                    console.log('✅ Valid auth data found, allowing access');
+                    updateUserInfo(user);
+                    return;
+                }
+                
                 // If we have user data but no token, still allow access (demo mode)
                 if (user && !token) {
                     console.log('✅ User found without token (demo mode), allowing access');

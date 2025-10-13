@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Debug - SmartFarm</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .debug-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .success { background: #d4edda; border-color: #c3e6cb; }
+        .error { background: #f8d7da; border-color: #f5c6cb; }
+        .info { background: #d1ecf1; border-color: #bee5eb; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>SmartFarm Login Debug Tool</h1>
+    
+    <div class="debug-section info">
+        <h3>Current Authentication State</h3>
+        <div id="auth-state"></div>
+    </div>
+    
+    <div class="debug-section info">
+        <h3>Test Login</h3>
+        <button onclick="testLogin()">Test Login (test@example.com / password)</button>
+        <button onclick="clearAuth()">Clear All Auth Data</button>
+        <button onclick="testRedirect()">Test Dashboard Redirect</button>
+        <div id="login-result"></div>
+    </div>
+    
+    <div class="debug-section info">
+        <h3>Storage Debug</h3>
+        <button onclick="showStorage()">Show All Storage</button>
+        <button onclick="simulateLogin()">Simulate Login Success</button>
+        <div id="storage-info"></div>
+    </div>
+
+    <script>
+        function updateAuthState() {
+            const user = localStorage.getItem('smartfarm_user') || sessionStorage.getItem('smartfarm_user');
+            const token = localStorage.getItem('smartfarm_token') || sessionStorage.getItem('smartfarm_token');
+            const userData = localStorage.getItem('smartfarm_userData') || sessionStorage.getItem('smartfarm_userData');
+            const rememberMe = localStorage.getItem('smartfarm_remember');
+            const loginTime = localStorage.getItem('smartfarm_loginTime') || sessionStorage.getItem('smartfarm_loginTime');
+            
+            const state = {
+                user: user,
+                token: token ? 'Present' : 'Missing',
+                userData: userData,
+                rememberMe: rememberMe,
+                loginTime: loginTime,
+                currentUrl: window.location.href
+            };
+            
+            document.getElementById('auth-state').innerHTML = '<pre>' + JSON.stringify(state, null, 2) + '</pre>';
+        }
+
+        async function testLogin() {
+            const result = document.getElementById('login-result');
+            result.innerHTML = '<p>Testing login...</p>';
+            
+            try {
+                const response = await fetch('https://smartfarm-app-production.up.railway.app/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'test@example.com',
+                        password: 'password'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Store authentication data
+                    localStorage.setItem('smartfarm_user', 'test@example.com');
+                    localStorage.setItem('smartfarm_token', data.data.token);
+                    localStorage.setItem('smartfarm_userData', JSON.stringify(data.data.user));
+                    localStorage.setItem('smartfarm_loginTime', new Date().toISOString());
+                    localStorage.setItem('smartfarm_remember', 'true');
+                    
+                    result.innerHTML = '<div class="success"><p>✅ Login successful!</p><p>Data stored in localStorage</p></div>';
+                    updateAuthState();
+                } else {
+                    result.innerHTML = '<div class="error"><p>❌ Login failed: ' + data.message + '</p></div>';
+                }
+            } catch (error) {
+                result.innerHTML = '<div class="error"><p>❌ Network error: ' + error.message + '</p></div>';
+            }
+        }
+
+        function clearAuth() {
+            localStorage.removeItem('smartfarm_user');
+            localStorage.removeItem('smartfarm_token');
+            localStorage.removeItem('smartfarm_userData');
+            localStorage.removeItem('smartfarm_loginTime');
+            localStorage.removeItem('smartfarm_remember');
+            
+            sessionStorage.removeItem('smartfarm_user');
+            sessionStorage.removeItem('smartfarm_token');
+            sessionStorage.removeItem('smartfarm_userData');
+            sessionStorage.removeItem('smartfarm_loginTime');
+            
+            document.getElementById('login-result').innerHTML = '<div class="info"><p>🧹 All auth data cleared</p></div>';
+            updateAuthState();
+        }
+
+        function testRedirect() {
+            const result = document.getElementById('login-result');
+            
+            // Check if we have auth data
+            const user = localStorage.getItem('smartfarm_user') || sessionStorage.getItem('smartfarm_user');
+            const token = localStorage.getItem('smartfarm_token') || sessionStorage.getItem('smartfarm_token');
+            
+            if (!user || !token) {
+                result.innerHTML = '<div class="error"><p>❌ No auth data found. Please login first.</p></div>';
+                return;
+            }
+            
+            result.innerHTML = '<div class="success"><p>✅ Auth data found. Redirecting to dashboard...</p></div>';
+            
+            // Simulate the same redirect as login.html
+            setTimeout(() => {
+                window.location.href = 'dashboard.html?login=success';
+            }, 1000);
+        }
+
+        function showStorage() {
+            const info = document.getElementById('storage-info');
+            const storage = {
+                localStorage: {},
+                sessionStorage: {}
+            };
+            
+            // Get all localStorage items
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('smartfarm_')) {
+                    storage.localStorage[key] = localStorage.getItem(key);
+                }
+            }
+            
+            // Get all sessionStorage items
+            for (let i = 0; i < sessionStorage.length; i++) {
+                const key = sessionStorage.key(i);
+                if (key.startsWith('smartfarm_')) {
+                    storage.sessionStorage[key] = sessionStorage.getItem(key);
+                }
+            }
+            
+            info.innerHTML = '<pre>' + JSON.stringify(storage, null, 2) + '</pre>';
+        }
+
+        function simulateLogin() {
+            // Simulate a successful login without API call
+            localStorage.setItem('smartfarm_user', 'test@example.com');
+            localStorage.setItem('smartfarm_token', 'mock-jwt-token-' + Date.now());
+            localStorage.setItem('smartfarm_userData', JSON.stringify({
+                id: 'user_123',
+                email: 'test@example.com',
+                firstName: 'Test',
+                lastName: 'User',
+                role: 'farmer'
+            }));
+            localStorage.setItem('smartfarm_loginTime', new Date().toISOString());
+            localStorage.setItem('smartfarm_remember', 'true');
+            
+            document.getElementById('storage-info').innerHTML = '<div class="success"><p>✅ Simulated login data stored</p></div>';
+            updateAuthState();
+        }
+
+        // Update auth state on page load
+        window.addEventListener('load', updateAuthState);
+    </script>
+</body>
+</html>
