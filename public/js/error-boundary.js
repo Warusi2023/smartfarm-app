@@ -3,6 +3,8 @@
  * Provides React-style error boundary functionality for vanilla JS applications
  */
 
+// Prevent duplicate declaration
+if (typeof ErrorBoundary === 'undefined') {
 class ErrorBoundary {
     constructor(options = {}) {
         this.options = {
@@ -400,3 +402,4 @@ if (typeof module !== 'undefined' && module.exports) {
 }
 
 console.log('🛡️ Error boundary DISABLED for better UX');
+} // End of ErrorBoundary declaration check

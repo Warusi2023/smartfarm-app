@@ -7699,13 +7699,22 @@
                 other: livestock.filter(animal => !['cattle', 'pigs', 'chickens', 'ducks', 'turkeys', 'sheep', 'goats', 'horses'].includes(animal.type.toLowerCase())).length
             };
 
-            document.getElementById('all-count').textContent = counts.all;
-            document.getElementById('cattle-count').textContent = counts.cattle;
-            document.getElementById('pigs-count').textContent = counts.pigs;
-            document.getElementById('poultry-count').textContent = counts.poultry;
-            document.getElementById('sheep-goats-count').textContent = counts.sheepGoats;
-            document.getElementById('horses-count').textContent = counts.horses;
-            document.getElementById('other-count').textContent = counts.other;
+            // Safe element updates with null checks
+            const allCountEl = document.getElementById('all-count');
+            const cattleCountEl = document.getElementById('cattle-count');
+            const pigsCountEl = document.getElementById('pigs-count');
+            const poultryCountEl = document.getElementById('poultry-count');
+            const sheepGoatsCountEl = document.getElementById('sheep-goats-count');
+            const horsesCountEl = document.getElementById('horses-count');
+            const otherCountEl = document.getElementById('other-count');
+            
+            if (allCountEl) allCountEl.textContent = counts.all;
+            if (cattleCountEl) cattleCountEl.textContent = counts.cattle;
+            if (pigsCountEl) pigsCountEl.textContent = counts.pigs;
+            if (poultryCountEl) poultryCountEl.textContent = counts.poultry;
+            if (sheepGoatsCountEl) sheepGoatsCountEl.textContent = counts.sheepGoats;
+            if (horsesCountEl) horsesCountEl.textContent = counts.horses;
+            if (otherCountEl) otherCountEl.textContent = counts.other;
         }
 
         function createLivestockRow(animal, showSpecies = true) {
