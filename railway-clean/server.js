@@ -3,6 +3,7 @@ const cors = require('cors');
 const crypto = require('crypto');
 // ✅ Use the instance exported from ./email-config (no "new" anywhere)
 const emailService = require('./email-config');
+const livestockRoutes = require('./routes/livestock');
 
 const app = express();
 
@@ -518,6 +519,9 @@ app.get('/api/test', (req, res) => {
     version: API_VERSION
   });
 });
+
+// Livestock endpoints - Full API implementation
+app.use('/api/livestock', livestockRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {

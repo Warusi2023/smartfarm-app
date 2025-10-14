@@ -12,6 +12,7 @@
     "build": "echo \"No build step required\"",
     "test": "node test-email-flow.js",
     "test:email": "node test-email-flow.js",
+    "test:livestock": "node test-livestock-api.js",
     "lint": "echo \"No linting configured\" && exit 0"
   },
   "dependencies": {
