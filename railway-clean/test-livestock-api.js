@@ -21,14 +21,14 @@ async function testLivestockAPI() {
         // Test 3: Create a sample farm first (if needed)
         console.log('3️⃣ Testing livestock creation...');
         const livestockData = {
-            name: 'Test Cow #1',
-            category: 'CATTLE',
-            farm_id: 1, // Assuming farm ID 1 exists
+            tag_number: 'TAG-001',
+            farm_id: '550e8400-e29b-41d4-a716-446655440000', // Assuming farm UUID exists
             breed: 'Holstein',
             birth_date: '2022-01-15',
-            weight: 450.5,
-            gender: 'female',
-            identification_tag: 'TAG-001',
+            sex: 'female',
+            sire_tag: 'SIRE-001',
+            dam_tag: 'DAM-001',
+            group_id: null, // Optional
             notes: 'Test livestock entry'
         };
 
@@ -46,14 +46,14 @@ async function testLivestockAPI() {
 
             // Test 5: Update livestock
             console.log('5️⃣ Testing PUT /api/livestock/:id...');
-            const updateData = { weight: 475.0, notes: 'Updated weight' };
+            const updateData = { breed: 'Holstein-Friesian', notes: 'Updated breed information' };
             const updateResponse = await axios.put(`${API_BASE_URL}/api/livestock/${livestockId}`, updateData);
             console.log('✅ PUT /api/livestock/:id:', updateResponse.data);
             console.log('');
 
-            // Test 6: Update livestock status
+            // Test 6: Update livestock notes
             console.log('6️⃣ Testing PATCH /api/livestock/:id/status...');
-            const statusData = { status: 'healthy', notes: 'Regular checkup completed' };
+            const statusData = { notes: 'Regular checkup completed - animal healthy' };
             const statusResponse = await axios.patch(`${API_BASE_URL}/api/livestock/${livestockId}/status`, statusData);
             console.log('✅ PATCH /api/livestock/:id/status:', statusResponse.data);
             console.log('');

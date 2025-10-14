@@ -28,7 +28,7 @@ async function checkFarmExists(farmId) {
 
 // Helper function to check livestock exists
 async function checkLivestockExists(livestockId) {
-    const result = await client.query('SELECT id FROM livestock WHERE id = $1', [livestockId]);
+    const result = await client.query('SELECT id FROM animals WHERE id = $1', [livestockId]);
     return result.rows.length > 0;
 }
 
@@ -42,7 +42,7 @@ router.get('/', async (req, res) => {
         const offset = (page - 1) * limit;
         const userId = req.user?.id || 1; // Default user for demo
 
-        let whereClause = 'WHERE l.farm_id IN (SELECT id FROM farms WHERE user_id = $1)';
+        let whereClause = 'WHERE a.farm_id IN (SELECT id FROM farms WHERE user_id = $1)';
         const params = [userId];
         let paramCount = 1;
 
@@ -56,33 +56,35 @@ router.get('/', async (req, res) => {
                 });
             }
             paramCount++;
-            whereClause += ` AND l.farm_id = $${paramCount}`;
+            whereClause += ` AND a.farm_id = $${paramCount}`;
             params.push(farm_id);
         }
 
         if (category) {
+            // Map category to breed or species for animals table
             paramCount++;
-            whereClause += ` AND l.category = $${paramCount}`;
-            params.push(category);
+            whereClause += ` AND (a.breed ILIKE $${paramCount} OR lg.species ILIKE $${paramCount})`;
+            const searchTerm = `%${category}%`;
+            params.push(searchTerm);
         }
 
         if (health_status) {
-            paramCount++;
-            whereClause += ` AND l.health_status = $${paramCount}`;
-            params.push(health_status);
+            // Note: animals table doesn't have health_status, we'll skip this filter
+            // or implement it through health events if needed
         }
 
         if (search) {
             paramCount++;
-            whereClause += ` AND (l.name ILIKE $${paramCount} OR l.notes ILIKE $${paramCount})`;
+            whereClause += ` AND (a.tag_number ILIKE $${paramCount} OR a.breed ILIKE $${paramCount} OR a.notes ILIKE $${paramCount})`;
             const searchTerm = `%${search}%`;
-            params.push(searchTerm, searchTerm);
+            params.push(searchTerm);
         }
 
         // Get total count
         const countQuery = `
             SELECT COUNT(*) as total 
-            FROM livestock l 
+            FROM animals a
+            LEFT JOIN livestock_groups lg ON a.group_id = lg.id
             ${whereClause}
         `;
         const countResult = await client.query(countQuery, params);
@@ -90,11 +92,12 @@ router.get('/', async (req, res) => {
 
         // Get livestock with pagination
         const query = `
-            SELECT l.*, f.name as farm_name
-            FROM livestock l
-            LEFT JOIN farms f ON l.farm_id = f.id
+            SELECT a.*, f.name as farm_name, lg.species, lg.group_name
+            FROM animals a
+            LEFT JOIN farms f ON a.farm_id = f.id
+            LEFT JOIN livestock_groups lg ON a.group_id = lg.id
             ${whereClause}
-            ORDER BY l.created_at DESC
+            ORDER BY a.created_at DESC
             LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}
         `;
         const queryParams = [...params, parseInt(limit), offset];
@@ -126,10 +129,11 @@ router.get('/:id', async (req, res) => {
         const userId = req.user?.id || 1;
 
         const query = `
-            SELECT l.*, f.name as farm_name
-            FROM livestock l
-            LEFT JOIN farms f ON l.farm_id = f.id
-            WHERE l.id = $1
+            SELECT a.*, f.name as farm_name, lg.species, lg.group_name
+            FROM animals a
+            LEFT JOIN farms f ON a.farm_id = f.id
+            LEFT JOIN livestock_groups lg ON a.group_id = lg.id
+            WHERE a.id = $1
         `;
         
         const result = await client.query(query, [id]);
@@ -167,14 +171,14 @@ router.get('/:id', async (req, res) => {
 // Create new livestock
 router.post('/', async (req, res) => {
     try {
-        const { name, category, farm_id, breed, birth_date, weight, gender, identification_tag, notes } = req.body;
+        const { tag_number, farm_id, breed, birth_date, sex, sire_tag, dam_tag, group_id, notes } = req.body;
         const userId = req.user?.id || 1;
 
-        // Validation
-        if (!name || !category || !farm_id || !breed || !birth_date) {
+        // Validation - animals table has different required fields
+        if (!farm_id || !breed || !birth_date) {
             return res.status(400).json({
                 success: false,
-                error: 'Missing required fields: name, category, farm_id, breed, birth_date'
+                error: 'Missing required fields: farm_id, breed, birth_date'
             });
         }
 
@@ -205,22 +209,23 @@ router.post('/', async (req, res) => {
             });
         }
 
-        if (weight && weight <= 0) {
+        // Validate sex if provided
+        if (sex && !['male', 'female', 'unknown'].includes(sex.toLowerCase())) {
             return res.status(400).json({
                 success: false,
-                error: 'Weight must be positive'
+                error: 'Sex must be one of: male, female, unknown'
             });
         }
 
         const query = `
-            INSERT INTO livestock (name, category, farm_id, breed, birth_date, weight, health_status, gender, identification_tag, notes, is_active, created_at, updated_at)
-            VALUES ($1, $2, $3, $4, $5, $6, 'healthy', $7, $8, $9, true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            INSERT INTO animals (farm_id, group_id, tag_number, birth_date, sex, breed, sire_tag, dam_tag, notes, created_at, updated_at)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
             RETURNING *
         `;
         
         const result = await client.query(query, [
-            name, category, farm_id, breed, birth_date, weight || null, 
-            gender || null, identification_tag || null, notes || null
+            farm_id, group_id || null, tag_number || null, birth_date, 
+            sex || 'unknown', breed, sire_tag || null, dam_tag || null, notes || null
         ]);
         
         if (result.rows.length === 0) {
@@ -248,7 +253,7 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, category, breed, birth_date, weight, health_status, gender, identification_tag, notes } = req.body;
+        const { tag_number, breed, birth_date, sex, sire_tag, dam_tag, group_id, notes } = req.body;
         const userId = req.user?.id || 1;
 
         // Check if livestock exists
@@ -261,7 +266,7 @@ router.put('/:id', async (req, res) => {
         }
 
         // Get livestock to check farm access
-        const livestockResult = await client.query('SELECT farm_id FROM livestock WHERE id = $1', [id]);
+        const livestockResult = await client.query('SELECT farm_id FROM animals WHERE id = $1', [id]);
         const livestock = livestockResult.rows[0];
         const hasAccess = await checkFarmAccess(livestock.farm_id, userId);
         if (!hasAccess) {
@@ -272,20 +277,15 @@ router.put('/:id', async (req, res) => {
         }
 
         // Build update query dynamically
-        let updateQuery = 'UPDATE livestock SET';
+        let updateQuery = 'UPDATE animals SET';
         const updateParams = [];
         const updates = [];
         let paramCount = 0;
 
-        if (name !== undefined) {
+        if (tag_number !== undefined) {
             paramCount++;
-            updates.push(` name = $${paramCount}`);
-            updateParams.push(name);
-        }
-        if (category !== undefined) {
-            paramCount++;
-            updates.push(` category = $${paramCount}`);
-            updateParams.push(category);
+            updates.push(` tag_number = $${paramCount}`);
+            updateParams.push(tag_number);
         }
         if (breed !== undefined) {
             paramCount++;
@@ -297,31 +297,31 @@ router.put('/:id', async (req, res) => {
             updates.push(` birth_date = $${paramCount}`);
             updateParams.push(birth_date);
         }
-        if (weight !== undefined) {
-            if (weight <= 0) {
+        if (sex !== undefined) {
+            if (!['male', 'female', 'unknown'].includes(sex.toLowerCase())) {
                 return res.status(400).json({
                     success: false,
-                    error: 'Weight must be positive'
+                    error: 'Sex must be one of: male, female, unknown'
                 });
             }
             paramCount++;
-            updates.push(` weight = $${paramCount}`);
-            updateParams.push(weight);
+            updates.push(` sex = $${paramCount}`);
+            updateParams.push(sex);
         }
-        if (health_status !== undefined) {
+        if (sire_tag !== undefined) {
             paramCount++;
-            updates.push(` health_status = $${paramCount}`);
-            updateParams.push(health_status);
+            updates.push(` sire_tag = $${paramCount}`);
+            updateParams.push(sire_tag);
         }
-        if (gender !== undefined) {
+        if (dam_tag !== undefined) {
             paramCount++;
-            updates.push(` gender = $${paramCount}`);
-            updateParams.push(gender);
+            updates.push(` dam_tag = $${paramCount}`);
+            updateParams.push(dam_tag);
         }
-        if (identification_tag !== undefined) {
+        if (group_id !== undefined) {
             paramCount++;
-            updates.push(` identification_tag = $${paramCount}`);
-            updateParams.push(identification_tag);
+            updates.push(` group_id = $${paramCount}`);
+            updateParams.push(group_id);
         }
         if (notes !== undefined) {
             paramCount++;
@@ -378,7 +378,7 @@ router.delete('/:id', async (req, res) => {
         }
 
         // Get livestock to check farm access
-        const livestockResult = await client.query('SELECT farm_id FROM livestock WHERE id = $1', [id]);
+        const livestockResult = await client.query('SELECT farm_id FROM animals WHERE id = $1', [id]);
         const livestock = livestockResult.rows[0];
         const hasAccess = await checkFarmAccess(livestock.farm_id, userId);
         if (!hasAccess) {
@@ -388,7 +388,7 @@ router.delete('/:id', async (req, res) => {
             });
         }
 
-        const result = await client.query('DELETE FROM livestock WHERE id = $1', [id]);
+        const result = await client.query('DELETE FROM animals WHERE id = $1', [id]);
         
         if (result.rowCount === 0) {
             return res.status(500).json({
@@ -443,7 +443,7 @@ router.patch('/:id/status', async (req, res) => {
         }
 
         // Get livestock to check farm access
-        const livestockResult = await client.query('SELECT farm_id FROM livestock WHERE id = $1', [id]);
+        const livestockResult = await client.query('SELECT farm_id FROM animals WHERE id = $1', [id]);
         const livestock = livestockResult.rows[0];
         const hasAccess = await checkFarmAccess(livestock.farm_id, userId);
         if (!hasAccess) {
@@ -453,14 +453,15 @@ router.patch('/:id/status', async (req, res) => {
             });
         }
 
+        // Since animals table doesn't have health_status, we'll just update notes
         const updateQuery = `
-            UPDATE livestock 
-            SET health_status = $1, notes = $2, updated_at = CURRENT_TIMESTAMP 
-            WHERE id = $3
+            UPDATE animals 
+            SET notes = $1, updated_at = CURRENT_TIMESTAMP 
+            WHERE id = $2
         `;
         
         const result = await client.query(updateQuery, [
-            status.toLowerCase(), notes || null, id
+            notes || null, id
         ]);
         
         if (result.rowCount === 0) {
@@ -499,7 +500,7 @@ router.get('/:id/analytics', async (req, res) => {
         }
 
         // Get livestock to check farm access
-        const livestockResult = await client.query('SELECT farm_id FROM livestock WHERE id = $1', [id]);
+        const livestockResult = await client.query('SELECT farm_id FROM animals WHERE id = $1', [id]);
         const livestock = livestockResult.rows[0];
         const hasAccess = await checkFarmAccess(livestock.farm_id, userId);
         if (!hasAccess) {
@@ -510,7 +511,7 @@ router.get('/:id/analytics', async (req, res) => {
         }
 
         // Get livestock analytics
-        const livestockDataResult = await client.query('SELECT * FROM livestock WHERE id = $1', [id]);
+        const livestockDataResult = await client.query('SELECT a.*, lg.species FROM animals a LEFT JOIN livestock_groups lg ON a.group_id = lg.id WHERE a.id = $1', [id]);
         const livestockData = livestockDataResult.rows[0];
         
         // Calculate age
@@ -521,13 +522,15 @@ router.get('/:id/analytics', async (req, res) => {
 
         const analytics = {
             livestockId: id,
-            status: livestockData.health_status,
-            category: livestockData.category,
+            species: livestockData.species,
             breed: livestockData.breed,
             ageInDays: Math.max(0, ageInDays),
             ageInYears: Math.round(ageInYears * 100) / 100,
-            currentWeight: livestockData.weight || 0,
-            birthDate: livestockData.birth_date
+            birthDate: livestockData.birth_date,
+            tagNumber: livestockData.tag_number,
+            sex: livestockData.sex,
+            sireTag: livestockData.sire_tag,
+            damTag: livestockData.dam_tag
         };
 
         res.json({
@@ -549,24 +552,22 @@ router.get('/stats/overview', async (req, res) => {
         const userId = req.user?.id || 1;
 
         // Get livestock statistics
-        const [totalResult, byTypeResult, byStatusResult, byBreedResult, totalWeightResult] = await Promise.all([
-            client.query('SELECT COUNT(*) as count FROM livestock l JOIN farms f ON l.farm_id = f.id WHERE f.user_id = $1', [userId]),
-            client.query('SELECT category as type, COUNT(*) as count FROM livestock l JOIN farms f ON l.farm_id = f.id WHERE f.user_id = $1 GROUP BY category', [userId]),
-            client.query('SELECT health_status as status, COUNT(*) as count FROM livestock l JOIN farms f ON l.farm_id = f.id WHERE f.user_id = $1 GROUP BY health_status', [userId]),
-            client.query('SELECT breed, COUNT(*) as count FROM livestock l JOIN farms f ON l.farm_id = f.id WHERE f.user_id = $1 GROUP BY breed', [userId]),
-            client.query('SELECT SUM(weight) as total FROM livestock l JOIN farms f ON l.farm_id = f.id WHERE f.user_id = $1 AND weight IS NOT NULL', [userId])
+        const [totalResult, bySpeciesResult, byBreedResult, bySexResult] = await Promise.all([
+            client.query('SELECT COUNT(*) as count FROM animals a JOIN farms f ON a.farm_id = f.id WHERE f.user_id = $1', [userId]),
+            client.query('SELECT lg.species, COUNT(*) as count FROM animals a JOIN farms f ON a.farm_id = f.id LEFT JOIN livestock_groups lg ON a.group_id = lg.id WHERE f.user_id = $1 AND lg.species IS NOT NULL GROUP BY lg.species', [userId]),
+            client.query('SELECT breed, COUNT(*) as count FROM animals a JOIN farms f ON a.farm_id = f.id WHERE f.user_id = $1 AND breed IS NOT NULL GROUP BY breed', [userId]),
+            client.query('SELECT sex, COUNT(*) as count FROM animals a JOIN farms f ON a.farm_id = f.id WHERE f.user_id = $1 GROUP BY sex', [userId])
         ]);
 
         const stats = {
             overview: {
                 total: parseInt(totalResult.rows[0]?.count || 0),
-                totalWeight: parseFloat(totalWeightResult.rows[0]?.total || 0),
-                averageWeight: totalResult.rows[0]?.count > 0 && totalWeightResult.rows[0]?.total ? 
-                    (parseFloat(totalWeightResult.rows[0].total) / parseInt(totalResult.rows[0].count)) : 0
+                totalSpecies: bySpeciesResult.rows.length,
+                totalBreeds: byBreedResult.rows.length
             },
-            byType: byTypeResult.rows || [],
-            byStatus: byStatusResult.rows || [],
-            byBreed: byBreedResult.rows || []
+            bySpecies: bySpeciesResult.rows || [],
+            byBreed: byBreedResult.rows || [],
+            bySex: bySexResult.rows || []
         };
 
         res.json({
