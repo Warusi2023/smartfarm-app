@@ -4,6 +4,7 @@ const crypto = require('crypto');
 // ✅ Use the instance exported from ./email-config (no "new" anywhere)
 const emailService = require('./email-config');
 const livestockRoutes = require('./routes/livestock');
+const cropsRoutes = require('./routes/crops');
 
 const app = express();
 
@@ -522,6 +523,9 @@ app.get('/api/test', (req, res) => {
 
 // Livestock endpoints - Full API implementation
 app.use('/api/livestock', livestockRoutes);
+
+// Crops endpoints - Full API implementation
+app.use('/api/crops', cropsRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {
