@@ -13760,13 +13760,8 @@ INVENTORY SUMMARY:
             }
         }
 
-        function addNewLivestock() {
-            if (typeof showLivestockManagement === 'function') {
-                showLivestockManagement();
-            } else {
-                alert('Livestock management will be available soon!');
-            }
-        }
+        // Note: addNewLivestock() function is defined earlier in the file (around line 8150)
+        // Removed duplicate function here to prevent override
 
         function createTask() {
             if (typeof showTasks === 'function') {
