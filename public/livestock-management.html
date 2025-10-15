@@ -1779,26 +1779,37 @@
         }
 
         async function saveNewLivestock() {
+            // Get all form values
             const animalSpecies = document.getElementById('animalSpecies').value;
             const animalBreed = document.getElementById('animalBreed').value;
             const animalTag = document.getElementById('animalTag').value;
             const animalSex = document.getElementById('animalSex').value;
             const birthDate = document.getElementById('birthDate').value;
-            const animalWeight = parseFloat(document.getElementById('animalWeight').value);
+            const animalWeight = document.getElementById('animalWeight').value ? parseFloat(document.getElementById('animalWeight').value) : null;
+            const productionPurpose = document.getElementById('productionPurpose').value;
+            const lifecycleStage = document.getElementById('lifecycleStage').value;
             const animalLocation = document.getElementById('animalLocation').value;
-            const animalValue = parseFloat(document.getElementById('animalValue').value) || 0;
+            const animalValue = document.getElementById('animalValue').value ? parseFloat(document.getElementById('animalValue').value) : null;
             const sireTag = document.getElementById('sireTag').value;
             const damTag = document.getElementById('damTag').value;
+            const breedingStatus = document.getElementById('breedingStatus').value;
+            const firstCalvingDate = document.getElementById('firstCalvingDate').value;
             const healthNotes = document.getElementById('healthNotes').value;
 
+            // Auto-calculate lifecycle stage if not specified
+            let calculatedLifecycle = lifecycleStage;
+            if (!lifecycleStage && birthDate) {
+                calculatedLifecycle = calculateLifecycleStage(animalSpecies, birthDate, animalSex);
+            }
+
             // Validate required fields
-            if (!animalSpecies || !animalBreed || !animalTag || !animalSex || !birthDate) {
-                showAlert('Please fill in all required fields', 'error');
+            if (!animalSpecies || !animalBreed || !animalTag || !animalSex || !birthDate || !animalLocation) {
+                showAlert('Please fill in all required fields (Species, Breed, Tag/ID, Sex, Birth Date, Location)', 'error');
                 return;
             }
 
             try {
-                console.log('🐄 Saving livestock...');
+                console.log('🐄 Saving livestock with comprehensive data...');
                 
                 // Check if API is available
                 if (window.SmartFarmAPI && window.SmartFarmAPI.isBackendAvailable) {
@@ -1813,15 +1824,25 @@
 
                     const farmId = farmsResponse.data[0].id;
 
-                    // Prepare data in correct API format
+                    // Prepare comprehensive data in correct API format
                     const livestockData = {
                         name: `${animalBreed} ${animalTag}`,
                         type: animalSpecies,
                         farmId: farmId,
                         breed: animalBreed,
                         birthDate: birthDate,
-                        weight: animalWeight || null,
-                        description: healthNotes || `${animalSex} ${animalSpecies} - Tag: ${animalTag}`
+                        weight: animalWeight,
+                        description: `${animalSex} ${animalSpecies} - ${productionPurpose} - Tag: ${animalTag}${healthNotes ? ' - ' + healthNotes : ''}`,
+                        tag: animalTag,
+                        sex: animalSex,
+                        purpose: productionPurpose,
+                        location: animalLocation,
+                        lifecycle: calculatedLifecycle,
+                        value: animalValue,
+                        sireTag: sireTag,
+                        damTag: damTag,
+                        breedingStatus: breedingStatus,
+                        firstCalvingDate: firstCalvingDate
                     };
 
                     console.log('Sending to API:', livestockData);
@@ -1858,12 +1879,17 @@
                         sex: animalSex,
                         birthDate: birthDate,
                         weight: animalWeight,
+                        productionPurpose: productionPurpose,
+                        lifecycle: calculatedLifecycle,
                         location: animalLocation,
                         value: animalValue,
                         healthStatus: 'healthy',
                         sireTag: sireTag,
                         damTag: damTag,
-                        healthNotes: healthNotes
+                        breedingStatus: breedingStatus,
+                        firstCalvingDate: firstCalvingDate,
+                        healthNotes: healthNotes,
+                        lastUpdated: new Date().toISOString()
                     };
                     
                     livestock.push(newAnimal);
@@ -1897,12 +1923,17 @@
                         sex: animalSex,
                         birthDate: birthDate,
                         weight: animalWeight,
+                        productionPurpose: productionPurpose,
+                        lifecycle: calculatedLifecycle,
                         location: animalLocation,
                         value: animalValue,
                         healthStatus: 'healthy',
                         sireTag: sireTag,
                         damTag: damTag,
-                        healthNotes: healthNotes
+                        breedingStatus: breedingStatus,
+                        firstCalvingDate: firstCalvingDate,
+                        healthNotes: healthNotes,
+                        lastUpdated: new Date().toISOString()
                     };
                     
                     livestock.push(newAnimal);
@@ -1921,6 +1952,46 @@
                     showAlert('Failed to save animal: ' + error.message, 'error');
                 }
             }
+        }
+
+        // Calculate lifecycle stage based on species, birth date, and sex
+        function calculateLifecycleStage(species, birthDate, sex) {
+            const birth = new Date(birthDate);
+            const now = new Date();
+            const ageInMonths = Math.floor((now - birth) / (1000 * 60 * 60 * 24 * 30.44)); // Average days per month
+            
+            const speciesLower = species.toLowerCase();
+            
+            if (speciesLower === 'cattle') {
+                if (ageInMonths < 12) return 'calf';
+                if (ageInMonths < 24) return sex === 'female' ? 'heifer' : 'bull';
+                return sex === 'female' ? 'cow' : 'bull';
+            }
+            
+            if (speciesLower === 'pigs') {
+                if (ageInMonths < 6) return 'piglet';
+                if (ageInMonths < 12) return sex === 'female' ? 'gilt' : 'boar';
+                return sex === 'female' ? 'sow' : 'boar';
+            }
+            
+            if (speciesLower === 'chickens') {
+                if (ageInMonths < 4) return 'chick';
+                if (ageInMonths < 6) return sex === 'female' ? 'pullet' : 'cockerel';
+                return sex === 'female' ? 'hen' : 'rooster';
+            }
+            
+            if (speciesLower === 'sheep') {
+                if (ageInMonths < 12) return 'lamb';
+                return sex === 'female' ? 'ewe' : 'ram';
+            }
+            
+            if (speciesLower === 'goats') {
+                if (ageInMonths < 12) return 'kid';
+                return sex === 'female' ? 'doe' : 'buck';
+            }
+            
+            // Default fallback
+            return ageInMonths < 12 ? 'juvenile' : 'adult';
         }
 
         function editLivestock(id) {
