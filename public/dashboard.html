@@ -8161,7 +8161,7 @@
                             <h5 class="modal-title">
                                 <i class="fas fa-plus me-2"></i>Add New Livestock
                             </h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" onclick="closeLivestockModal()"></button>
                         </div>
                         <div class="modal-body">
                             <form id="addLivestockForm">
@@ -8264,7 +8264,7 @@
                             </form>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="closeLivestockModal()">Cancel</button>
                             <button type="button" class="btn btn-success" onclick="saveNewLivestock()">
                                 <i class="fas fa-save me-2"></i>Add Livestock
                             </button>
@@ -8274,19 +8274,57 @@
             `;
             
             document.body.appendChild(modal);
+            
+            // Initialize Bootstrap modal with proper options
             const bsModal = new bootstrap.Modal(modal, {
                 focus: true,
-                keyboard: true
+                keyboard: true,
+                backdrop: true
             });
             
-            // Use ModalAccessibility helper for proper focus management
-            // The ModalAccessibility class will handle all event listeners automatically
-            
+            // Handle modal dismissal properly
             modal.addEventListener('hidden.bs.modal', () => {
-                document.body.removeChild(modal);
+                // Clean up the modal after it's hidden
+                if (document.body.contains(modal)) {
+                    document.body.removeChild(modal);
+                }
             });
             
+            // Ensure close button and cancel button work
+            const closeButton = modal.querySelector('.btn-close');
+            const cancelButton = modal.querySelector('button[data-bs-dismiss="modal"]');
+            
+            if (closeButton) {
+                closeButton.addEventListener('click', () => {
+                    bsModal.hide();
+                });
+            }
+            
+            if (cancelButton) {
+                cancelButton.addEventListener('click', () => {
+                    bsModal.hide();
+                });
+            }
+            
+            // Show the modal
             bsModal.show();
+        }
+
+        // Fallback function to close modal if Bootstrap fails
+        function closeLivestockModal() {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (modal.style.display !== 'none') {
+                    modal.style.display = 'none';
+                    modal.classList.remove('show');
+                    document.body.classList.remove('modal-open');
+                    // Remove backdrop
+                    const backdrop = document.querySelector('.modal-backdrop');
+                    if (backdrop) {
+                        backdrop.remove();
+                    }
+                }
+            });
         }
 
         // Calculate lifecycle stage based on species, birth date, and sex
