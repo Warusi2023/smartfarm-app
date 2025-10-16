@@ -8148,166 +8148,14 @@
         }
 
         function addNewLivestock() {
-            // Create comprehensive add livestock modal
-            const modal = document.createElement('div');
-            modal.className = 'modal fade';
-            modal.setAttribute('aria-modal', 'true');
-            modal.setAttribute('role', 'dialog');
-            modal.setAttribute('tabindex', '-1');
-            modal.innerHTML = `
-                <div class="modal-dialog modal-lg">
-                    <div class="modal-content">
-                        <div class="modal-header bg-success text-white">
-                            <h5 class="modal-title">
-                                <i class="fas fa-plus me-2"></i>Add New Livestock
-                            </h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" onclick="closeLivestockModal()"></button>
-                        </div>
-                        <div class="modal-body">
-                            <form id="addLivestockForm">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label for="livestockSpecies" class="form-label">Species</label>
-                                            <select class="form-select" id="livestockSpecies" required>
-                                                <option value="">Select Species</option>
-                                                <option value="Cattle">Cattle</option>
-                                                <option value="Pigs">Pigs</option>
-                                                <option value="Chickens">Chickens</option>
-                                                <option value="Sheep">Sheep</option>
-                                                <option value="Goats">Goats</option>
-                                                <option value="Horses">Horses</option>
-                                                <option value="Other">Other</option>
-                                            </select>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="livestockTag" class="form-label">Tag/ID Number</label>
-                                            <input type="text" class="form-control" id="livestockTag" required placeholder="Enter tag/ID number">
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="livestockBirthDate" class="form-label">Birth Date</label>
-                                            <input type="date" class="form-control" id="livestockBirthDate" required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="livestockPurpose" class="form-label">Production Purpose</label>
-                                            <select class="form-select" id="livestockPurpose" required>
-                                                <option value="">Select Purpose</option>
-                                                <option value="Dairy">Dairy</option>
-                                                <option value="Beef">Beef</option>
-                                                <option value="Breeding">Breeding</option>
-                                                <option value="Meat">Meat</option>
-                                                <option value="Eggs">Eggs</option>
-                                                <option value="Wool">Wool</option>
-                                                <option value="Dual Purpose">Dual Purpose</option>
-                                                <option value="Pets">Pets</option>
-                                            </select>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="livestockLocation" class="form-label">Location/Pen</label>
-                                            <input type="text" class="form-control" id="livestockLocation" required placeholder="Enter location or pen number">
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="livestockSireTag" class="form-label">Sire Tag (if known)</label>
-                                            <input type="text" class="form-control" id="livestockSireTag" placeholder="Enter sire tag">
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="livestockHealthNotes" class="form-label">Health Notes</label>
-                                            <textarea class="form-control" id="livestockHealthNotes" rows="3" placeholder="Any health observations or notes..."></textarea>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label for="livestockBreed" class="form-label">Breed</label>
-                                            <input type="text" class="form-control" id="livestockBreed" required placeholder="Type to search breeds...">
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="livestockSex" class="form-label">Sex</label>
-                                            <select class="form-select" id="livestockSex" required>
-                                                <option value="">Select Sex</option>
-                                                <option value="Male">Male</option>
-                                                <option value="Female">Female</option>
-                                            </select>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="livestockWeight" class="form-label">Current Weight (kg)</label>
-                                            <input type="number" class="form-control" id="livestockWeight" step="0.1" placeholder="Enter weight in kg">
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="livestockLifecycle" class="form-label">Lifecycle Stage</label>
-                                            <select class="form-select" id="livestockLifecycle">
-                                                <option value="">Auto-calculated</option>
-                                                <option value="Calf">Calf</option>
-                                                <option value="Heifer">Heifer</option>
-                                                <option value="Cow">Cow</option>
-                                                <option value="Bull">Bull</option>
-                                                <option value="Steer">Steer</option>
-                                                <option value="Piglet">Piglet</option>
-                                                <option value="Gilt">Gilt</option>
-                                                <option value="Sow">Sow</option>
-                                                <option value="Boar">Boar</option>
-                                                <option value="Chick">Chick</option>
-                                                <option value="Pullet">Pullet</option>
-                                                <option value="Hen">Hen</option>
-                                                <option value="Rooster">Rooster</option>
-                                            </select>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="livestockValue" class="form-label">Estimated Value (FJD)</label>
-                                            <input type="number" class="form-control" id="livestockValue" step="0.01" placeholder="Enter estimated value">
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="livestockDamTag" class="form-label">Dam Tag (if known)</label>
-                                            <input type="text" class="form-control" id="livestockDamTag" placeholder="Enter dam tag">
-                                        </div>
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="closeLivestockModal()">Cancel</button>
-                            <button type="button" class="btn btn-success" onclick="saveNewLivestock()">
-                                <i class="fas fa-save me-2"></i>Add Livestock
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            document.body.appendChild(modal);
-            
-            // Initialize Bootstrap modal with proper options
-            const bsModal = new bootstrap.Modal(modal, {
-                focus: true,
-                keyboard: true,
-                backdrop: true
-            });
-            
-            // Handle modal dismissal properly
-            modal.addEventListener('hidden.bs.modal', () => {
-                // Clean up the modal after it's hidden
-                if (document.body.contains(modal)) {
-                    document.body.removeChild(modal);
-                }
-            });
-            
-            // Ensure close button and cancel button work
-            const closeButton = modal.querySelector('.btn-close');
-            const cancelButton = modal.querySelector('button[data-bs-dismiss="modal"]');
-            
-            if (closeButton) {
-                closeButton.addEventListener('click', () => {
-                    bsModal.hide();
-                });
+            // Show the static modal using Bootstrap's standard method
+            const modal = document.getElementById('dashboardAddLivestockModal');
+            if (modal) {
+                const bsModal = new bootstrap.Modal(modal);
+                bsModal.show();
+            } else {
+                console.error('Dashboard add livestock modal not found');
             }
-            
-            if (cancelButton) {
-                cancelButton.addEventListener('click', () => {
-                    bsModal.hide();
-                });
-            }
-            
-            // Show the modal
-            bsModal.show();
         }
 
         // Fallback function to close modal if Bootstrap fails
@@ -8373,23 +8221,23 @@
             return ageInMonths < 12 ? 'Juvenile' : 'Adult';
         }
 
-        async function saveNewLivestock() {
-            console.log('🐄 saveNewLivestock called');
+        async function saveDashboardNewLivestock() {
+            console.log('🐄 saveDashboardNewLivestock called');
             
-            // Get form values
-            const species = document.getElementById('livestockSpecies').value;
-            const tag = document.getElementById('livestockTag').value;
-            const birthDate = document.getElementById('livestockBirthDate').value;
-            const purpose = document.getElementById('livestockPurpose').value;
-            const location = document.getElementById('livestockLocation').value;
-            const sireTag = document.getElementById('livestockSireTag').value;
-            const healthNotes = document.getElementById('livestockHealthNotes').value;
-            const breed = document.getElementById('livestockBreed').value;
-            const sex = document.getElementById('livestockSex').value;
-            const weight = document.getElementById('livestockWeight').value;
-            const lifecycle = document.getElementById('livestockLifecycle').value;
-            const value = document.getElementById('livestockValue').value;
-            const damTag = document.getElementById('livestockDamTag').value;
+            // Get form values from the static modal
+            const species = document.getElementById('dashboardLivestockSpecies').value;
+            const tag = document.getElementById('dashboardLivestockTag').value;
+            const birthDate = document.getElementById('dashboardLivestockBirthDate').value;
+            const purpose = document.getElementById('dashboardLivestockPurpose').value;
+            const location = document.getElementById('dashboardLivestockLocation').value;
+            const sireTag = document.getElementById('dashboardLivestockSireTag').value;
+            const healthNotes = document.getElementById('dashboardLivestockHealthNotes').value;
+            const breed = document.getElementById('dashboardLivestockBreed').value;
+            const sex = document.getElementById('dashboardLivestockSex').value;
+            const weight = document.getElementById('dashboardLivestockWeight').value;
+            const lifecycle = document.getElementById('dashboardLivestockLifecycle').value;
+            const value = document.getElementById('dashboardLivestockValue').value;
+            const damTag = document.getElementById('dashboardLivestockDamTag').value;
 
             // Auto-calculate lifecycle stage if not specified
             let calculatedLifecycle = lifecycle;
@@ -8422,7 +8270,7 @@
             console.log('✅ All validation checks passed');
 
             // Show loading state
-            const submitButton = document.querySelector('button[onclick="saveNewLivestock()"]');
+            const submitButton = document.querySelector('button[onclick="saveDashboardNewLivestock()"]');
             const originalText = submitButton.innerHTML;
             submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Adding...';
             submitButton.disabled = true;
@@ -8440,10 +8288,6 @@
                     }
 
                     const farmId = farmsResponse.data[0].id;
-                    const today = new Date().toISOString().split('T')[0];
-
-                    // Process ear tags
-                    const earTags = earTagsText ? earTagsText.split(',').map(tag => tag.trim()).filter(tag => tag) : [];
 
                     const livestockData = {
                         name: `${breed} ${tag}`,
@@ -8512,19 +8356,25 @@
                 }
                 
                 // Clear form
-                document.getElementById('livestockSpecies').value = '';
-                document.getElementById('livestockTag').value = '';
-                document.getElementById('livestockBirthDate').value = '';
-                document.getElementById('livestockPurpose').value = '';
-                document.getElementById('livestockLocation').value = '';
-                document.getElementById('livestockSireTag').value = '';
-                document.getElementById('livestockHealthNotes').value = '';
-                document.getElementById('livestockBreed').value = '';
-                document.getElementById('livestockSex').value = '';
-                document.getElementById('livestockWeight').value = '';
-                document.getElementById('livestockLifecycle').value = '';
-                document.getElementById('livestockValue').value = '';
-                document.getElementById('livestockDamTag').value = '';
+                document.getElementById('dashboardLivestockSpecies').value = '';
+                document.getElementById('dashboardLivestockTag').value = '';
+                document.getElementById('dashboardLivestockBirthDate').value = '';
+                document.getElementById('dashboardLivestockPurpose').value = '';
+                document.getElementById('dashboardLivestockLocation').value = '';
+                document.getElementById('dashboardLivestockSireTag').value = '';
+                document.getElementById('dashboardLivestockHealthNotes').value = '';
+                document.getElementById('dashboardLivestockBreed').value = '';
+                document.getElementById('dashboardLivestockSex').value = '';
+                document.getElementById('dashboardLivestockWeight').value = '';
+                document.getElementById('dashboardLivestockLifecycle').value = '';
+                document.getElementById('dashboardLivestockValue').value = '';
+                document.getElementById('dashboardLivestockDamTag').value = '';
+
+                // Close modal using Bootstrap
+                const modal = bootstrap.Modal.getInstance(document.getElementById('dashboardAddLivestockModal'));
+                if (modal) {
+                    modal.hide();
+                }
 
             } catch (error) {
                 console.error('Error adding livestock:', error);
@@ -8533,14 +8383,13 @@
                 // Restore button state
                 submitButton.innerHTML = originalText;
                 submitButton.disabled = false;
-
-                // Close modal
-                const modal = document.querySelector('.modal');
-                if (modal) {
-                    const bsModal = bootstrap.Modal.getInstance(modal);
-                    bsModal.hide();
-                }
             }
+        }
+
+        // Keep the old function for backwards compatibility
+        async function saveNewLivestock() {
+            // Redirect to the new function
+            return await saveDashboardNewLivestock();
         }
 
         function editLivestock(id) {
@@ -15935,6 +15784,126 @@ INVENTORY SUMMARY:
         window.exportPetsDatabase = exportPetsDatabase;
         window.showNotification = showNotification;
     </script>
+
+    <!-- Dashboard Add Livestock Modal -->
+    <div class="modal fade" id="dashboardAddLivestockModal" tabindex="-1" aria-labelledby="dashboardAddLivestockModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="dashboardAddLivestockModalLabel">
+                        <i class="fas fa-plus me-2"></i>Add New Livestock
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="dashboardAddLivestockForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="dashboardLivestockSpecies" class="form-label">Species</label>
+                                    <select class="form-select" id="dashboardLivestockSpecies" required>
+                                        <option value="">Select Species</option>
+                                        <option value="Cattle">Cattle</option>
+                                        <option value="Pigs">Pigs</option>
+                                        <option value="Chickens">Chickens</option>
+                                        <option value="Sheep">Sheep</option>
+                                        <option value="Goats">Goats</option>
+                                        <option value="Horses">Horses</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="dashboardLivestockTag" class="form-label">Tag/ID Number</label>
+                                    <input type="text" class="form-control" id="dashboardLivestockTag" required placeholder="Enter tag/ID number">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="dashboardLivestockBirthDate" class="form-label">Birth Date</label>
+                                    <input type="date" class="form-control" id="dashboardLivestockBirthDate" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="dashboardLivestockPurpose" class="form-label">Production Purpose</label>
+                                    <select class="form-select" id="dashboardLivestockPurpose" required>
+                                        <option value="">Select Purpose</option>
+                                        <option value="Dairy">Dairy</option>
+                                        <option value="Beef">Beef</option>
+                                        <option value="Breeding">Breeding</option>
+                                        <option value="Meat">Meat</option>
+                                        <option value="Eggs">Eggs</option>
+                                        <option value="Wool">Wool</option>
+                                        <option value="Dual Purpose">Dual Purpose</option>
+                                        <option value="Pets">Pets</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="dashboardLivestockLocation" class="form-label">Location/Pen</label>
+                                    <input type="text" class="form-control" id="dashboardLivestockLocation" required placeholder="Enter location or pen number">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="dashboardLivestockSireTag" class="form-label">Sire Tag (if known)</label>
+                                    <input type="text" class="form-control" id="dashboardLivestockSireTag" placeholder="Enter sire tag">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="dashboardLivestockHealthNotes" class="form-label">Health Notes</label>
+                                    <textarea class="form-control" id="dashboardLivestockHealthNotes" rows="3" placeholder="Any health observations or notes..."></textarea>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="dashboardLivestockBreed" class="form-label">Breed</label>
+                                    <input type="text" class="form-control" id="dashboardLivestockBreed" required placeholder="Type to search breeds...">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="dashboardLivestockSex" class="form-label">Sex</label>
+                                    <select class="form-select" id="dashboardLivestockSex" required>
+                                        <option value="">Select Sex</option>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="dashboardLivestockWeight" class="form-label">Current Weight (kg)</label>
+                                    <input type="number" class="form-control" id="dashboardLivestockWeight" step="0.1" placeholder="Enter weight in kg">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="dashboardLivestockLifecycle" class="form-label">Lifecycle Stage</label>
+                                    <select class="form-select" id="dashboardLivestockLifecycle">
+                                        <option value="">Auto-calculated</option>
+                                        <option value="Calf">Calf</option>
+                                        <option value="Heifer">Heifer</option>
+                                        <option value="Cow">Cow</option>
+                                        <option value="Bull">Bull</option>
+                                        <option value="Steer">Steer</option>
+                                        <option value="Piglet">Piglet</option>
+                                        <option value="Gilt">Gilt</option>
+                                        <option value="Sow">Sow</option>
+                                        <option value="Boar">Boar</option>
+                                        <option value="Chick">Chick</option>
+                                        <option value="Pullet">Pullet</option>
+                                        <option value="Hen">Hen</option>
+                                        <option value="Rooster">Rooster</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="dashboardLivestockValue" class="form-label">Estimated Value (FJD)</label>
+                                    <input type="number" class="form-control" id="dashboardLivestockValue" step="0.01" placeholder="Enter estimated value">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="dashboardLivestockDamTag" class="form-label">Dam Tag (if known)</label>
+                                    <input type="text" class="form-control" id="dashboardLivestockDamTag" placeholder="Enter dam tag">
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success" onclick="saveDashboardNewLivestock()">
+                        <i class="fas fa-save me-2"></i>Add Livestock
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- SmartFarm Core Scripts (duplicates removed) -->
     <link rel="stylesheet" href="css/utilities.css">
