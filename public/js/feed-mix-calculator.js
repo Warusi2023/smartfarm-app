@@ -296,11 +296,15 @@ class FeedMixCalculator {
 
     getNutritionalRequirements(species, weight, lifecycle, purpose) {
         const speciesReqs = this.nutritionalRequirements[species.toLowerCase()];
-        if (!speciesReqs) return null;
+        if (!speciesReqs) {
+            console.error(`Species not found: ${species}`);
+            return null;
+        }
 
         // Determine the correct category based on lifecycle and purpose
-        let category = lifecycle;
+        let category = lifecycle ? lifecycle.toLowerCase() : null;
         
+        // Special handling for cattle with purpose
         if (species.toLowerCase() === 'cattle') {
             if (purpose && purpose.toLowerCase().includes('dairy')) {
                 category = 'cow_dairy';
@@ -309,10 +313,49 @@ class FeedMixCalculator {
             }
         }
 
-        return speciesReqs[category] || speciesReqs[lifecycle] || null;
+        // Try to find the requirements
+        let requirements = null;
+        
+        if (category) {
+            requirements = speciesReqs[category];
+        }
+        
+        // Fallback: try original lifecycle value
+        if (!requirements && lifecycle) {
+            requirements = speciesReqs[lifecycle.toLowerCase()];
+        }
+        
+        // Fallback: try to find by weight range
+        if (!requirements && weight) {
+            for (const [stage, reqs] of Object.entries(speciesReqs)) {
+                if (reqs.weightRange && 
+                    weight >= reqs.weightRange[0] && 
+                    weight <= reqs.weightRange[1]) {
+                    requirements = reqs;
+                    console.log(`Found requirements by weight range: ${stage}`);
+                    break;
+                }
+            }
+        }
+        
+        // Fallback: use first available stage as default
+        if (!requirements) {
+            const firstStage = Object.keys(speciesReqs)[0];
+            requirements = speciesReqs[firstStage];
+            console.warn(`Using default stage (${firstStage}) for ${species}`);
+        }
+
+        return requirements;
     }
 
     calculateDailyIntake(weight, intakeRange) {
+        // Validate inputs
+        if (!intakeRange || typeof intakeRange.min === 'undefined' || typeof intakeRange.max === 'undefined') {
+            console.error('Invalid intakeRange:', intakeRange);
+            // Provide default values
+            intakeRange = { min: 2.0, max: 3.0 };
+        }
+        
         // Calculate daily intake as percentage of body weight
         const minIntake = (weight * intakeRange.min) / 100;
         const maxIntake = (weight * intakeRange.max) / 100;
