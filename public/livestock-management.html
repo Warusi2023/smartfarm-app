@@ -486,8 +486,11 @@
                     <p class="mb-0 mt-2">Manage your livestock, track health, and monitor breeding</p>
                 </div>
                 <div class="col-md-4 text-end">
-                    <button class="btn btn-light btn-lg" data-bs-toggle="modal" data-bs-target="#addLivestockModal">
+                    <button class="btn btn-light btn-lg me-2" data-bs-toggle="modal" data-bs-target="#addLivestockModal">
                         <i class="fas fa-plus me-2"></i>Add New Animal
+                    </button>
+                    <button class="btn btn-success btn-lg" onclick="showFeedMixCalculator()">
+                        <i class="fas fa-calculator me-2"></i>Feed Mix Calculator
                     </button>
                 </div>
             </div>
@@ -1021,6 +1024,145 @@
         </div>
     </div>
 
+    <!-- Feed Mix Calculator Modal -->
+    <div class="modal fade modal-custom" id="feedMixCalculatorModal" tabindex="-1" aria-labelledby="feedMixCalculatorModalLabel" aria-modal="true" role="dialog">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="feedMixCalculatorModalLabel">
+                        <i class="fas fa-calculator me-2"></i>Feed Mix Calculator
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <!-- Animal Selection -->
+                        <div class="col-md-4">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h6><i class="fas fa-paw me-2"></i>Animal Information</h6>
+                                </div>
+                                <div class="card-body">
+                                    <form id="feedMixForm">
+                                        <div class="mb-3">
+                                            <label for="feedMixSpecies" class="form-label">Species</label>
+                                            <select class="form-select" id="feedMixSpecies" required onchange="updateFeedMixLifecycleOptions()">
+                                                <option value="">Select Species</option>
+                                                <option value="cattle">Cattle</option>
+                                                <option value="pigs">Pigs</option>
+                                                <option value="chickens">Chickens</option>
+                                                <option value="sheep">Sheep</option>
+                                                <option value="goats">Goats</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="feedMixLifecycle" class="form-label">Lifecycle Stage</label>
+                                            <select class="form-select" id="feedMixLifecycle" required>
+                                                <option value="">Select Lifecycle Stage</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="feedMixWeight" class="form-label">Current Weight (kg)</label>
+                                            <input type="number" class="form-control" id="feedMixWeight" step="0.1" required placeholder="Enter weight">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="feedMixAge" class="form-label">Age (months)</label>
+                                            <input type="number" class="form-control" id="feedMixAge" step="0.1" placeholder="Enter age (optional)">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="feedMixPurpose" class="form-label">Production Purpose</label>
+                                            <select class="form-select" id="feedMixPurpose">
+                                                <option value="">Select Purpose (Optional)</option>
+                                                <option value="dairy">Dairy</option>
+                                                <option value="beef">Beef</option>
+                                                <option value="breeding">Breeding</option>
+                                                <option value="meat">Meat</option>
+                                                <option value="eggs">Eggs</option>
+                                                <option value="wool">Wool</option>
+                                            </select>
+                                        </div>
+                                        <button type="button" class="btn btn-success w-100" onclick="calculateFeedMix()">
+                                            <i class="fas fa-calculator me-2"></i>Calculate Feed Mix
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Results -->
+                        <div class="col-md-8">
+                            <div id="feedMixResults" style="display: none;">
+                                <!-- Nutritional Requirements -->
+                                <div class="card mb-3">
+                                    <div class="card-header">
+                                        <h6><i class="fas fa-chart-bar me-2"></i>Nutritional Requirements</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row" id="nutritionalRequirements">
+                                            <!-- Requirements will be populated here -->
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Feed Mix Composition -->
+                                <div class="card mb-3">
+                                    <div class="card-header">
+                                        <h6><i class="fas fa-seedling me-2"></i>Recommended Feed Mix</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <h6>Composition (%)</h6>
+                                                <div id="feedMixComposition">
+                                                    <!-- Feed mix will be populated here -->
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <h6>Daily Intake & Costs</h6>
+                                                <div id="feedMixCosts">
+                                                    <!-- Costs will be populated here -->
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Recommendations -->
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6><i class="fas fa-lightbulb me-2"></i>Recommendations</h6>
+                                    </div>
+                                    <div class="card-body" id="feedMixRecommendations">
+                                        <!-- Recommendations will be populated here -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Instructions -->
+                            <div id="feedMixInstructions" class="text-center text-muted">
+                                <i class="fas fa-info-circle fa-3x mb-3"></i>
+                                <h5>Feed Mix Calculator</h5>
+                                <p>Enter your animal's information to get personalized feed mix recommendations based on:</p>
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-weight me-2"></i>Weight and age</li>
+                                    <li><i class="fas fa-leaf me-2"></i>Nutritional requirements</li>
+                                    <li><i class="fas fa-chart-line me-2"></i>Production purpose</li>
+                                    <li><i class="fas fa-dollar-sign me-2"></i>Cost optimization</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-success" onclick="printFeedMixReport()">
+                        <i class="fas fa-print me-2"></i>Print Report
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Include AI advisory database -->
@@ -1028,6 +1170,8 @@
     <!-- Include config -->
     <script src="js/config.js"></script>
     <script src="js/api-service.js"></script>
+    <!-- Include Feed Mix Calculator -->
+    <script src="js/feed-mix-calculator.js"></script>
     <!-- Include modal accessibility helper -->
     <script src="js/modal-accessibility.js"></script>
     
@@ -2335,6 +2479,234 @@
             const userName = user.split('@')[0];
             document.getElementById('userName').textContent = userName;
             document.getElementById('userAvatar').textContent = userName.charAt(0).toUpperCase();
+        }
+
+        // Feed Mix Calculator Functions
+        function showFeedMixCalculator() {
+            const modal = new bootstrap.Modal(document.getElementById('feedMixCalculatorModal'));
+            modal.show();
+        }
+
+        function updateFeedMixLifecycleOptions() {
+            const species = document.getElementById('feedMixSpecies').value;
+            const lifecycleSelect = document.getElementById('feedMixLifecycle');
+            
+            // Clear existing options
+            lifecycleSelect.innerHTML = '<option value="">Select Lifecycle Stage</option>';
+            
+            if (species && window.FeedMixCalculator) {
+                const stages = window.FeedMixCalculator.getLifecycleStages(species);
+                stages.forEach(stage => {
+                    const option = document.createElement('option');
+                    option.value = stage.value;
+                    option.textContent = stage.label;
+                    lifecycleSelect.appendChild(option);
+                });
+            }
+        }
+
+        function calculateFeedMix() {
+            try {
+                // Get form values
+                const species = document.getElementById('feedMixSpecies').value;
+                const lifecycle = document.getElementById('feedMixLifecycle').value;
+                const weight = parseFloat(document.getElementById('feedMixWeight').value);
+                const age = document.getElementById('feedMixAge').value ? parseFloat(document.getElementById('feedMixAge').value) : null;
+                const purpose = document.getElementById('feedMixPurpose').value;
+
+                // Validate required fields
+                if (!species || !lifecycle || !weight) {
+                    showAlert('Please fill in Species, Lifecycle Stage, and Weight', 'error');
+                    return;
+                }
+
+                // Prepare animal data
+                const animalData = {
+                    species: species,
+                    weight: weight,
+                    age: age,
+                    lifecycle: lifecycle,
+                    purpose: purpose,
+                    productionStage: purpose
+                };
+
+                // Calculate feed mix
+                const result = window.FeedMixCalculator.calculateFeedMix(animalData);
+                
+                // Display results
+                displayFeedMixResults(result);
+                
+                // Show results section
+                document.getElementById('feedMixResults').style.display = 'block';
+                document.getElementById('feedMixInstructions').style.display = 'none';
+                
+                showAlert('Feed mix calculated successfully!', 'success');
+                
+            } catch (error) {
+                console.error('Error calculating feed mix:', error);
+                showAlert('Error calculating feed mix: ' + error.message, 'error');
+            }
+        }
+
+        function displayFeedMixResults(result) {
+            // Display nutritional requirements
+            const requirementsDiv = document.getElementById('nutritionalRequirements');
+            requirementsDiv.innerHTML = `
+                <div class="col-md-6">
+                    <div class="mb-2">
+                        <strong>Protein:</strong> ${result.requirements.dailyRequirements.protein.min}-${result.requirements.dailyRequirements.protein.max}%
+                    </div>
+                    <div class="mb-2">
+                        <strong>Energy:</strong> ${result.requirements.dailyRequirements.energy.min}-${result.requirements.dailyRequirements.energy.max} Mcal/kg
+                    </div>
+                    <div class="mb-2">
+                        <strong>Fiber:</strong> ${result.requirements.dailyRequirements.fiber.min}-${result.requirements.dailyRequirements.fiber.max}%
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-2">
+                        <strong>Calcium:</strong> ${result.requirements.dailyRequirements.calcium.min}-${result.requirements.dailyRequirements.calcium.max}%
+                    </div>
+                    <div class="mb-2">
+                        <strong>Phosphorus:</strong> ${result.requirements.dailyRequirements.phosphorus.min}-${result.requirements.dailyRequirements.phosphorus.max}%
+                    </div>
+                    <div class="mb-2">
+                        <strong>Daily Intake:</strong> ${result.requirements.dailyRequirements.dailyIntake.min}-${result.requirements.dailyRequirements.dailyIntake.max}% of body weight
+                    </div>
+                </div>
+            `;
+
+            // Display feed mix composition
+            const compositionDiv = document.getElementById('feedMixComposition');
+            let compositionHTML = '';
+            for (const [ingredient, percentage] of Object.entries(result.feedMix)) {
+                compositionHTML += `
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>${ingredient}</span>
+                        <span class="badge bg-primary">${percentage}%</span>
+                    </div>
+                `;
+            }
+            compositionDiv.innerHTML = compositionHTML;
+
+            // Display costs
+            const costsDiv = document.getElementById('feedMixCosts');
+            costsDiv.innerHTML = `
+                <div class="mb-2">
+                    <strong>Daily Intake:</strong> ${result.dailyIntake.recommended.toFixed(1)} kg
+                </div>
+                <div class="mb-2">
+                    <strong>Cost per kg:</strong> $${result.totalCost.costPerKg.toFixed(2)}
+                </div>
+                <div class="mb-2">
+                    <strong>Daily Cost:</strong> $${result.totalCost.dailyCost.toFixed(2)}
+                </div>
+                <div class="mb-2">
+                    <strong>Monthly Cost:</strong> $${result.totalCost.monthlyCost.toFixed(2)}
+                </div>
+                <div class="mb-2">
+                    <strong>Annual Cost:</strong> $${result.totalCost.annualCost.toFixed(2)}
+                </div>
+            `;
+
+            // Display recommendations
+            const recommendationsDiv = document.getElementById('feedMixRecommendations');
+            let recommendationsHTML = '';
+            result.recommendations.forEach(rec => {
+                const alertClass = rec.type === 'warning' ? 'alert-warning' : 
+                                 rec.type === 'success' ? 'alert-success' : 'alert-info';
+                recommendationsHTML += `
+                    <div class="alert ${alertClass} alert-sm">
+                        <i class="fas fa-${rec.type === 'warning' ? 'exclamation-triangle' : 
+                                           rec.type === 'success' ? 'check-circle' : 'info-circle'} me-2"></i>
+                        ${rec.message}
+                    </div>
+                `;
+            });
+            recommendationsDiv.innerHTML = recommendationsHTML;
+        }
+
+        function printFeedMixReport() {
+            const resultsDiv = document.getElementById('feedMixResults');
+            if (resultsDiv.style.display === 'none') {
+                showAlert('Please calculate a feed mix first', 'warning');
+                return;
+            }
+
+            // Create print window
+            const printWindow = window.open('', '_blank');
+            const animalData = {
+                species: document.getElementById('feedMixSpecies').value,
+                lifecycle: document.getElementById('feedMixLifecycle').value,
+                weight: document.getElementById('feedMixWeight').value,
+                age: document.getElementById('feedMixAge').value || 'N/A',
+                purpose: document.getElementById('feedMixPurpose').value || 'N/A'
+            };
+
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Feed Mix Report - SmartFarm</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 20px; }
+                        .header { text-align: center; margin-bottom: 30px; }
+                        .section { margin-bottom: 25px; }
+                        .section h3 { color: #2e7d32; border-bottom: 2px solid #2e7d32; padding-bottom: 5px; }
+                        .animal-info { background: #f5f5f5; padding: 15px; border-radius: 5px; }
+                        .feed-mix { background: #e8f5e8; padding: 15px; border-radius: 5px; }
+                        .costs { background: #fff3e0; padding: 15px; border-radius: 5px; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                        th { background-color: #f2f2f2; }
+                        @media print { body { margin: 0; } }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>SmartFarm Feed Mix Report</h1>
+                        <p>Generated on: ${new Date().toLocaleDateString()}</p>
+                    </div>
+                    
+                    <div class="section">
+                        <h3>Animal Information</h3>
+                        <div class="animal-info">
+                            <p><strong>Species:</strong> ${animalData.species}</p>
+                            <p><strong>Lifecycle Stage:</strong> ${animalData.lifecycle}</p>
+                            <p><strong>Weight:</strong> ${animalData.weight} kg</p>
+                            <p><strong>Age:</strong> ${animalData.age} months</p>
+                            <p><strong>Production Purpose:</strong> ${animalData.purpose}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="section">
+                        <h3>Feed Mix Composition</h3>
+                        <div class="feed-mix">
+                            ${document.getElementById('feedMixComposition').innerHTML}
+                        </div>
+                    </div>
+                    
+                    <div class="section">
+                        <h3>Cost Analysis</h3>
+                        <div class="costs">
+                            ${document.getElementById('feedMixCosts').innerHTML}
+                        </div>
+                    </div>
+                    
+                    <div class="section">
+                        <h3>Recommendations</h3>
+                        ${document.getElementById('feedMixRecommendations').innerHTML}
+                    </div>
+                    
+                    <div class="section">
+                        <p><em>This report was generated by SmartFarm Feed Mix Calculator. For best results, consult with a veterinarian or animal nutritionist.</em></p>
+                    </div>
+                </body>
+                </html>
+            `);
+            
+            printWindow.document.close();
+            printWindow.print();
         }
     </script>
 </body>

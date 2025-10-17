@@ -1390,6 +1390,9 @@
                             <button class="btn btn-outline-light btn-sm" onclick="addNewLivestock()">
                                 <i class="fas fa-plus me-1"></i>Add Livestock
                             </button>
+                            <button class="btn btn-outline-light btn-sm ms-2" onclick="showDashboardFeedMixCalculator()">
+                                <i class="fas fa-calculator me-1"></i>Feed Mix
+                            </button>
                             <button class="btn btn-outline-light btn-sm" onclick="createTask()">
                                 <i class="fas fa-plus me-1"></i>Create Task
                             </button>
@@ -8390,6 +8393,12 @@
         async function saveNewLivestock() {
             // Redirect to the new function
             return await saveDashboardNewLivestock();
+        }
+
+        // Dashboard Feed Mix Calculator Functions
+        function showDashboardFeedMixCalculator() {
+            // Redirect to livestock management page with feed mix calculator
+            window.location.href = 'livestock-management.html#feedMix';
         }
 
         function editLivestock(id) {
@@ -15905,6 +15914,9 @@ INVENTORY SUMMARY:
         </div>
     </div>
 
+    <!-- Include Feed Mix Calculator -->
+    <script src="js/feed-mix-calculator.js"></script>
+    
     <!-- SmartFarm Core Scripts (duplicates removed) -->
     <link rel="stylesheet" href="css/utilities.css">
     <script src="js/ux-enhancer.js"></script>
