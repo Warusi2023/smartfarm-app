@@ -8154,10 +8154,54 @@
             // Show the static modal using Bootstrap's standard method
             const modal = document.getElementById('dashboardAddLivestockModal');
             if (modal) {
-                const bsModal = new bootstrap.Modal(modal);
+                const bsModal = new bootstrap.Modal(modal, {
+                    backdrop: 'static',  // Prevent closing by clicking backdrop
+                    keyboard: false      // Prevent closing with ESC key
+                });
                 bsModal.show();
+                
+                // Store modal instance for later use
+                window.currentLivestockModal = bsModal;
             } else {
                 console.error('Dashboard add livestock modal not found');
+            }
+        }
+        
+        function confirmCancelLivestockForm() {
+            // Check if form has any data
+            const hasData = 
+                document.getElementById('dashboardLivestockSpecies').value ||
+                document.getElementById('dashboardLivestockTag').value ||
+                document.getElementById('dashboardLivestockBirthDate').value ||
+                document.getElementById('dashboardLivestockBreed').value;
+            
+            if (hasData) {
+                showConfirmDialog(
+                    'Cancel Form',
+                    'Are you sure you want to cancel? All entered data will be lost.',
+                    () => {
+                        // User confirmed - clear form and close modal
+                        document.getElementById('dashboardAddLivestockForm').reset();
+                        document.querySelectorAll('#dashboardAddLivestockForm .is-invalid').forEach(el => {
+                            el.classList.remove('is-invalid');
+                        });
+                        
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('dashboardAddLivestockModal'));
+                        if (modal) {
+                            modal.hide();
+                        }
+                    },
+                    () => {
+                        // User cancelled - do nothing
+                        console.log('User chose to continue editing');
+                    }
+                );
+            } else {
+                // No data entered - just close
+                const modal = bootstrap.Modal.getInstance(document.getElementById('dashboardAddLivestockModal'));
+                if (modal) {
+                    modal.hide();
+                }
             }
         }
 
@@ -8266,9 +8310,24 @@
 
             if (errors.length > 0) {
                 console.error('Validation errors:', errors);
+                
+                // Highlight invalid fields
+                if (!species) document.getElementById('dashboardLivestockSpecies').classList.add('is-invalid');
+                if (!tag || tag.trim() === '') document.getElementById('dashboardLivestockTag').classList.add('is-invalid');
+                if (!birthDate) document.getElementById('dashboardLivestockBirthDate').classList.add('is-invalid');
+                if (!purpose) document.getElementById('dashboardLivestockPurpose').classList.add('is-invalid');
+                if (!location || location.trim() === '') document.getElementById('dashboardLivestockLocation').classList.add('is-invalid');
+                if (!breed || breed.trim() === '') document.getElementById('dashboardLivestockBreed').classList.add('is-invalid');
+                if (!sex) document.getElementById('dashboardLivestockSex').classList.add('is-invalid');
+                
                 showInfoDialog('Validation Error', `Please fix the following:\n• ${errors.join('\n• ')}`, 'OK');
                 return;
             }
+            
+            // Clear any previous validation errors
+            document.querySelectorAll('#dashboardAddLivestockForm .is-invalid').forEach(el => {
+                el.classList.remove('is-invalid');
+            });
             
             console.log('✅ All validation checks passed');
 
@@ -8313,12 +8372,17 @@
                     const response = await window.SmartFarmAPI.createLivestock(livestockData);
 
                     if (response.success) {
+                        console.log('✅ Livestock added successfully via API');
                         showSuccessMessage('Livestock added successfully!');
                         
                         // Refresh livestock data
                         await loadLivestockData();
                     } else {
+                        console.error('❌ Failed to add livestock via API:', response.error);
                         showErrorMessage(response.error || 'Failed to add livestock');
+                        // Don't return here - restore button and keep modal open
+                        submitButton.innerHTML = originalText;
+                        submitButton.disabled = false;
                         return;
                     }
                 } else {
@@ -8382,11 +8446,15 @@
             } catch (error) {
                 console.error('Error adding livestock:', error);
                 showErrorMessage('An error occurred while adding livestock: ' + error.message);
-            } finally {
-                // Restore button state
+                // Restore button state and keep modal open on error
                 submitButton.innerHTML = originalText;
                 submitButton.disabled = false;
+                return; // Don't proceed to close modal
             }
+            
+            // Only reach here on success - restore button state and close modal
+            submitButton.innerHTML = originalText;
+            submitButton.disabled = false;
         }
 
         // Keep the old function for backwards compatibility
@@ -14521,8 +14589,118 @@ INVENTORY SUMMARY:
         }
 
         // Save feed mix plan
-        function saveFeedMixPlan() {
-            showNotification('Feed mix plan saved successfully!', 'success');
+        async function saveFeedMixPlan() {
+            console.log('🌾 saveFeedMixPlan called');
+            
+            // Get current form values
+            const livestockType = document.getElementById('feedMixLivestockType').value;
+            const growthStage = document.getElementById('growthStage').value;
+            const animalWeight = parseFloat(document.getElementById('animalWeight').value);
+            const animalCount = parseInt(document.getElementById('animalCount').value);
+            const feedingDays = parseInt(document.getElementById('feedingDays').value);
+            
+            // Validation
+            if (!livestockType || !growthStage || !animalWeight || !animalCount || !feedingDays) {
+                showInfoDialog('Validation Error', 'Please complete the feed mix calculation before saving', 'OK');
+                return;
+            }
+            
+            // Find matching feed mix from database
+            const feedMix = feedMixDatabase.find(mix => 
+                mix.livestockType === livestockType && 
+                mix.growthStage === growthStage
+            );
+            
+            if (!feedMix) {
+                showInfoDialog('Error', 'Feed mix data not found. Please recalculate.', 'OK');
+                return;
+            }
+            
+            // Calculate values
+            const dailyIntakePerAnimal = feedMix.dailyIntake * (animalWeight / 100);
+            const totalDailyIntake = dailyIntakePerAnimal * animalCount;
+            const totalFeedNeeded = totalDailyIntake * feedingDays;
+            const totalCost = totalFeedNeeded * feedMix.costPerKg;
+            
+            // Prepare data to save
+            const feedMixPlanData = {
+                livestockType: livestockType,
+                growthStage: growthStage,
+                animalWeight: animalWeight,
+                animalCount: animalCount,
+                feedingDays: feedingDays,
+                feedComponents: feedMix.feedComponents,
+                protein: feedMix.protein,
+                energy: feedMix.energy,
+                fiber: feedMix.fiber,
+                dailyIntake: feedMix.dailyIntake,
+                costPerKg: feedMix.costPerKg,
+                calculations: {
+                    dailyIntakePerAnimal: dailyIntakePerAnimal,
+                    totalDailyIntake: totalDailyIntake,
+                    totalFeedNeeded: totalFeedNeeded,
+                    totalCost: totalCost
+                },
+                createdDate: new Date().toISOString()
+            };
+            
+            console.log('Feed mix plan data:', feedMixPlanData);
+            
+            try {
+                // Check if API is available
+                if (typeof window.SmartFarmAPI !== 'undefined') {
+                    console.log('🌐 Using API to save feed mix plan');
+                    
+                    const response = await window.SmartFarmAPI.createFeedMix(feedMixPlanData);
+                    
+                    if (response.success) {
+                        console.log('✅ Feed mix plan saved to API successfully');
+                        showNotification('Feed mix plan saved successfully!', 'success');
+                        
+                        // Save to history as well
+                        saveFeedMixToHistory(feedMix, {
+                            animalWeight,
+                            animalCount,
+                            feedingDays,
+                            totalCost
+                        });
+                    } else {
+                        console.error('❌ Failed to save feed mix plan:', response.error);
+                        showErrorMessage(response.error || 'Failed to save feed mix plan');
+                        
+                        // Fallback to localStorage
+                        saveFeedMixToHistory(feedMix, {
+                            animalWeight,
+                            animalCount,
+                            feedingDays,
+                            totalCost
+                        });
+                        showNotification('Feed mix plan saved locally (server unavailable)', 'warning');
+                    }
+                } else {
+                    console.log('💾 Using localStorage fallback to save feed mix plan');
+                    
+                    // Fallback to localStorage only
+                    saveFeedMixToHistory(feedMix, {
+                        animalWeight,
+                        animalCount,
+                        feedingDays,
+                        totalCost
+                    });
+                    showNotification('Feed mix plan saved locally!', 'success');
+                }
+            } catch (error) {
+                console.error('Error saving feed mix plan:', error);
+                showErrorMessage('An error occurred while saving feed mix plan: ' + error.message);
+                
+                // Fallback to localStorage
+                saveFeedMixToHistory(feedMix, {
+                    animalWeight,
+                    animalCount,
+                    feedingDays,
+                    totalCost
+                });
+            }
         }
 
         // Print feed mix plan
@@ -15802,7 +15980,7 @@ INVENTORY SUMMARY:
                     <h5 class="modal-title" id="dashboardAddLivestockModalLabel">
                         <i class="fas fa-plus me-2"></i>Add New Livestock
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close btn-close-white" onclick="confirmCancelLivestockForm()" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form id="dashboardAddLivestockForm">
@@ -15905,7 +16083,7 @@ INVENTORY SUMMARY:
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-secondary" onclick="confirmCancelLivestockForm()">Cancel</button>
                     <button type="button" class="btn btn-success" onclick="saveDashboardNewLivestock()">
                         <i class="fas fa-save me-2"></i>Add Livestock
                     </button>

@@ -14,6 +14,14 @@ const ALLOWED = rawOrigins
   .map(s => s.trim())
   .filter(Boolean);
 
+// Production origins that should ALWAYS be allowed
+const PRODUCTION_ORIGINS = [
+  'https://www.smartfarm-app.com',
+  'https://smartfarm-app.com',
+  'https://smartfarm-app.netlify.app',
+  'https://dulcet-sawine-92d6a8.netlify.app'
+];
+
 // Dev fallback for local development
 const DEV_FALLBACK = [
   'http://localhost:5173',
@@ -22,19 +30,19 @@ const DEV_FALLBACK = [
   'http://localhost:4173',
 ];
 
+// Combine all allowed origins
+const ALL_ALLOWED_ORIGINS = [...new Set([...ALLOWED, ...PRODUCTION_ORIGINS, ...DEV_FALLBACK])];
+
 const corsOptions = {
   origin(origin, cb) {
     // Allow non-browser tools (curl, server-to-server) with no Origin header
-    if (!origin) return cb(null, true);
+    if (!origin) {
+      console.log(`[CORS] ✓ Allowed: No origin header (non-browser request)`);
+      return cb(null, true);
+    }
 
     // Check if origin matches allowed list (with wildcard support)
-    const allow = ALLOWED.some(a => {
-      if (a.includes('*')) {
-        const re = new RegExp('^' + a.replace(/\./g, '\\.').replace(/\*/g, '.*') + '$');
-        return re.test(origin);
-      }
-      return a === origin;
-    }) || DEV_FALLBACK.some(a => {
+    const allow = ALL_ALLOWED_ORIGINS.some(a => {
       if (a.includes('*')) {
         const re = new RegExp('^' + a.replace(/\./g, '\\.').replace(/\*/g, '.*') + '$');
         return re.test(origin);
@@ -47,6 +55,7 @@ const corsOptions = {
       return cb(null, true);
     } else {
       console.log(`[CORS] ✗ Blocked origin: ${origin}`);
+      console.log(`[CORS] ℹ Allowed origins:`, ALL_ALLOWED_ORIGINS);
       return cb(new Error(`CORS blocked: ${origin}`));
     }
   },
@@ -182,22 +191,235 @@ app.get('/api/crops/stats/overview', (req, res) => {
   });
 });
 
+// In-memory storage (replace with database in production)
+let livestockStorage = [];
+let feedMixesStorage = [];
+
 // Livestock endpoints
 app.get('/api/livestock', (req, res) => {
+  console.log(`[${new Date().toISOString()}] GET /api/livestock - Origin: ${req.headers.origin}`);
   res.status(200).json({
     success: true,
-    data: []
+    data: livestockStorage
+  });
+});
+
+app.post('/api/livestock', (req, res) => {
+  console.log(`[${new Date().toISOString()}] POST /api/livestock - Origin: ${req.headers.origin}`);
+  console.log('Request body:', JSON.stringify(req.body, null, 2));
+  
+  const livestockData = req.body;
+  
+  // Validate required fields
+  if (!livestockData.type || !livestockData.name) {
+    console.log('❌ Validation failed: Missing required fields');
+    return res.status(400).json({
+      success: false,
+      error: 'Type and name are required'
+    });
+  }
+  
+  // Create new livestock entry
+  const newLivestock = {
+    id: Date.now(),
+    ...livestockData,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+  
+  livestockStorage.push(newLivestock);
+  console.log('✅ Livestock added successfully:', newLivestock.id);
+  
+  res.status(201).json({
+    success: true,
+    data: newLivestock
+  });
+});
+
+app.get('/api/livestock/:id', (req, res) => {
+  console.log(`[${new Date().toISOString()}] GET /api/livestock/${req.params.id} - Origin: ${req.headers.origin}`);
+  const livestock = livestockStorage.find(l => l.id === parseInt(req.params.id));
+  
+  if (!livestock) {
+    return res.status(404).json({
+      success: false,
+      error: 'Livestock not found'
+    });
+  }
+  
+  res.status(200).json({
+    success: true,
+    data: livestock
+  });
+});
+
+app.put('/api/livestock/:id', (req, res) => {
+  console.log(`[${new Date().toISOString()}] PUT /api/livestock/${req.params.id} - Origin: ${req.headers.origin}`);
+  const index = livestockStorage.findIndex(l => l.id === parseInt(req.params.id));
+  
+  if (index === -1) {
+    return res.status(404).json({
+      success: false,
+      error: 'Livestock not found'
+    });
+  }
+  
+  livestockStorage[index] = {
+    ...livestockStorage[index],
+    ...req.body,
+    updatedAt: new Date().toISOString()
+  };
+  
+  console.log('✅ Livestock updated successfully');
+  
+  res.status(200).json({
+    success: true,
+    data: livestockStorage[index]
+  });
+});
+
+app.delete('/api/livestock/:id', (req, res) => {
+  console.log(`[${new Date().toISOString()}] DELETE /api/livestock/${req.params.id} - Origin: ${req.headers.origin}`);
+  const index = livestockStorage.findIndex(l => l.id === parseInt(req.params.id));
+  
+  if (index === -1) {
+    return res.status(404).json({
+      success: false,
+      error: 'Livestock not found'
+    });
+  }
+  
+  livestockStorage.splice(index, 1);
+  console.log('✅ Livestock deleted successfully');
+  
+  res.status(200).json({
+    success: true,
+    message: 'Livestock deleted successfully'
   });
 });
 
 app.get('/api/livestock/stats/overview', (req, res) => {
+  console.log(`[${new Date().toISOString()}] GET /api/livestock/stats/overview - Origin: ${req.headers.origin}`);
   res.status(200).json({
     success: true,
     data: {
-      totalAnimals: 0,
-      healthyAnimals: 0,
-      totalValue: 0
+      totalAnimals: livestockStorage.length,
+      healthyAnimals: livestockStorage.filter(l => l.healthStatus === 'healthy').length,
+      totalValue: livestockStorage.reduce((sum, l) => sum + (l.value || 0), 0)
     }
+  });
+});
+
+// Feed Mix endpoints
+app.get('/api/feed-mixes', (req, res) => {
+  console.log(`[${new Date().toISOString()}] GET /api/feed-mixes - Origin: ${req.headers.origin}`);
+  res.status(200).json({
+    success: true,
+    data: feedMixesStorage
+  });
+});
+
+app.post('/api/feed-mixes', (req, res) => {
+  console.log(`[${new Date().toISOString()}] POST /api/feed-mixes - Origin: ${req.headers.origin}`);
+  console.log('Request body:', JSON.stringify(req.body, null, 2));
+  
+  const feedMixData = req.body;
+  
+  // Validate required fields
+  if (!feedMixData.livestockType || !feedMixData.growthStage) {
+    console.log('❌ Validation failed: Missing required fields');
+    return res.status(400).json({
+      success: false,
+      error: 'Livestock type and growth stage are required'
+    });
+  }
+  
+  // Create new feed mix entry
+  const newFeedMix = {
+    id: Date.now(),
+    ...feedMixData,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+  
+  feedMixesStorage.push(newFeedMix);
+  console.log('✅ Feed mix added successfully:', newFeedMix.id);
+  
+  res.status(201).json({
+    success: true,
+    data: newFeedMix
+  });
+});
+
+app.get('/api/feed-mixes/:id', (req, res) => {
+  console.log(`[${new Date().toISOString()}] GET /api/feed-mixes/${req.params.id} - Origin: ${req.headers.origin}`);
+  const feedMix = feedMixesStorage.find(f => f.id === parseInt(req.params.id));
+  
+  if (!feedMix) {
+    return res.status(404).json({
+      success: false,
+      error: 'Feed mix not found'
+    });
+  }
+  
+  res.status(200).json({
+    success: true,
+    data: feedMix
+  });
+});
+
+app.put('/api/feed-mixes/:id', (req, res) => {
+  console.log(`[${new Date().toISOString()}] PUT /api/feed-mixes/${req.params.id} - Origin: ${req.headers.origin}`);
+  const index = feedMixesStorage.findIndex(f => f.id === parseInt(req.params.id));
+  
+  if (index === -1) {
+    return res.status(404).json({
+      success: false,
+      error: 'Feed mix not found'
+    });
+  }
+  
+  feedMixesStorage[index] = {
+    ...feedMixesStorage[index],
+    ...req.body,
+    updatedAt: new Date().toISOString()
+  };
+  
+  console.log('✅ Feed mix updated successfully');
+  
+  res.status(200).json({
+    success: true,
+    data: feedMixesStorage[index]
+  });
+});
+
+app.delete('/api/feed-mixes/:id', (req, res) => {
+  console.log(`[${new Date().toISOString()}] DELETE /api/feed-mixes/${req.params.id} - Origin: ${req.headers.origin}`);
+  const index = feedMixesStorage.findIndex(f => f.id === parseInt(req.params.id));
+  
+  if (index === -1) {
+    return res.status(404).json({
+      success: false,
+      error: 'Feed mix not found'
+    });
+  }
+  
+  feedMixesStorage.splice(index, 1);
+  console.log('✅ Feed mix deleted successfully');
+  
+  res.status(200).json({
+    success: true,
+    message: 'Feed mix deleted successfully'
+  });
+});
+
+app.get('/api/livestock/:livestockId/feed-mixes', (req, res) => {
+  console.log(`[${new Date().toISOString()}] GET /api/livestock/${req.params.livestockId}/feed-mixes - Origin: ${req.headers.origin}`);
+  const livestockFeedMixes = feedMixesStorage.filter(f => f.livestockId === parseInt(req.params.livestockId));
+  
+  res.status(200).json({
+    success: true,
+    data: livestockFeedMixes
   });
 });
 
@@ -229,7 +451,7 @@ const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`[SmartFarm] 📊 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`[SmartFarm] 🌐 Listening on: 0.0.0.0:${PORT}`);
   console.log(`[SmartFarm] 🔗 Health check: http://localhost:${PORT}/api/health`);
-  console.log(`[SmartFarm] 🛡️  Allowed origins:`, ALLOWED.length > 0 ? ALLOWED : DEV_FALLBACK);
+  console.log(`[SmartFarm] 🛡️  Allowed origins (${ALL_ALLOWED_ORIGINS.length}):`, ALL_ALLOWED_ORIGINS);
   console.log('========================================');
 });
 
