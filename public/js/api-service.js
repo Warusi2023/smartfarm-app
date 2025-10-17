@@ -368,6 +368,40 @@ class SmartFarmAPIService {
         return await this.request('/livestock/stats/overview');
     }
 
+    // Feed Mix Management API
+    async getFeedMixes(params = {}) {
+        const queryString = new URLSearchParams(params).toString();
+        return await this.request(`/feed-mixes${queryString ? '?' + queryString : ''}`);
+    }
+
+    async getFeedMix(id) {
+        return await this.request(`/feed-mixes/${id}`);
+    }
+
+    async createFeedMix(feedMixData) {
+        return await this.request('/feed-mixes', {
+            method: 'POST',
+            body: JSON.stringify(feedMixData)
+        });
+    }
+
+    async updateFeedMix(id, feedMixData) {
+        return await this.request(`/feed-mixes/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(feedMixData)
+        });
+    }
+
+    async deleteFeedMix(id) {
+        return await this.request(`/feed-mixes/${id}`, {
+            method: 'DELETE'
+        });
+    }
+
+    async getFeedMixByLivestock(livestockId) {
+        return await this.request(`/livestock/${livestockId}/feed-mixes`);
+    }
+
     // Inventory Management API
     async getInventory(params = {}) {
         const queryString = new URLSearchParams(params).toString();

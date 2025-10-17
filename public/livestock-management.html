@@ -1172,6 +1172,8 @@
     <script src="js/api-service.js"></script>
     <!-- Include Feed Mix Calculator -->
     <script src="js/feed-mix-calculator.js"></script>
+    <!-- Include Modal Validator -->
+    <script src="js/modal-validator.js"></script>
     <!-- Include modal accessibility helper -->
     <script src="js/modal-accessibility.js"></script>
     
@@ -1923,6 +1925,19 @@
         }
 
         async function saveNewLivestock() {
+            const modalId = 'addLivestockModal';
+            
+            // Validate modal before proceeding
+            if (window.ModalValidator) {
+                const isValid = await window.ModalValidator.validateModal(modalId);
+                if (!isValid) {
+                    return;
+                }
+                
+                // Set saving state
+                window.ModalValidator.setSaving(modalId, true);
+            }
+            
             // Get all form values
             const animalSpecies = document.getElementById('animalSpecies').value;
             const animalBreed = document.getElementById('animalBreed').value;
@@ -1948,6 +1963,9 @@
 
             // Validate required fields
             if (!animalSpecies || !animalBreed || !animalTag || !animalSex || !birthDate || !animalLocation) {
+                if (window.ModalValidator) {
+                    window.ModalValidator.setSaving(modalId, false);
+                }
                 showAlert('Please fill in all required fields (Species, Breed, Tag/ID, Sex, Birth Date, Location)', 'error');
                 return;
             }
@@ -1999,11 +2017,18 @@
                         await loadLivestock();
                         updateStatistics();
                         
-                        // Close modal and reset form
-                        const modal = document.getElementById('addLivestockModal');
-                        if (modal) {
-                            bootstrap.Modal.getInstance(modal).hide();
+                        // Mark save success and allow modal to close
+                        if (window.ModalValidator) {
+                            window.ModalValidator.markSaveSuccess(modalId);
+                        } else {
+                            // Fallback modal close
+                            const modal = document.getElementById('addLivestockModal');
+                            if (modal) {
+                                const bsModal = bootstrap.Modal.getInstance(modal);
+                                if (bsModal) bsModal.hide();
+                            }
                         }
+                        
                         document.getElementById('addLivestockForm').reset();
                         
                         // Show success message
@@ -2054,6 +2079,11 @@
                 }
             } catch (error) {
                 console.error('❌ Error saving livestock:', error);
+                
+                // Reset saving state
+                if (window.ModalValidator) {
+                    window.ModalValidator.setSaving(modalId, false);
+                }
                 
                 if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
                     showAlert('Unable to connect to server. Data saved locally.', 'warning');
@@ -2466,6 +2496,35 @@
         // Check authentication on page load
         document.addEventListener('DOMContentLoaded', function() {
             checkAuthentication();
+            
+            // Register modals with validator
+            if (window.ModalValidator) {
+                // Register Add Livestock Modal
+                window.ModalValidator.registerModal('addLivestockModal', {
+                    requireValidation: true,
+                    requiredFields: ['animalSpecies', 'animalBreed', 'animalTag', 'animalSex', 'birthDate', 'animalLocation'],
+                    allowEscapeKey: false,
+                    allowBackdropClick: false
+                });
+                
+                // Register Edit Livestock Modal
+                window.ModalValidator.registerModal('editLivestockModal', {
+                    requireValidation: true,
+                    requiredFields: ['editAnimalSpecies', 'editAnimalBreed', 'editAnimalTag', 'editAnimalSex', 'editBirthDate', 'editAnimalLocation'],
+                    allowEscapeKey: false,
+                    allowBackdropClick: false
+                });
+                
+                // Register Feed Mix Calculator Modal
+                window.ModalValidator.registerModal('feedMixCalculatorModal', {
+                    requireValidation: true,
+                    requiredFields: ['feedMixSpecies', 'feedMixLifecycle', 'feedMixWeight'],
+                    allowEscapeKey: false,
+                    allowBackdropClick: false
+                });
+                
+                console.log('✅ All modals registered with validator');
+            }
         });
 
         function checkAuthentication() {
@@ -2505,7 +2564,17 @@
             }
         }
 
-        function calculateFeedMix() {
+        async function calculateFeedMix() {
+            const modalId = 'feedMixCalculatorModal';
+            
+            // Validate modal before proceeding
+            if (window.ModalValidator) {
+                const isValid = await window.ModalValidator.validateModal(modalId);
+                if (!isValid) {
+                    return;
+                }
+            }
+            
             try {
                 // Get form values
                 const species = document.getElementById('feedMixSpecies').value;
@@ -2533,6 +2602,9 @@
                 // Calculate feed mix
                 const result = window.FeedMixCalculator.calculateFeedMix(animalData);
                 
+                // Save feed mix to API or localStorage
+                await saveFeedMix(result);
+                
                 // Display results
                 displayFeedMixResults(result);
                 
@@ -2545,6 +2617,47 @@
             } catch (error) {
                 console.error('Error calculating feed mix:', error);
                 showAlert('Error calculating feed mix: ' + error.message, 'error');
+            }
+        }
+
+        // Save feed mix data
+        async function saveFeedMix(feedMixResult) {
+            try {
+                const feedMixData = {
+                    species: feedMixResult.animal.species,
+                    lifecycle: feedMixResult.animal.lifecycle,
+                    weight: feedMixResult.animal.weight,
+                    age: feedMixResult.animal.age,
+                    purpose: feedMixResult.animal.purpose,
+                    feedMix: feedMixResult.feedMix,
+                    dailyIntake: feedMixResult.dailyIntake.recommended,
+                    dailyCost: feedMixResult.totalCost.dailyCost,
+                    monthlyCost: feedMixResult.totalCost.monthlyCost,
+                    annualCost: feedMixResult.totalCost.annualCost,
+                    recommendations: feedMixResult.recommendations,
+                    createdAt: new Date().toISOString()
+                };
+
+                // Try to save to API
+                if (window.SmartFarmAPI && window.SmartFarmAPI.isBackendAvailable) {
+                    const response = await window.SmartFarmAPI.createFeedMix(feedMixData);
+                    if (response.success) {
+                        console.log('✅ Feed mix saved to API:', response.data);
+                        return response.data;
+                    }
+                }
+                
+                // Fallback to localStorage
+                const storedFeedMixes = JSON.parse(localStorage.getItem('feedMixes') || '[]');
+                feedMixData.id = Date.now();
+                storedFeedMixes.push(feedMixData);
+                localStorage.setItem('feedMixes', JSON.stringify(storedFeedMixes));
+                console.log('💾 Feed mix saved to localStorage');
+                
+                return feedMixData;
+            } catch (error) {
+                console.error('Error saving feed mix:', error);
+                // Don't throw error - calculation still succeeded
             }
         }
 
