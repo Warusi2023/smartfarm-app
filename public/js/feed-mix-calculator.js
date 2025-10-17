@@ -266,25 +266,47 @@ class FeedMixCalculator {
     }
 
     calculateFeedMix(animalData) {
+        console.log('FeedMixCalculator.calculateFeedMix called with:', animalData);
+        
         const { species, weight, age, lifecycle, purpose, productionStage } = animalData;
+        
+        // Validate required inputs
+        if (!species) {
+            throw new Error('Species is required');
+        }
+        
+        if (!weight || isNaN(weight) || weight <= 0) {
+            throw new Error('Valid weight is required');
+        }
+        
+        console.log('Processing:', { species, weight, lifecycle, purpose });
         
         // Determine nutritional requirements
         const requirements = this.getNutritionalRequirements(species, weight, lifecycle, purpose);
+        
+        console.log('Nutritional requirements found:', requirements);
         
         if (!requirements) {
             throw new Error(`No nutritional requirements found for ${species} ${lifecycle}`);
         }
 
         // Calculate daily intake based on weight
+        console.log('Calculating daily intake with weight:', weight, 'and intake range:', requirements.dailyIntake);
         const dailyIntake = this.calculateDailyIntake(weight, requirements.dailyIntake);
+        
+        console.log('Daily intake calculated:', dailyIntake);
         
         // Generate feed mix
         const feedMix = this.generateOptimalMix(requirements, dailyIntake, species);
         
+        console.log('Feed mix generated:', feedMix);
+        
         // Calculate costs
         const totalCost = this.calculateFeedCost(feedMix, dailyIntake);
         
-        return {
+        console.log('Total cost calculated:', totalCost);
+        
+        const result = {
             animal: animalData,
             requirements: requirements,
             dailyIntake: dailyIntake,
@@ -292,6 +314,10 @@ class FeedMixCalculator {
             totalCost: totalCost,
             recommendations: this.generateRecommendations(feedMix, requirements)
         };
+        
+        console.log('Final calculation result:', result);
+        
+        return result;
     }
 
     getNutritionalRequirements(species, weight, lifecycle, purpose) {
@@ -349,17 +375,28 @@ class FeedMixCalculator {
     }
 
     calculateDailyIntake(weight, intakeRange) {
+        console.log('calculateDailyIntake called with:', { weight, intakeRange });
+        
         // Validate inputs
         if (!intakeRange || typeof intakeRange.min === 'undefined' || typeof intakeRange.max === 'undefined') {
             console.error('Invalid intakeRange:', intakeRange);
+            console.log('Using default intake range');
             // Provide default values
             intakeRange = { min: 2.0, max: 3.0 };
+        }
+        
+        // Ensure weight is a valid number
+        if (!weight || isNaN(weight) || weight <= 0) {
+            console.error('Invalid weight:', weight);
+            weight = 100; // Default weight
         }
         
         // Calculate daily intake as percentage of body weight
         const minIntake = (weight * intakeRange.min) / 100;
         const maxIntake = (weight * intakeRange.max) / 100;
         const avgIntake = (minIntake + maxIntake) / 2;
+        
+        console.log('Daily intake calculation:', { minIntake, maxIntake, avgIntake });
         
         return {
             min: minIntake,

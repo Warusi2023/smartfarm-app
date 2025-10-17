@@ -14272,61 +14272,106 @@ INVENTORY SUMMARY:
 
         // Calculate feed mix based on inputs
         function calculateFeedMix() {
+            console.log('🌾 calculateFeedMix called');
+            
             const livestockType = document.getElementById('feedMixLivestockType').value;
             const growthStage = document.getElementById('growthStage').value;
             const animalWeight = parseFloat(document.getElementById('animalWeight').value);
             const animalCount = parseInt(document.getElementById('animalCount').value);
             const feedingDays = parseInt(document.getElementById('feedingDays').value);
             
+            console.log('Form values:', { livestockType, growthStage, animalWeight, animalCount, feedingDays });
+            
             if (!livestockType || !growthStage || !animalWeight || !animalCount || !feedingDays) {
                 showInfoDialog('Validation Error', 'Please fill in all fields', 'OK');
                 return;
             }
             
-            // Debug: Log the search parameters and database
-            console.log('Searching for:', { livestockType, growthStage });
-            console.log('Feed mix database:', feedMixDatabase);
-            console.log('Database length:', feedMixDatabase.length);
-            
-            // Find matching feed mix
-            const feedMix = feedMixDatabase.find(mix => 
-                mix.livestockType === livestockType && 
-                mix.growthStage === growthStage
-            );
-            
-            if (!feedMix) {
-                console.log('Available feed mixes:', feedMixDatabase.map(mix => ({ 
-                    type: mix.livestockType, 
-                    stage: mix.growthStage 
-                })));
-                showInfoDialog('No Feed Mix Found', 'No feed mix found for the selected livestock type and growth stage', 'OK');
-                return;
+            try {
+                // Use the FeedMixCalculator class
+                if (typeof window.FeedMixCalculator === 'undefined') {
+                    console.error('FeedMixCalculator not loaded');
+                    showInfoDialog('Error', 'Feed mix calculator not available. Please refresh the page.', 'OK');
+                    return;
+                }
+                
+                console.log('Using FeedMixCalculator for calculation');
+                
+                // Prepare animal data for the calculator
+                const animalData = {
+                    species: livestockType,
+                    weight: animalWeight,
+                    age: 0, // Not used in current calculation
+                    lifecycle: growthStage,
+                    purpose: 'General', // Default purpose
+                    productionStage: growthStage
+                };
+                
+                console.log('Animal data for calculator:', animalData);
+                
+                // Calculate feed mix using the calculator
+                const result = window.FeedMixCalculator.calculateFeedMix(animalData);
+                
+                console.log('Feed mix calculation result:', result);
+                
+                if (!result || !result.feedMix) {
+                    console.error('Invalid result from FeedMixCalculator');
+                    showInfoDialog('Calculation Error', 'Failed to calculate feed mix. Please try again.', 'OK');
+                    return;
+                }
+                
+                // Convert calculator result to our display format
+                const feedMix = {
+                    livestockType: livestockType,
+                    growthStage: growthStage,
+                    feedComponents: result.feedMix,
+                    protein: result.requirements.protein.min, // Use min protein requirement
+                    energy: result.requirements.energy.min * 1000, // Convert Mcal to kcal
+                    fiber: result.requirements.fiber.min,
+                    dailyIntake: result.dailyIntake.recommended,
+                    costPerKg: result.totalCost.costPerKg
+                };
+                
+                console.log('Converted feed mix:', feedMix);
+                
+                // Calculate requirements for display
+                const dailyIntakePerAnimal = result.dailyIntake.recommended;
+                const totalDailyIntake = dailyIntakePerAnimal * animalCount;
+                const totalFeedNeeded = totalDailyIntake * feedingDays;
+                const totalCost = totalFeedNeeded * result.totalCost.costPerKg;
+                
+                console.log('Calculations:', {
+                    dailyIntakePerAnimal,
+                    totalDailyIntake,
+                    totalFeedNeeded,
+                    totalCost
+                });
+                
+                // Display results
+                displayFeedMixResults(feedMix, {
+                    animalWeight,
+                    animalCount,
+                    feedingDays,
+                    dailyIntakePerAnimal,
+                    totalDailyIntake,
+                    totalFeedNeeded,
+                    totalCost
+                });
+                
+                // Save to history
+                saveFeedMixToHistory(feedMix, {
+                    animalWeight,
+                    animalCount,
+                    feedingDays,
+                    totalCost
+                });
+                
+                console.log('✅ Feed mix calculation completed successfully');
+                
+            } catch (error) {
+                console.error('Error calculating feed mix:', error);
+                showInfoDialog('Calculation Error', `Error calculating feed mix: ${error.message}`, 'OK');
             }
-            
-            // Calculate requirements
-            const dailyIntakePerAnimal = feedMix.dailyIntake * (animalWeight / 100); // Adjust for weight
-            const totalDailyIntake = dailyIntakePerAnimal * animalCount;
-            const totalFeedNeeded = totalDailyIntake * feedingDays;
-            const totalCost = totalFeedNeeded * feedMix.costPerKg;
-            
-            // Display results
-            displayFeedMixResults(feedMix, {
-                animalWeight,
-                animalCount,
-                feedingDays,
-                dailyIntakePerAnimal,
-                totalDailyIntake,
-                totalFeedNeeded,
-                totalCost
-            });
-            
-            // Save to history
-            saveFeedMixToHistory(feedMix, {
-                animalWeight,
-                animalCount,
-                feedingDays,
-                totalCost
-            });
         }
 
         // Display feed mix results
