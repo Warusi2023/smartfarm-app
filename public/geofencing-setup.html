@@ -357,7 +357,14 @@
                     </div>
                 </div>
                 <div class="col-md-6">
-                    <div id="map"></div>
+                    <div id="map" style="position: relative;">
+                        <div id="mapLoading" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                            <div class="text-center">
+                                <i class="fas fa-spinner fa-spin fa-2x text-primary mb-2"></i>
+                                <div>Loading map...</div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="coordinate-display">
                         <div class="row">
                             <div class="col-md-6">
@@ -540,11 +547,31 @@
 
         // Initialize the application
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 DOM loaded, initializing application...');
             checkAuthentication();
-            initializeMap();
+            
+            // Initialize map with a small delay to ensure DOM is ready
+            setTimeout(() => {
+                initializeMap();
+            }, 100);
+            
             loadFarms();
             setupEventListeners();
         });
+        
+        // Fallback initialization if DOMContentLoaded already fired
+        if (document.readyState === 'loading') {
+            // Still loading, DOMContentLoaded will fire
+        } else {
+            // DOM already loaded, initialize immediately
+            console.log('🚀 DOM already loaded, initializing immediately...');
+            checkAuthentication();
+            setTimeout(() => {
+                initializeMap();
+            }, 100);
+            loadFarms();
+            setupEventListeners();
+        }
 
         function checkAuthentication() {
             const user = localStorage.getItem('smartfarm_user') || sessionStorage.getItem('smartfarm_user');
@@ -564,16 +591,65 @@
         }
 
         function initializeMap() {
-            // Initialize map centered on Fiji
-            map = L.map('map').setView([-18.1248, 178.4501], 10);
+            console.log('🗺️ Initializing map...');
+            
+            // Check if Leaflet is loaded
+            if (typeof L === 'undefined') {
+                console.error('❌ Leaflet library not loaded!');
+                showAlert('Map library not loaded. Please refresh the page.', 'error');
+                return;
+            }
+            
+            // Check if map container exists
+            const mapContainer = document.getElementById('map');
+            if (!mapContainer) {
+                console.error('❌ Map container not found!');
+                showAlert('Map container not found. Please refresh the page.', 'error');
+                return;
+            }
+            
+            console.log('✅ Map container found:', mapContainer);
+            
+            try {
+                // Initialize map centered on Fiji
+                map = L.map('map').setView([-18.1248, 178.4501], 10);
+                console.log('✅ Map initialized:', map);
 
-            // Add OpenStreetMap tiles
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors'
-            }).addTo(map);
+                // Add OpenStreetMap tiles
+                const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                });
+                
+                tileLayer.addTo(map);
+                console.log('✅ Tile layer added');
+                
+                // Add a marker to show the map is working
+                L.marker([-18.1248, 178.4501]).addTo(map)
+                    .bindPopup('Fiji - Click to set your farm location')
+                    .openPopup();
+                
+                console.log('✅ Map setup complete');
+                
+                // Hide loading indicator
+                const loadingIndicator = document.getElementById('mapLoading');
+                if (loadingIndicator) {
+                    loadingIndicator.style.display = 'none';
+                }
+                
+            } catch (error) {
+                console.error('❌ Error initializing map:', error);
+                showAlert('Failed to initialize map: ' + error.message, 'error');
+                
+                // Hide loading indicator even on error
+                const loadingIndicator = document.getElementById('mapLoading');
+                if (loadingIndicator) {
+                    loadingIndicator.innerHTML = '<div class="text-center text-danger"><i class="fas fa-exclamation-triangle fa-2x mb-2"></i><div>Map failed to load</div></div>';
+                }
+            }
 
-            // Add click handler for map
-            map.on('click', function(e) {
+            // Add click handler for map (only if map was successfully initialized)
+            if (map) {
+                map.on('click', function(e) {
                 console.log('Map clicked at:', e.latlng.lat, e.latlng.lng);
                 console.log('Current step:', currentStep);
                 console.log('Geofence type:', geofenceType);
@@ -604,7 +680,10 @@
                 } else {
                     console.log('Click ignored - not in polygon drawing mode');
                 }
-            });
+                });
+            } else {
+                console.log('❌ Map not initialized, click handler not added');
+            }
         }
 
         function setupEventListeners() {
