@@ -768,8 +768,19 @@
                             option.textContent = farm.name;
                             farmSelect.appendChild(option);
                         });
-                    } else {
-                        // No farms available - show option to create new
+                    }
+                    
+                    // Also load locally created farms
+                    const localFarms = JSON.parse(localStorage.getItem('localFarms') || '[]');
+                    localFarms.forEach(farm => {
+                        const option = document.createElement('option');
+                        option.value = farm.id;
+                        option.textContent = `${farm.name} (Local)`;
+                        farmSelect.appendChild(option);
+                    });
+                    
+                    // If no farms at all, show option to create new
+                    if ((!data.data || data.data.length === 0) && localFarms.length === 0) {
                         const option = document.createElement('option');
                         option.value = 'new';
                         option.textContent = 'No farms found - Create new farm';
@@ -799,7 +810,7 @@
                 showAlert(errorMessage, 'info');
                 document.getElementById('demoModeIndicator').style.display = 'block';
                 
-                // Add demo farms
+                // Add demo farms and locally created farms
                 const farmSelect = document.getElementById('farmSelect');
                 farmSelect.innerHTML = '<option value="">Select a farm...</option>';
                 
@@ -813,6 +824,15 @@
                     const option = document.createElement('option');
                     option.value = farm.id;
                     option.textContent = farm.name;
+                    farmSelect.appendChild(option);
+                });
+                
+                // Also load locally created farms
+                const localFarms = JSON.parse(localStorage.getItem('localFarms') || '[]');
+                localFarms.forEach(farm => {
+                    const option = document.createElement('option');
+                    option.value = farm.id;
+                    option.textContent = `${farm.name} (Local)`;
                     farmSelect.appendChild(option);
                 });
                 
@@ -1260,21 +1280,52 @@
         }
 
         function createNewFarm(farmName) {
+            console.log('🏗️ Creating new farm:', farmName);
+            
             const token = localStorage.getItem('smartfarm_token') || sessionStorage.getItem('smartfarm_token');
             
-            if (!token) {
-                showAlert('Demo mode: Cannot create real farms without authentication. Using demo farm instead.', 'info');
-                // Add demo farm to select
+            // Helper function to create farm locally (fallback)
+            const createFarmLocally = () => {
+                console.log('💾 Creating farm locally (fallback mode)');
                 const farmSelect = document.getElementById('farmSelect');
+                const farmId = `local-farm-${Date.now()}`;
+                
+                // Save to localStorage
+                const farms = JSON.parse(localStorage.getItem('localFarms') || '[]');
+                const newFarm = {
+                    id: farmId,
+                    name: farmName,
+                    location: 'Location to be updated',
+                    size: 1,
+                    description: 'Farm created via geofencing setup',
+                    createdAt: new Date().toISOString()
+                };
+                farms.push(newFarm);
+                localStorage.setItem('localFarms', JSON.stringify(farms));
+                
                 const option = document.createElement('option');
-                option.value = `demo-farm-${Date.now()}`;
+                option.value = farmId;
                 option.textContent = farmName;
+                option.selected = true;
                 farmSelect.appendChild(option);
-                farmSelect.value = option.value;
+                
+                selectedFarm = { id: farmId, name: farmName };
+                document.getElementById('nextStep1').disabled = false;
+                
+                showAlert(`Farm "${farmName}" created successfully! (Saved locally)`, 'success');
+            };
+            
+            if (!token) {
+                showAlert('Using demo mode: Farm will be saved locally.', 'info');
+                createFarmLocally();
                 return;
             }
             
-            fetch(window.SmartFarmConfig.getApiUrl('/farms'), {
+            // Try API first
+            const farmsUrl = window.SmartFarmConfig.getApiUrl('/farms');
+            console.log('🌐 Attempting to create farm via API:', farmsUrl);
+            
+            fetch(farmsUrl, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -1288,55 +1339,89 @@
                 })
             })
             .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+                console.log('📡 API Response status:', response.status);
                 
-                // Check if response is JSON
-                const contentType = response.headers.get('content-type');
-                if (!contentType || !contentType.includes('application/json')) {
-                    throw new Error('Response is not JSON. Server may be returning an error page.');
-                }
-                
-                return response.json();
+                // Try to parse as JSON first
+                return response.text().then(text => {
+                    try {
+                        return { data: JSON.parse(text), status: response.status, ok: response.ok };
+                    } catch (e) {
+                        console.warn('⚠️ Response is not JSON:', text.substring(0, 100));
+                        throw new Error('Response is not JSON. Server may be returning an error page.');
+                    }
+                });
             })
-            .then(data => {
-                if (data.success) {
+            .then(result => {
+                if (!result.ok) {
+                    // Try to extract error from response
+                    const errorMsg = result.data?.error || result.data?.message || `HTTP error! status: ${result.status}`;
+                    throw new Error(errorMsg);
+                }
+                
+                const data = result.data;
+                
+                if (data.success || data.id) {
                     // Add new farm to select dropdown
                     const farmSelect = document.getElementById('farmSelect');
                     const option = document.createElement('option');
-                    option.value = data.data.id;
-                    option.textContent = data.data.name;
+                    option.value = data.data?.id || data.id;
+                    option.textContent = data.data?.name || data.name || farmName;
                     option.selected = true;
                     farmSelect.appendChild(option);
                     
-                    selectedFarm = { id: data.data.id, name: data.data.name };
+                    selectedFarm = { 
+                        id: data.data?.id || data.id, 
+                        name: data.data?.name || data.name || farmName 
+                    };
                     document.getElementById('nextStep1').disabled = false;
                     
                     showAlert(`Farm "${farmName}" created successfully!`, 'success');
+                    console.log('✅ Farm created successfully via API');
                 } else {
-                    throw new Error(data.error || 'Failed to create farm');
+                    throw new Error(data.error || data.message || 'Failed to create farm');
                 }
             })
             .catch(error => {
-                console.error('Error creating farm:', error);
+                console.error('❌ Error creating farm:', error);
                 
-                // Check if it's a CORS error
-                if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
-                    showAlert('CORS Error: Cannot connect to backend. Please check if the backend is running and CORS is configured correctly.', 'warning');
-                    
-                    // Fallback to demo mode
-                    showAlert('Switching to demo mode. Farm will be created locally.', 'info');
-                    const farmSelect = document.getElementById('farmSelect');
-                    const option = document.createElement('option');
-                    option.value = `demo-farm-${Date.now()}`;
-                    option.textContent = farmName;
-                    farmSelect.appendChild(option);
-                    farmSelect.value = option.value;
-                    selectedFarm = { id: option.value, name: farmName };
-                    document.getElementById('nextStep1').disabled = false;
+                // Provide more specific error messages
+                let errorMessage = error.message || 'Error creating farm';
+                let shouldFallback = true;
+                
+                if (error.message.includes('401') || error.message.includes('Unauthorized')) {
+                    errorMessage = 'Authentication failed. Please log in again.';
+                    showAlert(errorMessage, 'warning');
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
+                    shouldFallback = false;
+                } else if (error.message.includes('403') || error.message.includes('Forbidden')) {
+                    errorMessage = 'You do not have permission to create farms.';
+                    showAlert(errorMessage, 'warning');
+                    shouldFallback = true;
+                } else if (error.message.includes('409') || error.message.includes('Conflict')) {
+                    errorMessage = `A farm with the name "${farmName}" already exists.`;
+                    showAlert(errorMessage, 'warning');
+                    shouldFallback = true;
+                } else if (error.message.includes('Failed to fetch') || error.message.includes('CORS')) {
+                    errorMessage = 'Cannot connect to server. Creating farm locally instead.';
+                    showAlert(errorMessage, 'info');
+                    shouldFallback = true;
+                } else if (error.message.includes('Response is not JSON')) {
+                    errorMessage = 'Server returned an unexpected response. Creating farm locally instead.';
+                    showAlert(errorMessage, 'warning');
+                    shouldFallback = true;
                 } else {
-                    showAlert('Error creating farm. Please try again.', 'danger');
+                    // For other errors, show the error but still offer fallback
+                    showAlert(`Error: ${errorMessage}. Creating farm locally instead.`, 'warning');
+                    shouldFallback = true;
+                }
+                
+                // Fallback to local storage
+                if (shouldFallback) {
+                    setTimeout(() => {
+                        createFarmLocally();
+                    }, 500);
                 }
             });
         }
