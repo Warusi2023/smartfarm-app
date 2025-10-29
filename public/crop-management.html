@@ -397,10 +397,19 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
+                                    <label class="form-label">Lifecycle Stage</label>
+                                    <input type="text" class="form-control form-control-custom" id="cropStatus" readonly style="background-color: #e9ecef; cursor: not-allowed;">
+                                    <small class="text-muted"><i class="fas fa-info-circle me-1"></i>Auto-calculated based on planting date</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
                                     <label class="form-label">Seed Supplier</label>
                                     <input type="text" class="form-control form-control-custom" id="seedSupplier">
                                 </div>
                             </div>
+                        </div>
+                        <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">Initial Investment (FJD)</label>
@@ -466,15 +475,9 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">Current Status</label>
-                                    <select class="form-select form-control-custom" id="editCropStatus" required>
-                                        <option value="planted">Planted</option>
-                                        <option value="growing">Growing</option>
-                                        <option value="flowering">Flowering</option>
-                                        <option value="fruiting">Fruiting</option>
-                                        <option value="harvesting">Harvesting</option>
-                                        <option value="completed">Completed</option>
-                                    </select>
+                                    <label class="form-label">Lifecycle Stage</label>
+                                    <input type="text" class="form-control form-control-custom" id="editCropStatus" readonly style="background-color: #e9ecef; cursor: not-allowed;">
+                                    <small class="text-muted"><i class="fas fa-info-circle me-1"></i>Auto-calculated based on planting date</small>
                                 </div>
                             </div>
                         </div>
@@ -628,25 +631,61 @@
         });
 
         function setupEventListeners() {
-            // Add event listener for planting date input to calculate maturity date
-            document.getElementById('plantingDate').addEventListener('change', function() {
-                calculateAndDisplayMaturityDate();
-            });
+            // Add event listener for planting date input to calculate maturity date and status
+            const plantingDateInput = document.getElementById('plantingDate');
+            if (plantingDateInput) {
+                plantingDateInput.addEventListener('change', function() {
+                    calculateAndDisplayMaturityDate();
+                    updateLifecycleStage();
+                });
+            }
             
             // Add event listener for crop name input to recalculate when crop changes
-            document.getElementById('cropName').addEventListener('change', function() {
-                calculateAndDisplayMaturityDate();
-            });
+            const cropNameInput = document.getElementById('cropName');
+            if (cropNameInput) {
+                cropNameInput.addEventListener('change', function() {
+                    calculateAndDisplayMaturityDate();
+                    updateLifecycleStage();
+                });
+            }
             
-            // Add event listener for variety input
-            document.getElementById('cropVariety').addEventListener('change', function() {
-                calculateAndDisplayMaturityDate();
-            });
+            // Add event listener for harvest date input
+            const harvestDateInput = document.getElementById('harvestDate');
+            if (harvestDateInput) {
+                harvestDateInput.addEventListener('change', function() {
+                    updateLifecycleStage();
+                });
+            }
+        }
+
+        // Update lifecycle stage display
+        function updateLifecycleStage() {
+            const plantingDate = document.getElementById('plantingDate')?.value;
+            const harvestDate = document.getElementById('harvestDate')?.value;
+            const cropName = document.getElementById('cropName')?.value;
             
-            // Add event listener for field input
-            document.getElementById('cropField').addEventListener('change', function() {
-                calculateAndDisplayMaturityDate();
-            });
+            if (plantingDate) {
+                // Calculate maturity date if we have crop name
+                let maturityDate = harvestDate;
+                if (!maturityDate && cropName) {
+                    const tempCrop = {
+                        name: cropName,
+                        plantingDate: plantingDate
+                    };
+                    maturityDate = calculateMaturityDate(tempCrop);
+                }
+                
+                const status = calculateLifecycleStage(plantingDate, maturityDate);
+                const statusInput = document.getElementById('cropStatus');
+                if (statusInput) {
+                    statusInput.value = status;
+                }
+            } else {
+                const statusInput = document.getElementById('cropStatus');
+                if (statusInput) {
+                    statusInput.value = '';
+                }
+            }
         }
 
         function calculateAndDisplayMaturityDate() {
@@ -670,7 +709,13 @@
                 const aiMaturityDate = calculateMaturityDate(tempCrop);
                 
                 // Update the harvest date field with AI calculated date
-                document.getElementById('harvestDate').value = aiMaturityDate;
+                const harvestDateInput = document.getElementById('harvestDate');
+                if (harvestDateInput) {
+                    harvestDateInput.value = aiMaturityDate;
+                }
+                
+                // Update lifecycle stage
+                updateLifecycleStage();
                 
                 // Show AI calculation info
                 showAICalculationInfo(tempCrop, aiMaturityDate);
@@ -743,6 +788,17 @@
                 noCropsMessage.style.display = 'block';
                 return;
             }
+            
+            // Auto-update lifecycle stage for all crops based on current date
+            crops.forEach(crop => {
+                if (crop.plantingDate) {
+                    const currentStatus = calculateLifecycleStage(crop.plantingDate, crop.maturityDate || crop.harvestDate);
+                    crop.status = currentStatus.toLowerCase();
+                }
+            });
+            
+            // Save updated statuses
+            saveCropsToStorage();
             
             noCropsMessage.style.display = 'none';
             container.innerHTML = '';
@@ -850,6 +906,58 @@
         }
 
         // AI-powered maturity date calculation
+        // Calculate lifecycle stage based on planting date and maturity date
+        function calculateLifecycleStage(plantingDate, maturityDate) {
+            if (!plantingDate) {
+                return 'Planted';
+            }
+            
+            const today = new Date();
+            const planted = new Date(plantingDate);
+            const maturity = maturityDate ? new Date(maturityDate) : null;
+            const daysSincePlanting = Math.floor((today - planted) / (1000 * 60 * 60 * 24));
+            
+            // If maturity date is provided, use it for calculation
+            if (maturity) {
+                const daysToMaturity = Math.floor((maturity - planted) / (1000 * 60 * 60 * 24));
+                
+                if (daysSincePlanting < 0) {
+                    return 'Planted';
+                } else if (daysSincePlanting < daysToMaturity * 0.15) {
+                    return 'Planted';
+                } else if (daysSincePlanting < daysToMaturity * 0.3) {
+                    return 'Growing';
+                } else if (daysSincePlanting < daysToMaturity * 0.5) {
+                    return 'Flowering';
+                } else if (daysSincePlanting < daysToMaturity * 0.7) {
+                    return 'Fruiting';
+                } else if (daysSincePlanting < daysToMaturity * 0.9) {
+                    return 'Harvesting';
+                } else if (daysSincePlanting >= daysToMaturity) {
+                    return 'Completed';
+                } else {
+                    return 'Harvesting';
+                }
+            } else {
+                // Generic calculation based on days since planting
+                if (daysSincePlanting < 0) {
+                    return 'Planted';
+                } else if (daysSincePlanting < 7) {
+                    return 'Planted';
+                } else if (daysSincePlanting < 30) {
+                    return 'Growing';
+                } else if (daysSincePlanting < 60) {
+                    return 'Flowering';
+                } else if (daysSincePlanting < 90) {
+                    return 'Fruiting';
+                } else if (daysSincePlanting < 120) {
+                    return 'Harvesting';
+                } else {
+                    return 'Completed';
+                }
+            }
+        }
+
         function calculateMaturityDate(crop) {
             const cropDatabase = {
                 // Vegetables
@@ -1030,23 +1138,27 @@
                     area: area
                 };
                 
-                // Calculate AI maturity date
-                const aiMaturityDate = calculateMaturityDate(tempCrop);
-                console.log('AI maturity date calculated:', aiMaturityDate);
-                
-                const cropData = {
-                    id: Date.now(),
-                    name: cropName,
-                    variety: variety,
-                    field: field,
-                    status: 'planted',
-                    plantingDate: plantingDate,
-                    harvestDate: document.getElementById('harvestDate').value || aiMaturityDate,
-                    maturityDate: aiMaturityDate, // Store AI calculated maturity date
-                    area: area,
-                    yield: 0,
-                    notes: document.getElementById('cropNotes').value
-                };
+            // Calculate AI maturity date
+            const aiMaturityDate = calculateMaturityDate(tempCrop);
+            console.log('AI maturity date calculated:', aiMaturityDate);
+            
+            // Auto-calculate lifecycle stage
+            const calculatedStatus = calculateLifecycleStage(plantingDate, aiMaturityDate);
+            console.log('Lifecycle stage calculated:', calculatedStatus);
+            
+            const cropData = {
+                id: Date.now(),
+                name: cropName,
+                variety: variety,
+                field: field,
+                status: calculatedStatus.toLowerCase(), // Use auto-calculated status
+                plantingDate: plantingDate,
+                harvestDate: document.getElementById('harvestDate').value || aiMaturityDate,
+                maturityDate: aiMaturityDate, // Store AI calculated maturity date
+                area: area,
+                yield: 0,
+                notes: document.getElementById('cropNotes').value
+            };
                 
                 console.log('Crop data to save:', cropData);
                 
@@ -1089,12 +1201,15 @@
             document.getElementById('editCropName').value = crop.name;
             document.getElementById('editCropVariety').value = crop.variety;
             document.getElementById('editCropField').value = crop.field;
-            document.getElementById('editCropStatus').value = crop.status;
             document.getElementById('editPlantingDate').value = crop.plantingDate;
             document.getElementById('editHarvestDate').value = crop.harvestDate;
             document.getElementById('editCropArea').value = crop.area;
             document.getElementById('editCropYield').value = crop.yield;
             document.getElementById('editCropNotes').value = crop.notes;
+            
+            // Calculate and display auto-calculated lifecycle stage
+            const calculatedStatus = calculateLifecycleStage(crop.plantingDate, crop.maturityDate || crop.harvestDate);
+            document.getElementById('editCropStatus').value = calculatedStatus;
             
             // Show modal
             new bootstrap.Modal(document.getElementById('editCropModal')).show();
@@ -1124,12 +1239,15 @@
             // Calculate AI maturity date
             const aiMaturityDate = calculateMaturityDate(tempCrop);
             
+            // Auto-calculate lifecycle stage
+            const calculatedStatus = calculateLifecycleStage(plantingDate, aiMaturityDate);
+            
             crops[cropIndex] = {
                 ...crops[cropIndex],
                 name: cropName,
                 variety: variety,
                 field: field,
-                status: document.getElementById('editCropStatus').value,
+                status: calculatedStatus.toLowerCase(), // Use auto-calculated status
                 plantingDate: plantingDate,
                 harvestDate: document.getElementById('editHarvestDate').value || aiMaturityDate,
                 maturityDate: aiMaturityDate, // Update AI calculated maturity date
