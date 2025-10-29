@@ -15901,7 +15901,10 @@ INVENTORY SUMMARY:
             const readyForHarvest = document.querySelectorAll('.status-badge.status-harvesting').length;
             
             // Calculate total yield from sample data
-            const yieldElements = document.querySelectorAll('.detail-row span:contains("Yield:")');
+            // Note: :contains() is not a valid CSS selector, using filter instead
+            const yieldElements = Array.from(document.querySelectorAll('.detail-row span')).filter(span => 
+                span.textContent.includes('Yield:')
+            );
             let totalYield = 45.5; // From sample data
             
             document.getElementById('totalCrops').textContent = totalCrops;
@@ -15918,11 +15921,17 @@ INVENTORY SUMMARY:
             // Calculate total value from sample data
             let totalValue = 0;
             document.querySelectorAll('.livestock-card').forEach(card => {
-                const weightText = card.querySelector('.detail-row span:contains("Weight:")');
+                // Find the weight span by filtering spans that contain "Weight:"
+                // Note: :contains() is not a valid CSS selector
+                const spans = Array.from(card.querySelectorAll('.detail-row span'));
+                const weightText = spans.find(span => span.textContent.includes('Weight:'));
                 if (weightText) {
-                    const weight = parseFloat(weightText.textContent.match(/[\d.]+/)[0]);
-                    // Estimate value based on weight (rough calculation)
-                    totalValue += weight * 15; // FJD per kg
+                    const weightMatch = weightText.textContent.match(/[\d.]+/);
+                    if (weightMatch) {
+                        const weight = parseFloat(weightMatch[0]);
+                        // Estimate value based on weight (rough calculation)
+                        totalValue += weight * 15; // FJD per kg
+                    }
                 }
             });
             
