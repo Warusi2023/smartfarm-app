@@ -156,13 +156,8 @@ class ModalAccessibility {
                     
                     // If Bootstrap set an incorrect value, fix it (but only if it's different)
                     if (currentValue !== expectedValue) {
-                        // Only log and correct if we haven't already corrected this value
+                        // Only correct if we haven't already corrected this value (prevent rapid corrections)
                         if (currentValue !== lastCorrectedValue) {
-                            // Only log in development mode to reduce console spam
-                            if (window.location.hostname === 'localhost') {
-                                console.log(`🔧 ModalAccessibility: Correcting aria-hidden from "${currentValue}" to "${expectedValue}"`);
-                            }
-                            
                             isCorrecting = true;
                             correctionCount++;
                             
@@ -181,11 +176,19 @@ class ModalAccessibility {
                             // Use a longer delay to ensure Bootstrap is done making changes
                             setTimeout(() => {
                                 isCorrecting = false;
-                                // Only reconnect if modal still exists and observer still exists
-                                if (modal._ariaHiddenObserver && document.body.contains(modal)) {
+                                // Only reconnect if modal still exists and observer still exists and expected value hasn't changed
+                                if (modal._ariaHiddenObserver && document.body.contains(modal) && modal._ariaHiddenExpected === shouldBeHidden) {
                                     observer.observe(modal, { attributes: true, attributeFilter: ['aria-hidden'] });
                                 }
                             }, 200); // Longer delay to prevent recursion
+                        } else {
+                            // If we already corrected this value, something is wrong - disconnect to prevent infinite loop
+                            if (correctionCount >= 2) {
+                                console.warn('⚠️ ModalAccessibility: Multiple corrections detected, disconnecting observer to prevent loop');
+                                observer.disconnect();
+                                delete modal._ariaHiddenObserver;
+                                delete modal._ariaHiddenExpected;
+                            }
                         }
                     } else {
                         // Reset correction count if value is correct
@@ -286,10 +289,15 @@ class ModalAccessibility {
                 console.log('🔧 ModalAccessibility: Removed focus from:', focusedElement);
             }
 
-            // CRITICAL: Prevent Bootstrap from interfering with aria-hidden
-            this.preventBootstrapAriaHidden(modalEl, true);
+            // CRITICAL: Clean up observer FIRST before setting aria-hidden to prevent conflicts
+            if (modalEl._ariaHiddenObserver) {
+                modalEl._ariaHiddenObserver.disconnect();
+                delete modalEl._ariaHiddenObserver;
+                delete modalEl._ariaHiddenExpected;
+            }
 
-            // Set aria-hidden
+            // Now it's safe to set aria-hidden - Bootstrap will set it correctly
+            // We don't need to prevent Bootstrap anymore since modal is closing
             modalEl.setAttribute('aria-hidden', 'true');
             
             // Remove aria-modal
@@ -322,6 +330,14 @@ class ModalAccessibility {
 
     handleModalHide(modal) {
         console.log('🔧 ModalAccessibility: Modal hiding:', modal.id || 'unnamed modal');
+        
+        // CRITICAL: Clean up observer immediately to prevent conflicts during hide
+        if (modal._ariaHiddenObserver) {
+            modal._ariaHiddenObserver.disconnect();
+            delete modal._ariaHiddenObserver;
+            delete modal._ariaHiddenExpected;
+        }
+        
         this.toggleModalAccessibility(modal, false);
     }
 

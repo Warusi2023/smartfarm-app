@@ -2644,30 +2644,9 @@
                     }
                 });
                 
-                // CRITICAL: MutationObserver to detect aria-hidden changes and fix focus conflicts
-                const observer = new MutationObserver(function(mutations) {
-                    mutations.forEach(function(mutation) {
-                        if (mutation.type === 'attributes' && mutation.attributeName === 'aria-hidden') {
-                            const modal = mutation.target;
-                            if (modal.classList.contains('modal') && modal.getAttribute('aria-hidden') === 'true') {
-                                console.log('🔧 Detected aria-hidden="true" on modal, checking for focus conflicts');
-                                
-                                // Check if any element inside the modal has focus
-                                const focusedElement = modal.querySelector(':focus');
-                                if (focusedElement) {
-                                    console.warn('⚠️ Focus conflict detected, removing focus from:', focusedElement);
-                                    focusedElement.blur();
-                                }
-                            }
-                        }
-                    });
-                });
-                
-                // Observe the modal for aria-hidden changes
-                observer.observe(addLivestockModal, {
-                    attributes: true,
-                    attributeFilter: ['aria-hidden']
-                });
+                // NOTE: Removed duplicate MutationObserver - modal-accessibility.js handles this
+                // The ModalAccessibility class already manages aria-hidden and focus conflicts
+                // Adding another observer would create conflicts and infinite loops
             }
         });
 
