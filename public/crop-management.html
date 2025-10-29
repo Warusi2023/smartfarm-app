@@ -246,7 +246,7 @@
                     <p class="mb-0 mt-2">Manage your crops, track growth, and optimize yields</p>
                 </div>
                 <div class="col-md-4 text-end">
-                    <button class="btn btn-light btn-lg" data-bs-toggle="modal" data-bs-target="#addCropModal">
+                    <button class="btn btn-light btn-lg" data-bs-toggle="modal" data-bs-target="#addCropModal" onclick="console.log('Add New Crop button clicked')">
                         <i class="fas fa-plus me-2"></i>Add New Crop
                     </button>
                 </div>
@@ -416,7 +416,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-custom" onclick="saveNewCrop()">
+                    <button type="button" class="btn btn-custom" onclick="console.log('Save Crop button clicked'); saveNewCrop();">
                         <i class="fas fa-save me-2"></i>Save Crop
                     </button>
                 </div>
@@ -971,48 +971,77 @@
         }
 
         function saveNewCrop() {
-            const cropName = document.getElementById('cropName').value;
-            const variety = document.getElementById('cropVariety').value;
-            const field = document.getElementById('cropField').value;
-            const plantingDate = document.getElementById('plantingDate').value;
-            const area = parseFloat(document.getElementById('cropArea').value);
-            
-            // Create temporary crop object for AI calculation
-            const tempCrop = {
-                name: cropName,
-                variety: variety,
-                field: field,
-                plantingDate: plantingDate,
-                area: area
-            };
-            
-            // Calculate AI maturity date
-            const aiMaturityDate = calculateMaturityDate(tempCrop);
-            
-            const cropData = {
-                id: Date.now(),
-                name: cropName,
-                variety: variety,
-                field: field,
-                status: 'planted',
-                plantingDate: plantingDate,
-                harvestDate: document.getElementById('harvestDate').value || aiMaturityDate,
-                maturityDate: aiMaturityDate, // Store AI calculated maturity date
-                area: area,
-                yield: 0,
-                notes: document.getElementById('cropNotes').value
-            };
-            
-            crops.push(cropData);
-            loadCrops();
-            updateStatistics();
-            
-            // Close modal and reset form
-            bootstrap.Modal.getInstance(document.getElementById('addCropModal')).hide();
-            document.getElementById('addCropForm').reset();
-            
-            // Show success message
-            showAlert('Crop added successfully!', 'success');
+            try {
+                console.log('saveNewCrop function called');
+                
+                // Get form values
+                const cropName = document.getElementById('cropName').value;
+                const variety = document.getElementById('cropVariety').value;
+                const field = document.getElementById('cropField').value;
+                const plantingDate = document.getElementById('plantingDate').value;
+                const area = parseFloat(document.getElementById('cropArea').value) || 0;
+                
+                console.log('Form values:', { cropName, variety, field, plantingDate, area });
+                
+                // Validate required fields
+                if (!cropName || !field || !plantingDate) {
+                    showAlert('Please fill in all required fields (Crop Name, Field Name, and Planting Date).', 'error');
+                    return;
+                }
+                
+                // Create temporary crop object for AI calculation
+                const tempCrop = {
+                    name: cropName,
+                    variety: variety,
+                    field: field,
+                    plantingDate: plantingDate,
+                    area: area
+                };
+                
+                // Calculate AI maturity date
+                const aiMaturityDate = calculateMaturityDate(tempCrop);
+                console.log('AI maturity date calculated:', aiMaturityDate);
+                
+                const cropData = {
+                    id: Date.now(),
+                    name: cropName,
+                    variety: variety,
+                    field: field,
+                    status: 'planted',
+                    plantingDate: plantingDate,
+                    harvestDate: document.getElementById('harvestDate').value || aiMaturityDate,
+                    maturityDate: aiMaturityDate, // Store AI calculated maturity date
+                    area: area,
+                    yield: 0,
+                    notes: document.getElementById('cropNotes').value
+                };
+                
+                console.log('Crop data to save:', cropData);
+                
+                // Ensure crops array exists
+                if (!crops) {
+                    crops = [];
+                }
+                
+                crops.push(cropData);
+                loadCrops();
+                updateStatistics();
+                
+                // Close modal and reset form
+                const modal = bootstrap.Modal.getInstance(document.getElementById('addCropModal'));
+                if (modal) {
+                    modal.hide();
+                }
+                document.getElementById('addCropForm').reset();
+                
+                // Show success message
+                showAlert('Crop added successfully!', 'success');
+                console.log('Crop added successfully');
+                
+            } catch (error) {
+                console.error('Error in saveNewCrop:', error);
+                showAlert('Error adding crop: ' + error.message, 'error');
+            }
         }
 
         function editCrop(id) {
