@@ -190,43 +190,98 @@ class LocationSelector {
             return;
         }
 
-        try {
-            // Get API base URL from config
-            const apiBaseUrl = window.SmartFarmConfig?.getApiUrl('') || 'https://smartfarm-app-production.up.railway.app';
-            
-            const response = await fetch(
-                `${apiBaseUrl}/api/weather/search?q=${encodeURIComponent(query)}`
-            );
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                if (errorData.useDemo) {
-                    this.showSearchError('Weather API not configured on server');
-                    return;
-                }
-                throw new Error(`Search API error: ${response.status}`);
-            }
-
-            const result = await response.json();
-            if (!result.success) {
-                throw new Error(result.error || 'Search failed');
-            }
-
-            // Convert backend format to display format
-            const results = result.data.map(loc => ({
-                name: loc.name,
-                state: loc.state,
-                country: loc.country,
-                lat: loc.lat,
-                lon: loc.lng
-            }));
-
-            this.displaySearchResults(results);
-
-        } catch (error) {
-            console.error('Error searching locations:', error);
-            this.showSearchError('Unable to search locations. Please try again.');
+        // Show loading indicator
+        const loadingMessage = '<div class="text-info text-center py-3"><i class="fas fa-spinner fa-spin me-2"></i>Searching locations...</div>';
+        const resultsContainer = document.getElementById('locationSearchResults');
+        if (resultsContainer) {
+            resultsContainer.innerHTML = loadingMessage;
+            resultsContainer.style.display = 'block';
         }
+
+        try {
+            // Try primary backend API first
+            const results = await this.tryBackendSearch(query);
+            if (results && results.length > 0) {
+                this.displaySearchResults(results);
+                return;
+            }
+        } catch (error) {
+            console.warn('Backend search failed, trying fallback:', error);
+        }
+
+        try {
+            // Fallback to free geocoding service
+            const results = await this.tryFallbackSearch(query);
+            if (results && results.length > 0) {
+                this.displaySearchResults(results);
+                return;
+            }
+        } catch (error) {
+            console.warn('Fallback search failed:', error);
+        }
+
+        // If both fail, show popular cities as fallback
+        this.showPopularCities(query);
+    }
+
+    async tryBackendSearch(query) {
+        // Get API base URL from config
+        const apiBaseUrl = window.SmartFarmConfig?.getApiUrl('') || 'https://smartfarm-app-production.up.railway.app';
+        
+        const response = await fetch(
+            `${apiBaseUrl}/api/weather/search?q=${encodeURIComponent(query)}`,
+            { timeout: 5000 } // 5 second timeout
+        );
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            if (errorData.useDemo) {
+                throw new Error('Weather API not configured on server');
+            }
+            throw new Error(`Search API error: ${response.status}`);
+        }
+
+        const result = await response.json();
+        if (!result.success) {
+            throw new Error(result.error || 'Search failed');
+        }
+
+        // Convert backend format to display format
+        return result.data.map(loc => ({
+            name: loc.name,
+            state: loc.state,
+            country: loc.country,
+            lat: loc.lat,
+            lon: loc.lng
+        }));
+    }
+
+    async tryFallbackSearch(query) {
+        // Use free Nominatim geocoding service as fallback
+        const response = await fetch(
+            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=10&addressdetails=1`,
+            {
+                headers: {
+                    'User-Agent': 'SmartFarm/1.0'
+                },
+                timeout: 8000 // 8 second timeout
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(`Geocoding API error: ${response.status}`);
+        }
+
+        const results = await response.json();
+        
+        // Convert Nominatim format to our display format
+        return results.map(loc => ({
+            name: loc.display_name.split(',')[0] || loc.name || 'Unknown',
+            state: loc.address?.state || loc.address?.county || '',
+            country: loc.address?.country || '',
+            lat: parseFloat(loc.lat),
+            lon: parseFloat(loc.lon)
+        }));
     }
 
     displaySearchResults(results) {
@@ -265,6 +320,70 @@ class LocationSelector {
             resultsContainer.innerHTML = `<div class="text-danger text-center py-3">${message}</div>`;
             resultsContainer.style.display = 'block';
         }
+    }
+
+    showPopularCities(query) {
+        const resultsContainer = document.getElementById('locationSearchResults');
+        if (!resultsContainer) return;
+
+        // Popular cities database
+        const popularCities = [
+            { name: 'New York', state: 'NY', country: 'USA', lat: 40.7128, lon: -74.0060 },
+            { name: 'London', state: '', country: 'UK', lat: 51.5074, lon: -0.1278 },
+            { name: 'Tokyo', state: '', country: 'Japan', lat: 35.6762, lon: 139.6503 },
+            { name: 'Paris', state: '', country: 'France', lat: 48.8566, lon: 2.3522 },
+            { name: 'Sydney', state: 'NSW', country: 'Australia', lat: -33.8688, lon: 151.2093 },
+            { name: 'Toronto', state: 'ON', country: 'Canada', lat: 43.6532, lon: -79.3832 },
+            { name: 'Berlin', state: '', country: 'Germany', lat: 52.5200, lon: 13.4050 },
+            { name: 'Mumbai', state: 'MH', country: 'India', lat: 19.0760, lon: 72.8777 },
+            { name: 'São Paulo', state: 'SP', country: 'Brazil', lat: -23.5505, lon: -46.6333 },
+            { name: 'Cairo', state: '', country: 'Egypt', lat: 30.0444, lon: 31.2357 },
+            { name: 'Lagos', state: '', country: 'Nigeria', lat: 6.5244, lon: 3.3792 },
+            { name: 'Nairobi', state: '', country: 'Kenya', lat: -1.2921, lon: 36.8219 },
+            { name: 'Johannesburg', state: '', country: 'South Africa', lat: -26.2041, lon: 28.0473 },
+            { name: 'Dubai', state: '', country: 'UAE', lat: 25.2048, lon: 55.2708 },
+            { name: 'Singapore', state: '', country: 'Singapore', lat: 1.3521, lon: 103.8198 },
+            { name: 'Bangkok', state: '', country: 'Thailand', lat: 13.7563, lon: 100.5018 },
+            { name: 'Seoul', state: '', country: 'South Korea', lat: 37.5665, lon: 126.9780 },
+            { name: 'Mexico City', state: 'CDMX', country: 'Mexico', lat: 19.4326, lon: -99.1332 },
+            { name: 'Buenos Aires', state: '', country: 'Argentina', lat: -34.6118, lon: -58.3960 },
+            { name: 'Moscow', state: '', country: 'Russia', lat: 55.7558, lon: 37.6176 }
+        ];
+
+        // Filter cities based on query
+        const filteredCities = popularCities.filter(city => 
+            city.name.toLowerCase().includes(query.toLowerCase()) ||
+            city.country.toLowerCase().includes(query.toLowerCase()) ||
+            city.state.toLowerCase().includes(query.toLowerCase())
+        );
+
+        if (filteredCities.length > 0) {
+            resultsContainer.innerHTML = `
+                <div class="text-muted text-center py-2 mb-2">
+                    <small>Showing popular cities (offline mode)</small>
+                </div>
+                ${filteredCities.map(city => `
+                    <div class="search-result-item" onclick="locationSelector.selectLocation(${JSON.stringify(city).replace(/"/g, '&quot;')})">
+                        <div class="search-result-main">
+                            <strong>${city.name}</strong>
+                            ${city.state ? `, ${city.state}` : ''}
+                        </div>
+                        <div class="search-result-details">
+                            ${city.country} • ${city.lat.toFixed(2)}, ${city.lon.toFixed(2)}
+                        </div>
+                    </div>
+                `).join('')}
+            `;
+        } else {
+            resultsContainer.innerHTML = `
+                <div class="text-warning text-center py-3">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    No cities found matching "${query}". Please check your internet connection and try again.
+                </div>
+            `;
+        }
+
+        resultsContainer.style.display = 'block';
     }
 
     async selectLocation(location) {
@@ -386,25 +505,52 @@ class LocationSelector {
 
     async getLocationName(lat, lng) {
         try {
-            // Get API base URL from config
+            // Try backend API first
             const apiBaseUrl = window.SmartFarmConfig?.getApiUrl('') || 'https://smartfarm-app-production.up.railway.app';
             
             const response = await fetch(
-                `${apiBaseUrl}/api/weather/location?lat=${lat}&lng=${lng}`
+                `${apiBaseUrl}/api/weather/location?lat=${lat}&lng=${lng}`,
+                { timeout: 5000 }
             );
 
-            if (!response.ok) return 'Unknown Location';
-
-            const result = await response.json();
-            if (result.success && result.data) {
-                return result.data.fullName || 'Unknown Location';
+            if (response.ok) {
+                const result = await response.json();
+                if (result.success && result.data) {
+                    return result.data.fullName || 'Unknown Location';
+                }
             }
-
-            return 'Unknown Location';
         } catch (error) {
-            console.error('Error getting location name:', error);
-            return 'Unknown Location';
+            console.warn('Backend reverse geocoding failed, trying fallback:', error);
         }
+
+        try {
+            // Fallback to Nominatim reverse geocoding
+            const response = await fetch(
+                `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`,
+                {
+                    headers: {
+                        'User-Agent': 'SmartFarm/1.0'
+                    },
+                    timeout: 8000
+                }
+            );
+
+            if (response.ok) {
+                const result = await response.json();
+                if (result.display_name) {
+                    // Format the display name nicely
+                    const parts = result.display_name.split(',');
+                    if (parts.length >= 2) {
+                        return `${parts[0]}, ${parts[parts.length - 1]}`.trim();
+                    }
+                    return parts[0] || 'Unknown Location';
+                }
+            }
+        } catch (error) {
+            console.warn('Fallback reverse geocoding failed:', error);
+        }
+
+        return 'Unknown Location';
     }
 
     useSavedLocation() {
