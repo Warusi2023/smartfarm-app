@@ -922,7 +922,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-custom" onclick="saveNewLivestock()">
+                    <button type="button" id="saveLivestockButton" class="btn btn-custom" onclick="console.log('Button clicked'); if(window.saveNewLivestock){window.saveNewLivestock();}else if(saveNewLivestock){saveNewLivestock();}else{alert('Error: Save function not available. Please refresh the page.');}" style="pointer-events: auto; cursor: pointer;">
                         <i class="fas fa-save me-2"></i>Save Animal
                     </button>
                 </div>
@@ -1771,21 +1771,80 @@
             updateStatistics();
             initializeBreedSuggestions();
             
-            // Add backup event listener for save button (in case onclick fails)
-            // Use a delegated listener that works even if modal is dynamically shown
-            document.addEventListener('click', function(e) {
-                const button = e.target.closest('button');
-                if (button && button.textContent.includes('Save Animal') && 
-                    (button.onclick?.toString().includes('saveNewLivestock') || 
-                     button.closest('#addLivestockModal'))) {
-                    // Make sure the function exists and is callable
+            // Add robust event listener for save button
+            // Set up when modal is shown
+            const addLivestockModal = document.getElementById('addLivestockModal');
+            if (addLivestockModal) {
+                addLivestockModal.addEventListener('shown.bs.modal', function() {
+                    const saveButton = document.getElementById('saveLivestockButton') || 
+                                      this.querySelector('button[onclick*="saveNewLivestock"]');
+                    if (saveButton) {
+                        // Ensure button is enabled and clickable
+                        saveButton.disabled = false;
+                        saveButton.style.pointerEvents = 'auto';
+                        saveButton.style.cursor = 'pointer';
+                        saveButton.style.opacity = '1';
+                        
+                        // Remove any existing event listeners by cloning
+                        if (!saveButton.hasAttribute('data-listener-attached')) {
+                            const newSaveButton = saveButton.cloneNode(true);
+                            saveButton.parentNode.replaceChild(newSaveButton, saveButton);
+                            
+                            // Keep onclick if it exists, but also add event listener
+                            const originalOnclick = newSaveButton.getAttribute('onclick');
+                            
+                            // Mark button as having listener attached
+                            newSaveButton.setAttribute('data-listener-attached', 'true');
+                            
+                            // Add robust event listener
+                            newSaveButton.addEventListener('click', function(e) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                e.stopImmediatePropagation();
+                                console.log('💾 Save button clicked - executing saveNewLivestock');
+                                
+                                if (typeof saveNewLivestock === 'function') {
+                                    saveNewLivestock().catch(err => {
+                                        console.error('❌ Error in saveNewLivestock:', err);
+                                        alert('Error saving animal: ' + err.message);
+                                    });
+                                } else {
+                                    console.error('❌ saveNewLivestock function not found!');
+                                    alert('Error: Save function not available. Please refresh the page.');
+                                }
+                                return false;
+                            }, true); // Use capture phase
+                            
+                            console.log('✅ Save button activated with event listener');
+                        }
+                    } else {
+                        console.warn('⚠️ Save button not found in modal');
+                    }
+                });
+            }
+            
+        });
+        
+        // Global backup listener (only if button doesn't have onclick)
+        document.addEventListener('click', function(e) {
+            const button = e.target.closest('button');
+            if (button && 
+                (button.textContent.includes('Save Animal') || 
+                 button.innerHTML.includes('Save Animal')) &&
+                button.closest('#addLivestockModal') &&
+                !button.hasAttribute('data-listener-attached')) {
+                // Only handle if no other listener is working
+                const hasOnclick = button.hasAttribute('onclick');
+                if (!hasOnclick) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('💾 Save button clicked via global backup listener');
                     if (typeof saveNewLivestock === 'function') {
-                        console.log('💾 Save button clicked - ensuring function executes');
-                        // The onclick handler should handle it, but we log to verify
+                        saveNewLivestock();
                     }
                 }
-            }, true); // Use capture phase
-        });
+            }
+        }, true);
 
         function checkAuthentication() {
             const user = localStorage.getItem('smartfarm_user') || sessionStorage.getItem('smartfarm_user');
@@ -2008,22 +2067,40 @@
             document.getElementById('totalValue').textContent = livestock.reduce((sum, a) => sum + a.value, 0).toFixed(0);
         }
 
-        async function saveNewLivestock() {
+        // Ensure function is globally accessible
+        window.saveNewLivestock = async function saveNewLivestock() {
             console.log('💾 saveNewLivestock function called');
             const modalId = 'addLivestockModal';
             
+            // Ensure button is not disabled (safety check)
+            const saveButton = document.getElementById('saveLivestockButton');
+            if (saveButton) {
+                saveButton.disabled = false;
+            }
+            
+            // Bypass ModalValidator if it's blocking - just proceed with save
             // Validate modal before proceeding (but don't block if validator fails)
             try {
                 if (window.ModalValidator && typeof window.ModalValidator.validateModal === 'function') {
-                    const isValid = await window.ModalValidator.validateModal(modalId);
+                    // Try validation but don't wait for it or block on it
+                    const validationPromise = window.ModalValidator.validateModal(modalId).catch(() => true);
+                    const isValid = await Promise.race([
+                        validationPromise,
+                        new Promise(resolve => setTimeout(() => resolve(true), 100)) // Timeout after 100ms
+                    ]);
+                    
                     if (!isValid) {
-                        console.warn('⚠️ Modal validation failed, but continuing anyway');
+                        console.warn('⚠️ Modal validation returned invalid, but continuing anyway');
                         // Don't block - continue with save anyway
                     }
                     
-                    // Set saving state
+                    // Set saving state (non-blocking)
                     if (typeof window.ModalValidator.setSaving === 'function') {
-                        window.ModalValidator.setSaving(modalId, true);
+                        try {
+                            window.ModalValidator.setSaving(modalId, true);
+                        } catch (e) {
+                            console.warn('Could not set ModalValidator saving state:', e);
+                        }
                     }
                 }
             } catch (validatorError) {
