@@ -649,40 +649,51 @@
 
             // Add click handler for map (only if map was successfully initialized)
             if (map) {
-                map.on('click', function(e) {
-                console.log('Map clicked at:', e.latlng.lat, e.latlng.lng);
-                console.log('Current step:', currentStep);
-                console.log('Geofence type:', geofenceType);
+                // Remove any existing click handlers first to prevent duplicates
+                map.off('click');
                 
-                if (currentStep === 2) {
-                    console.log('Setting farm location');
-                    setFarmLocation(e.latlng.lat, e.latlng.lng);
-                } else if (currentStep === 3 && geofenceType === 'polygon') {
-                    console.log('Adding polygon point');
+                map.on('click', function(e) {
+                    const lat = e.latlng.lat;
+                    const lng = e.latlng.lng;
+                    console.log('🗺️ Map clicked at:', lat, lng);
+                    console.log('📍 Current step:', currentStep);
+                    console.log('🔧 Geofence type:', geofenceType);
                     
-                    // Check if clicking near the first point to close polygon
-                    if (polygonPoints.length >= 3) {
-                        const firstPoint = polygonPoints[0];
-                        const distance = Math.sqrt(
-                            Math.pow(e.latlng.lat - firstPoint[0], 2) + 
-                            Math.pow(e.latlng.lng - firstPoint[1], 2)
-                        );
-                        
-                        // If within 0.001 degrees (roughly 100m), close the polygon
-                        if (distance < 0.001) {
-                            console.log('Closing polygon');
-                            closePolygon();
-                            return;
+                    if (currentStep === 2) {
+                        console.log('✅ Setting farm location');
+                        setFarmLocation(lat, lng);
+                    } else if (currentStep === 3) {
+                        if (geofenceType === 'polygon') {
+                            console.log('✅ Adding polygon point');
+                            
+                            // Check if clicking near the first point to close polygon
+                            if (polygonPoints.length >= 3) {
+                                const firstPoint = polygonPoints[0];
+                                const distance = Math.sqrt(
+                                    Math.pow(lat - firstPoint[0], 2) + 
+                                    Math.pow(lng - firstPoint[1], 2)
+                                );
+                                
+                                // If within 0.001 degrees (roughly 100m), close the polygon
+                                if (distance < 0.001) {
+                                    console.log('✅ Closing polygon');
+                                    closePolygon();
+                                    return;
+                                }
+                            }
+                            
+                            addPolygonPoint(lat, lng);
+                        } else {
+                            console.log('⚠️ Click ignored - polygon mode not selected');
                         }
+                    } else {
+                        console.log('⚠️ Click ignored - not in step 2 or 3');
                     }
-                    
-                    addPolygonPoint(e.latlng.lat, e.latlng.lng);
-                } else {
-                    console.log('Click ignored - not in polygon drawing mode');
-                }
                 });
+                
+                console.log('✅ Map click handler attached');
             } else {
-                console.log('❌ Map not initialized, click handler not added');
+                console.error('❌ Map not initialized, click handler not added');
             }
         }
 
@@ -861,11 +872,21 @@
 
             // Step-specific actions
             if (step === 3) {
+                // Ensure map is centered on farm location if coordinates exist
+                const lat = parseFloat(document.getElementById('farmLatitude').value);
+                const lng = parseFloat(document.getElementById('farmLongitude').value);
+                if (!isNaN(lat) && !isNaN(lng) && map) {
+                    map.setView([lat, lng], 15);
+                    console.log('🗺️ Map centered on farm location:', lat, lng);
+                }
+                
                 updateGeofencePreview();
                 // Initialize polygon drawing if polygon type is selected
                 if (geofenceType === 'polygon') {
+                    clearPolygonPoints(); // Clear any previous polygon
                     updatePolygonStatus();
-                    console.log('Initialized polygon drawing mode');
+                    console.log('✅ Initialized polygon drawing mode - ready to draw');
+                    console.log('📍 Click on the map to start adding polygon points');
                 }
             } else if (step === 4) {
                 generateReviewContent();
@@ -959,7 +980,7 @@
         }
 
         function selectGeofenceType(type) {
-            console.log('Selecting geofence type:', type);
+            console.log('🔧 Selecting geofence type:', type);
             geofenceType = type;
             
             // Update UI
@@ -975,41 +996,76 @@
             // Clear polygon points if switching to circular
             if (type === 'circular') {
                 clearPolygonPoints();
-            } else if (type === 'polygon' && currentStep === 3) {
-                // Initialize polygon drawing mode
+                console.log('🔵 Switched to circular geofence mode');
+            } else if (type === 'polygon') {
+                // Initialize polygon drawing mode whenever polygon is selected
+                clearPolygonPoints(); // Start fresh
                 updatePolygonStatus();
-                console.log('Switched to polygon mode');
+                console.log('✅ Switched to polygon drawing mode');
+                console.log('📍 Current step:', currentStep);
+                console.log('🗺️ Map available:', !!map);
+                
+                if (currentStep === 3) {
+                    showAlert('Polygon mode activated! Click on the map to start drawing your polygon.', 'info');
+                }
             }
         }
 
         function addPolygonPoint(lat, lng) {
-            console.log('Adding polygon point:', lat, lng);
-            console.log('Current step:', currentStep);
-            console.log('Geofence type:', geofenceType);
-            console.log('Map object:', map);
+            if (!map) {
+                console.error('❌ Map not available, cannot add polygon point');
+                showAlert('Map not available. Please refresh the page.', 'warning');
+                return;
+            }
+            
+            console.log('📍 Adding polygon point:', lat, lng);
+            console.log('📍 Current step:', currentStep);
+            console.log('🔧 Geofence type:', geofenceType);
             
             polygonPoints.push([lat, lng]);
-            console.log('Polygon points now:', polygonPoints);
+            console.log('✅ Polygon points count:', polygonPoints.length);
+            console.log('📍 All points:', polygonPoints);
             
-            // Update map
+            // Remove existing geofence layer and markers
             if (geofenceLayer) {
                 map.removeLayer(geofenceLayer);
             }
             
-            if (polygonPoints.length > 1) {
-                geofenceLayer = L.polyline(polygonPoints, { color: 'red', weight: 3 }).addTo(map);
-                console.log('Added polyline to map');
-            } else {
-                // Add a marker for the first point
-                L.marker([lat, lng], { 
+            // Remove any existing polygon point markers
+            map.eachLayer(layer => {
+                if (layer.options && layer.options.isPolygonPoint) {
+                    map.removeLayer(layer);
+                }
+            });
+            
+            // Add markers for all points
+            polygonPoints.forEach((point, index) => {
+                const marker = L.marker([point[0], point[1]], { 
                     icon: L.divIcon({
                         className: 'polygon-point-marker',
-                        html: '<div style="background: red; width: 10px; height: 10px; border-radius: 50%; border: 2px solid white;"></div>',
-                        iconSize: [14, 14],
-                        iconAnchor: [7, 7]
-                    })
+                        html: `<div style="background: ${index === 0 && polygonPoints.length > 2 ? 'green' : 'red'}; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.5);"></div>`,
+                        iconSize: [16, 16],
+                        iconAnchor: [8, 8]
+                    }),
+                    isPolygonPoint: true
                 }).addTo(map);
-                console.log('Added marker for first point');
+                
+                // Add number label
+                marker.bindTooltip((index + 1).toString(), {
+                    permanent: true,
+                    direction: 'center',
+                    className: 'polygon-point-number'
+                });
+            });
+            
+            // Draw polyline connecting points
+            if (polygonPoints.length > 1) {
+                geofenceLayer = L.polyline(polygonPoints, { 
+                    color: 'red', 
+                    weight: 3,
+                    opacity: 0.8
+                }).addTo(map);
+                console.log('✅ Added polyline connecting points');
             }
             
             // Update UI to show point count
@@ -1019,13 +1075,15 @@
             const clearBtn = document.getElementById('clearPolygonBtn');
             const closeBtn = document.getElementById('closePolygonBtn');
             
-            if (polygonPoints.length > 0) {
-                if (clearBtn) clearBtn.style.display = 'inline-block';
+            if (polygonPoints.length > 0 && clearBtn) {
+                clearBtn.style.display = 'inline-block';
             }
             
-            if (polygonPoints.length >= 3) {
-                if (closeBtn) closeBtn.style.display = 'inline-block';
+            if (polygonPoints.length >= 3 && closeBtn) {
+                closeBtn.style.display = 'inline-block';
             }
+            
+            console.log('✅ Polygon point added successfully');
         }
         
         function updatePolygonStatus() {
@@ -1074,13 +1132,32 @@
         }
         
         function clearPolygonPoints() {
-            console.log('Clearing polygon points');
+            console.log('🧹 Clearing polygon points');
             polygonPoints = [];
-            if (geofenceLayer) {
-                map.removeLayer(geofenceLayer);
-                geofenceLayer = null;
+            
+            if (map) {
+                // Remove geofence layer (polyline/polygon)
+                if (geofenceLayer) {
+                    map.removeLayer(geofenceLayer);
+                    geofenceLayer = null;
+                }
+                
+                // Remove all polygon point markers
+                map.eachLayer(layer => {
+                    if (layer.options && layer.options.isPolygonPoint) {
+                        map.removeLayer(layer);
+                    }
+                });
             }
+            
+            // Hide buttons
+            const clearBtn = document.getElementById('clearPolygonBtn');
+            const closeBtn = document.getElementById('closePolygonBtn');
+            if (clearBtn) clearBtn.style.display = 'none';
+            if (closeBtn) closeBtn.style.display = 'none';
+            
             updatePolygonStatus();
+            console.log('✅ Polygon points cleared');
         }
 
         function updateGeofencePreview() {
