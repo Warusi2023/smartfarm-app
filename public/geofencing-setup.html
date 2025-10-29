@@ -1078,6 +1078,13 @@
                     loadingIndicator.style.display = 'none';
                 }
                 
+                // Trigger map resize to ensure it renders correctly
+                setTimeout(() => {
+                    if (polygonMap) {
+                        polygonMap.invalidateSize();
+                    }
+                }, 100);
+                
                 console.log('✅ Polygon map initialized successfully');
             } catch (error) {
                 console.error('❌ Error initializing polygon map:', error);
