@@ -8179,7 +8179,9 @@
             if (hasData) {
                 showConfirmDialog(
                     'Cancel Form',
-                    'Are you sure you want to cancel? All entered data will be lost.',
+                    'Are you sure you want to close this? All entered data will be lost.',
+                    'Yes',
+                    'No',
                     () => {
                         // User confirmed - clear form and close modal
                         document.getElementById('dashboardAddLivestockForm').reset();
@@ -15272,14 +15274,18 @@ INVENTORY SUMMARY:
                             <h5 class="modal-title">
                                 <i class="fas fa-exclamation-triangle me-2"></i>${title}
                             </h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
                             <p class="mb-0">${message}</p>
                         </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">${cancelText}</button>
-                            <button type="button" class="btn btn-warning" id="confirmBtn">${confirmText}</button>
+                        <div class="modal-footer border-top">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                <i class="fas fa-times me-2"></i>${cancelText}
+                            </button>
+                            <button type="button" class="btn btn-warning" id="confirmBtn">
+                                <i class="fas fa-check me-2"></i>${confirmText}
+                            </button>
                         </div>
                     </div>
                 </div>
