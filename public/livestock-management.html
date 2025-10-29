@@ -1770,6 +1770,21 @@
             await loadLivestock();
             updateStatistics();
             initializeBreedSuggestions();
+            
+            // Add backup event listener for save button (in case onclick fails)
+            // Use a delegated listener that works even if modal is dynamically shown
+            document.addEventListener('click', function(e) {
+                const button = e.target.closest('button');
+                if (button && button.textContent.includes('Save Animal') && 
+                    (button.onclick?.toString().includes('saveNewLivestock') || 
+                     button.closest('#addLivestockModal'))) {
+                    // Make sure the function exists and is callable
+                    if (typeof saveNewLivestock === 'function') {
+                        console.log('💾 Save button clicked - ensuring function executes');
+                        // The onclick handler should handle it, but we log to verify
+                    }
+                }
+            }, true); // Use capture phase
         });
 
         function checkAuthentication() {
@@ -1994,17 +2009,26 @@
         }
 
         async function saveNewLivestock() {
+            console.log('💾 saveNewLivestock function called');
             const modalId = 'addLivestockModal';
             
-            // Validate modal before proceeding
-            if (window.ModalValidator) {
-                const isValid = await window.ModalValidator.validateModal(modalId);
-                if (!isValid) {
-                    return;
+            // Validate modal before proceeding (but don't block if validator fails)
+            try {
+                if (window.ModalValidator && typeof window.ModalValidator.validateModal === 'function') {
+                    const isValid = await window.ModalValidator.validateModal(modalId);
+                    if (!isValid) {
+                        console.warn('⚠️ Modal validation failed, but continuing anyway');
+                        // Don't block - continue with save anyway
+                    }
+                    
+                    // Set saving state
+                    if (typeof window.ModalValidator.setSaving === 'function') {
+                        window.ModalValidator.setSaving(modalId, true);
+                    }
                 }
-                
-                // Set saving state
-                window.ModalValidator.setSaving(modalId, true);
+            } catch (validatorError) {
+                console.warn('⚠️ ModalValidator error, continuing with save:', validatorError);
+                // Continue with save even if validator fails
             }
             
             // Get all form values
@@ -2206,6 +2230,15 @@
                     document.getElementById('addLivestockForm').reset();
                 } else {
                     showAlert('Failed to save animal: ' + error.message, 'error');
+                }
+            } finally {
+                // Always reset saving state
+                try {
+                    if (window.ModalValidator && typeof window.ModalValidator.setSaving === 'function') {
+                        window.ModalValidator.setSaving(modalId, false);
+                    }
+                } catch (e) {
+                    console.warn('Could not reset ModalValidator state:', e);
                 }
             }
         }

@@ -207,29 +207,29 @@
     
     // Fix livestock saving specifically
     function fixLivestockSaving() {
-        // Override any livestock save functions
-        const originalConsoleLog = console.log;
-        
-        // Monitor for livestock save attempts
-        document.addEventListener('click', async function(e) {
-            const button = e.target.closest('button');
-            if (button && (button.textContent.includes('Save Animal') || button.textContent.includes('Add Livestock'))) {
-                e.preventDefault();
-                
-                console.log('🐄 Livestock save attempt detected');
-                
-                // Check server connectivity first
-                const isServerReady = await checkServerConnectivity();
-                
-                if (isServerReady) {
-                    console.log('✅ Server is ready, proceeding with save');
-                    // Let the original form submission proceed
-                    button.form?.submit();
-                } else {
-                    console.log('⚠️ Server not ready, showing error message');
-                    showSaveError();
+        // Don't intercept onclick handlers - let them work normally
+        // Only monitor for actual form submissions
+        const forms = document.querySelectorAll('form');
+        forms.forEach(form => {
+            form.addEventListener('submit', async function(e) {
+                const button = e.submitter || form.querySelector('button[type="submit"]');
+                if (button && (button.textContent.includes('Save Animal') || button.textContent.includes('Add Livestock'))) {
+                    // Only prevent form submission, not onclick handlers
+                    // Let onclick handlers work normally
+                    console.log('🐄 Form submission detected - checking server connectivity');
+                    
+                    const isServerReady = await checkServerConnectivity();
+                    
+                    if (!isServerReady) {
+                        console.log('⚠️ Server not ready, preventing form submission');
+                        e.preventDefault();
+                        showSaveError();
+                        return false;
+                    }
+                    
+                    console.log('✅ Server is ready, allowing form submission');
                 }
-            }
+            });
         });
         
         function showSaveError() {
