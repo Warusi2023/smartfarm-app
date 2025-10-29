@@ -8163,8 +8163,42 @@
                 
                 // Store modal instance for later use
                 window.currentLivestockModal = bsModal;
+                
+                // Set up event listeners for auto-calculating lifecycle stage
+                setupLivestockLifecycleListeners();
             } else {
                 console.error('Dashboard add livestock modal not found');
+            }
+        }
+        
+        function setupLivestockLifecycleListeners() {
+            // Add event listeners to auto-update lifecycle stage
+            const speciesSelect = document.getElementById('dashboardLivestockSpecies');
+            const birthDateInput = document.getElementById('dashboardLivestockBirthDate');
+            const sexSelect = document.getElementById('dashboardLivestockSex');
+            
+            if (speciesSelect) {
+                speciesSelect.addEventListener('change', updateDashboardLivestockLifecycle);
+            }
+            if (birthDateInput) {
+                birthDateInput.addEventListener('change', updateDashboardLivestockLifecycle);
+            }
+            if (sexSelect) {
+                sexSelect.addEventListener('change', updateDashboardLivestockLifecycle);
+            }
+        }
+        
+        function updateDashboardLivestockLifecycle() {
+            const species = document.getElementById('dashboardLivestockSpecies')?.value;
+            const birthDate = document.getElementById('dashboardLivestockBirthDate')?.value;
+            const sex = document.getElementById('dashboardLivestockSex')?.value;
+            const lifecycleField = document.getElementById('dashboardLivestockLifecycle');
+            
+            if (lifecycleField && birthDate && species && sex) {
+                const calculatedStage = calculateLifecycleStage(species, birthDate, sex);
+                lifecycleField.value = calculatedStage || '';
+            } else if (lifecycleField) {
+                lifecycleField.value = '';
             }
         }
         
@@ -8289,9 +8323,9 @@
             const value = document.getElementById('dashboardLivestockValue').value;
             const damTag = document.getElementById('dashboardLivestockDamTag').value;
 
-            // Auto-calculate lifecycle stage if not specified
-            let calculatedLifecycle = lifecycle;
-            if (!lifecycle && birthDate) {
+            // Auto-calculate lifecycle stage based on birth date, species, and sex
+            let calculatedLifecycle = '';
+            if (birthDate && species && sex) {
                 calculatedLifecycle = calculateLifecycleStage(species, birthDate, sex);
             }
             
@@ -16123,22 +16157,8 @@ INVENTORY SUMMARY:
                                 </div>
                                 <div class="mb-3">
                                     <label for="dashboardLivestockLifecycle" class="form-label">Lifecycle Stage</label>
-                                    <select class="form-select" id="dashboardLivestockLifecycle">
-                                        <option value="">Auto-calculated</option>
-                                        <option value="Calf">Calf</option>
-                                        <option value="Heifer">Heifer</option>
-                                        <option value="Cow">Cow</option>
-                                        <option value="Bull">Bull</option>
-                                        <option value="Steer">Steer</option>
-                                        <option value="Piglet">Piglet</option>
-                                        <option value="Gilt">Gilt</option>
-                                        <option value="Sow">Sow</option>
-                                        <option value="Boar">Boar</option>
-                                        <option value="Chick">Chick</option>
-                                        <option value="Pullet">Pullet</option>
-                                        <option value="Hen">Hen</option>
-                                        <option value="Rooster">Rooster</option>
-                                    </select>
+                                    <input type="text" class="form-control" id="dashboardLivestockLifecycle" readonly style="background-color: #e9ecef; cursor: not-allowed;">
+                                    <small class="text-muted"><i class="fas fa-info-circle me-1"></i>Auto-calculated based on birth date, species, and sex</small>
                                 </div>
                                 <div class="mb-3">
                                     <label for="dashboardLivestockValue" class="form-label">Estimated Value (FJD)</label>

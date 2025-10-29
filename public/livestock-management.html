@@ -785,7 +785,7 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">Species</label>
-                                    <select class="form-select form-control-custom" id="animalSpecies" required>
+                                    <select class="form-select form-control-custom" id="animalSpecies" required onchange="updateLifecycleFields()">
                                         <option value="">Select Species</option>
                                         <option value="cattle">Cattle</option>
                                         <option value="pigs">Pigs</option>
@@ -858,15 +858,8 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">Lifecycle Stage</label>
-                                    <select class="form-select form-control-custom" id="lifecycleStage">
-                                        <option value="">Auto-calculated</option>
-                                        <option value="calf">Calf (0-12 months)</option>
-                                        <option value="heifer">Heifer (12-24 months)</option>
-                                        <option value="cow">Cow (24+ months)</option>
-                                        <option value="bull">Bull (12+ months)</option>
-                                        <option value="steer">Steer (12+ months)</option>
-                                        <option value="bullock">Bullock (12-24 months)</option>
-                                    </select>
+                                    <input type="text" class="form-control form-control-custom" id="lifecycleStage" readonly style="background-color: #e9ecef; cursor: not-allowed;">
+                                    <small class="text-muted"><i class="fas fa-info-circle me-1"></i>Auto-calculated based on birth date, species, and sex</small>
                                 </div>
                             </div>
                         </div>
@@ -1502,8 +1495,9 @@
             }
         ];
 
-        // Cattle Lifecycle Management Functions
+        // Livestock Lifecycle Management Functions
         function updateLifecycleFields() {
+            const species = document.getElementById('animalSpecies').value;
             const sex = document.getElementById('animalSex').value;
             const birthDate = document.getElementById('birthDate').value;
             const breed = document.getElementById('animalBreed').value;
@@ -1512,51 +1506,124 @@
             const productionPurpose = document.getElementById('productionPurpose');
             
             // Show/hide breeding fields for female cattle
-            if (sex === 'female') {
-                breedingFields.style.display = 'block';
-            } else {
-                breedingFields.style.display = 'none';
+            if (breedingFields) {
+                if (sex === 'female' && (species === 'cattle' || species.toLowerCase() === 'cattle')) {
+                    breedingFields.style.display = 'block';
+                } else {
+                    breedingFields.style.display = 'none';
+                }
             }
             
-            // Auto-calculate lifecycle stage if birth date is provided
-            if (birthDate && sex) {
-                const calculatedStage = calculateLifecycleStage(birthDate, sex);
-                lifecycleStage.value = calculatedStage;
+            // Auto-calculate lifecycle stage if birth date, species, and sex are provided
+            if (birthDate && species && sex && lifecycleStage) {
+                const calculatedStage = calculateLifecycleStage(species, birthDate, sex);
+                lifecycleStage.value = calculatedStage || '';
                 
-                // Auto-suggest production purpose based on breed and sex
-                if (breed) {
+                // Auto-suggest production purpose based on breed and sex (for cattle)
+                if (breed && productionPurpose && (species === 'cattle' || species.toLowerCase() === 'cattle')) {
                     const suggestedPurpose = getRecommendedProductionPurpose(breed, sex);
                     if (suggestedPurpose && !productionPurpose.value) {
                         productionPurpose.value = suggestedPurpose;
                     }
                 }
+            } else if (lifecycleStage) {
+                lifecycleStage.value = '';
             }
         }
         
-        function calculateLifecycleStage(birthDate, sex) {
+        function calculateLifecycleStage(species, birthDate, sex) {
+            if (!birthDate) {
+                return '';
+            }
+            
             const birth = new Date(birthDate);
             const now = new Date();
             const ageInMonths = (now.getFullYear() - birth.getFullYear()) * 12 + (now.getMonth() - birth.getMonth());
             
-            if (ageInMonths < 12) {
-                return 'calf';
-            } else if (sex === 'female') {
-                if (ageInMonths < 24) {
-                    return 'heifer';
-                } else {
-                    return 'cow';
-                }
-            } else if (sex === 'male') {
-                if (ageInMonths < 24) {
-                    return 'bullock';
-                } else {
-                    return 'bull';
-                }
-            } else if (sex === 'neutered') {
-                return 'steer';
+            // Handle missing species parameter (backwards compatibility)
+            if (!species && sex) {
+                species = 'cattle'; // Default to cattle for old calls
             }
             
-            return '';
+            const speciesLower = (species || '').toLowerCase();
+            
+            // Cattle lifecycle stages
+            if (speciesLower === 'cattle') {
+                if (ageInMonths < 12) {
+                    return 'Calf';
+                } else if (sex === 'female') {
+                    if (ageInMonths < 24) {
+                        return 'Heifer';
+                    } else {
+                        return 'Cow';
+                    }
+                } else if (sex === 'male') {
+                    if (ageInMonths < 24) {
+                        return 'Bullock';
+                    } else {
+                        return 'Bull';
+                    }
+                } else if (sex === 'neutered') {
+                    return 'Steer';
+                }
+            }
+            
+            // Pigs lifecycle stages
+            else if (speciesLower === 'pigs' || speciesLower === 'pig') {
+                if (ageInMonths < 2) {
+                    return 'Piglet';
+                } else if (sex === 'female') {
+                    if (ageInMonths < 8) {
+                        return 'Gilt';
+                    } else {
+                        return 'Sow';
+                    }
+                } else if (sex === 'male') {
+                    return 'Boar';
+                }
+            }
+            
+            // Chickens lifecycle stages
+            else if (speciesLower === 'chickens' || speciesLower === 'chicken') {
+                if (ageInMonths < 1) {
+                    return 'Chick';
+                } else if (sex === 'female') {
+                    if (ageInMonths < 5) {
+                        return 'Pullet';
+                    } else {
+                        return 'Hen';
+                    }
+                } else if (sex === 'male') {
+                    return 'Rooster';
+                }
+            }
+            
+            // Sheep lifecycle stages
+            else if (speciesLower === 'sheep') {
+                if (ageInMonths < 12) {
+                    return 'Lamb';
+                } else if (sex === 'female') {
+                    return 'Ewe';
+                } else if (sex === 'male') {
+                    return 'Ram';
+                } else if (sex === 'neutered') {
+                    return 'Wether';
+                }
+            }
+            
+            // Goats lifecycle stages
+            else if (speciesLower === 'goats' || speciesLower === 'goat') {
+                if (ageInMonths < 12) {
+                    return 'Kid';
+                } else if (sex === 'female') {
+                    return 'Doe';
+                } else if (sex === 'male') {
+                    return 'Buck';
+                }
+            }
+            
+            // Default fallback
+            return 'Unknown';
         }
         
         function getRecommendedProductionPurpose(breed, sex) {
@@ -1611,7 +1678,7 @@
             if (!animal) return;
             
             const timeline = getBreedingTimeline(animal.birthDate);
-            const currentStage = calculateLifecycleStage(animal.birthDate, animal.sex);
+            const currentStage = calculateLifecycleStage(animal.species, animal.birthDate, animal.sex);
             
             const modal = document.createElement('div');
             modal.className = 'modal fade';
@@ -1783,21 +1850,23 @@
             const age = calculateAge(animal.birthDate);
             const healthIndicator = getHealthIndicator(animal.healthStatus);
             
-            // Calculate lifecycle stage for cattle
+            // Calculate lifecycle stage for all species
             let lifecycleInfo = '';
             let productionPurposeInfo = '';
             let timelineButton = '';
             
-            if (animal.species === 'cattle') {
-                const lifecycleStage = calculateLifecycleStage(animal.birthDate, animal.sex);
-                const productionPurpose = animal.productionPurpose || getRecommendedProductionPurpose(animal.breed, animal.sex);
-                
+            const lifecycleStage = calculateLifecycleStage(animal.species, animal.birthDate, animal.sex);
+            if (lifecycleStage && lifecycleStage !== 'Unknown') {
                 lifecycleInfo = `
                     <div class="mb-2">
                         <small class="text-muted">Lifecycle Stage:</small>
-                        <span class="lifecycle-badge lifecycle-${lifecycleStage}">${lifecycleStage.charAt(0).toUpperCase() + lifecycleStage.slice(1)}</span>
+                        <span class="lifecycle-badge lifecycle-${lifecycleStage.toLowerCase()}">${lifecycleStage}</span>
                     </div>
                 `;
+            }
+            
+            if (animal.species === 'cattle') {
+                const productionPurpose = animal.productionPurpose || getRecommendedProductionPurpose(animal.breed, animal.sex);
                 
                 productionPurposeInfo = `
                     <div class="mb-2">
@@ -1955,9 +2024,9 @@
             const firstCalvingDate = document.getElementById('firstCalvingDate').value;
             const healthNotes = document.getElementById('healthNotes').value;
 
-            // Auto-calculate lifecycle stage if not specified
-            let calculatedLifecycle = lifecycleStage;
-            if (!lifecycleStage && birthDate) {
+            // Auto-calculate lifecycle stage based on birth date, species, and sex
+            let calculatedLifecycle = '';
+            if (birthDate && animalSpecies && animalSex) {
                 calculatedLifecycle = calculateLifecycleStage(animalSpecies, birthDate, animalSex);
             }
 
