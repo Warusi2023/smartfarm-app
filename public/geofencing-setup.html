@@ -1239,9 +1239,62 @@
                 return;
             }
 
-            // Check if this is a demo farm
-            if (farmId.startsWith('demo-farm-')) {
-                showAlert('Demo mode: Geofence configuration saved locally. In production, this would be saved to the server.', 'success');
+            // Validate polygon geofence has enough points
+            if (geofenceType === 'polygon') {
+                if (polygonPoints.length < 3) {
+                    showAlert('Polygon geofence requires at least 3 points. Please complete your polygon drawing.', 'warning');
+                    return;
+                }
+                // Ensure polygon is closed (has last point same as first)
+                if (polygonPoints[0][0] !== polygonPoints[polygonPoints.length - 1][0] || 
+                    polygonPoints[0][1] !== polygonPoints[polygonPoints.length - 1][1]) {
+                    // Polygon not closed, add closing point
+                    polygonPoints.push([polygonPoints[0][0], polygonPoints[0][1]]);
+                }
+            }
+
+            // Check if this is a demo farm or local farm - save locally
+            if (farmId.startsWith('demo-farm-') || farmId.startsWith('local-farm-')) {
+                console.log('💾 Saving geofence configuration locally for farm:', farmId);
+                
+                // Save to localStorage
+                const geofenceConfig = {
+                    farmId: farmId,
+                    latitude,
+                    longitude,
+                    geofenceType,
+                    geofenceRadius,
+                    geofencePolygon: (geofenceType === 'polygon' && polygonPoints.length > 2) ? polygonPoints : null,
+                    isPublic,
+                    allowVisitors,
+                    visitorInstructions,
+                    savedAt: new Date().toISOString()
+                };
+                
+                // Get existing geofences or create new array
+                const geofences = JSON.parse(localStorage.getItem('localGeofences') || '[]');
+                
+                // Remove existing geofence for this farm if it exists
+                const existingIndex = geofences.findIndex(g => g.farmId === farmId);
+                if (existingIndex >= 0) {
+                    geofences[existingIndex] = geofenceConfig;
+                } else {
+                    geofences.push(geofenceConfig);
+                }
+                
+                localStorage.setItem('localGeofences', JSON.stringify(geofences));
+                
+                // Also update the farm record
+                const farms = JSON.parse(localStorage.getItem('localFarms') || '[]');
+                const farmIndex = farms.findIndex(f => f.id === farmId);
+                if (farmIndex >= 0) {
+                    farms[farmIndex].latitude = latitude;
+                    farms[farmIndex].longitude = longitude;
+                    farms[farmIndex].geofenceConfigured = true;
+                    localStorage.setItem('localFarms', JSON.stringify(farms));
+                }
+                
+                showAlert('Geofence configuration saved successfully! (Saved locally)', 'success');
                 setTimeout(() => {
                     window.location.href = 'dashboard.html';
                 }, 2000);
@@ -1314,14 +1367,65 @@
             .catch(error => {
                 console.error('Error saving configuration:', error);
                 
-                // If it's a demo farm, simulate success
-                if (farmId.startsWith('demo-farm-') || farmId === 'new') {
-                    showAlert('Demo mode: Configuration saved locally! In production, this would save to the server.', 'success');
+                // If it's a demo farm, local farm, or API failed, save locally as fallback
+                if (farmId.startsWith('demo-farm-') || farmId.startsWith('local-farm-') || farmId === 'new') {
+                    console.log('💾 Saving geofence configuration locally (fallback)');
+                    
+                    // Save to localStorage
+                    const geofenceConfig = {
+                        farmId: farmId,
+                        latitude,
+                        longitude,
+                        geofenceType,
+                        geofenceRadius,
+                        geofencePolygon: (geofenceType === 'polygon' && polygonPoints.length > 2) ? polygonPoints : null,
+                        isPublic,
+                        allowVisitors,
+                        visitorInstructions,
+                        savedAt: new Date().toISOString()
+                    };
+                    
+                    const geofences = JSON.parse(localStorage.getItem('localGeofences') || '[]');
+                    const existingIndex = geofences.findIndex(g => g.farmId === farmId);
+                    if (existingIndex >= 0) {
+                        geofences[existingIndex] = geofenceConfig;
+                    } else {
+                        geofences.push(geofenceConfig);
+                    }
+                    localStorage.setItem('localGeofences', JSON.stringify(geofences));
+                    
+                    showAlert('Configuration saved locally! (API unavailable, saved to browser storage)', 'success');
                     setTimeout(() => {
                         window.location.href = 'dashboard.html';
                     }, 3000);
                 } else {
-                    showAlert(`Error saving configuration: ${error.message}`, 'danger');
+                    // For real API farms, try to save locally as fallback if API fails
+                    console.log('💾 API failed, saving geofence configuration locally as fallback');
+                    
+                    const geofenceConfig = {
+                        farmId: farmId,
+                        latitude,
+                        longitude,
+                        geofenceType,
+                        geofenceRadius,
+                        geofencePolygon: (geofenceType === 'polygon' && polygonPoints.length > 2) ? polygonPoints : null,
+                        isPublic,
+                        allowVisitors,
+                        visitorInstructions,
+                        savedAt: new Date().toISOString(),
+                        apiError: error.message
+                    };
+                    
+                    const geofences = JSON.parse(localStorage.getItem('localGeofences') || '[]');
+                    const existingIndex = geofences.findIndex(g => g.farmId === farmId);
+                    if (existingIndex >= 0) {
+                        geofences[existingIndex] = geofenceConfig;
+                    } else {
+                        geofences.push(geofenceConfig);
+                    }
+                    localStorage.setItem('localGeofences', JSON.stringify(geofences));
+                    
+                    showAlert(`API error: ${error.message}. Configuration saved locally. You can sync it later when the server is available.`, 'warning');
                 }
             })
             .finally(() => {
