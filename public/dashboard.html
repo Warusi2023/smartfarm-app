@@ -15280,10 +15280,10 @@ INVENTORY SUMMARY:
                             <p class="mb-0">${message}</p>
                         </div>
                         <div class="modal-footer border-top">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <button type="button" class="btn btn-secondary" id="cancelConfirmBtn">
                                 <i class="fas fa-times me-2"></i>${cancelText}
                             </button>
-                            <button type="button" class="btn btn-warning" id="confirmBtn">
+                            <button type="button" class="btn btn-warning" id="confirmConfirmBtn">
                                 <i class="fas fa-check me-2"></i>${confirmText}
                             </button>
                         </div>
@@ -15299,24 +15299,42 @@ INVENTORY SUMMARY:
             }
             
             const bsModal = new bootstrap.Modal(modal);
-            bsModal.show();
             
-            // Handle confirm button click
-            document.getElementById('confirmBtn').addEventListener('click', () => {
+            // Get button references from the modal element
+            const confirmBtn = modal.querySelector('#confirmConfirmBtn');
+            const cancelBtn = modal.querySelector('#cancelConfirmBtn');
+            
+            // Handle confirm button click (Yes)
+            confirmBtn.addEventListener('click', (e) => {
+                e.preventDefault();
                 bsModal.hide();
-                if (confirmCallback) confirmCallback();
+                if (confirmCallback && typeof confirmCallback === 'function') {
+                    setTimeout(() => {
+                        confirmCallback();
+                    }, 100);
+                }
             });
             
-            // Handle cancel
-            if (cancelCallback) {
-                modal.addEventListener('hidden.bs.modal', () => {
-                    cancelCallback();
-                });
-            }
+            // Handle cancel button click (No)
+            cancelBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                bsModal.hide();
+                if (cancelCallback && typeof cancelCallback === 'function') {
+                    setTimeout(() => {
+                        cancelCallback();
+                    }, 100);
+                }
+            });
             
+            // Clean up modal when hidden
             modal.addEventListener('hidden.bs.modal', () => {
-                document.body.removeChild(modal);
+                if (modal.parentNode) {
+                    document.body.removeChild(modal);
+                }
             });
+            
+            // Show the modal
+            bsModal.show();
         }
 
         function showPromptDialog(title, message, inputType = 'text', placeholder = '', confirmText = 'OK', cancelText = 'Cancel', confirmCallback, cancelCallback = null) {
