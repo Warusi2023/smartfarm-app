@@ -297,21 +297,66 @@ class LocationSelector {
 
     async useCurrentLocation() {
         try {
+            // Check if geolocation is supported
             if (!navigator.geolocation) {
-                this.showSearchError('Geolocation is not supported by this browser.');
+                this.showSearchError('Geolocation is not supported by this browser. Please use a modern browser or search for your location manually.');
                 return;
             }
 
+            // Check if we're on HTTPS (required for geolocation except localhost)
+            const isSecure = window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            if (!isSecure) {
+                this.showSearchError('Location detection requires HTTPS. Please search for your location manually.');
+                console.warn('Geolocation requires HTTPS. Current protocol:', window.location.protocol);
+                return;
+            }
+
+            // Show loading indicator
+            const loadingMessage = '<div class="text-info text-center py-3"><i class="fas fa-spinner fa-spin me-2"></i>Detecting your location...</div>';
+            const resultsContainer = document.getElementById('locationSearchResults');
+            if (resultsContainer) {
+                resultsContainer.innerHTML = loadingMessage;
+                resultsContainer.style.display = 'block';
+            }
+
             const position = await new Promise((resolve, reject) => {
-                navigator.geolocation.getCurrentPosition(resolve, reject, {
-                    enableHighAccuracy: true,
-                    timeout: 10000,
-                    maximumAge: 300000
-                });
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        console.log('✅ Geolocation successful:', position);
+                        resolve(position);
+                    },
+                    (error) => {
+                        console.error('❌ Geolocation error:', error);
+                        let errorMessage = 'Unable to get your location.';
+                        
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                errorMessage = 'Location access denied. Please enable location permissions in your browser settings and try again.';
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                errorMessage = 'Location information unavailable. Please try again or search manually.';
+                                break;
+                            case error.TIMEOUT:
+                                errorMessage = 'Location request timed out. Please try again or search manually.';
+                                break;
+                            default:
+                                errorMessage = 'Unable to get your location. Please try again or search manually.';
+                                break;
+                        }
+                        reject(new Error(errorMessage));
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 15000, // Increased timeout to 15 seconds
+                        maximumAge: 300000 // 5 minutes
+                    }
+                );
             });
 
             const lat = position.coords.latitude;
             const lng = position.coords.longitude;
+
+            console.log('📍 Detected coordinates:', { lat, lng });
 
             // Get location name using reverse geocoding
             const locationName = await this.getLocationName(lat, lng);
@@ -330,10 +375,12 @@ class LocationSelector {
             this.currentLocation = locationData;
             this.updateCurrentLocationInfo();
             this.hide();
+            this.hideSearchResults();
 
         } catch (error) {
             console.error('Error getting current location:', error);
-            this.showSearchError('Unable to get your location. Please try again or search manually.');
+            // The error message from the Promise rejection handler will be shown
+            this.showSearchError(error.message || 'Unable to get your location. Please try again or search manually.');
         }
     }
 
