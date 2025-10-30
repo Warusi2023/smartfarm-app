@@ -290,14 +290,18 @@ class FeedMixCalculator {
             throw new Error(`No nutritional requirements found for ${species} ${lifecycle}`);
         }
 
+        // Some requirement entries store nutrients under `dailyRequirements`
+        // Normalize to a flat shape so downstream code can use requirements.protein.min, etc.
+        const normalizedReq = requirements.dailyRequirements ? requirements.dailyRequirements : requirements;
+
         // Calculate daily intake based on weight
-        console.log('Calculating daily intake with weight:', weight, 'and intake range:', requirements.dailyIntake);
-        const dailyIntake = this.calculateDailyIntake(weight, requirements.dailyIntake);
+        console.log('Calculating daily intake with weight:', weight, 'and intake range:', normalizedReq.dailyIntake);
+        const dailyIntake = this.calculateDailyIntake(weight, normalizedReq.dailyIntake);
         
         console.log('Daily intake calculated:', dailyIntake);
         
         // Generate feed mix
-        const feedMix = this.generateOptimalMix(requirements, dailyIntake, species);
+        const feedMix = this.generateOptimalMix(normalizedReq, dailyIntake, species);
         
         console.log('Feed mix generated:', feedMix);
         
@@ -308,11 +312,11 @@ class FeedMixCalculator {
         
         const result = {
             animal: animalData,
-            requirements: requirements,
+            requirements: normalizedReq,
             dailyIntake: dailyIntake,
             feedMix: feedMix,
             totalCost: totalCost,
-            recommendations: this.generateRecommendations(feedMix, requirements)
+            recommendations: this.generateRecommendations(feedMix, normalizedReq)
         };
         
         console.log('Final calculation result:', result);
