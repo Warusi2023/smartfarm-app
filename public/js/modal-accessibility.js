@@ -78,6 +78,28 @@ class ModalAccessibility {
                 }
             }
         });
+
+        // Ensure all modal close buttons actually close, even if attributes are missing
+        document.addEventListener('click', (event) => {
+            const closeBtn = event.target.closest('[data-bs-dismiss="modal"], .btn-close');
+            if (!closeBtn) return;
+            const modal = closeBtn.closest('.modal');
+            if (!modal) return;
+
+            // Proactively stop propagation to avoid other interceptors
+            event.preventDefault();
+            event.stopPropagation();
+
+            // Clean up observers to avoid aria-hidden loops during hide
+            if (modal._ariaHiddenObserver) {
+                modal._ariaHiddenObserver.disconnect();
+                delete modal._ariaHiddenObserver;
+                delete modal._ariaHiddenExpected;
+            }
+
+            const instance = bootstrap.Modal.getInstance(modal) || new bootstrap.Modal(modal);
+            instance.hide();
+        }, true);
     }
 
     setupStaticModals() {
