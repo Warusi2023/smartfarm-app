@@ -49,10 +49,24 @@ class EnhancedFarmToTable {
     }
     
     async init() {
-        await this.loadTransformations();
-        await this.loadGuides();
-        this.setupEventListeners();
-        this.updateUI();
+        try {
+            await this.loadTransformations();
+            await this.loadGuides();
+            this.setupEventListeners();
+            this.updateUI();
+        } catch (error) {
+            console.error('Error during Farm to Table initialization:', error);
+            // Don't show error alert here - let the HTML initialization handle it
+            // But still try to set up basic functionality
+            try {
+                this.setupEventListeners();
+                this.transformations = [];
+                this.guides = [];
+                this.updateUI();
+            } catch (setupError) {
+                console.error('Error setting up basic functionality:', setupError);
+            }
+        }
     }
     
     // Load transformation records from API
@@ -91,10 +105,22 @@ class EnhancedFarmToTable {
     buildGuidesFromDatabase() {
         const guides = [];
         
+        // Check if database is available
+        if (!window.ByproductsDatabase) {
+            console.warn('ByproductsDatabase not loaded, guides will be empty');
+            return guides;
+        }
+        
         // Crop guides
         Object.keys(window.ByproductsDatabase.crops || {}).forEach(cropKey => {
             const crop = window.ByproductsDatabase.crops[cropKey];
+            if (!crop || !crop.byproducts || !Array.isArray(crop.byproducts)) {
+                return;
+            }
             crop.byproducts.forEach(byproduct => {
+                if (!byproduct || !byproduct.name) {
+                    return; // Skip invalid byproducts
+                }
                 guides.push({
                     id: `guide-${cropKey}-${byproduct.name.replace(/\s+/g, '-').toLowerCase()}`,
                     category: 'Crop',
@@ -116,7 +142,13 @@ class EnhancedFarmToTable {
         // Livestock guides
         Object.keys(window.ByproductsDatabase.livestock || {}).forEach(livestockKey => {
             const livestock = window.ByproductsDatabase.livestock[livestockKey];
+            if (!livestock || !livestock.byproducts || !Array.isArray(livestock.byproducts)) {
+                return;
+            }
             livestock.byproducts.forEach(byproduct => {
+                if (!byproduct || !byproduct.name) {
+                    return; // Skip invalid byproducts
+                }
                 guides.push({
                     id: `guide-${livestockKey}-${byproduct.name.replace(/\s+/g, '-').toLowerCase()}`,
                     category: 'Livestock',
@@ -694,11 +726,8 @@ class EnhancedFarmToTable {
     }
 }
 
-// Initialize
-let enhancedFarmToTable;
-document.addEventListener('DOMContentLoaded', function() {
-    enhancedFarmToTable = new EnhancedFarmToTable();
-});
+// Note: Initialization is handled in farm-to-table.html
+// This allows for proper error handling and API service setup
 
 // Global functions
 function searchGuides() {

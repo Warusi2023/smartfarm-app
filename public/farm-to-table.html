@@ -642,38 +642,65 @@
     <script src="js/config.js"></script>
     <!-- Enhanced Farm to Table JS -->
     <script src="js/farm-to-table-enhanced.js"></script>
-    <!-- Original Farm to Table JS (for backward compatibility) -->
-    <script src="js/farm-to-table.js"></script>
     
     <script>
-        // Prevent modal close if form is invalid
+        // Initialize API service first if needed
+        if (typeof window.SmartFarmAPI === 'undefined' && typeof SmartFarmAPIService !== 'undefined') {
+            window.SmartFarmAPI = new SmartFarmAPIService();
+        }
+        
+        // Initialize Enhanced Farm to Table System
+        let enhancedFarmToTable;
         document.addEventListener('DOMContentLoaded', function() {
-            const transformationModal = document.getElementById('recordTransformationModal');
-            if (transformationModal) {
-                transformationModal.addEventListener('hide.bs.modal', function(e) {
-                    if (enhancedFarmToTable && !enhancedFarmToTable.isFormValid()) {
-                        e.preventDefault();
-                        enhancedFarmToTable.showFormErrors();
-                        return false;
-                    }
-                }, false);
+            try {
+                // Initialize the enhanced system
+                enhancedFarmToTable = new EnhancedFarmToTable();
+                
+                // Prevent modal close if form is invalid
+                const transformationModal = document.getElementById('recordTransformationModal');
+                if (transformationModal) {
+                    transformationModal.addEventListener('hide.bs.modal', function(e) {
+                        if (enhancedFarmToTable && !enhancedFarmToTable.isFormValid()) {
+                            e.preventDefault();
+                            enhancedFarmToTable.showFormErrors();
+                            return false;
+                        }
+                    }, false);
+                }
+            } catch (error) {
+                console.error('Error initializing Enhanced Farm to Table System:', error);
+                // Show user-friendly error message
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-danger alert-dismissible fade show position-fixed';
+                alertDiv.style.top = '20px';
+                alertDiv.style.right = '20px';
+                alertDiv.style.zIndex = '9999';
+                alertDiv.innerHTML = `
+                    <strong>Initialization Error:</strong> ${error.message || 'Unknown error occurred'}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                document.body.appendChild(alertDiv);
+                
+                setTimeout(() => {
+                    alertDiv.remove();
+                }, 10000);
             }
         });
         
         function resetTransformationForm() {
-            document.getElementById('transformationForm').reset();
+            if (document.getElementById('transformationForm')) {
+                document.getElementById('transformationForm').reset();
+            }
             if (enhancedFarmToTable) {
                 enhancedFarmToTable.validationErrors = {};
                 document.querySelectorAll('.is-invalid, .is-valid').forEach(el => {
                     el.classList.remove('is-invalid', 'is-valid');
                 });
-                document.getElementById('formErrors').innerHTML = '';
+                const errorContainer = document.getElementById('formErrors');
+                if (errorContainer) {
+                    errorContainer.innerHTML = '';
+                }
             }
-        }
-        
-        // Expose API for window.SmartFarmAPI if not already defined
-        if (typeof window.SmartFarmAPI === 'undefined') {
-            window.SmartFarmAPI = new SmartFarmAPIService();
         }
     </script>
 </body>
