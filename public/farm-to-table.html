@@ -206,43 +206,141 @@
                 </div>
 
                 <!-- Tabs -->
-                <ul class="nav nav-tabs" id="byproductsTabs" role="tablist">
+                <ul class="nav nav-tabs" id="farmToTableTabs" role="tablist">
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="raw-products-tab" data-bs-toggle="tab" data-bs-target="#raw-products" type="button">
+                        <button class="nav-link active" id="guides-tab" data-bs-toggle="tab" data-bs-target="#guides" type="button">
+                            <i class="fas fa-book-open me-1"></i>Guides & Recipes
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="record-processing-tab" data-bs-toggle="tab" data-bs-target="#record-processing" type="button">
+                            <i class="fas fa-clipboard-list me-1"></i>Record Processing
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="profit-analytics-tab" data-bs-toggle="tab" data-bs-target="#profit-analytics" type="button">
+                            <i class="fas fa-chart-line me-1"></i>Profit & Analytics
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="raw-products-tab" data-bs-toggle="tab" data-bs-target="#raw-products" type="button">
                             <i class="fas fa-box-open me-1"></i>Raw Products
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button">
-                            <i class="fas fa-chart-pie me-1"></i>Overview
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="crops-tab" data-bs-toggle="tab" data-bs-target="#crops" type="button">
-                            <i class="fas fa-seedling me-1"></i>Crop Byproducts
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="livestock-tab" data-bs-toggle="tab" data-bs-target="#livestock" type="button">
-                            <i class="fas fa-cow me-1"></i>Livestock Byproducts
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="plans-tab" data-bs-toggle="tab" data-bs-target="#plans" type="button">
-                            <i class="fas fa-tasks me-1"></i>Processing Plans
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="sales-tab" data-bs-toggle="tab" data-bs-target="#sales" type="button">
-                            <i class="fas fa-dollar-sign me-1"></i>Sales Records
                         </button>
                     </li>
                 </ul>
 
                 <!-- Tab Content -->
-                <div class="tab-content" id="byproductsTabContent">
+                <div class="tab-content" id="farmToTableTabContent">
+                    <!-- Guides & Recipes Tab -->
+                    <div class="tab-pane fade show active" id="guides" role="tabpanel">
+                        <div class="mt-4">
+                            <div class="card mb-4">
+                                <div class="card-header bg-success text-white">
+                                    <h5 class="mb-0"><i class="fas fa-book me-2"></i>Knowledge & Tutorials</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <input type="text" class="form-control" id="guideSearch" 
+                                                   placeholder="Search guides (e.g., Milk, Butter, Cheese...)" 
+                                                   oninput="searchGuides()">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <select class="form-select" id="guideCategoryFilter" onchange="filterGuidesByCategory()">
+                                                <option value="">All Categories</option>
+                                                <option value="Crop">Crops</option>
+                                                <option value="Livestock">Livestock</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div id="guidesContainer">
+                                        <!-- Guides will be loaded here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Record Processing Tab -->
+                    <div class="tab-pane fade" id="record-processing" role="tabpanel">
+                        <div class="mt-4">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h4><i class="fas fa-clipboard-list me-2"></i>Product Transformation Tracker</h4>
+                                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#recordTransformationModal">
+                                    <i class="fas fa-plus me-1"></i>Record New Transformation
+                                </button>
+                            </div>
+                            
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Input Product</th>
+                                                    <th>Input Qty</th>
+                                                    <th>Output Product</th>
+                                                    <th>Output Qty</th>
+                                                    <th>Input Cost</th>
+                                                    <th>Output Value</th>
+                                                    <th>Net Profit</th>
+                                                    <th>Yield %</th>
+                                                    <th>Date</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="transformationsTableBody">
+                                                <!-- Transformations will be loaded here -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Profit & Analytics Tab -->
+                    <div class="tab-pane fade" id="profit-analytics" role="tabpanel">
+                        <div class="mt-4">
+                            <div class="row mb-4">
+                                <div class="col-md-4">
+                                    <div class="card text-center">
+                                        <div class="card-body">
+                                            <h6 class="text-muted">Total Input Cost</h6>
+                                            <h4 id="totalInputCost">$0.00</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card text-center">
+                                        <div class="card-body">
+                                            <h6 class="text-muted">Total Output Value</h6>
+                                            <h4 id="totalOutputValue">$0.00</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card text-center">
+                                        <div class="card-body">
+                                            <h6 class="text-muted">Total Net Profit</h6>
+                                            <h4 id="totalNetProfit">$0.00</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5><i class="fas fa-chart-bar me-2"></i>Most Profitable Products</h5>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="profitChart" height="100"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <!-- Raw Products Tab -->
-                    <div class="tab-pane fade show active" id="raw-products" role="tabpanel">
+                    <div class="tab-pane fade" id="raw-products" role="tabpanel">
                         <div class="mt-4">
                             <div class="card mb-4">
                                 <div class="card-header bg-success text-white">
@@ -286,69 +384,142 @@
                         </div>
                     </div>
                     
-                    <!-- Overview Tab -->
-                    <div class="tab-pane fade" id="overview" role="tabpanel">
-                        <div class="row mt-4">
-                            <div class="col-md-8">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <h5><i class="fas fa-chart-line me-2"></i>Revenue Potential</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Record Transformation Modal (Cannot close until valid submission) -->
+    <div class="modal fade" id="recordTransformationModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title"><i class="fas fa-clipboard-list me-2"></i>Record Product Transformation</h5>
+                    <button type="button" class="btn-close btn-close-white" id="recordModalCloseBtn" style="display: none;"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="formErrors"></div>
+                    <form id="transformationForm" onsubmit="event.preventDefault(); recordTransformation();">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Input Product <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="inputProduct" name="inputProduct" 
+                                           placeholder="e.g., Fresh Milk, Cassava" required 
+                                           list="inventoryProducts">
+                                    <datalist id="inventoryProducts"></datalist>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Input Quantity <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" id="inputQuantity" name="inputQuantity" 
+                                           step="0.1" min="0.1" placeholder="e.g., 20" required 
+                                           oninput="calculateProfit()">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Output Product <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="outputProduct" name="outputProduct" 
+                                           placeholder="e.g., Butter, Cheese, Flour" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Output Quantity <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" id="outputQuantity" name="outputQuantity" 
+                                           step="0.1" min="0.1" placeholder="e.g., 5" required 
+                                           oninput="calculateProfit()">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Input Cost ($) <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" id="inputCost" name="inputCost" 
+                                           step="0.01" min="0" placeholder="e.g., 25.00" required 
+                                           oninput="calculateProfit()">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Output Price per Unit ($) <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" id="outputPricePerUnit" name="outputPricePerUnit" 
+                                           step="0.01" min="0" placeholder="e.g., 10.00" required 
+                                           oninput="calculateProfit()">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Processing Date <span class="text-danger">*</span></label>
+                                    <input type="date" class="form-control" id="processingDate" name="processingDate" 
+                                           required value="${new Date().toISOString().split('T')[0]}">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Notes</label>
+                                    <textarea class="form-control" id="transformationNotes" name="transformationNotes" 
+                                              rows="3" placeholder="Optional notes about this transformation"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Profitability Preview -->
+                        <div class="card bg-light mt-3">
+                            <div class="card-header">
+                                <h6 class="mb-0"><i class="fas fa-calculator me-2"></i>Profitability Preview</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <strong>Output Value:</strong> <span id="calculatedOutputValue" class="text-success">$0.00</span>
                                     </div>
-                                    <div class="card-body">
-                                        <canvas id="revenueChart" class="revenue-chart"></canvas>
+                                    <div class="col-md-4">
+                                        <strong>Net Profit:</strong> <span id="calculatedNetProfit" class="text-success">$0.00</span>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <strong>Yield:</strong> <span id="calculatedYield">0%</span>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-4">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <h5><i class="fas fa-trophy me-2"></i>Top Byproducts</h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <div id="topByproducts">
-                                            <!-- Top byproducts will be loaded here -->
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
-                    </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="resetTransformationForm()">Reset</button>
+                    <button type="button" class="btn btn-success" onclick="recordTransformation()">
+                        <i class="fas fa-save me-1"></i>Save Transformation
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                    <!-- Crops Tab -->
-                    <div class="tab-pane fade" id="crops" role="tabpanel">
-                        <div class="mt-4">
-                            <div id="cropsByproducts">
-                                <!-- Crop byproducts will be loaded here -->
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Livestock Tab -->
-                    <div class="tab-pane fade" id="livestock" role="tabpanel">
-                        <div class="mt-4">
-                            <div id="livestockByproducts">
-                                <!-- Livestock byproducts will be loaded here -->
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Processing Plans Tab -->
-                    <div class="tab-pane fade" id="plans" role="tabpanel">
-                        <div class="mt-4">
-                            <div id="processingPlans">
-                                <!-- Processing plans will be loaded here -->
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Sales Records Tab -->
-                    <div class="tab-pane fade" id="sales" role="tabpanel">
-                        <div class="mt-4">
-                            <div id="salesRecords">
-                                <!-- Sales records will be loaded here -->
-                            </div>
-                        </div>
-                    </div>
+    <!-- Guide Details Modal -->
+    <div class="modal fade" id="guideDetailsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="guideDetailsTitle">
+                        <i class="fas fa-book-open me-2"></i>Processing Guide
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="guideDetailsBody">
+                    <!-- Content will be dynamically inserted -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
@@ -463,11 +634,47 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- API Service -->
+    <script src="js/api-service.js"></script>
     <!-- Include byproducts database -->
     <script src="js/byproducts-database.js"></script>
     <!-- Include config -->
     <script src="js/config.js"></script>
-    <!-- Farm to Table JS -->
+    <!-- Enhanced Farm to Table JS -->
+    <script src="js/farm-to-table-enhanced.js"></script>
+    <!-- Original Farm to Table JS (for backward compatibility) -->
     <script src="js/farm-to-table.js"></script>
+    
+    <script>
+        // Prevent modal close if form is invalid
+        document.addEventListener('DOMContentLoaded', function() {
+            const transformationModal = document.getElementById('recordTransformationModal');
+            if (transformationModal) {
+                transformationModal.addEventListener('hide.bs.modal', function(e) {
+                    if (enhancedFarmToTable && !enhancedFarmToTable.isFormValid()) {
+                        e.preventDefault();
+                        enhancedFarmToTable.showFormErrors();
+                        return false;
+                    }
+                }, false);
+            }
+        });
+        
+        function resetTransformationForm() {
+            document.getElementById('transformationForm').reset();
+            if (enhancedFarmToTable) {
+                enhancedFarmToTable.validationErrors = {};
+                document.querySelectorAll('.is-invalid, .is-valid').forEach(el => {
+                    el.classList.remove('is-invalid', 'is-valid');
+                });
+                document.getElementById('formErrors').innerHTML = '';
+            }
+        }
+        
+        // Expose API for window.SmartFarmAPI if not already defined
+        if (typeof window.SmartFarmAPI === 'undefined') {
+            window.SmartFarmAPI = new SmartFarmAPIService();
+        }
+    </script>
 </body>
 </html>

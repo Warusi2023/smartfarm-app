@@ -398,6 +398,40 @@ class SmartFarmAPIService {
         });
     }
 
+    // Product Transformation API
+    async getTransformations(params = {}) {
+        const queryString = new URLSearchParams(params).toString();
+        return await this.request(`/transformations${queryString ? '?' + queryString : ''}`);
+    }
+
+    async getTransformation(id) {
+        return await this.request(`/transformations/${id}`);
+    }
+
+    async createTransformation(transformationData) {
+        return await this.request('/transformations', {
+            method: 'POST',
+            body: JSON.stringify(transformationData)
+        });
+    }
+
+    async updateTransformation(id, transformationData) {
+        return await this.request(`/transformations/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(transformationData)
+        });
+    }
+
+    async deleteTransformation(id) {
+        return await this.request(`/transformations/${id}`, {
+            method: 'DELETE'
+        });
+    }
+
+    async getTransformationAnalytics() {
+        return await this.request('/transformations/analytics');
+    }
+
     async getFeedMixByLivestock(livestockId) {
         return await this.request(`/livestock/${livestockId}/feed-mixes`);
     }
