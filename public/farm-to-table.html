@@ -208,7 +208,12 @@
                 <!-- Tabs -->
                 <ul class="nav nav-tabs" id="byproductsTabs" role="tablist">
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button">
+                        <button class="nav-link active" id="raw-products-tab" data-bs-toggle="tab" data-bs-target="#raw-products" type="button">
+                            <i class="fas fa-box-open me-1"></i>Raw Products
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button">
                             <i class="fas fa-chart-pie me-1"></i>Overview
                         </button>
                     </li>
@@ -236,8 +241,53 @@
 
                 <!-- Tab Content -->
                 <div class="tab-content" id="byproductsTabContent">
+                    <!-- Raw Products Tab -->
+                    <div class="tab-pane fade show active" id="raw-products" role="tabpanel">
+                        <div class="mt-4">
+                            <div class="card mb-4">
+                                <div class="card-header bg-success text-white">
+                                    <h5 class="mb-0"><i class="fas fa-search me-2"></i>Enter Raw Product</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Product Type</label>
+                                                <select class="form-select" id="rawProductType" onchange="farmToTable.handleProductTypeChange()">
+                                                    <option value="">Select Type</option>
+                                                    <option value="crop">Crop</option>
+                                                    <option value="livestock">Livestock</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Product Name</label>
+                                                <input type="text" class="form-control" id="rawProductName" 
+                                                       placeholder="e.g., Cassava, Banana, Cattle, Goat" 
+                                                       oninput="farmToTable.searchRawProduct()"
+                                                       list="productSuggestions">
+                                                <datalist id="productSuggestions"></datalist>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-success" onclick="farmToTable.loadByproductsForRawProduct()">
+                                        <i class="fas fa-search me-1"></i>Find By-products
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div id="rawProductByproducts">
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Select a product type and enter a product name to see available by-products.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <!-- Overview Tab -->
-                    <div class="tab-pane fade show active" id="overview" role="tabpanel">
+                    <div class="tab-pane fade" id="overview" role="tabpanel">
                         <div class="row mt-4">
                             <div class="col-md-8">
                                 <div class="card">
@@ -299,6 +349,29 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- By-product Details Modal -->
+    <div class="modal fade" id="byproductDetailsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="byproductDetailsTitle">
+                        <i class="fas fa-info-circle me-2"></i>By-product Details
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="byproductDetailsBody">
+                    <!-- Content will be dynamically inserted -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-success" id="createPlanFromByproductBtn" onclick="farmToTable.createPlanFromByproduct()">
+                        <i class="fas fa-plus me-1"></i>Create Processing Plan
+                    </button>
                 </div>
             </div>
         </div>

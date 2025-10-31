@@ -16,7 +16,23 @@ window.ByproductsDatabase = {
                     processingMethod: "Drying and grinding",
                     equipment: ["Drying racks", "Grinding mill"],
                     shelfLife: "12 months",
-                    targetMarket: "Bakeries, restaurants, households"
+                    targetMarket: "Bakeries, restaurants, households",
+                    processingSteps: [
+                        "Harvest and wash fresh cassava roots",
+                        "Peel and cut into small pieces",
+                        "Dry under sunlight for 3-5 days or use mechanical dryer",
+                        "Grind dried pieces into fine flour",
+                        "Sift to remove any impurities",
+                        "Package in airtight containers"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 35,
+                        unit: "kg",
+                        outputPer100kg: 35,
+                        estimatedRevenuePer100kg: 87.50,
+                        processingTime: "5-7 days",
+                        laborRequired: "2-3 workers"
+                    }
                 },
                 {
                     name: "Cassava Starch",
@@ -26,7 +42,23 @@ window.ByproductsDatabase = {
                     processingMethod: "Washing, extraction, drying",
                     equipment: ["Starch extractor", "Centrifuge", "Dryer"],
                     shelfLife: "24 months",
-                    targetMarket: "Food industry, textile, paper"
+                    targetMarket: "Food industry, textile, paper",
+                    processingSteps: [
+                        "Wash and grate fresh cassava roots",
+                        "Extract starch by washing and filtering",
+                        "Allow starch to settle for 24 hours",
+                        "Separate water from starch using centrifuge",
+                        "Dry starch in mechanical dryer",
+                        "Package in moisture-proof containers"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 20,
+                        unit: "kg",
+                        outputPer100kg: 20,
+                        estimatedRevenuePer100kg: 64.00,
+                        processingTime: "7-10 days",
+                        laborRequired: "3-4 workers"
+                    }
                 },
                 {
                     name: "Cassava Chips",
@@ -36,7 +68,25 @@ window.ByproductsDatabase = {
                     processingMethod: "Slicing, frying, seasoning",
                     equipment: ["Slicer", "Deep fryer", "Seasoning mixer"],
                     shelfLife: "6 months",
-                    targetMarket: "Retail stores, snack distributors"
+                    targetMarket: "Retail stores, snack distributors",
+                    processingSteps: [
+                        "Wash and peel fresh cassava roots",
+                        "Slice into thin uniform chips (2-3mm)",
+                        "Rinse to remove excess starch",
+                        "Deep fry at 180°C until golden and crisp",
+                        "Drain excess oil",
+                        "Season with salt or desired spices",
+                        "Cool completely before packaging",
+                        "Package in airtight bags"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 40,
+                        unit: "kg",
+                        outputPer100kg: 40,
+                        estimatedRevenuePer100kg: 160.00,
+                        processingTime: "4-6 hours",
+                        laborRequired: "2-3 workers"
+                    }
                 },
                 {
                     name: "Cassava Leaves",
@@ -62,7 +112,24 @@ window.ByproductsDatabase = {
                     processingMethod: "Peeling, drying, grinding",
                     equipment: ["Peeler", "Drying racks", "Grinding mill"],
                     shelfLife: "12 months",
-                    targetMarket: "Health food stores, gluten-free bakeries"
+                    targetMarket: "Health food stores, gluten-free bakeries",
+                    processingSteps: [
+                        "Wash taro corms thoroughly",
+                        "Peel carefully to remove all skin",
+                        "Cut into small uniform pieces",
+                        "Dry in sunlight for 5-7 days or use dehydrator",
+                        "Grind dried pieces into fine powder",
+                        "Sift through fine mesh to remove impurities",
+                        "Package in moisture-proof containers"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 30,
+                        unit: "kg",
+                        outputPer100kg: 30,
+                        estimatedRevenuePer100kg: 105.00,
+                        processingTime: "7-10 days",
+                        laborRequired: "2-3 workers"
+                    }
                 },
                 {
                     name: "Taro Chips",
@@ -178,7 +245,23 @@ window.ByproductsDatabase = {
                     processingMethod: "Slicing, drying, seasoning",
                     equipment: ["Slicer", "Dehydrator", "Seasoning mixer"],
                     shelfLife: "12 months",
-                    targetMarket: "Retail stores, snack distributors"
+                    targetMarket: "Retail stores, snack distributors",
+                    processingSteps: [
+                        "Select ripe but firm bananas",
+                        "Peel and slice uniformly (3-5mm thickness)",
+                        "Soak in lemon juice or salt water to prevent browning",
+                        "Dry in dehydrator at 60°C for 12-24 hours",
+                        "Season with desired spices (optional)",
+                        "Package in airtight bags with proper labeling"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 15,
+                        unit: "kg",
+                        outputPer100kg: 15,
+                        estimatedRevenuePer100kg: 90.00,
+                        processingTime: "2-3 days",
+                        laborRequired: "2-3 workers"
+                    }
                 },
                 {
                     name: "Banana Flour",
@@ -188,7 +271,23 @@ window.ByproductsDatabase = {
                     processingMethod: "Peeling, drying, grinding",
                     equipment: ["Peeler", "Drying racks", "Grinding mill"],
                     shelfLife: "18 months",
-                    targetMarket: "Health food stores, gluten-free bakeries"
+                    targetMarket: "Health food stores, gluten-free bakeries",
+                    processingSteps: [
+                        "Select green, unripe bananas",
+                        "Peel and slice into thin pieces",
+                        "Dry in dehydrator at 60°C for 24-36 hours",
+                        "Grind dried pieces into fine flour",
+                        "Sift to ensure uniform texture",
+                        "Package in airtight containers"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 18,
+                        unit: "kg",
+                        outputPer100kg: 18,
+                        estimatedRevenuePer100kg: 81.00,
+                        processingTime: "3-4 days",
+                        laborRequired: "2 workers"
+                    }
                 },
                 {
                     name: "Banana Vinegar",
@@ -336,7 +435,24 @@ window.ByproductsDatabase = {
                     processingMethod: "Tanning, finishing",
                     equipment: ["Tanning facility", "Finishing equipment"],
                     shelfLife: "Indefinite",
-                    targetMarket: "Leather goods manufacturers, fashion industry"
+                    targetMarket: "Leather goods manufacturers, fashion industry",
+                    processingSteps: [
+                        "Remove hide from animal immediately after slaughter",
+                        "Cure hide with salt to prevent decay",
+                        "Soak and clean hide to remove dirt and hair",
+                        "Tan hide using vegetable tanning or chrome tanning",
+                        "Dry and stretch hide",
+                        "Finish and buff to desired texture",
+                        "Grade and package for sale"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 100,
+                        unit: "square feet",
+                        outputPerAnimal: "40-50",
+                        estimatedRevenuePerAnimal: 2000.00,
+                        processingTime: "30-45 days",
+                        laborRequired: "1-2 specialized workers"
+                    }
                 },
                 {
                     name: "Bone Meal",
@@ -382,7 +498,24 @@ window.ByproductsDatabase = {
                     processingMethod: "Cheese making, aging",
                     equipment: ["Cheese making equipment", "Aging room"],
                     shelfLife: "3 months",
-                    targetMarket: "Specialty food stores, restaurants"
+                    targetMarket: "Specialty food stores, restaurants",
+                    processingSteps: [
+                        "Collect fresh goat milk and filter",
+                        "Heat milk to 86°F and add starter culture",
+                        "Add rennet and let curd form for 1-2 hours",
+                        "Cut curd and drain whey",
+                        "Salt curd and shape into desired form",
+                        "Age in controlled environment for 2-12 weeks",
+                        "Package and label with production date"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 10,
+                        unit: "kg",
+                        outputPer100Liters: 10,
+                        estimatedRevenuePer100Liters: 120.00,
+                        processingTime: "2-12 weeks",
+                        laborRequired: "1-2 cheesemakers"
+                    }
                 },
                 {
                     name: "Goat Milk Soap",
@@ -428,7 +561,25 @@ window.ByproductsDatabase = {
                     processingMethod: "Composting, packaging",
                     equipment: ["Composting facility", "Packaging equipment"],
                     shelfLife: "12 months",
-                    targetMarket: "Garden centers, organic farms"
+                    targetMarket: "Garden centers, organic farms",
+                    processingSteps: [
+                        "Collect fresh manure from chicken coop",
+                        "Mix with carbon materials (straw, sawdust)",
+                        "Maintain proper moisture (40-60%)",
+                        "Turn compost pile every 1-2 weeks",
+                        "Monitor temperature (should reach 130-150°F)",
+                        "Cure for 2-4 months until fully composted",
+                        "Screen to remove large particles",
+                        "Package in bags or bulk containers"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 70,
+                        unit: "kg",
+                        outputPer100kg: 70,
+                        estimatedRevenuePer100kg: 105.00,
+                        processingTime: "2-4 months",
+                        laborRequired: "1 worker (part-time)"
+                    }
                 },
                 {
                     name: "Eggshells",

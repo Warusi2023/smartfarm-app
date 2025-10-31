@@ -9,6 +9,8 @@ class FarmToTableSystem {
         this.crops = [];
         this.livestock = [];
         this.charts = {};
+        this.currentRawProduct = null;
+        this.currentByproduct = null;
         
         this.init();
     }
@@ -553,6 +555,294 @@ class FarmToTableSystem {
                 this.createProcessingPlanFromForm();
             });
         }
+    }
+    
+    handleProductTypeChange() {
+        const productType = document.getElementById('rawProductType').value;
+        const productNameInput = document.getElementById('rawProductName');
+        const suggestionsList = document.getElementById('productSuggestions');
+        
+        suggestionsList.innerHTML = '';
+        
+        if (!productType) {
+            productNameInput.value = '';
+            return;
+        }
+        
+        let products = [];
+        if (productType === 'crop') {
+            products = Object.keys(window.ByproductsDatabase.crops);
+        } else if (productType === 'livestock') {
+            products = Object.keys(window.ByproductsDatabase.livestock);
+        }
+        
+        products.forEach(product => {
+            const option = document.createElement('option');
+            option.value = this.formatProductName(product);
+            suggestionsList.appendChild(option);
+        });
+    }
+    
+    formatProductName(key) {
+        return key.split('_').map(word => 
+            word.charAt(0).toUpperCase() + word.slice(1)
+        ).join(' ');
+    }
+    
+    normalizeProductName(name) {
+        return name.toLowerCase().replace(/\s+/g, '_');
+    }
+    
+    searchRawProduct() {
+        // This is handled by the datalist
+        // Additional search logic can be added here if needed
+    }
+    
+    loadByproductsForRawProduct() {
+        const productType = document.getElementById('rawProductType').value;
+        const productName = document.getElementById('rawProductName').value.trim();
+        
+        if (!productType || !productName) {
+            this.showError('Please select a product type and enter a product name');
+            return;
+        }
+        
+        const normalizedName = this.normalizeProductName(productName);
+        let byproducts = [];
+        let primaryProduct = '';
+        
+        if (productType === 'crop') {
+            const cropData = window.ByproductsDatabase.crops[normalizedName];
+            if (cropData) {
+                byproducts = cropData.byproducts || [];
+                primaryProduct = cropData.primary || productName;
+            }
+        } else if (productType === 'livestock') {
+            const livestockData = window.ByproductsDatabase.livestock[normalizedName];
+            if (livestockData) {
+                byproducts = livestockData.byproducts || [];
+                primaryProduct = livestockData.primary || productName;
+            }
+        }
+        
+        if (byproducts.length === 0) {
+            this.showError(`No by-products found for ${productName}. Please check the spelling or try another product.`);
+            document.getElementById('rawProductByproducts').innerHTML = `
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    No by-products found for "${productName}". Available products: ${this.getAvailableProducts(productType).join(', ')}
+                </div>
+            `;
+            return;
+        }
+        
+        this.currentRawProduct = {
+            type: productType,
+            name: productName,
+            primary: primaryProduct
+        };
+        
+        this.displayByproducts(byproducts);
+    }
+    
+    getAvailableProducts(type) {
+        if (type === 'crop') {
+            return Object.keys(window.ByproductsDatabase.crops).map(key => this.formatProductName(key));
+        } else if (type === 'livestock') {
+            return Object.keys(window.ByproductsDatabase.livestock).map(key => this.formatProductName(key));
+        }
+        return [];
+    }
+    
+    displayByproducts(byproducts) {
+        const container = document.getElementById('rawProductByproducts');
+        
+        container.innerHTML = `
+            <div class="card mb-3">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-seedling me-2"></i>
+                        ${this.currentRawProduct.primary} - Available By-products
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row" id="byproductsGrid">
+                        ${byproducts.map((byproduct, index) => `
+                            <div class="col-md-6 col-lg-4 mb-3">
+                                <div class="card byproduct-card h-100" style="cursor: pointer;" 
+                                     data-byproduct-index="${index}">
+                                    <div class="card-body">
+                                        <h6 class="card-title text-primary">${byproduct.name}</h6>
+                                        <p class="card-text text-muted small">${byproduct.description}</p>
+                                        <div class="d-flex justify-content-between align-items-center mt-3">
+                                            <span class="badge bg-info">${byproduct.category}</span>
+                                            <span class="fw-bold text-success">$${byproduct.marketValue.toFixed(2)}/unit</span>
+                                        </div>
+                                        ${byproduct.projectedOutput ? `
+                                            <div class="mt-2">
+                                                <small class="text-muted">
+                                                    <i class="fas fa-chart-line me-1"></i>
+                                                    ${byproduct.projectedOutput.yieldPercentage}% yield
+                                                </small>
+                                            </div>
+                                        ` : ''}
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Store byproducts for click handlers
+        this.currentByproductsList = byproducts;
+        
+        // Attach click handlers
+        container.querySelectorAll('.byproduct-card').forEach((card, index) => {
+            card.addEventListener('click', () => {
+                this.showByproductDetails(byproducts[index]);
+            });
+        });
+    }
+    
+    showByproductDetails(byproduct) {
+        this.currentByproduct = byproduct;
+        
+        const modalTitle = document.getElementById('byproductDetailsTitle');
+        const modalBody = document.getElementById('byproductDetailsBody');
+        
+        modalTitle.innerHTML = `<i class="fas fa-info-circle me-2"></i>${byproduct.name}`;
+        
+        let processingStepsHtml = '';
+        if (byproduct.processingSteps && byproduct.processingSteps.length > 0) {
+            processingStepsHtml = `
+                <div class="mb-4">
+                    <h6><i class="fas fa-cogs me-2"></i>Processing Steps</h6>
+                    <ol class="list-group list-group-numbered">
+                        ${byproduct.processingSteps.map(step => `
+                            <li class="list-group-item">${step}</li>
+                        `).join('')}
+                    </ol>
+                </div>
+            `;
+        }
+        
+        let projectedOutputHtml = '';
+        if (byproduct.projectedOutput) {
+            const output = byproduct.projectedOutput;
+            projectedOutputHtml = `
+                <div class="card mb-4 border-success">
+                    <div class="card-header bg-success text-white">
+                        <h6 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Projected Output</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Yield:</strong> ${output.yieldPercentage}%</p>
+                                ${output.outputPer100kg ? `<p><strong>Output:</strong> ${output.outputPer100kg} ${output.unit} per 100kg input</p>` : ''}
+                                ${output.outputPer100Liters ? `<p><strong>Output:</strong> ${output.outputPer100Liters} ${output.unit} per 100 liters input</p>` : ''}
+                                ${output.outputPerAnimal ? `<p><strong>Output:</strong> ${output.outputPerAnimal} ${output.unit} per animal</p>` : ''}
+                            </div>
+                            <div class="col-md-6">
+                                ${output.estimatedRevenuePer100kg ? `<p><strong>Estimated Revenue:</strong> $${output.estimatedRevenuePer100kg.toFixed(2)} per 100kg</p>` : ''}
+                                ${output.estimatedRevenuePer100Liters ? `<p><strong>Estimated Revenue:</strong> $${output.estimatedRevenuePer100Liters.toFixed(2)} per 100 liters</p>` : ''}
+                                ${output.estimatedRevenuePerAnimal ? `<p><strong>Estimated Revenue:</strong> $${output.estimatedRevenuePerAnimal.toFixed(2)} per animal</p>` : ''}
+                                <p><strong>Processing Time:</strong> ${output.processingTime}</p>
+                                <p><strong>Labor Required:</strong> ${output.laborRequired}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        modalBody.innerHTML = `
+            <div class="mb-3">
+                <h6><i class="fas fa-tag me-2"></i>Category</h6>
+                <span class="badge bg-info fs-6">${byproduct.category}</span>
+            </div>
+            
+            <div class="mb-3">
+                <h6><i class="fas fa-info-circle me-2"></i>Description</h6>
+                <p>${byproduct.description}</p>
+            </div>
+            
+            <div class="mb-3">
+                <h6><i class="fas fa-dollar-sign me-2"></i>Market Value</h6>
+                <p class="fs-4 text-success fw-bold">$${byproduct.marketValue.toFixed(2)} per unit</p>
+            </div>
+            
+            <div class="mb-3">
+                <h6><i class="fas fa-industry me-2"></i>Processing Method</h6>
+                <p>${byproduct.processingMethod}</p>
+            </div>
+            
+            <div class="mb-3">
+                <h6><i class="fas fa-tools me-2"></i>Required Equipment</h6>
+                <div>
+                    ${byproduct.equipment ? byproduct.equipment.map(eq => `
+                        <span class="badge bg-secondary me-1 mb-1">${eq}</span>
+                    `).join('') : '<span class="text-muted">No specific equipment listed</span>'}
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <h6><i class="fas fa-clock me-2"></i>Shelf Life</h6>
+                <p>${byproduct.shelfLife}</p>
+            </div>
+            
+            <div class="mb-3">
+                <h6><i class="fas fa-store me-2"></i>Target Market</h6>
+                <p>${byproduct.targetMarket}</p>
+            </div>
+            
+            ${processingStepsHtml}
+            ${projectedOutputHtml}
+        `;
+        
+        const modal = new bootstrap.Modal(document.getElementById('byproductDetailsModal'));
+        modal.show();
+    }
+    
+    createPlanFromByproduct() {
+        if (!this.currentByproduct || !this.currentRawProduct) {
+            this.showError('No by-product selected');
+            return;
+        }
+        
+        // Close by-product details modal
+        const detailsModal = bootstrap.Modal.getInstance(document.getElementById('byproductDetailsModal'));
+        if (detailsModal) {
+            detailsModal.hide();
+        }
+        
+        // Open create plan modal with pre-filled data
+        document.getElementById('planSourceType').value = this.currentRawProduct.type;
+        document.getElementById('planByproductName').value = this.currentByproduct.name;
+        document.getElementById('planProcessingMethod').value = this.currentByproduct.processingMethod;
+        document.getElementById('planEquipment').value = this.currentByproduct.equipment ? this.currentByproduct.equipment.join(', ') : '';
+        document.getElementById('planTargetMarket').value = this.currentByproduct.targetMarket || '';
+        
+        // Calculate estimated revenue if output data exists
+        if (this.currentByproduct.projectedOutput) {
+            const output = this.currentByproduct.projectedOutput;
+            let estimatedRevenue = 0;
+            if (output.estimatedRevenuePer100kg) {
+                estimatedRevenue = output.estimatedRevenuePer100kg;
+            } else if (output.estimatedRevenuePer100Liters) {
+                estimatedRevenue = output.estimatedRevenuePer100Liters;
+            } else if (output.estimatedRevenuePerAnimal) {
+                estimatedRevenue = output.estimatedRevenuePerAnimal;
+            }
+            document.getElementById('planExpectedRevenue').value = estimatedRevenue.toFixed(2);
+        }
+        
+        // Populate source dropdown
+        populateSourceDropdown(this.currentRawProduct.type);
+        
+        const modal = new bootstrap.Modal(document.getElementById('createPlanModal'));
+        modal.show();
     }
     
     showError(message) {
