@@ -9464,17 +9464,33 @@
         }
 
         function deletePet(id) {
+            // Ensure id is a number for proper comparison
+            const petId = typeof id === 'string' ? parseInt(id, 10) : id;
+            
+            // Check if pet exists
+            const pet = pets.find(p => p.id === petId || p.id === id);
+            if (!pet) {
+                showSuccessMessage('Pet record not found', 'error');
+                return;
+            }
+            
             showConfirmDialog(
                 'Delete Pet',
-                'Are you sure you want to delete this pet record?',
+                `Are you sure you want to delete ${pet.name} (${pet.breed})?`,
                 'Yes, Delete',
                 'Cancel',
                 () => {
-                    pets = pets.filter(pet => pet.id !== id);
+                    // Remove pet using both ID formats to ensure deletion
+                    pets = pets.filter(p => {
+                        const pId = typeof p.id === 'string' ? parseInt(p.id, 10) : p.id;
+                        return pId !== petId && p.id !== petId && p.id !== id;
+                    });
+                    
                     savePetsData();
                     renderPetsGrid();
                     renderPetsTable();
                     updatePetsStatistics();
+                    updateAnalyticsCharts();
                     showSuccessMessage('Pet deleted successfully!');
                 }
             );
@@ -15375,32 +15391,51 @@ INVENTORY SUMMARY:
             }
             
             const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
             
-            // Get button references from the modal element
-            const confirmBtn = modal.querySelector('#confirmConfirmBtn');
-            const cancelBtn = modal.querySelector('#cancelConfirmBtn');
-            
-            // Handle confirm button click (Yes)
-            confirmBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                bsModal.hide();
-                if (confirmCallback && typeof confirmCallback === 'function') {
-                    setTimeout(() => {
-                        confirmCallback();
-                    }, 100);
+            // Get button references from the modal element - wait for modal to be shown
+            setTimeout(() => {
+                const confirmBtn = modal.querySelector('#confirmConfirmBtn');
+                const cancelBtn = modal.querySelector('#cancelConfirmBtn');
+                
+                if (!confirmBtn || !cancelBtn) {
+                    console.error('Confirm dialog buttons not found');
+                    return;
                 }
-            });
-            
-            // Handle cancel button click (No)
-            cancelBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                bsModal.hide();
-                if (cancelCallback && typeof cancelCallback === 'function') {
-                    setTimeout(() => {
-                        cancelCallback();
-                    }, 100);
-                }
-            });
+                
+                // Handle confirm button click (Yes)
+                confirmBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    // Close modal first
+                    bsModal.hide();
+                    
+                    // Execute callback after modal starts hiding
+                    if (confirmCallback && typeof confirmCallback === 'function') {
+                        setTimeout(() => {
+                            try {
+                                confirmCallback();
+                            } catch (error) {
+                                console.error('Error in confirm callback:', error);
+                                showSuccessMessage('An error occurred. Please try again.', 'error');
+                            }
+                        }, 200);
+                    }
+                });
+                
+                // Handle cancel button click (No)
+                cancelBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    bsModal.hide();
+                    if (cancelCallback && typeof cancelCallback === 'function') {
+                        setTimeout(() => {
+                            cancelCallback();
+                        }, 100);
+                    }
+                });
+            }, 100);
             
             // Clean up modal when hidden
             modal.addEventListener('hidden.bs.modal', () => {
