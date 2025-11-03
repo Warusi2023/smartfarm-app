@@ -25,7 +25,8 @@
             const text = banner.textContent || '';
             if (text.includes('Server temporarily unavailable') || 
                 text.includes('Some features may not work') ||
-                text.includes('Server') && text.includes('unavailable')) {
+                text.includes('Working in offline mode') ||
+                (text.includes('Server') && text.includes('unavailable'))) {
                 banner.remove();
                 console.log('🗑️ Removed server banner:', text.substring(0, 50));
             }

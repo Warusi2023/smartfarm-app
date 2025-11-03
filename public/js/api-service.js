@@ -85,6 +85,17 @@ class SmartFarmAPIService {
             
             const data = await response.json();
             
+            // Connection successful - remove any server unavailable banners
+            const banner = document.getElementById('server-unavailable-banner');
+            if (banner) {
+                banner.remove();
+                if (document.body) {
+                    document.body.style.paddingTop = '0px';
+                }
+                // Reset dismiss flag since connection is restored
+                sessionStorage.removeItem('serverBannerDismissed');
+            }
+            
             // Silent logging to reduce console spam
             if (window.location.hostname === 'localhost') {
                 console.log(`✅ API Response: ${url}`, data);
@@ -113,9 +124,17 @@ class SmartFarmAPIService {
                 return this.request(endpoint, options, retryCount + 1);
             }
             
-            // Show server unavailable banner after all retries failed (only once)
-            if (retryCount >= maxRetries) {
-                this.showServerUnavailableBanner();
+            // Show server unavailable banner only if user hasn't dismissed it
+            // And only show once per session to avoid spam
+            if (retryCount >= maxRetries && 
+                sessionStorage.getItem('serverBannerDismissed') !== 'true' &&
+                !document.getElementById('server-unavailable-banner')) {
+                // Only show if this is a critical endpoint (not just any failed request)
+                const criticalEndpoints = ['/auth', '/farms', '/livestock', '/crops'];
+                const isCritical = criticalEndpoints.some(ep => endpoint.includes(ep));
+                if (isCritical) {
+                    this.showServerUnavailableBanner();
+                }
             }
             
             return {
@@ -148,13 +167,18 @@ class SmartFarmAPIService {
             return;
         }
 
+        // Check if user has dismissed banner in this session
+        if (sessionStorage.getItem('serverBannerDismissed') === 'true') {
+            return;
+        }
+
         // Remove existing banner if present
         const existingBanner = document.getElementById('server-unavailable-banner');
         if (existingBanner) {
             existingBanner.remove();
         }
 
-        // Create banner
+        // Create banner with less alarming message
         const banner = document.createElement('div');
         banner.id = 'server-unavailable-banner';
         banner.style.cssText = `
@@ -162,30 +186,36 @@ class SmartFarmAPIService {
             top: 0;
             left: 0;
             right: 0;
-            background: #dc3545;
-            color: white;
-            padding: 10px;
+            background: #ffc107;
+            color: #000;
+            padding: 8px;
             text-align: center;
             z-index: 9999;
             font-family: Arial, sans-serif;
+            font-size: 13px;
         `;
         banner.innerHTML = `
-            ⚠️ Server temporarily unavailable. Some features may not work. 
-            <button onclick="this.parentElement.remove()" style="background: none; border: none; color: white; cursor: pointer; margin-left: 10px;">✕</button>
+            <i class="fas fa-info-circle me-2"></i>
+            Working in offline mode. Data will sync when connection is restored.
+            <button onclick="this.parentElement.remove(); document.body.style.paddingTop='0px'; sessionStorage.setItem('serverBannerDismissed', 'true');" 
+                    style="background: none; border: none; color: #000; cursor: pointer; margin-left: 10px; font-size: 14px; font-weight: bold;">✕</button>
         `;
 
         // Add body padding to account for banner
-        document.body.style.paddingTop = '50px';
-        
-        document.body.insertBefore(banner, document.body.firstChild);
+        if (document.body) {
+            document.body.style.paddingTop = '40px';
+            document.body.insertBefore(banner, document.body.firstChild);
+        }
 
-        // Auto-remove after 10 seconds
+        // Auto-remove after 8 seconds
         setTimeout(() => {
             if (banner.parentElement) {
                 banner.remove();
-                document.body.style.paddingTop = '0px';
+                if (document.body) {
+                    document.body.style.paddingTop = '0px';
+                }
             }
-        }, 10000);
+        }, 8000);
     }
 
     // Check if backend is available

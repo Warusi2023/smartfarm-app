@@ -18,14 +18,22 @@
         const banners = document.querySelectorAll('#server-unavailable-banner, .server-unavailable, .alert-danger');
         banners.forEach(banner => {
             if (banner.textContent.includes('Server temporarily unavailable') || 
-                banner.textContent.includes('Some features may not work')) {
+                banner.textContent.includes('Some features may not work') ||
+                banner.textContent.includes('Working in offline mode')) {
                 banner.remove();
                 console.log('🗑️ Removed server unavailable banner');
             }
         });
         
         // Remove body padding that might have been added
-        document.body.style.paddingTop = '0px';
+        if (document.body) {
+            document.body.style.paddingTop = '0px';
+        }
+        
+        // Reset dismiss flag when connection is restored
+        if (isServerAvailable) {
+            sessionStorage.removeItem('serverBannerDismissed');
+        }
     }
     
     // Check server connectivity
@@ -107,9 +115,12 @@
             } else {
                 retryCount++;
                 
-                // Show banner only after multiple failures
-                if (retryCount >= 3 && !document.querySelector('#server-unavailable-banner')) {
-                    showServerUnavailableBanner();
+                // Show banner only after multiple consecutive failures (increased threshold)
+                if (retryCount >= 5 && !document.querySelector('#server-unavailable-banner')) {
+                    // Check if user dismissed it
+                    if (sessionStorage.getItem('serverBannerDismissed') !== 'true') {
+                        showServerUnavailableBanner();
+                    }
                 }
             }
         }, 30000);
@@ -119,8 +130,9 @@
     
     // Show server unavailable banner (only when truly needed)
     function showServerUnavailableBanner() {
-        // Don't show if already present
-        if (document.querySelector('#server-unavailable-banner')) {
+        // Don't show if already present or if user dismissed it
+        if (document.querySelector('#server-unavailable-banner') || 
+            sessionStorage.getItem('serverBannerDismissed') === 'true') {
             return;
         }
         
@@ -131,34 +143,39 @@
             top: 0;
             left: 0;
             right: 0;
-            background: #ff6b6b;
-            color: white;
-            padding: 10px;
+            background: #ffc107;
+            color: #000;
+            padding: 8px;
             text-align: center;
             z-index: 9999;
             font-family: Arial, sans-serif;
-            font-size: 14px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            font-size: 13px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
         `;
         
         banner.innerHTML = `
-            ⚠️ Server temporarily unavailable. Some features may not work.
-            <button onclick="this.parentElement.remove(); document.body.style.paddingTop='0px';" 
-                    style="background: none; border: none; color: white; cursor: pointer; margin-left: 10px; font-size: 16px;">
+            <i class="fas fa-info-circle me-2"></i>
+            Working in offline mode. Data will sync when connection is restored.
+            <button onclick="this.parentElement.remove(); document.body.style.paddingTop='0px'; sessionStorage.setItem('serverBannerDismissed', 'true');" 
+                    style="background: none; border: none; color: #000; cursor: pointer; margin-left: 10px; font-size: 14px; font-weight: bold;">
                 ✕
             </button>
         `;
         
-        document.body.style.paddingTop = '50px';
-        document.body.insertBefore(banner, document.body.firstChild);
+        if (document.body) {
+            document.body.style.paddingTop = '40px';
+            document.body.insertBefore(banner, document.body.firstChild);
+        }
         
-        // Auto-remove after 10 seconds
+        // Auto-remove after 8 seconds
         setTimeout(() => {
             if (banner.parentElement) {
                 banner.remove();
-                document.body.style.paddingTop = '0px';
+                if (document.body) {
+                    document.body.style.paddingTop = '0px';
+                }
             }
-        }, 10000);
+        }, 8000);
     }
     
     // Enhanced API request with automatic retry
