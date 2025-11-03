@@ -9020,6 +9020,7 @@
             // Create comprehensive add pet modal
             const modal = document.createElement('div');
             modal.className = 'modal fade';
+            modal.id = 'addPetModal'; // Add ID for easier targeting
             modal.innerHTML = `
                 <div class="modal-dialog modal-lg">
                     <div class="modal-content">
@@ -9187,13 +9188,47 @@
             updatePetsStatistics();
             updateAnalyticsCharts();
             
-            // Close modal
-            const modal = document.querySelector('.modal');
-            if (modal) {
-                const bsModal = bootstrap.Modal.getInstance(modal);
+            // Close modal - try multiple methods to ensure it closes
+            const modalElement = document.getElementById('addPetModal');
+            if (modalElement) {
+                const bsModal = bootstrap.Modal.getInstance(modalElement);
                 if (bsModal) {
                     bsModal.hide();
+                } else {
+                    // Fallback: manually close the modal
+                    modalElement.classList.remove('show');
+                    document.body.classList.remove('modal-open');
+                    document.body.style.overflow = '';
+                    document.body.style.paddingRight = '';
+                    const backdrop = document.querySelector('.modal-backdrop');
+                    if (backdrop) {
+                        backdrop.remove();
+                    }
+                    modalElement.style.display = 'none';
+                    modalElement.setAttribute('aria-hidden', 'true');
+                    modalElement.removeAttribute('aria-modal');
+                    // Trigger hidden event to clean up
+                    const hiddenEvent = new Event('hidden.bs.modal', { bubbles: true });
+                    modalElement.dispatchEvent(hiddenEvent);
                 }
+            } else {
+                // Fallback: find modal via form
+                const petForm = document.getElementById('addPetForm');
+                if (petForm) {
+                    const formModal = petForm.closest('.modal');
+                    if (formModal) {
+                        const bsModal = bootstrap.Modal.getInstance(formModal);
+                        if (bsModal) {
+                            bsModal.hide();
+                        }
+                    }
+                }
+            }
+            
+            // Reset the form
+            const petForm = document.getElementById('addPetForm');
+            if (petForm) {
+                petForm.reset();
             }
             
             showSuccessMessage('Pet added successfully!');
