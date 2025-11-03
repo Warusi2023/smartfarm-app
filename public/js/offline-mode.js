@@ -129,7 +129,7 @@
                 {
                     id: 1,
                     name: 'Green Valley Farm',
-                    location: 'Suva, Fiji',
+                    location: 'Sydney, Australia',
                     area: 25.5,
                     type: 'Mixed Agriculture'
                 }

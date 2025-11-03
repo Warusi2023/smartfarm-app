@@ -61,7 +61,7 @@ class LocationSelector {
                             <div class="location-option" onclick="locationSelector.useDefaultLocation()">
                                 <i class="fas fa-globe me-2"></i>
                                 <div>
-                                    <strong>Use Default (Fiji)</strong>
+                                    <strong>Use Default (Australia)</strong>
                                     <small class="text-muted">Default location for SmartFarm</small>
                                 </div>
                             </div>
@@ -728,11 +728,11 @@ class LocationSelector {
 
     useDefaultLocation() {
         this.selectLocation({
-            lat: -18.1248,
-            lon: 178.4501,
-            name: 'Suva',
-            state: '',
-            country: 'Fiji'
+            lat: -33.8688,
+            lon: 151.2093,
+            name: 'Sydney',
+            state: 'NSW',
+            country: 'Australia'
         });
     }
 

@@ -250,22 +250,22 @@ class WeatherService {
         };
         
         this.weatherData = {
-            location: { lat: -18.1248, lng: 178.4501, name: 'Fiji' },
+            location: { lat: -33.8688, lng: 151.2093, name: 'Australia' },
             current: {
-                temperature: 28,
-                humidity: 75,
-                rainfall: 85,
-                windSpeed: 12,
-                pressure: 1013,
-                uvIndex: 8,
-                cloudCover: 30,
+                temperature: 22,
+                humidity: 65,
+                rainfall: 45,
+                windSpeed: 15,
+                pressure: 1015,
+                uvIndex: 6,
+                cloudCover: 40,
                 description: 'Partly Cloudy',
                 icon: '02d',
                 visibility: 10,
-                feelsLike: 30
+                feelsLike: 24
             },
             forecast: generateDemoForecast(),
-            season: this.getSeason(-18.1248, new Date()),
+            season: this.getSeason(-33.8688, new Date()),
             lastUpdate: new Date(),
             source: 'Demo Data'
         };

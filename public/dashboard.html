@@ -1773,7 +1773,7 @@
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label class="form-label">Location</label>
-                                        <input type="text" class="form-control" id="farmLocation" value="Suva, Fiji">
+                                        <input type="text" class="form-control" id="farmLocation" value="Sydney, Australia">
                                     </div>
                                 </div>
                             </div>
@@ -3645,7 +3645,7 @@
                 console.log('✅ Weather Service initialized');
             } else {
                 console.warn('⚠️ Weather Service not available');
-                updateLocationDisplay({ location: { name: 'Fiji' }, source: 'Demo' });
+                updateLocationDisplay({ location: { name: 'Australia' }, source: 'Demo' });
             }
         }
 
@@ -6724,7 +6724,7 @@
                     const farmTypeField = document.getElementById('farmType');
                     
                     if (farmNameField) farmNameField.value = farmData.name || 'Green Valley Farm';
-                    if (farmLocationField) farmLocationField.value = farmData.location || 'Suva, Fiji';
+                    if (farmLocationField) farmLocationField.value = farmData.location || 'Sydney, Australia';
                     if (farmAreaField) farmAreaField.value = farmData.area || '25.5';
                     if (farmTypeField) farmTypeField.value = farmData.type || 'Mixed Farming';
                     
