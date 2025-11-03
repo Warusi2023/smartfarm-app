@@ -3629,6 +3629,26 @@
 
         // Initialize weather service
         function initializeWeatherService() {
+            // Auto-migrate any cached Fiji locations to Australia
+            try {
+                const savedLocation = localStorage.getItem('smartfarm_user_location');
+                if (savedLocation) {
+                    const location = JSON.parse(savedLocation);
+                    if ((location.name && (location.name.includes('Fiji') || location.name.includes('Suva'))) ||
+                        (location.lat === -18.1248 && location.lng === 178.4501)) {
+                        console.log('🔄 Auto-migrating cached Fiji location to Australia');
+                        const newLocation = {
+                            lat: -33.8688,
+                            lng: 151.2093,
+                            name: 'Sydney, NSW, Australia'
+                        };
+                        localStorage.setItem('smartfarm_user_location', JSON.stringify(newLocation));
+                    }
+                }
+            } catch (e) {
+                console.warn('Error migrating location:', e);
+            }
+            
             if (window.WeatherService) {
                 weatherService = window.WeatherService;
                 
