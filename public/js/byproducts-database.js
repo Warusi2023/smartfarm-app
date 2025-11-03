@@ -1603,6 +1603,549 @@ window.ByproductsDatabase = {
                     targetMarket: "Health food stores, supplement companies"
                 }
             ]
+        },
+        
+        // Additional Common Crops
+        garlic: {
+            primary: "Fresh Garlic",
+            byproducts: [
+                {
+                    name: "Garlic Powder",
+                    category: "Spice",
+                    description: "Dried and ground garlic",
+                    marketValue: 7.00,
+                    processingMethod: "Drying, grinding",
+                    equipment: ["Dehydrator", "Grinding mill"],
+                    shelfLife: "24 months",
+                    targetMarket: "Spice companies, food manufacturers",
+                    processingSteps: [
+                        "Peel garlic cloves",
+                        "Slice thinly or leave whole",
+                        "Dry in dehydrator at 60°C for 24-36 hours",
+                        "Grind to fine powder",
+                        "Sift and package"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 20,
+                        unit: "kg",
+                        outputPer100kg: 20,
+                        estimatedRevenuePer100kg: 140.00,
+                        processingTime: "3-4 days",
+                        laborRequired: "1-2 workers"
+                    }
+                },
+                {
+                    name: "Garlic Oil",
+                    category: "Essential Oil",
+                    description: "Concentrated garlic oil",
+                    marketValue: 12.00,
+                    processingMethod: "Extraction",
+                    equipment: ["Oil extractor"],
+                    shelfLife: "24 months",
+                    targetMarket: "Food industry, supplement companies"
+                }
+            ]
+        },
+        
+        turmeric: {
+            primary: "Fresh Turmeric Root",
+            byproducts: [
+                {
+                    name: "Turmeric Powder",
+                    category: "Spice",
+                    description: "Ground turmeric spice",
+                    marketValue: 8.50,
+                    processingMethod: "Drying, grinding",
+                    equipment: ["Dehydrator", "Grinding mill"],
+                    shelfLife: "24 months",
+                    targetMarket: "Spice companies, food manufacturers",
+                    processingSteps: [
+                        "Wash and peel turmeric roots",
+                        "Slice into thin pieces",
+                        "Dry in dehydrator at 60°C for 48-72 hours",
+                        "Grind to fine powder",
+                        "Sift and package"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 18,
+                        unit: "kg",
+                        outputPer100kg: 18,
+                        estimatedRevenuePer100kg: 153.00,
+                        processingTime: "4-5 days",
+                        laborRequired: "1-2 workers"
+                    }
+                }
+            ]
+        },
+        
+        cabbage: {
+            primary: "Fresh Cabbage",
+            byproducts: [
+                {
+                    name: "Sauerkraut",
+                    category: "Preserves",
+                    description: "Fermented cabbage",
+                    marketValue: 3.50,
+                    processingMethod: "Fermentation",
+                    equipment: ["Fermentation jars", "Weights"],
+                    shelfLife: "6 months (refrigerated)",
+                    targetMarket: "Grocery stores, specialty food shops",
+                    processingSteps: [
+                        "Shred cabbage finely",
+                        "Mix with salt",
+                        "Pack tightly in jars",
+                        "Weigh down to keep submerged",
+                        "Ferment for 2-6 weeks",
+                        "Refrigerate when ready"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 90,
+                        unit: "kg",
+                        outputPer100kg: 90,
+                        estimatedRevenuePer100kg: 315.00,
+                        processingTime: "2-6 weeks",
+                        laborRequired: "1 worker"
+                    }
+                },
+                {
+                    name: "Kimchi",
+                    category: "Preserves",
+                    description: "Korean fermented vegetables",
+                    marketValue: 5.00,
+                    processingMethod: "Fermentation with spices",
+                    equipment: ["Fermentation containers"],
+                    shelfLife: "3 months (refrigerated)",
+                    targetMarket: "Asian food stores, restaurants"
+                }
+            ]
+        },
+        
+        eggplant: {
+            primary: "Fresh Eggplant",
+            byproducts: [
+                {
+                    name: "Eggplant Chips",
+                    category: "Snack Food",
+                    description: "Dried eggplant chips",
+                    marketValue: 5.50,
+                    processingMethod: "Slicing, dehydration",
+                    equipment: ["Slicer", "Dehydrator"],
+                    shelfLife: "12 months",
+                    targetMarket: "Health food stores, snack distributors"
+                },
+                {
+                    name: "Eggplant Pickles",
+                    category: "Preserves",
+                    description: "Pickled eggplant",
+                    marketValue: 4.50,
+                    processingMethod: "Pickling",
+                    equipment: ["Pickling jars"],
+                    shelfLife: "12 months",
+                    targetMarket: "Specialty food stores"
+                }
+            ]
+        },
+        
+        lemon: {
+            primary: "Fresh Lemons",
+            byproducts: [
+                {
+                    name: "Lemon Juice",
+                    category: "Beverage",
+                    description: "Fresh lemon juice",
+                    marketValue: 4.50,
+                    processingMethod: "Juicing, bottling",
+                    equipment: ["Juicer", "Bottling equipment"],
+                    shelfLife: "1 week (fresh) or 6 months (pasteurized)",
+                    targetMarket: "Grocery stores, restaurants"
+                },
+                {
+                    name: "Lemon Zest",
+                    category: "Spice",
+                    description: "Dried lemon peel",
+                    marketValue: 12.00,
+                    processingMethod: "Peeling, drying",
+                    equipment: ["Zester", "Dehydrator"],
+                    shelfLife: "24 months",
+                    targetMarket: "Spice companies, bakeries"
+                },
+                {
+                    name: "Lemon Essential Oil",
+                    category: "Essential Oil",
+                    description: "Citrus essential oil",
+                    marketValue: 20.00,
+                    processingMethod: "Cold pressing",
+                    equipment: ["Oil press"],
+                    shelfLife: "24 months",
+                    targetMarket: "Essential oil companies, aromatherapy stores"
+                }
+            ]
+        },
+        
+        grapes: {
+            primary: "Fresh Grapes",
+            byproducts: [
+                {
+                    name: "Grape Juice",
+                    category: "Beverage",
+                    description: "Fresh grape juice",
+                    marketValue: 4.00,
+                    processingMethod: "Juicing, pasteurization",
+                    equipment: ["Juicer", "Pasteurizer", "Bottling"],
+                    shelfLife: "6 months (pasteurized)",
+                    targetMarket: "Grocery stores, juice bars"
+                },
+                {
+                    name: "Raisins",
+                    category: "Dried Fruit",
+                    description: "Dried grapes",
+                    marketValue: 6.50,
+                    processingMethod: "Drying",
+                    equipment: ["Drying racks", "Dehydrator"],
+                    shelfLife: "12 months",
+                    targetMarket: "Grocery stores, snack distributors",
+                    processingSteps: [
+                        "Wash and sort grapes",
+                        "Place on drying racks or in dehydrator",
+                        "Dry at 60°C for 24-48 hours",
+                        "Check for desired texture",
+                        "Package in airtight bags"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 25,
+                        unit: "kg",
+                        outputPer100kg: 25,
+                        estimatedRevenuePer100kg: 162.50,
+                        processingTime: "3-4 days",
+                        laborRequired: "1-2 workers"
+                    }
+                },
+                {
+                    name: "Wine",
+                    category: "Beverage",
+                    description: "Fermented grape wine",
+                    marketValue: 15.00,
+                    processingMethod: "Fermentation, aging",
+                    equipment: ["Crusher", "Fermentation vessels", "Aging barrels"],
+                    shelfLife: "Years",
+                    targetMarket: "Wine shops, restaurants"
+                }
+            ]
+        },
+        
+        lettuce: {
+            primary: "Fresh Lettuce",
+            byproducts: [
+                {
+                    name: "Dried Lettuce Powder",
+                    category: "Food Processing",
+                    description: "Nutrient-dense powder",
+                    marketValue: 9.00,
+                    processingMethod: "Drying, grinding",
+                    equipment: ["Dehydrator", "Grinding mill"],
+                    shelfLife: "24 months",
+                    targetMarket: "Health food stores, supplement companies"
+                }
+            ]
+        },
+        
+        spinach: {
+            primary: "Fresh Spinach",
+            byproducts: [
+                {
+                    name: "Dried Spinach Powder",
+                    category: "Food Processing",
+                    description: "Nutrient-dense powder for smoothies",
+                    marketValue: 8.00,
+                    processingMethod: "Drying, grinding",
+                    equipment: ["Dehydrator", "Grinding mill"],
+                    shelfLife: "24 months",
+                    targetMarket: "Health food stores, supplement companies"
+                },
+                {
+                    name: "Frozen Spinach",
+                    category: "Frozen Food",
+                    description: "Blanched and frozen spinach",
+                    marketValue: 2.50,
+                    processingMethod: "Blanching, freezing",
+                    equipment: ["Blanching pot", "Freezer"],
+                    shelfLife: "12 months",
+                    targetMarket: "Grocery stores, restaurants"
+                }
+            ]
+        },
+        
+        sweet_potato: {
+            primary: "Fresh Sweet Potato",
+            byproducts: [
+                {
+                    name: "Sweet Potato Flour",
+                    category: "Food Processing",
+                    description: "Natural sweetener and thickener",
+                    marketValue: 3.00,
+                    processingMethod: "Drying, grinding",
+                    equipment: ["Dehydrator", "Grinding mill"],
+                    shelfLife: "12 months",
+                    targetMarket: "Baking industry, health food stores"
+                },
+                {
+                    name: "Sweet Potato Chips",
+                    category: "Snack Food",
+                    description: "Orange chips with natural sweetness",
+                    marketValue: 3.80,
+                    processingMethod: "Slicing, frying",
+                    equipment: ["Slicer", "Deep fryer"],
+                    shelfLife: "6 months",
+                    targetMarket: "Retail stores, snack distributors"
+                },
+                {
+                    name: "Sweet Potato Vine",
+                    category: "Animal Feed",
+                    description: "Nutritious feed for livestock",
+                    marketValue: 0.60,
+                    processingMethod: "Harvesting, chopping",
+                    equipment: ["Harvesting tools", "Chopper"],
+                    shelfLife: "2 weeks",
+                    targetMarket: "Local farmers, feed suppliers"
+                }
+            ]
+        },
+        
+        taro: {
+            primary: "Fresh Taro",
+            byproducts: [
+                {
+                    name: "Taro Flour",
+                    category: "Food Processing",
+                    description: "Gluten-free flour alternative",
+                    marketValue: 3.50,
+                    processingMethod: "Drying, grinding",
+                    equipment: ["Dehydrator", "Grinding mill"],
+                    shelfLife: "12 months",
+                    targetMarket: "Health food stores, gluten-free bakeries",
+                    processingSteps: [
+                        "Wash taro corms thoroughly",
+                        "Peel carefully to remove all skin",
+                        "Cut into small uniform pieces",
+                        "Dry in dehydrator at 60°C for 3-5 days",
+                        "Grind to fine powder",
+                        "Sift and package"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 30,
+                        unit: "kg",
+                        outputPer100kg: 30,
+                        estimatedRevenuePer100kg: 105.00,
+                        processingTime: "5-7 days",
+                        laborRequired: "2 workers"
+                    }
+                },
+                {
+                    name: "Taro Chips",
+                    category: "Snack Food",
+                    description: "Purple chips with unique flavor",
+                    marketValue: 4.50,
+                    processingMethod: "Slicing, frying",
+                    equipment: ["Slicer", "Deep fryer"],
+                    shelfLife: "6 months",
+                    targetMarket: "Specialty food stores, online retailers"
+                },
+                {
+                    name: "Taro Leaves",
+                    category: "Vegetable",
+                    description: "Edible leaves for cooking",
+                    marketValue: 2.00,
+                    processingMethod: "Harvesting, cleaning",
+                    equipment: ["Harvesting tools", "Washing station"],
+                    shelfLife: "1 week",
+                    targetMarket: "Local markets, restaurants"
+                }
+            ]
+        },
+        
+        banana: {
+            primary: "Fresh Banana",
+            byproducts: [
+                {
+                    name: "Banana Chips",
+                    category: "Snack Food",
+                    description: "Crispy dried banana chips",
+                    marketValue: 6.00,
+                    processingMethod: "Slicing, drying",
+                    equipment: ["Slicer", "Dehydrator"],
+                    shelfLife: "12 months",
+                    targetMarket: "Retail stores, snack distributors",
+                    processingSteps: [
+                        "Select ripe but firm bananas",
+                        "Peel and slice uniformly (3-5mm thickness)",
+                        "Soak in lemon juice or salt water",
+                        "Dry in dehydrator at 60°C for 12-24 hours",
+                        "Season with desired spices (optional)",
+                        "Package in airtight bags"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 15,
+                        unit: "kg",
+                        outputPer100kg: 15,
+                        estimatedRevenuePer100kg: 90.00,
+                        processingTime: "2-3 days",
+                        laborRequired: "2 workers"
+                    }
+                },
+                {
+                    name: "Banana Flour",
+                    category: "Food Processing",
+                    description: "Gluten-free flour from green bananas",
+                    marketValue: 4.50,
+                    processingMethod: "Drying, grinding",
+                    equipment: ["Dehydrator", "Grinding mill"],
+                    shelfLife: "18 months",
+                    targetMarket: "Health food stores, gluten-free bakeries",
+                    processingSteps: [
+                        "Select green, unripe bananas",
+                        "Peel and slice into thin pieces",
+                        "Dry in dehydrator at 60°C for 24-36 hours",
+                        "Grind to fine powder",
+                        "Sift and package"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 18,
+                        unit: "kg",
+                        outputPer100kg: 18,
+                        estimatedRevenuePer100kg: 81.00,
+                        processingTime: "3-4 days",
+                        laborRequired: "2 workers"
+                    }
+                },
+                {
+                    name: "Banana Vinegar",
+                    category: "Condiment",
+                    description: "Fermented vinegar from overripe bananas",
+                    marketValue: 3.50,
+                    processingMethod: "Fermentation",
+                    equipment: ["Fermentation vessels"],
+                    shelfLife: "24 months",
+                    targetMarket: "Specialty food stores, restaurants"
+                },
+                {
+                    name: "Banana Leaves",
+                    category: "Packaging Material",
+                    description: "Natural packaging for food",
+                    marketValue: 1.50,
+                    processingMethod: "Harvesting, cleaning",
+                    equipment: ["Harvesting tools"],
+                    shelfLife: "6 months",
+                    targetMarket: "Food vendors, restaurants"
+                }
+            ]
+        },
+        
+        papaya: {
+            primary: "Fresh Papaya",
+            byproducts: [
+                {
+                    name: "Papaya Jam",
+                    category: "Preserves",
+                    description: "Sweet jam with tropical flavor",
+                    marketValue: 4.00,
+                    processingMethod: "Cooking, canning",
+                    equipment: ["Cooking pot", "Canning equipment"],
+                    shelfLife: "12 months",
+                    targetMarket: "Grocery stores, specialty food shops"
+                },
+                {
+                    name: "Dried Papaya",
+                    category: "Dried Fruit",
+                    description: "Chewy dried papaya strips",
+                    marketValue: 5.50,
+                    processingMethod: "Slicing, drying",
+                    equipment: ["Slicer", "Dehydrator"],
+                    shelfLife: "12 months",
+                    targetMarket: "Health food stores, snack distributors"
+                },
+                {
+                    name: "Papaya Seeds",
+                    category: "Spice",
+                    description: "Peppery seeds for seasoning",
+                    marketValue: 8.00,
+                    processingMethod: "Extraction, drying",
+                    equipment: ["Seed extractor", "Drying racks"],
+                    shelfLife: "24 months",
+                    targetMarket: "Spice companies, restaurants"
+                }
+            ]
+        },
+        
+        kava: {
+            primary: "Fresh Kava Root",
+            byproducts: [
+                {
+                    name: "Kava Powder",
+                    category: "Beverage",
+                    description: "Traditional ceremonial drink powder",
+                    marketValue: 12.00,
+                    processingMethod: "Drying, grinding",
+                    equipment: ["Drying racks", "Grinding mill"],
+                    shelfLife: "24 months",
+                    targetMarket: "Traditional medicine stores, cultural centers"
+                },
+                {
+                    name: "Kava Extract",
+                    category: "Supplements",
+                    description: "Concentrated liquid extract",
+                    marketValue: 25.00,
+                    processingMethod: "Extraction, concentration",
+                    equipment: ["Extraction equipment", "Concentrator"],
+                    shelfLife: "36 months",
+                    targetMarket: "Health supplement stores, online retailers"
+                },
+                {
+                    name: "Kava Tea Bags",
+                    category: "Beverage",
+                    description: "Convenient tea bags for preparation",
+                    marketValue: 8.00,
+                    processingMethod: "Grinding, bagging",
+                    equipment: ["Grinding mill", "Tea bag machine"],
+                    shelfLife: "18 months",
+                    targetMarket: "Tea shops, health food stores"
+                }
+            ]
+        },
+        
+        ginger: {
+            primary: "Fresh Ginger",
+            byproducts: [
+                {
+                    name: "Ginger Powder",
+                    category: "Spice",
+                    description: "Ground ginger for cooking and baking",
+                    marketValue: 6.00,
+                    processingMethod: "Drying, grinding",
+                    equipment: ["Dehydrator", "Grinding mill"],
+                    shelfLife: "24 months",
+                    targetMarket: "Spice companies, grocery stores"
+                },
+                {
+                    name: "Ginger Tea",
+                    category: "Beverage",
+                    description: "Dried ginger for tea preparation",
+                    marketValue: 4.50,
+                    processingMethod: "Slicing, drying",
+                    equipment: ["Slicer", "Dehydrator"],
+                    shelfLife: "18 months",
+                    targetMarket: "Tea shops, health food stores"
+                },
+                {
+                    name: "Ginger Oil",
+                    category: "Essential Oil",
+                    description: "Aromatherapy and culinary oil",
+                    marketValue: 15.00,
+                    processingMethod: "Steam distillation",
+                    equipment: ["Distillation equipment"],
+                    shelfLife: "36 months",
+                    targetMarket: "Essential oil companies, aromatherapy stores"
+                }
+            ]
         }
     },
     
