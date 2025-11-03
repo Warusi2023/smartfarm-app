@@ -419,6 +419,1190 @@ window.ByproductsDatabase = {
                     targetMarket: "Essential oil companies, aromatherapy stores"
                 }
             ]
+        },
+        
+        // Additional Vegetables
+        tomato: {
+            primary: "Fresh Tomatoes",
+            byproducts: [
+                {
+                    name: "Tomato Sauce",
+                    category: "Food Processing",
+                    description: "Rich tomato sauce for cooking",
+                    marketValue: 3.50,
+                    processingMethod: "Cooking, canning",
+                    equipment: ["Cooking pot", "Canning equipment", "Blender"],
+                    shelfLife: "12 months",
+                    targetMarket: "Grocery stores, restaurants",
+                    processingSteps: [
+                        "Wash and remove stems from tomatoes",
+                        "Blanch tomatoes in boiling water for 30 seconds",
+                        "Peel and chop tomatoes",
+                        "Cook with onions, garlic, and seasonings for 1-2 hours",
+                        "Blend to desired consistency",
+                        "Can or bottle while hot",
+                        "Process in water bath for 40 minutes"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 60,
+                        unit: "kg",
+                        outputPer100kg: 60,
+                        estimatedRevenuePer100kg: 210.00,
+                        processingTime: "3-4 hours",
+                        laborRequired: "2-3 workers"
+                    }
+                },
+                {
+                    name: "Tomato Paste",
+                    category: "Food Processing",
+                    description: "Concentrated tomato paste",
+                    marketValue: 5.00,
+                    processingMethod: "Cooking, reduction, canning",
+                    equipment: ["Cooking pot", "Strainer", "Canning equipment"],
+                    shelfLife: "24 months",
+                    targetMarket: "Food manufacturers, grocery stores",
+                    processingSteps: [
+                        "Wash and core tomatoes",
+                        "Cook tomatoes until soft",
+                        "Strain to remove seeds and skin",
+                        "Simmer until reduced by 50-60%",
+                        "Can while hot",
+                        "Process in water bath"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 25,
+                        unit: "kg",
+                        outputPer100kg: 25,
+                        estimatedRevenuePer100kg: 125.00,
+                        processingTime: "6-8 hours",
+                        laborRequired: "2-3 workers"
+                    }
+                },
+                {
+                    name: "Sun-Dried Tomatoes",
+                    category: "Preserves",
+                    description: "Intensely flavored dried tomatoes",
+                    marketValue: 12.00,
+                    processingMethod: "Slicing, salting, drying",
+                    equipment: ["Slicer", "Drying racks", "Salt"],
+                    shelfLife: "12 months",
+                    targetMarket: "Specialty food stores, restaurants",
+                    processingSteps: [
+                        "Select ripe but firm tomatoes",
+                        "Cut in half and remove seeds",
+                        "Salt lightly to draw out moisture",
+                        "Place on drying racks in sun or dehydrator",
+                        "Dry at 60°C for 12-24 hours",
+                        "Pack in oil or vacuum seal"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 15,
+                        unit: "kg",
+                        outputPer100kg: 15,
+                        estimatedRevenuePer100kg: 180.00,
+                        processingTime: "2-3 days",
+                        laborRequired: "1-2 workers"
+                    }
+                },
+                {
+                    name: "Tomato Powder",
+                    category: "Food Processing",
+                    description: "Dried and ground tomato powder",
+                    marketValue: 8.50,
+                    processingMethod: "Drying, grinding",
+                    equipment: ["Dehydrator", "Grinding mill"],
+                    shelfLife: "24 months",
+                    targetMarket: "Food industry, spice companies",
+                    processingSteps: [
+                        "Wash and slice tomatoes",
+                        "Dry in dehydrator at 60°C for 24-36 hours",
+                        "Grind to fine powder",
+                        "Sift to remove lumps",
+                        "Package in moisture-proof containers"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 12,
+                        unit: "kg",
+                        outputPer100kg: 12,
+                        estimatedRevenuePer100kg: 102.00,
+                        processingTime: "3-4 days",
+                        laborRequired: "1-2 workers"
+                    }
+                }
+            ]
+        },
+        
+        potato: {
+            primary: "Fresh Potatoes",
+            byproducts: [
+                {
+                    name: "Potato Chips",
+                    category: "Snack Food",
+                    description: "Crispy fried potato chips",
+                    marketValue: 5.50,
+                    processingMethod: "Slicing, frying, seasoning",
+                    equipment: ["Slicer", "Deep fryer", "Seasoning mixer"],
+                    shelfLife: "6 months",
+                    targetMarket: "Snack distributors, retail stores",
+                    processingSteps: [
+                        "Wash and peel potatoes",
+                        "Slice uniformly (1-2mm thickness)",
+                        "Rinse to remove excess starch",
+                        "Deep fry at 180°C until golden",
+                        "Drain excess oil",
+                        "Season with salt or flavors",
+                        "Cool and package in airtight bags"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 45,
+                        unit: "kg",
+                        outputPer100kg: 45,
+                        estimatedRevenuePer100kg: 247.50,
+                        processingTime: "2-3 hours",
+                        laborRequired: "2-3 workers"
+                    }
+                },
+                {
+                    name: "Potato Starch",
+                    category: "Industrial",
+                    description: "Pure potato starch for cooking and industry",
+                    marketValue: 3.50,
+                    processingMethod: "Washing, extraction, drying",
+                    equipment: ["Grater", "Strainer", "Settling tank", "Dryer"],
+                    shelfLife: "24 months",
+                    targetMarket: "Food industry, textile, paper",
+                    processingSteps: [
+                        "Wash and peel potatoes",
+                        "Grate or blend potatoes with water",
+                        "Strain to extract starch",
+                        "Allow starch to settle for 24 hours",
+                        "Separate and dry starch",
+                        "Package in moisture-proof bags"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 18,
+                        unit: "kg",
+                        outputPer100kg: 18,
+                        estimatedRevenuePer100kg: 63.00,
+                        processingTime: "3-5 days",
+                        laborRequired: "2-3 workers"
+                    }
+                },
+                {
+                    name: "Potato Flour",
+                    category: "Food Processing",
+                    description: "Gluten-free flour from potatoes",
+                    marketValue: 4.00,
+                    processingMethod: "Drying, grinding",
+                    equipment: ["Dehydrator", "Grinding mill"],
+                    shelfLife: "12 months",
+                    targetMarket: "Bakeries, health food stores",
+                    processingSteps: [
+                        "Wash and peel potatoes",
+                        "Slice or dice potatoes",
+                        "Dry in dehydrator at 60°C for 24-36 hours",
+                        "Grind to fine powder",
+                        "Sift to ensure uniform texture",
+                        "Package in airtight containers"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 20,
+                        unit: "kg",
+                        outputPer100kg: 20,
+                        estimatedRevenuePer100kg: 80.00,
+                        processingTime: "3-4 days",
+                        laborRequired: "2 workers"
+                    }
+                }
+            ]
+        },
+        
+        // Grains
+        rice: {
+            primary: "Raw Rice",
+            byproducts: [
+                {
+                    name: "Rice Bran",
+                    category: "Animal Feed",
+                    description: "Nutritious bran for livestock feed",
+                    marketValue: 1.20,
+                    processingMethod: "Milling separation",
+                    equipment: ["Rice mill"],
+                    shelfLife: "6 months",
+                    targetMarket: "Feed mills, livestock farmers",
+                    processingSteps: [
+                        "Process rice through mill",
+                        "Separate bran from polished rice",
+                        "Stabilize bran to prevent rancidity",
+                        "Package in airtight bags"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 8,
+                        unit: "kg",
+                        outputPer100kg: 8,
+                        estimatedRevenuePer100kg: 9.60,
+                        processingTime: "1 day",
+                        laborRequired: "1 worker"
+                    }
+                },
+                {
+                    name: "Rice Flour",
+                    category: "Food Processing",
+                    description: "Fine flour from rice grains",
+                    marketValue: 3.00,
+                    processingMethod: "Grinding",
+                    equipment: ["Grinding mill", "Sifter"],
+                    shelfLife: "12 months",
+                    targetMarket: "Bakeries, gluten-free food manufacturers",
+                    processingSteps: [
+                        "Clean and sort rice grains",
+                        "Grind to fine powder",
+                        "Sift to remove larger particles",
+                        "Package in moisture-proof bags"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 95,
+                        unit: "kg",
+                        outputPer100kg: 95,
+                        estimatedRevenuePer100kg: 285.00,
+                        processingTime: "2-3 hours",
+                        laborRequired: "1-2 workers"
+                    }
+                },
+                {
+                    name: "Rice Bran Oil",
+                    category: "Cooking Oil",
+                    description: "Healthy cooking oil from rice bran",
+                    marketValue: 6.50,
+                    processingMethod: "Extraction, refining",
+                    equipment: ["Oil press", "Filtering system", "Bottling"],
+                    shelfLife: "12 months",
+                    targetMarket: "Grocery stores, health food stores",
+                    processingSteps: [
+                        "Extract oil from rice bran using press",
+                        "Filter to remove impurities",
+                        "Refine if needed",
+                        "Bottle in dark containers",
+                        "Label and package"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 15,
+                        unit: "liters",
+                        outputPer100kg: 15,
+                        estimatedRevenuePer100kg: 97.50,
+                        processingTime: "2-3 days",
+                        laborRequired: "2 workers"
+                    }
+                }
+            ]
+        },
+        
+        corn: {
+            primary: "Fresh Corn/Maize",
+            byproducts: [
+                {
+                    name: "Corn Flour",
+                    category: "Food Processing",
+                    description: "Fine flour from corn kernels",
+                    marketValue: 2.80,
+                    processingMethod: "Drying, grinding",
+                    equipment: ["Dryer", "Grinding mill"],
+                    shelfLife: "12 months",
+                    targetMarket: "Bakeries, tortilla makers, food industry",
+                    processingSteps: [
+                        "Remove kernels from cob",
+                        "Dry kernels thoroughly",
+                        "Grind to fine powder",
+                        "Sift for uniform texture",
+                        "Package in airtight bags"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 85,
+                        unit: "kg",
+                        outputPer100kg: 85,
+                        estimatedRevenuePer100kg: 238.00,
+                        processingTime: "2-3 days",
+                        laborRequired: "1-2 workers"
+                    }
+                },
+                {
+                    name: "Corn Oil",
+                    category: "Cooking Oil",
+                    description: "Healthy vegetable oil from corn",
+                    marketValue: 5.00,
+                    processingMethod: "Extraction, refining",
+                    equipment: ["Oil press", "Refining equipment"],
+                    shelfLife: "12 months",
+                    targetMarket: "Grocery stores, food manufacturers",
+                    processingSteps: [
+                        "Extract oil from corn germ using press",
+                        "Filter and refine oil",
+                        "Bottle in appropriate containers",
+                        "Label and package"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 3,
+                        unit: "liters",
+                        outputPer100kg: 3,
+                        estimatedRevenuePer100kg: 15.00,
+                        processingTime: "2-3 days",
+                        laborRequired: "2 workers"
+                    }
+                },
+                {
+                    name: "Corn Husk",
+                    category: "Packaging Material",
+                    description: "Natural husks for tamales and packaging",
+                    marketValue: 1.50,
+                    processingMethod: "Cleaning, drying",
+                    equipment: ["Washing station", "Drying racks"],
+                    shelfLife: "6 months",
+                    targetMarket: "Food vendors, restaurants, crafts",
+                    processingSteps: [
+                        "Remove husks from cobs",
+                        "Wash and clean husks",
+                        "Dry in shade or low heat",
+                        "Sort by size",
+                        "Package in bundles"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 10,
+                        unit: "kg",
+                        outputPer100kg: 10,
+                        estimatedRevenuePer100kg: 15.00,
+                        processingTime: "3-5 days",
+                        laborRequired: "1 worker"
+                    }
+                }
+            ]
+        },
+        
+        // Fruits
+        mango: {
+            primary: "Fresh Mangoes",
+            byproducts: [
+                {
+                    name: "Mango Jam",
+                    category: "Preserves",
+                    description: "Sweet tropical mango jam",
+                    marketValue: 4.50,
+                    processingMethod: "Cooking, canning",
+                    equipment: ["Cooking pot", "Canning equipment"],
+                    shelfLife: "12 months",
+                    targetMarket: "Grocery stores, specialty food shops",
+                    processingSteps: [
+                        "Wash, peel, and dice ripe mangoes",
+                        "Cook with sugar and lemon juice",
+                        "Stir until thick consistency",
+                        "Can while hot",
+                        "Process in water bath for 15 minutes"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 70,
+                        unit: "kg",
+                        outputPer100kg: 70,
+                        estimatedRevenuePer100kg: 315.00,
+                        processingTime: "2-3 hours",
+                        laborRequired: "2 workers"
+                    }
+                },
+                {
+                    name: "Dried Mango",
+                    category: "Dried Fruit",
+                    description: "Chewy dried mango strips",
+                    marketValue: 8.00,
+                    processingMethod: "Slicing, drying",
+                    equipment: ["Slicer", "Dehydrator"],
+                    shelfLife: "12 months",
+                    targetMarket: "Health food stores, snack distributors",
+                    processingSteps: [
+                        "Wash and peel ripe but firm mangoes",
+                        "Slice into uniform strips",
+                        "Dry in dehydrator at 60°C for 24-36 hours",
+                        "Check for desired texture",
+                        "Package in airtight bags"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 20,
+                        unit: "kg",
+                        outputPer100kg: 20,
+                        estimatedRevenuePer100kg: 160.00,
+                        processingTime: "2-3 days",
+                        laborRequired: "2 workers"
+                    }
+                },
+                {
+                    name: "Mango Chutney",
+                    category: "Condiment",
+                    description: "Spicy-sweet mango chutney",
+                    marketValue: 5.50,
+                    processingMethod: "Cooking with spices",
+                    equipment: ["Cooking pot", "Canning equipment"],
+                    shelfLife: "12 months",
+                    targetMarket: "Specialty food stores, restaurants",
+                    processingSteps: [
+                        "Dice mangoes and prepare spices",
+                        "Cook with vinegar, sugar, and spices",
+                        "Simmer until thick",
+                        "Can while hot",
+                        "Process in water bath"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 65,
+                        unit: "kg",
+                        outputPer100kg: 65,
+                        estimatedRevenuePer100kg: 357.50,
+                        processingTime: "3-4 hours",
+                        laborRequired: "2 workers"
+                    }
+                }
+            ]
+        },
+        
+        pineapple: {
+            primary: "Fresh Pineapple",
+            byproducts: [
+                {
+                    name: "Pineapple Juice",
+                    category: "Beverage",
+                    description: "Fresh tropical pineapple juice",
+                    marketValue: 3.00,
+                    processingMethod: "Extraction, pasteurization",
+                    equipment: ["Juicer", "Pasteurizer", "Bottling equipment"],
+                    shelfLife: "6 months",
+                    targetMarket: "Grocery stores, juice bars",
+                    processingSteps: [
+                        "Wash and peel pineapples",
+                        "Extract juice using juicer",
+                        "Filter to remove pulp (optional)",
+                        "Pasteurize at 85°C for 30 seconds",
+                        "Bottle while hot",
+                        "Cool and label"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 50,
+                        unit: "liters",
+                        outputPer100kg: 50,
+                        estimatedRevenuePer100kg: 150.00,
+                        processingTime: "2-3 hours",
+                        laborRequired: "2-3 workers"
+                    }
+                },
+                {
+                    name: "Dried Pineapple",
+                    category: "Dried Fruit",
+                    description: "Sweet dried pineapple rings",
+                    marketValue: 7.50,
+                    processingMethod: "Slicing, drying",
+                    equipment: ["Slicer", "Dehydrator"],
+                    shelfLife: "12 months",
+                    targetMarket: "Health food stores, snack distributors",
+                    processingSteps: [
+                        "Peel and core pineapple",
+                        "Slice into rings (1cm thick)",
+                        "Dry in dehydrator at 60°C for 18-24 hours",
+                        "Check for chewy texture",
+                        "Package in airtight bags"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 18,
+                        unit: "kg",
+                        outputPer100kg: 18,
+                        estimatedRevenuePer100kg: 135.00,
+                        processingTime: "2 days",
+                        laborRequired: "2 workers"
+                    }
+                },
+                {
+                    name: "Pineapple Vinegar",
+                    category: "Condiment",
+                    description: "Fermented pineapple vinegar",
+                    marketValue: 4.00,
+                    processingMethod: "Fermentation",
+                    equipment: ["Fermentation vessels", "Strainer"],
+                    shelfLife: "24 months",
+                    targetMarket: "Specialty food stores, restaurants",
+                    processingSteps: [
+                        "Use pineapple peels and cores",
+                        "Mix with water and sugar",
+                        "Ferment for 2-3 weeks",
+                        "Strain and age for 2-4 weeks",
+                        "Bottle and label"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 60,
+                        unit: "liters",
+                        outputPer100kg: 60,
+                        estimatedRevenuePer100kg: 240.00,
+                        processingTime: "4-7 weeks",
+                        laborRequired: "1 worker (part-time)"
+                    }
+                }
+            ]
+        },
+        
+        orange: {
+            primary: "Fresh Oranges",
+            byproducts: [
+                {
+                    name: "Orange Juice",
+                    category: "Beverage",
+                    description: "Fresh squeezed orange juice",
+                    marketValue: 4.00,
+                    processingMethod: "Extraction, pasteurization",
+                    equipment: ["Juicer", "Pasteurizer", "Bottling"],
+                    shelfLife: "1 week (fresh) or 6 months (pasteurized)",
+                    targetMarket: "Grocery stores, juice bars",
+                    processingSteps: [
+                        "Wash and peel oranges",
+                        "Extract juice using juicer",
+                        "Strain to remove pulp (optional)",
+                        "Pasteurize at 85°C for 30 seconds",
+                        "Bottle and cool",
+                        "Refrigerate or store"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 45,
+                        unit: "liters",
+                        outputPer100kg: 45,
+                        estimatedRevenuePer100kg: 180.00,
+                        processingTime: "2-3 hours",
+                        laborRequired: "2-3 workers"
+                    }
+                },
+                {
+                    name: "Orange Marmalade",
+                    category: "Preserves",
+                    description: "Sweet citrus marmalade",
+                    marketValue: 5.00,
+                    processingMethod: "Cooking, canning",
+                    equipment: ["Cooking pot", "Canning equipment"],
+                    shelfLife: "12 months",
+                    targetMarket: "Grocery stores, specialty food shops",
+                    processingSteps: [
+                        "Wash oranges and remove peel",
+                        "Julienne peel and juice oranges",
+                        "Cook with sugar and water",
+                        "Simmer until thick and translucent",
+                        "Can while hot",
+                        "Process in water bath"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 65,
+                        unit: "kg",
+                        outputPer100kg: 65,
+                        estimatedRevenuePer100kg: 325.00,
+                        processingTime: "2-3 hours",
+                        laborRequired: "2 workers"
+                    }
+                },
+                {
+                    name: "Orange Essential Oil",
+                    category: "Essential Oil",
+                    description: "Aromatherapy and flavoring oil",
+                    marketValue: 18.00,
+                    processingMethod: "Cold pressing or steam distillation",
+                    equipment: ["Oil press", "Distillation equipment"],
+                    shelfLife: "24 months",
+                    targetMarket: "Essential oil companies, aromatherapy stores",
+                    processingSteps: [
+                        "Extract oil from orange peels",
+                        "Cold press or steam distill",
+                        "Filter to remove impurities",
+                        "Store in dark glass bottles",
+                        "Label and package"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 0.5,
+                        unit: "ml",
+                        outputPer100kg: 500,
+                        estimatedRevenuePer100kg: 9000.00,
+                        processingTime: "1 day",
+                        laborRequired: "2 workers"
+                    }
+                }
+            ]
+        },
+        
+        // More Vegetables
+        carrot: {
+            primary: "Fresh Carrots",
+            byproducts: [
+                {
+                    name: "Carrot Juice",
+                    category: "Beverage",
+                    description: "Fresh nutritious carrot juice",
+                    marketValue: 3.50,
+                    processingMethod: "Juicing, pasteurization",
+                    equipment: ["Juicer", "Pasteurizer", "Bottling"],
+                    shelfLife: "1 week (fresh) or 6 months (pasteurized)",
+                    targetMarket: "Grocery stores, juice bars",
+                    processingSteps: [
+                        "Wash and peel carrots",
+                        "Juice using extractor",
+                        "Strain if needed",
+                        "Pasteurize at 85°C",
+                        "Bottle and cool"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 65,
+                        unit: "liters",
+                        outputPer100kg: 65,
+                        estimatedRevenuePer100kg: 227.50,
+                        processingTime: "2-3 hours",
+                        laborRequired: "2 workers"
+                    }
+                },
+                {
+                    name: "Dried Carrot Chips",
+                    category: "Snack Food",
+                    description: "Crispy dehydrated carrot chips",
+                    marketValue: 6.00,
+                    processingMethod: "Slicing, dehydration",
+                    equipment: ["Slicer", "Dehydrator"],
+                    shelfLife: "12 months",
+                    targetMarket: "Health food stores, snack distributors",
+                    processingSteps: [
+                        "Wash and peel carrots",
+                        "Slice into thin rounds",
+                        "Dry in dehydrator at 60°C for 12-18 hours",
+                        "Check for crispness",
+                        "Package in airtight bags"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 12,
+                        unit: "kg",
+                        outputPer100kg: 12,
+                        estimatedRevenuePer100kg: 72.00,
+                        processingTime: "2 days",
+                        laborRequired: "1-2 workers"
+                    }
+                },
+                {
+                    name: "Carrot Powder",
+                    category: "Food Processing",
+                    description: "Nutrient-dense carrot powder",
+                    marketValue: 7.50,
+                    processingMethod: "Drying, grinding",
+                    equipment: ["Dehydrator", "Grinding mill"],
+                    shelfLife: "24 months",
+                    targetMarket: "Food industry, supplement companies",
+                    processingSteps: [
+                        "Wash, peel, and slice carrots",
+                        "Dry completely in dehydrator",
+                        "Grind to fine powder",
+                        "Sift for uniform texture",
+                        "Package in moisture-proof containers"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 10,
+                        unit: "kg",
+                        outputPer100kg: 10,
+                        estimatedRevenuePer100kg: 75.00,
+                        processingTime: "3-4 days",
+                        laborRequired: "1-2 workers"
+                    }
+                }
+            ]
+        },
+        
+        onion: {
+            primary: "Fresh Onions",
+            byproducts: [
+                {
+                    name: "Onion Powder",
+                    category: "Spice",
+                    description: "Dried and ground onion",
+                    marketValue: 5.50,
+                    processingMethod: "Drying, grinding",
+                    equipment: ["Dehydrator", "Grinding mill"],
+                    shelfLife: "24 months",
+                    targetMarket: "Spice companies, food manufacturers",
+                    processingSteps: [
+                        "Peel and slice onions",
+                        "Dry in dehydrator at 60°C for 24-36 hours",
+                        "Grind to fine powder",
+                        "Sift to remove lumps",
+                        "Package in airtight containers"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 15,
+                        unit: "kg",
+                        outputPer100kg: 15,
+                        estimatedRevenuePer100kg: 82.50,
+                        processingTime: "3-4 days",
+                        laborRequired: "1-2 workers"
+                    }
+                },
+                {
+                    name: "Dried Onion Flakes",
+                    category: "Food Processing",
+                    description: "Dehydrated onion pieces",
+                    marketValue: 6.50,
+                    processingMethod: "Slicing, dehydration",
+                    equipment: ["Slicer", "Dehydrator"],
+                    shelfLife: "12 months",
+                    targetMarket: "Food manufacturers, restaurants",
+                    processingSteps: [
+                        "Peel and slice onions",
+                        "Separate into rings or flakes",
+                        "Dry in dehydrator at 60°C for 12-24 hours",
+                        "Package in airtight containers"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 12,
+                        unit: "kg",
+                        outputPer100kg: 12,
+                        estimatedRevenuePer100kg: 78.00,
+                        processingTime: "2 days",
+                        laborRequired: "1-2 workers"
+                    }
+                }
+            ]
+        },
+        
+        pepper: {
+            primary: "Fresh Peppers",
+            byproducts: [
+                {
+                    name: "Hot Sauce",
+                    category: "Condiment",
+                    description: "Spicy pepper sauce",
+                    marketValue: 6.00,
+                    processingMethod: "Blending, fermentation, bottling",
+                    equipment: ["Blender", "Fermentation jars", "Bottling equipment"],
+                    shelfLife: "24 months",
+                    targetMarket: "Grocery stores, specialty food shops",
+                    processingSteps: [
+                        "Wash and stem peppers",
+                        "Blend with vinegar and salt",
+                        "Ferment for 1-2 weeks (optional)",
+                        "Strain if desired",
+                        "Bottle and seal",
+                        "Age for flavor development"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 70,
+                        unit: "liters",
+                        outputPer100kg: 70,
+                        estimatedRevenuePer100kg: 420.00,
+                        processingTime: "1-2 weeks",
+                        laborRequired: "2 workers"
+                    }
+                },
+                {
+                    name: "Paprika Powder",
+                    category: "Spice",
+                    description: "Ground dried pepper spice",
+                    marketValue: 8.00,
+                    processingMethod: "Drying, grinding",
+                    equipment: ["Dehydrator", "Grinding mill"],
+                    shelfLife: "24 months",
+                    targetMarket: "Spice companies, food manufacturers",
+                    processingSteps: [
+                        "Wash and remove stems",
+                        "Dry in dehydrator at 60°C for 24-48 hours",
+                        "Remove seeds (optional)",
+                        "Grind to fine powder",
+                        "Package in airtight containers"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 20,
+                        unit: "kg",
+                        outputPer100kg: 20,
+                        estimatedRevenuePer100kg: 160.00,
+                        processingTime: "3-5 days",
+                        laborRequired: "1-2 workers"
+                    }
+                }
+            ]
+        },
+        
+        cucumber: {
+            primary: "Fresh Cucumbers",
+            byproducts: [
+                {
+                    name: "Pickles",
+                    category: "Preserves",
+                    description: "Fermented or vinegar pickles",
+                    marketValue: 4.50,
+                    processingMethod: "Brining, fermentation or pickling",
+                    equipment: ["Pickling jars", "Brine solution"],
+                    shelfLife: "12 months",
+                    targetMarket: "Grocery stores, specialty food shops",
+                    processingSteps: [
+                        "Wash and trim cucumbers",
+                        "Prepare brine or vinegar solution",
+                        "Pack cucumbers in jars with spices",
+                        "Add brine and seal",
+                        "Ferment (if making fermented pickles) or process",
+                        "Store in cool place"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 95,
+                        unit: "kg",
+                        outputPer100kg: 95,
+                        estimatedRevenuePer100kg: 427.50,
+                        processingTime: "1 day (vinegar) or 2-3 weeks (fermented)",
+                        laborRequired: "1-2 workers"
+                    }
+                },
+                {
+                    name: "Cucumber Juice",
+                    category: "Beverage",
+                    description: "Refreshing cucumber juice",
+                    marketValue: 3.00,
+                    processingMethod: "Juicing, bottling",
+                    equipment: ["Juicer", "Bottling equipment"],
+                    shelfLife: "3 days (fresh)",
+                    targetMarket: "Juice bars, health food stores"
+                }
+            ]
+        },
+        
+        // Legumes
+        beans: {
+            primary: "Dry Beans",
+            byproducts: [
+                {
+                    name: "Bean Flour",
+                    category: "Food Processing",
+                    description: "Protein-rich flour from beans",
+                    marketValue: 4.00,
+                    processingMethod: "Grinding",
+                    equipment: ["Grinding mill"],
+                    shelfLife: "12 months",
+                    targetMarket: "Bakeries, health food stores",
+                    processingSteps: [
+                        "Clean and sort beans",
+                        "Grind to fine powder",
+                        "Sift for uniform texture",
+                        "Package in airtight bags"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 98,
+                        unit: "kg",
+                        outputPer100kg: 98,
+                        estimatedRevenuePer100kg: 392.00,
+                        processingTime: "2-3 hours",
+                        laborRequired: "1 worker"
+                    }
+                },
+                {
+                    name: "Bean Paste",
+                    category: "Food Processing",
+                    description: "Cooked and mashed bean paste",
+                    marketValue: 3.50,
+                    processingMethod: "Cooking, mashing",
+                    equipment: ["Cooking pot", "Food processor"],
+                    shelfLife: "1 week (refrigerated)",
+                    targetMarket: "Food manufacturers, restaurants"
+                }
+            ]
+        },
+        
+        peanuts: {
+            primary: "Raw Peanuts",
+            byproducts: [
+                {
+                    name: "Peanut Butter",
+                    category: "Food Processing",
+                    description: "Smooth or crunchy peanut butter",
+                    marketValue: 7.00,
+                    processingMethod: "Roasting, grinding",
+                    equipment: ["Roaster", "Grinder", "Packaging"],
+                    shelfLife: "12 months",
+                    targetMarket: "Grocery stores, specialty food shops",
+                    processingSteps: [
+                        "Shell and clean peanuts",
+                        "Roast at 180°C for 15-20 minutes",
+                        "Remove skins (optional)",
+                        "Grind in food processor until smooth",
+                        "Add salt and oil if needed",
+                        "Package in jars"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 90,
+                        unit: "kg",
+                        outputPer100kg: 90,
+                        estimatedRevenuePer100kg: 630.00,
+                        processingTime: "1-2 hours",
+                        laborRequired: "2 workers"
+                    }
+                },
+                {
+                    name: "Peanut Oil",
+                    category: "Cooking Oil",
+                    description: "High-quality cooking oil",
+                    marketValue: 6.50,
+                    processingMethod: "Pressing, refining",
+                    equipment: ["Oil press", "Refining equipment"],
+                    shelfLife: "12 months",
+                    targetMarket: "Grocery stores, restaurants",
+                    processingSteps: [
+                        "Shell and clean peanuts",
+                        "Press to extract oil",
+                        "Filter to remove solids",
+                        "Refine if needed",
+                        "Bottle in dark containers"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 45,
+                        unit: "liters",
+                        outputPer100kg: 45,
+                        estimatedRevenuePer100kg: 292.50,
+                        processingTime: "1-2 days",
+                        laborRequired: "2 workers"
+                    }
+                },
+                {
+                    name: "Roasted Peanuts",
+                    category: "Snack Food",
+                    description: "Salt-roasted peanuts",
+                    marketValue: 5.50,
+                    processingMethod: "Roasting, seasoning",
+                    equipment: ["Roaster", "Seasoning equipment"],
+                    shelfLife: "6 months",
+                    targetMarket: "Snack distributors, retail stores"
+                }
+            ]
+        },
+        
+        // More Root Crops
+        yam: {
+            primary: "Fresh Yam",
+            byproducts: [
+                {
+                    name: "Yam Flour",
+                    category: "Food Processing",
+                    description: "Fine flour from yam",
+                    marketValue: 3.50,
+                    processingMethod: "Drying, grinding",
+                    equipment: ["Dehydrator", "Grinding mill"],
+                    shelfLife: "12 months",
+                    targetMarket: "Bakeries, food manufacturers",
+                    processingSteps: [
+                        "Wash and peel yams",
+                        "Slice into small pieces",
+                        "Dry in dehydrator at 60°C for 3-5 days",
+                        "Grind to fine powder",
+                        "Sift and package"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 28,
+                        unit: "kg",
+                        outputPer100kg: 28,
+                        estimatedRevenuePer100kg: 98.00,
+                        processingTime: "5-7 days",
+                        laborRequired: "2 workers"
+                    }
+                },
+                {
+                    name: "Yam Chips",
+                    category: "Snack Food",
+                    description: "Crispy fried yam chips",
+                    marketValue: 4.50,
+                    processingMethod: "Slicing, frying",
+                    equipment: ["Slicer", "Deep fryer"],
+                    shelfLife: "6 months",
+                    targetMarket: "Snack distributors, retail stores"
+                }
+            ]
+        },
+        
+        // More Fruits
+        avocado: {
+            primary: "Fresh Avocados",
+            byproducts: [
+                {
+                    name: "Avocado Oil",
+                    category: "Cooking Oil",
+                    description: "Premium cooking and cosmetic oil",
+                    marketValue: 18.00,
+                    processingMethod: "Cold pressing",
+                    equipment: ["Cold press", "Filtering system"],
+                    shelfLife: "24 months",
+                    targetMarket: "Health food stores, cosmetic companies",
+                    processingSteps: [
+                        "Remove flesh from avocados",
+                        "Dry the flesh slightly",
+                        "Cold press to extract oil",
+                        "Filter to remove solids",
+                        "Bottle in dark glass containers"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 15,
+                        unit: "liters",
+                        outputPer100kg: 15,
+                        estimatedRevenuePer100kg: 270.00,
+                        processingTime: "1-2 days",
+                        laborRequired: "2 workers"
+                    }
+                },
+                {
+                    name: "Guacamole",
+                    category: "Prepared Food",
+                    description: "Fresh avocado dip",
+                    marketValue: 6.50,
+                    processingMethod: "Mashing, seasoning",
+                    equipment: ["Food processor", "Packaging"],
+                    shelfLife: "3 days (refrigerated)",
+                    targetMarket: "Grocery stores, restaurants"
+                }
+            ]
+        },
+        
+        coconut: {
+            primary: "Fresh Coconut",
+            byproducts: [
+                {
+                    name: "Coconut Oil",
+                    category: "Cooking Oil",
+                    description: "Virgin coconut oil",
+                    marketValue: 10.00,
+                    processingMethod: "Cold pressing or extraction",
+                    equipment: ["Press", "Filtering system"],
+                    shelfLife: "24 months",
+                    targetMarket: "Health food stores, cosmetic companies",
+                    processingSteps: [
+                        "Extract coconut meat",
+                        "Grate or blend meat",
+                        "Press to extract oil (or use wet method)",
+                        "Filter to remove solids",
+                        "Bottle in dark containers"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 60,
+                        unit: "liters",
+                        outputPer100kg: 60,
+                        estimatedRevenuePer100kg: 600.00,
+                        processingTime: "1-2 days",
+                        laborRequired: "2 workers"
+                    }
+                },
+                {
+                    name: "Coconut Flour",
+                    category: "Food Processing",
+                    description: "Gluten-free flour from coconut",
+                    marketValue: 6.00,
+                    processingMethod: "Drying, grinding",
+                    equipment: ["Dryer", "Grinding mill"],
+                    shelfLife: "12 months",
+                    targetMarket: "Bakeries, health food stores"
+                },
+                {
+                    name: "Coconut Milk",
+                    category: "Beverage",
+                    description: "Extracted coconut milk",
+                    marketValue: 4.50,
+                    processingMethod: "Extraction, bottling",
+                    equipment: ["Grating equipment", "Press", "Bottling"],
+                    shelfLife: "1 week (fresh) or 6 months (canned)",
+                    targetMarket: "Grocery stores, food manufacturers"
+                },
+                {
+                    name: "Coconut Water",
+                    category: "Beverage",
+                    description: "Natural coconut water",
+                    marketValue: 3.50,
+                    processingMethod: "Extraction, pasteurization",
+                    equipment: ["Extraction tools", "Pasteurizer", "Bottling"],
+                    shelfLife: "6 months (pasteurized)",
+                    targetMarket: "Grocery stores, health food stores"
+                }
+            ]
+        },
+        
+        watermelon: {
+            primary: "Fresh Watermelon",
+            byproducts: [
+                {
+                    name: "Watermelon Juice",
+                    category: "Beverage",
+                    description: "Fresh watermelon juice",
+                    marketValue: 2.50,
+                    processingMethod: "Juicing, bottling",
+                    equipment: ["Juicer", "Bottling equipment"],
+                    shelfLife: "3 days (fresh)",
+                    targetMarket: "Juice bars, grocery stores"
+                },
+                {
+                    name: "Watermelon Rind Pickles",
+                    category: "Preserves",
+                    description: "Pickled watermelon rind",
+                    marketValue: 4.00,
+                    processingMethod: "Pickling",
+                    equipment: ["Pickling jars"],
+                    shelfLife: "12 months",
+                    targetMarket: "Specialty food stores, restaurants",
+                    processingSteps: [
+                        "Remove green skin from rind",
+                        "Cut rind into pieces",
+                        "Brine overnight",
+                        "Cook in vinegar and sugar syrup",
+                        "Pack in jars and process"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 40,
+                        unit: "kg",
+                        outputPer100kg: 40,
+                        estimatedRevenuePer100kg: 160.00,
+                        processingTime: "2-3 days",
+                        laborRequired: "1-2 workers"
+                    }
+                }
+            ]
+        },
+        
+        // More Grains
+        wheat: {
+            primary: "Wheat Grain",
+            byproducts: [
+                {
+                    name: "Wheat Flour",
+                    category: "Food Processing",
+                    description: "All-purpose or specialty flour",
+                    marketValue: 2.50,
+                    processingMethod: "Milling",
+                    equipment: ["Flour mill", "Sifter"],
+                    shelfLife: "12 months",
+                    targetMarket: "Bakeries, grocery stores",
+                    processingSteps: [
+                        "Clean and sort wheat grains",
+                        "Mill to desired fineness",
+                        "Sift to separate bran (optional)",
+                        "Package in bags"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 75,
+                        unit: "kg",
+                        outputPer100kg: 75,
+                        estimatedRevenuePer100kg: 187.50,
+                        processingTime: "2-3 hours",
+                        laborRequired: "1-2 workers"
+                    }
+                },
+                {
+                    name: "Wheat Bran",
+                    category: "Animal Feed",
+                    description: "High-fiber bran",
+                    marketValue: 1.50,
+                    processingMethod: "Milling separation",
+                    equipment: ["Flour mill"],
+                    shelfLife: "6 months",
+                    targetMarket: "Feed mills, health food stores"
+                },
+                {
+                    name: "Wheat Germ",
+                    category: "Health Food",
+                    description: "Nutrient-rich germ",
+                    marketValue: 8.00,
+                    processingMethod: "Milling separation",
+                    equipment: ["Flour mill"],
+                    shelfLife: "6 months (refrigerated)",
+                    targetMarket: "Health food stores, supplement companies"
+                }
+            ]
         }
     },
     
@@ -626,6 +1810,412 @@ window.ByproductsDatabase = {
                     equipment: ["Cleaning equipment", "Sorting machine"],
                     shelfLife: "Indefinite",
                     targetMarket: "Brush manufacturers, art supply stores"
+                }
+            ]
+        },
+        
+        sheep: {
+            primary: "Lamb/Mutton/Wool",
+            byproducts: [
+                {
+                    name: "Wool",
+                    category: "Textile",
+                    description: "Natural wool fiber for textiles",
+                    marketValue: 8.00,
+                    processingMethod: "Shearing, cleaning, carding",
+                    equipment: ["Shearing equipment", "Washing facility", "Carding machine"],
+                    shelfLife: "Indefinite",
+                    targetMarket: "Textile manufacturers, yarn producers",
+                    processingSteps: [
+                        "Shear wool from sheep",
+                        "Sort by quality and color",
+                        "Wash to remove grease and dirt",
+                        "Dry thoroughly",
+                        "Card to align fibers",
+                        "Package in bales"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 100,
+                        unit: "kg",
+                        outputPerAnimal: "3-5",
+                        estimatedRevenuePerAnimal: 32.00,
+                        processingTime: "2-3 days",
+                        laborRequired: "1-2 workers"
+                    }
+                },
+                {
+                    name: "Sheep Cheese",
+                    category: "Dairy",
+                    description: "Rich and flavorful sheep cheese",
+                    marketValue: 14.00,
+                    processingMethod: "Cheese making, aging",
+                    equipment: ["Cheese making equipment", "Aging room"],
+                    shelfLife: "3-6 months",
+                    targetMarket: "Specialty food stores, restaurants",
+                    processingSteps: [
+                        "Collect fresh sheep milk",
+                        "Heat to 86°F and add starter",
+                        "Add rennet and let curdle",
+                        "Cut and drain whey",
+                        "Salt and press into shape",
+                        "Age for 3-12 months",
+                        "Package and label"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 12,
+                        unit: "kg",
+                        outputPer100Liters: 12,
+                        estimatedRevenuePer100Liters: 168.00,
+                        processingTime: "3-12 months",
+                        laborRequired: "1-2 cheesemakers"
+                    }
+                },
+                {
+                    name: "Lanolin",
+                    category: "Cosmetics",
+                    description: "Wool grease for skincare products",
+                    marketValue: 12.00,
+                    processingMethod: "Extraction, purification",
+                    equipment: ["Extraction equipment", "Purification system"],
+                    shelfLife: "36 months",
+                    targetMarket: "Cosmetic manufacturers, pharmaceutical companies"
+                }
+            ]
+        },
+        
+        ducks: {
+            primary: "Duck Meat/Eggs",
+            byproducts: [
+                {
+                    name: "Duck Feathers",
+                    category: "Manufacturing",
+                    description: "Down feathers for bedding and clothing",
+                    marketValue: 4.00,
+                    processingMethod: "Cleaning, sorting",
+                    equipment: ["Cleaning equipment", "Sorting facility"],
+                    shelfLife: "Indefinite",
+                    targetMarket: "Bedding manufacturers, outdoor gear companies",
+                    processingSteps: [
+                        "Collect feathers during processing",
+                        "Clean and sanitize feathers",
+                        "Sort by quality and type",
+                        "Package for sale"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 100,
+                        unit: "grams",
+                        outputPerAnimal: "200-300",
+                        estimatedRevenuePerAnimal: 10.00,
+                        processingTime: "1 day",
+                        laborRequired: "1 worker"
+                    }
+                },
+                {
+                    name: "Duck Fat",
+                    category: "Cooking Fat",
+                    description: "Rich cooking fat from duck",
+                    marketValue: 6.50,
+                    processingMethod: "Rendering",
+                    equipment: ["Rendering pot", "Strainer"],
+                    shelfLife: "6 months (refrigerated)",
+                    targetMarket: "Restaurants, specialty food stores",
+                    processingSteps: [
+                        "Collect fat from duck processing",
+                        "Render at low temperature",
+                        "Strain to remove impurities",
+                        "Package in containers",
+                        "Refrigerate or freeze"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 25,
+                        unit: "kg",
+                        outputPer100kg: 25,
+                        estimatedRevenuePer100kg: 162.50,
+                        processingTime: "2-3 hours",
+                        laborRequired: "1 worker"
+                    }
+                },
+                {
+                    name: "Duck Manure",
+                    category: "Fertilizer",
+                    description: "High-nitrogen organic fertilizer",
+                    marketValue: 1.80,
+                    processingMethod: "Composting",
+                    equipment: ["Composting facility"],
+                    shelfLife: "12 months",
+                    targetMarket: "Garden centers, organic farms"
+                }
+            ]
+        },
+        
+        turkeys: {
+            primary: "Turkey Meat",
+            byproducts: [
+                {
+                    name: "Turkey Feathers",
+                    category: "Crafts",
+                    description: "Large feathers for crafts and decorations",
+                    marketValue: 3.50,
+                    processingMethod: "Cleaning, sorting",
+                    equipment: ["Cleaning equipment"],
+                    shelfLife: "Indefinite",
+                    targetMarket: "Craft suppliers, decoration companies",
+                    processingSteps: [
+                        "Collect feathers during processing",
+                        "Clean and sanitize",
+                        "Sort by size and color",
+                        "Package in bundles"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 100,
+                        unit: "grams",
+                        outputPerAnimal: "400-600",
+                        estimatedRevenuePerAnimal: 20.00,
+                        processingTime: "1 day",
+                        laborRequired: "1 worker"
+                    }
+                },
+                {
+                    name: "Turkey Meal",
+                    category: "Animal Feed",
+                    description: "Protein-rich meal for animal feed",
+                    marketValue: 2.50,
+                    processingMethod: "Rendering, grinding",
+                    equipment: ["Rendering equipment", "Grinding mill"],
+                    shelfLife: "12 months",
+                    targetMarket: "Feed mills, pet food manufacturers"
+                }
+            ]
+        },
+        
+        rabbits: {
+            primary: "Rabbit Meat",
+            byproducts: [
+                {
+                    name: "Rabbit Fur",
+                    category: "Textile",
+                    description: "Soft rabbit fur for garments",
+                    marketValue: 20.00,
+                    processingMethod: "Tanning, finishing",
+                    equipment: ["Tanning facility", "Finishing equipment"],
+                    shelfLife: "Indefinite",
+                    targetMarket: "Fashion industry, craft suppliers",
+                    processingSteps: [
+                        "Remove pelts carefully",
+                        "Cure with salt",
+                        "Tan using vegetable or chemical methods",
+                        "Finish and soften",
+                        "Grade and package"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 100,
+                        unit: "pelt",
+                        outputPerAnimal: 1,
+                        estimatedRevenuePerAnimal: 20.00,
+                        processingTime: "2-3 weeks",
+                        laborRequired: "1 worker"
+                    }
+                },
+                {
+                    name: "Rabbit Manure",
+                    category: "Fertilizer",
+                    description: "Cold manure, safe for direct use",
+                    marketValue: 2.00,
+                    processingMethod: "Drying, packaging",
+                    equipment: ["Drying racks", "Packaging equipment"],
+                    shelfLife: "12 months",
+                    targetMarket: "Garden centers, organic farms",
+                    processingSteps: [
+                        "Collect manure from rabbit hutches",
+                        "Dry in sun or low heat",
+                        "Package in bags",
+                        "Label and store"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 90,
+                        unit: "kg",
+                        outputPer100kg: 90,
+                        estimatedRevenuePer100kg: 180.00,
+                        processingTime: "3-5 days",
+                        laborRequired: "1 worker (part-time)"
+                    }
+                }
+            ]
+        },
+        
+        fish: {
+            primary: "Fresh Fish",
+            byproducts: [
+                {
+                    name: "Fish Meal",
+                    category: "Animal Feed",
+                    description: "High-protein feed for animals",
+                    marketValue: 3.50,
+                    processingMethod: "Cooking, pressing, drying",
+                    equipment: ["Cooker", "Press", "Dryer"],
+                    shelfLife: "12 months",
+                    targetMarket: "Feed mills, aquaculture",
+                    processingSteps: [
+                        "Collect fish waste and scraps",
+                        "Cook to remove oil and water",
+                        "Press to separate oil",
+                        "Dry the pressed cake",
+                        "Grind to fine meal",
+                        "Package in bags"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 25,
+                        unit: "kg",
+                        outputPer100kg: 25,
+                        estimatedRevenuePer100kg: 87.50,
+                        processingTime: "1-2 days",
+                        laborRequired: "2 workers"
+                    }
+                },
+                {
+                    name: "Fish Oil",
+                    category: "Supplements",
+                    description: "Omega-3 rich fish oil",
+                    marketValue: 15.00,
+                    processingMethod: "Extraction, refining",
+                    equipment: ["Oil extractor", "Refining equipment"],
+                    shelfLife: "24 months",
+                    targetMarket: "Health supplement companies, pharmaceutical",
+                    processingSteps: [
+                        "Extract oil from fish waste",
+                        "Filter to remove impurities",
+                        "Refine and deodorize",
+                        "Package in dark bottles",
+                        "Store in cool place"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 5,
+                        unit: "liters",
+                        outputPer100kg: 5,
+                        estimatedRevenuePer100kg: 75.00,
+                        processingTime: "2-3 days",
+                        laborRequired: "2 workers"
+                    }
+                },
+                {
+                    name: "Fish Scales",
+                    category: "Cosmetics",
+                    description: "Used in cosmetics and crafts",
+                    marketValue: 8.00,
+                    processingMethod: "Cleaning, drying",
+                    equipment: ["Washing station", "Dryer"],
+                    shelfLife: "Indefinite",
+                    targetMarket: "Cosmetic companies, craft suppliers"
+                }
+            ]
+        },
+        
+        // Dairy Cattle (separate from beef)
+        dairy_cattle: {
+            primary: "Milk",
+            byproducts: [
+                {
+                    name: "Butter",
+                    category: "Dairy",
+                    description: "Fresh churned butter",
+                    marketValue: 8.00,
+                    processingMethod: "Churning, packaging",
+                    equipment: ["Churner", "Butter mold", "Packaging"],
+                    shelfLife: "2 weeks (refrigerated) or 6 months (frozen)",
+                    targetMarket: "Grocery stores, bakeries",
+                    processingSteps: [
+                        "Collect fresh cream from milk",
+                        "Let cream ripen at cool temperature",
+                        "Churn cream until butter separates",
+                        "Wash butter to remove buttermilk",
+                        "Salt to taste (optional)",
+                        "Shape or package",
+                        "Refrigerate immediately"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 20,
+                        unit: "kg",
+                        outputPer100Liters: 20,
+                        estimatedRevenuePer100Liters: 160.00,
+                        processingTime: "2-3 hours",
+                        laborRequired: "1-2 workers"
+                    }
+                },
+                {
+                    name: "Yogurt",
+                    category: "Dairy",
+                    description: "Fermented dairy product",
+                    marketValue: 5.50,
+                    processingMethod: "Fermentation",
+                    equipment: ["Heating equipment", "Fermentation tanks", "Packaging"],
+                    shelfLife: "2-3 weeks (refrigerated)",
+                    targetMarket: "Grocery stores, health food stores",
+                    processingSteps: [
+                        "Heat milk to 85°C to pasteurize",
+                        "Cool to 43-46°C",
+                        "Add yogurt starter culture",
+                        "Incubate for 6-8 hours",
+                        "Cool and package",
+                        "Refrigerate immediately"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 95,
+                        unit: "liters",
+                        outputPer100Liters: 95,
+                        estimatedRevenuePer100Liters: 522.50,
+                        processingTime: "8-10 hours",
+                        laborRequired: "1-2 workers"
+                    }
+                },
+                {
+                    name: "Cheese",
+                    category: "Dairy",
+                    description: "Various cheese types",
+                    marketValue: 12.00,
+                    processingMethod: "Cheese making, aging",
+                    equipment: ["Cheese vat", "Press", "Aging room"],
+                    shelfLife: "1-12 months depending on type",
+                    targetMarket: "Specialty stores, restaurants",
+                    processingSteps: [
+                        "Heat milk and add starter culture",
+                        "Add rennet to form curds",
+                        "Cut curds and drain whey",
+                        "Press into molds",
+                        "Salt and age",
+                        "Package when ready"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 10,
+                        unit: "kg",
+                        outputPer100Liters: 10,
+                        estimatedRevenuePer100Liters: 120.00,
+                        processingTime: "2 weeks - 12 months",
+                        laborRequired: "1-2 cheesemakers"
+                    }
+                },
+                {
+                    name: "Whey",
+                    category: "Animal Feed",
+                    description: "Protein-rich byproduct from cheesemaking",
+                    marketValue: 1.50,
+                    processingMethod: "Drying",
+                    equipment: ["Dryer", "Grinding mill"],
+                    shelfLife: "12 months",
+                    targetMarket: "Feed mills, livestock farmers",
+                    processingSteps: [
+                        "Collect whey from cheese making",
+                        "Dry in spray dryer or drum dryer",
+                        "Grind to powder",
+                        "Package in bags"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 85,
+                        unit: "kg",
+                        outputPer100Liters: 85,
+                        estimatedRevenuePer100Liters: 127.50,
+                        processingTime: "1 day",
+                        laborRequired: "1 worker"
+                    }
                 }
             ]
         }
