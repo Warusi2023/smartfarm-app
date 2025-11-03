@@ -316,7 +316,7 @@ class AISeedPredictor {
                 next7Days: generateDemoForecast()
             },
             season: this.getCurrentSeason(),
-            location: 'Fiji',
+            location: 'Australia',
             isRealData: false
         };
     }
