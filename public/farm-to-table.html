@@ -271,8 +271,8 @@
                                 </button>
                             </div>
                             
-                            <div class="card">
-                                <div class="card-body">
+                                <div class="card">
+                                    <div class="card-body">
                                     <div class="table-responsive">
                                         <table class="table table-hover">
                                             <thead>
@@ -297,7 +297,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Profit & Analytics Tab -->
                     <div class="tab-pane fade" id="profit-analytics" role="tabpanel">
                         <div class="mt-4">
@@ -338,7 +338,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Raw Products Tab -->
                     <div class="tab-pane fade" id="raw-products" role="tabpanel">
                         <div class="mt-4">
@@ -383,7 +383,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                 </div>
             </div>
         </div>
@@ -395,7 +395,7 @@
             <div class="modal-content">
                 <div class="modal-header bg-success text-white">
                     <h5 class="modal-title"><i class="fas fa-clipboard-list me-2"></i>Record Product Transformation</h5>
-                    <button type="button" class="btn-close btn-close-white" id="recordModalCloseBtn" style="display: none;"></button>
+                    <button type="button" class="btn-close btn-close-white" id="recordModalCloseBtn" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div id="formErrors"></div>
@@ -470,10 +470,10 @@
                                     <label class="form-label">Notes</label>
                                     <textarea class="form-control" id="transformationNotes" name="transformationNotes" 
                                               rows="3" placeholder="Optional notes about this transformation"></textarea>
-                                </div>
                             </div>
                         </div>
-                        
+                    </div>
+
                         <!-- Profitability Preview -->
                         <div class="card bg-light mt-3">
                             <div class="card-header">
@@ -496,7 +496,8 @@
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" onclick="resetTransformationForm()">Reset</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-outline-secondary" onclick="resetTransformationForm()">Reset</button>
                     <button type="button" class="btn btn-success" onclick="recordTransformation()">
                         <i class="fas fa-save me-1"></i>Save Transformation
                     </button>
@@ -537,7 +538,7 @@
                 </div>
                 <div class="modal-body" id="byproductDetailsBody">
                     <!-- Content will be dynamically inserted -->
-                </div>
+                    </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                     <button type="button" class="btn btn-success" id="createPlanFromByproductBtn" onclick="farmToTable.createPlanFromByproduct()">
@@ -656,10 +657,62 @@
                 // Initialize the enhanced system
                 enhancedFarmToTable = new EnhancedFarmToTable();
                 
-                // Prevent modal close if form is invalid
+                // Allow modal to close with Cancel/X button, but prevent accidental closes
                 const transformationModal = document.getElementById('recordTransformationModal');
                 if (transformationModal) {
+                    // Track if user clicked Cancel/X button
+                    let userClickedCancel = false;
+                    
+                    // Listen for Cancel button clicks
+                    const cancelBtn = transformationModal.querySelector('.btn-secondary[data-bs-dismiss="modal"]');
+                    const closeBtn = transformationModal.querySelector('#recordModalCloseBtn');
+                    
+                    if (cancelBtn) {
+                        cancelBtn.addEventListener('click', function() {
+                            userClickedCancel = true;
+                            // Clear form validation state
+                            if (enhancedFarmToTable) {
+                                enhancedFarmToTable.validationErrors = {};
+                                const form = document.getElementById('transformationForm');
+                                if (form) {
+                                    form.reset();
+                                    document.querySelectorAll('.is-invalid, .is-valid').forEach(el => {
+                                        el.classList.remove('is-invalid', 'is-valid');
+                                    });
+                                }
+                                const errorContainer = document.getElementById('formErrors');
+                                if (errorContainer) {
+                                    errorContainer.innerHTML = '';
+                                }
+                            }
+                        });
+                    }
+                    
+                    if (closeBtn) {
+                        closeBtn.addEventListener('click', function() {
+                            userClickedCancel = true;
+                            // Clear form validation state
+                            if (enhancedFarmToTable) {
+                                enhancedFarmToTable.validationErrors = {};
+                                document.querySelectorAll('.is-invalid, .is-valid').forEach(el => {
+                                    el.classList.remove('is-invalid', 'is-valid');
+                                });
+                                const errorContainer = document.getElementById('formErrors');
+                                if (errorContainer) {
+                                    errorContainer.innerHTML = '';
+                                }
+                            }
+                        });
+                    }
+                    
+                    // Prevent accidental closes (backdrop/ESC) if form is invalid
                     transformationModal.addEventListener('hide.bs.modal', function(e) {
+                        if (userClickedCancel) {
+                            userClickedCancel = false; // Reset flag
+                            return true; // Allow close
+                        }
+                        
+                        // For backdrop click or ESC key, check validation
                         if (enhancedFarmToTable && !enhancedFarmToTable.isFormValid()) {
                             e.preventDefault();
                             enhancedFarmToTable.showFormErrors();

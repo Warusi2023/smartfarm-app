@@ -442,18 +442,6 @@ class EnhancedFarmToTable {
         
         const formIsValid = isValid && Object.keys(this.validationErrors).length === 0;
         
-        // Enable/disable close button based on validity
-        const closeBtn = document.getElementById('recordModalCloseBtn');
-        if (closeBtn) {
-            if (formIsValid) {
-                closeBtn.style.display = 'block';
-                closeBtn.setAttribute('data-bs-dismiss', 'modal');
-            } else {
-                closeBtn.style.display = 'none';
-                closeBtn.removeAttribute('data-bs-dismiss');
-            }
-        }
-        
         return formIsValid;
     }
     
