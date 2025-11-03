@@ -68,11 +68,25 @@ class WeatherService {
                 // Fallback to saved location or default
                 const savedLocation = this.getSavedLocation();
                 if (savedLocation) {
-                    this.currentLocation = savedLocation;
-                    await this.fetchWeatherData(savedLocation);
+                    // Migrate old Fiji locations to Australia
+                    if (savedLocation.name && (savedLocation.name.includes('Fiji') || savedLocation.name.includes('Suva'))) {
+                        console.log('Migrating saved Fiji location to Australia');
+                        this.currentLocation = { lat: -33.8688, lng: 151.2093, name: 'Sydney, NSW, Australia' };
+                        this.saveLocationPreference(this.currentLocation);
+                        await this.fetchWeatherData(this.currentLocation);
+                    } else if (savedLocation.lat && savedLocation.lat === -18.1248 && savedLocation.lng === 178.4501) {
+                        // Check coordinates for Fiji
+                        console.log('Migrating saved Fiji coordinates to Australia');
+                        this.currentLocation = { lat: -33.8688, lng: 151.2093, name: 'Sydney, NSW, Australia' };
+                        this.saveLocationPreference(this.currentLocation);
+                        await this.fetchWeatherData(this.currentLocation);
+                    } else {
+                        this.currentLocation = savedLocation;
+                        await this.fetchWeatherData(savedLocation);
+                    }
                 } else {
                     // Default to Australia
-                    this.currentLocation = { lat: -33.8688, lng: 151.2093, name: 'Australia' };
+                    this.currentLocation = { lat: -33.8688, lng: 151.2093, name: 'Sydney, NSW, Australia' };
                     await this.fetchWeatherData(this.currentLocation);
                 }
             }

@@ -714,6 +714,44 @@ class LocationSelector {
     useSavedLocation() {
         const savedLocation = this.getSavedLocation();
         if (savedLocation) {
+            // Migrate old Fiji locations to Australia
+            if (savedLocation.name && (savedLocation.name.includes('Fiji') || savedLocation.name.includes('Suva'))) {
+                console.log('Migrating saved Fiji location to Australia');
+                const newLocation = {
+                    lat: -33.8688,
+                    lon: 151.2093,
+                    name: 'Sydney',
+                    state: 'NSW',
+                    country: 'Australia'
+                };
+                // Update saved location
+                localStorage.setItem('smartfarm_user_location', JSON.stringify({
+                    lat: newLocation.lat,
+                    lng: newLocation.lon,
+                    name: 'Sydney, NSW, Australia'
+                }));
+                this.selectLocation(newLocation);
+                return;
+            } else if (savedLocation.lat === -18.1248 && savedLocation.lng === 178.4501) {
+                // Check coordinates for Fiji
+                console.log('Migrating saved Fiji coordinates to Australia');
+                const newLocation = {
+                    lat: -33.8688,
+                    lon: 151.2093,
+                    name: 'Sydney',
+                    state: 'NSW',
+                    country: 'Australia'
+                };
+                // Update saved location
+                localStorage.setItem('smartfarm_user_location', JSON.stringify({
+                    lat: newLocation.lat,
+                    lng: newLocation.lon,
+                    name: 'Sydney, NSW, Australia'
+                }));
+                this.selectLocation(newLocation);
+                return;
+            }
+            
             this.selectLocation({
                 lat: savedLocation.lat,
                 lon: savedLocation.lng,
@@ -746,7 +784,20 @@ class LocationSelector {
         const savedLocationText = document.getElementById('savedLocationText');
         
         if (savedLocation && savedLocationText) {
-            savedLocationText.textContent = savedLocation.name;
+            // Migrate old Fiji locations to Australia
+            if (savedLocation.name && (savedLocation.name.includes('Fiji') || savedLocation.name.includes('Suva')) || 
+                (savedLocation.lat === -18.1248 && savedLocation.lng === 178.4501)) {
+                // Auto-migrate to Australia
+                const newLocation = {
+                    lat: -33.8688,
+                    lng: 151.2093,
+                    name: 'Sydney, NSW, Australia'
+                };
+                localStorage.setItem('smartfarm_user_location', JSON.stringify(newLocation));
+                savedLocationText.textContent = newLocation.name;
+            } else {
+                savedLocationText.textContent = savedLocation.name;
+            }
         }
     }
 
