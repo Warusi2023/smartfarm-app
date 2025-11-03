@@ -3840,6 +3840,28 @@
         // Initialize dashboard
         document.addEventListener('DOMContentLoaded', async function() {
             try {
+                // One-time migration: Clear any Fiji locations from localStorage
+                try {
+                    const savedLocation = localStorage.getItem('smartfarm_user_location');
+                    if (savedLocation) {
+                        const location = JSON.parse(savedLocation);
+                        if ((location.name && (location.name.includes('Fiji') || location.name.includes('Suva'))) ||
+                            (location.lat === -18.1248 && location.lng === 178.4501)) {
+                            console.log('🔄 Clearing cached Fiji location - will default to Australia');
+                            localStorage.removeItem('smartfarm_user_location');
+                            // Force WeatherService to use Australia default
+                            if (window.WeatherService && window.WeatherService.currentLocation) {
+                                if (window.WeatherService.currentLocation.name && window.WeatherService.currentLocation.name.includes('Fiji')) {
+                                    window.WeatherService.currentLocation = { lat: -33.8688, lng: 151.2093, name: 'Sydney, NSW, Australia' };
+                                    window.WeatherService.saveLocationPreference(window.WeatherService.currentLocation);
+                                }
+                            }
+                        }
+                    }
+                } catch (migrateError) {
+                    console.warn('Location migration error:', migrateError);
+                }
+                
                 // Verify all required functions are defined
                 verifyRequiredFunctions();
                 
