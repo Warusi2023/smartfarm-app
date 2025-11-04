@@ -555,7 +555,7 @@ class AIAdvisorySystem {
         const daysSincePlanting = Math.floor((now - planting) / (1000 * 60 * 60 * 24));
         
         const cropStages = {
-            cassava: { planting: 30, vegetative: 90, tuber_formation: 150, maturation: 300 },
+            cassava: { planting: 30, vegetative: 180, tuber_formation: 270, maturation: 365 }, // 12 months maturation
             taro: { planting: 21, vegetative: 90, corm_development: 180 },
             sweet_potato: { planting: 14, vine_development: 60, tuber_formation: 120 },
             spinach: { germination: 7, vegetative: 35 },
