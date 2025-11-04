@@ -960,68 +960,100 @@
 
         function calculateMaturityDate(crop) {
             const cropDatabase = {
-                // Vegetables
-                'tomatoes': { baseDays: 75, varietyMultiplier: 1.0, seasonAdjustment: 0 },
-                'cherry tomatoes': { baseDays: 65, varietyMultiplier: 0.9, seasonAdjustment: 0 },
-                'beefsteak tomatoes': { baseDays: 85, varietyMultiplier: 1.1, seasonAdjustment: 0 },
-                'peppers': { baseDays: 70, varietyMultiplier: 1.0, seasonAdjustment: 0 },
-                'bell peppers': { baseDays: 75, varietyMultiplier: 1.0, seasonAdjustment: 0 },
-                'chili peppers': { baseDays: 80, varietyMultiplier: 1.1, seasonAdjustment: 0 },
-                'lettuce': { baseDays: 45, varietyMultiplier: 1.0, seasonAdjustment: 0 },
-                'romaine lettuce': { baseDays: 50, varietyMultiplier: 1.1, seasonAdjustment: 0 },
-                'spinach': { baseDays: 40, varietyMultiplier: 1.0, seasonAdjustment: 0 },
-                'cucumbers': { baseDays: 55, varietyMultiplier: 1.0, seasonAdjustment: 0 },
-                'carrots': { baseDays: 70, varietyMultiplier: 1.0, seasonAdjustment: 0 },
-                'onions': { baseDays: 100, varietyMultiplier: 1.0, seasonAdjustment: 0 },
-                'potatoes': { baseDays: 90, varietyMultiplier: 1.0, seasonAdjustment: 0 },
-                'cabbage': { baseDays: 80, varietyMultiplier: 1.0, seasonAdjustment: 0 },
-                'broccoli': { baseDays: 60, varietyMultiplier: 1.0, seasonAdjustment: 0 },
-                'cauliflower': { baseDays: 70, varietyMultiplier: 1.0, seasonAdjustment: 0 },
+                // Vegetables (harvest times based on global agricultural standards)
+                'tomatoes': { baseDays: 75, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 60-90 days
+                'cherry tomatoes': { baseDays: 65, varietyMultiplier: 0.9, seasonAdjustment: 0 }, // 55-70 days
+                'beefsteak tomatoes': { baseDays: 85, varietyMultiplier: 1.1, seasonAdjustment: 0 }, // 75-95 days
+                'peppers': { baseDays: 70, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 60-90 days
+                'bell peppers': { baseDays: 75, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 60-90 days
+                'chili peppers': { baseDays: 80, varietyMultiplier: 1.1, seasonAdjustment: 0 }, // 70-100 days
+                'lettuce': { baseDays: 45, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 30-60 days
+                'romaine lettuce': { baseDays: 50, varietyMultiplier: 1.1, seasonAdjustment: 0 }, // 40-65 days
+                'spinach': { baseDays: 40, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 25-40 days
+                'cucumbers': { baseDays: 55, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 50-70 days
+                'carrots': { baseDays: 75, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 70-80 days
+                'onions': { baseDays: 130, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 100-175 days for full bulbs
+                'potatoes': { baseDays: 90, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 70-120 days
+                'cabbage': { baseDays: 90, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 70-120 days
+                'broccoli': { baseDays: 60, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 50-85 days
+                'cauliflower': { baseDays: 70, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 55-85 days
+                'eggplant': { baseDays: 85, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 75-90 days
+                'okra': { baseDays: 55, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 50-65 days
+                'zucchini': { baseDays: 50, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 45-55 days
+                'kale': { baseDays: 55, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 50-65 days
+                'celery': { baseDays: 120, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 100-130 days
+                'asparagus': { baseDays: 730, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 2-3 years first harvest
                 
                 // Fruits
-                'strawberries': { baseDays: 30, varietyMultiplier: 1.0, seasonAdjustment: 0 },
-                'watermelons': { baseDays: 80, varietyMultiplier: 1.0, seasonAdjustment: 0 },
-                'cantaloupes': { baseDays: 75, varietyMultiplier: 1.0, seasonAdjustment: 0 },
-                'pumpkins': { baseDays: 100, varietyMultiplier: 1.0, seasonAdjustment: 0 },
-                'squash': { baseDays: 60, varietyMultiplier: 1.0, seasonAdjustment: 0 },
+                'strawberries': { baseDays: 30, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 28-35 days from transplant
+                'watermelons': { baseDays: 85, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 70-100 days
+                'cantaloupes': { baseDays: 80, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 65-90 days
+                'pumpkins': { baseDays: 100, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 90-120 days
+                'squash': { baseDays: 60, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 50-65 days (summer)
+                'winter squash': { baseDays: 100, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 80-110 days
+                'bananas': { baseDays: 300, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 9-12 months
+                'pineapple': { baseDays: 540, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 18-24 months
+                'papaya': { baseDays: 240, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 6-9 months
+                'mango': { baseDays: 120, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 3-5 months from flowering
                 
                 // Grains
-                'corn': { baseDays: 90, varietyMultiplier: 1.0, seasonAdjustment: 0 },
-                'wheat': { baseDays: 120, varietyMultiplier: 1.0, seasonAdjustment: 0 },
-                'rice': { baseDays: 110, varietyMultiplier: 1.0, seasonAdjustment: 0 },
-                'barley': { baseDays: 100, varietyMultiplier: 1.0, seasonAdjustment: 0 },
+                'corn': { baseDays: 90, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 60-100 days
+                'wheat': { baseDays: 120, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 90-150 days
+                'rice': { baseDays: 120, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 105-150 days
+                'barley': { baseDays: 100, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 70-90 days spring, 100-120 winter
+                'oats': { baseDays: 90, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 60-100 days
+                'sorghum': { baseDays: 100, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 90-120 days
+                'millet': { baseDays: 70, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 60-90 days
                 
                 // Legumes
-                'beans': { baseDays: 60, varietyMultiplier: 1.0, seasonAdjustment: 0 },
-                'green beans': { baseDays: 55, varietyMultiplier: 1.0, seasonAdjustment: 0 },
-                'peas': { baseDays: 50, varietyMultiplier: 1.0, seasonAdjustment: 0 },
-                'lentils': { baseDays: 80, varietyMultiplier: 1.0, seasonAdjustment: 0 },
-                'chickpeas': { baseDays: 90, varietyMultiplier: 1.0, seasonAdjustment: 0 },
+                'beans': { baseDays: 60, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 50-70 days
+                'green beans': { baseDays: 55, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 50-60 days
+                'peas': { baseDays: 60, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 50-70 days
+                'lentils': { baseDays: 100, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 80-110 days
+                'chickpeas': { baseDays: 100, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 90-120 days
+                'soybeans': { baseDays: 100, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 90-120 days
+                'peanuts': { baseDays: 120, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 100-130 days
+                'black beans': { baseDays: 90, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 80-100 days
+                'lima beans': { baseDays: 75, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 65-85 days
                 
                 // Herbs and Spices
-                'basil': { baseDays: 30, varietyMultiplier: 1.0, seasonAdjustment: 0 },
-                'cilantro': { baseDays: 25, varietyMultiplier: 1.0, seasonAdjustment: 0 },
-                'parsley': { baseDays: 35, varietyMultiplier: 1.0, seasonAdjustment: 0 },
-                'oregano': { baseDays: 40, varietyMultiplier: 1.0, seasonAdjustment: 0 },
-                'thyme': { baseDays: 45, varietyMultiplier: 1.0, seasonAdjustment: 0 },
-                'mint': { baseDays: 30, varietyMultiplier: 1.0, seasonAdjustment: 0 },
-                'rosemary': { baseDays: 50, varietyMultiplier: 1.0, seasonAdjustment: 0 },
+                'basil': { baseDays: 30, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 25-35 days
+                'cilantro': { baseDays: 25, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 20-30 days
+                'parsley': { baseDays: 70, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 60-80 days
+                'oregano': { baseDays: 40, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 35-45 days
+                'thyme': { baseDays: 45, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 40-50 days
+                'mint': { baseDays: 30, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 25-35 days
+                'rosemary': { baseDays: 90, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 75-100 days
+                'sage': { baseDays: 75, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 60-90 days
+                'dill': { baseDays: 40, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 35-45 days
+                'chives': { baseDays: 30, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 25-35 days
                 
                 // Medicinal Plants
-                'kava': { baseDays: 1095, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 3 years
-                'aloe vera': { baseDays: 365, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 1 year
-                'ginger': { baseDays: 240, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 8 months
-                'turmeric': { baseDays: 270, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 9 months
-                'lavender': { baseDays: 180, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 6 months
+                'kava': { baseDays: 1095, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 3-4 years
+                'aloe vera': { baseDays: 365, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 1-2 years
+                'ginger': { baseDays: 240, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 8-10 months
+                'turmeric': { baseDays: 270, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 9-10 months
+                'lavender': { baseDays: 180, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 6-8 months
+                'ginseng': { baseDays: 2190, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 6+ years
                 
                 // Root Vegetables
-                'radishes': { baseDays: 30, varietyMultiplier: 1.0, seasonAdjustment: 0 },
-                'beets': { baseDays: 60, varietyMultiplier: 1.0, seasonAdjustment: 0 },
-                'turnips': { baseDays: 50, varietyMultiplier: 1.0, seasonAdjustment: 0 },
-                'sweet potatoes': { baseDays: 120, varietyMultiplier: 1.0, seasonAdjustment: 0 },
-                'cassava': { baseDays: 365, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 12 months
-                'taro': { baseDays: 270, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 9 months
-                'yam': { baseDays: 240, varietyMultiplier: 1.0, seasonAdjustment: 0 } // 8 months
+                'radishes': { baseDays: 30, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 25-35 days
+                'beets': { baseDays: 60, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 50-70 days
+                'turnips': { baseDays: 50, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 45-60 days
+                'sweet potatoes': { baseDays: 120, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 100-140 days
+                'cassava': { baseDays: 365, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 10-12 months
+                'taro': { baseDays: 270, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 8-12 months
+                'yam': { baseDays: 240, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 7-10 months
+                'garlic': { baseDays: 240, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 8-9 months
+                'shallots': { baseDays: 100, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 90-120 days
+                
+                // Other Common Crops
+                'cotton': { baseDays: 150, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 120-180 days
+                'sugarcane': { baseDays: 365, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 12-18 months
+                'sunflower': { baseDays: 90, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 80-120 days
+                'flax': { baseDays: 100, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 90-110 days
+                'sesame': { baseDays: 90, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 80-100 days
+                'quinoa': { baseDays: 120, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 90-150 days
             };
 
             const cropName = crop.name.toLowerCase();
