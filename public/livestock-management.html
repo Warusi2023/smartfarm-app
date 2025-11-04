@@ -1879,26 +1879,79 @@
             try {
                 console.log('🐄 Loading livestock data...');
                 
+                let loadedFromAPI = false;
+                
                 // Load from API if available
-                if (window.SmartFarmAPI) {
-                    const response = await window.SmartFarmAPI.getLivestock();
-                    if (response.success) {
-                        console.log('✅ Livestock data loaded from API:', response.data.length, 'animals');
-                        livestock = response.data;
-                    } else {
-                        console.warn('⚠️ API returned unsuccessful response:', response);
-                        // Keep existing livestock data
+                if (window.SmartFarmAPI && window.SmartFarmAPI.isBackendAvailable()) {
+                    try {
+                        const response = await window.SmartFarmAPI.getLivestock();
+                        if (response && response.success && response.data && Array.isArray(response.data)) {
+                            console.log('✅ Livestock data loaded from API:', response.data.length, 'animals');
+                            livestock = response.data;
+                            // Save to localStorage as backup
+                            localStorage.setItem('livestock', JSON.stringify(livestock));
+                            loadedFromAPI = true;
+                        } else {
+                            console.warn('⚠️ API returned unsuccessful response:', response);
+                        }
+                    } catch (apiError) {
+                        console.warn('⚠️ API error, loading from localStorage:', apiError);
                     }
                 } else {
-                    console.warn('⚠️ SmartFarmAPI not available, using local data');
+                    console.warn('⚠️ SmartFarmAPI not available, using localStorage');
+                }
+                
+                // Load from localStorage if API didn't work or not available
+                if (!loadedFromAPI) {
+                    try {
+                        const savedLivestock = localStorage.getItem('livestock');
+                        if (savedLivestock) {
+                            const parsedLivestock = JSON.parse(savedLivestock);
+                            if (Array.isArray(parsedLivestock) && parsedLivestock.length > 0) {
+                                console.log('✅ Livestock data loaded from localStorage:', parsedLivestock.length, 'animals');
+                                livestock = parsedLivestock;
+                            } else {
+                                console.warn('⚠️ localStorage data is empty or invalid');
+                            }
+                        } else {
+                            console.log('ℹ️ No saved livestock data in localStorage');
+                        }
+                    } catch (storageError) {
+                        console.error('❌ Error loading from localStorage:', storageError);
+                    }
                 }
             } catch (error) {
                 console.error('❌ Error loading livestock data:', error);
-                // Keep existing livestock data
+                // Try to load from localStorage as last resort
+                try {
+                    const savedLivestock = localStorage.getItem('livestock');
+                    if (savedLivestock) {
+                        livestock = JSON.parse(savedLivestock);
+                        console.log('✅ Recovered livestock from localStorage after error');
+                    }
+                } catch (e) {
+                    console.error('❌ Could not recover from localStorage:', e);
+                }
             }
 
             const container = document.getElementById('livestockContainer');
             const noAnimalsMessage = document.getElementById('noAnimalsMessage');
+            
+            if (!container) {
+                console.error('❌ livestockContainer not found');
+                return;
+            }
+            
+            if (!noAnimalsMessage) {
+                console.error('❌ noAnimalsMessage not found');
+                return;
+            }
+            
+            // Ensure livestock is an array
+            if (!Array.isArray(livestock)) {
+                console.warn('⚠️ livestock is not an array, resetting to empty array');
+                livestock = [];
+            }
             
             if (livestock.length === 0) {
                 container.innerHTML = '';
@@ -1909,10 +1962,19 @@
             noAnimalsMessage.style.display = 'none';
             container.innerHTML = '';
             
+            // Render livestock cards
             livestock.forEach(animal => {
-                const animalCard = createLivestockCard(animal);
-                container.appendChild(animalCard);
+                try {
+                    const animalCard = createLivestockCard(animal);
+                    if (animalCard) {
+                        container.appendChild(animalCard);
+                    }
+                } catch (cardError) {
+                    console.error('❌ Error creating card for animal:', animal, cardError);
+                }
             });
+            
+            console.log('✅ Livestock display updated:', livestock.length, 'animals');
         }
 
         function createLivestockCard(animal) {
@@ -2078,34 +2140,36 @@
                 saveButton.disabled = false;
             }
             
-            // Bypass ModalValidator if it's blocking - just proceed with save
-            // Validate modal before proceeding (but don't block if validator fails)
+            // Prevent multiple simultaneous saves
+            if (window._savingLivestock) {
+                console.warn('⚠️ Save already in progress, ignoring duplicate call');
+                return;
+            }
+            window._savingLivestock = true;
+            
+            // Set saving state (non-blocking)
             try {
-                if (window.ModalValidator && typeof window.ModalValidator.validateModal === 'function') {
-                    // Try validation but don't wait for it or block on it
-                    const validationPromise = window.ModalValidator.validateModal(modalId).catch(() => true);
-                    const isValid = await Promise.race([
-                        validationPromise,
-                        new Promise(resolve => setTimeout(() => resolve(true), 100)) // Timeout after 100ms
-                    ]);
-                    
-                    if (!isValid) {
-                        console.warn('⚠️ Modal validation returned invalid, but continuing anyway');
-                        // Don't block - continue with save anyway
-                    }
-                    
-                    // Set saving state (non-blocking)
-                    if (typeof window.ModalValidator.setSaving === 'function') {
-                        try {
-                            window.ModalValidator.setSaving(modalId, true);
-                        } catch (e) {
-                            console.warn('Could not set ModalValidator saving state:', e);
-                        }
-                    }
+                if (window.ModalValidator && typeof window.ModalValidator.setSaving === 'function') {
+                    window.ModalValidator.setSaving(modalId, true);
                 }
-            } catch (validatorError) {
-                console.warn('⚠️ ModalValidator error, continuing with save:', validatorError);
-                // Continue with save even if validator fails
+            } catch (e) {
+                console.warn('Could not set ModalValidator saving state:', e);
+            }
+            
+            // Disable save button to prevent double-clicks
+            if (saveButton) {
+                saveButton.disabled = true;
+                const originalText = saveButton.innerHTML;
+                saveButton.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Saving...';
+                
+                // Re-enable after 5 seconds as safety (in case of error)
+                setTimeout(() => {
+                    if (saveButton) {
+                        saveButton.disabled = false;
+                        saveButton.innerHTML = originalText;
+                    }
+                    window._savingLivestock = false;
+                }, 5000);
             }
             
             // Get all form values
@@ -2184,26 +2248,39 @@
                                 console.log('✅ Livestock saved successfully:', response.data);
                                 savedViaAPI = true;
                                 
-                                // Reload livestock from API
-                                await loadLivestock();
-                                updateStatistics();
-                                
-                                // Mark save success and allow modal to close
-                                if (window.ModalValidator) {
-                                    window.ModalValidator.markSaveSuccess(modalId);
-                                } else {
-                                    // Fallback modal close
-                                    const modal = document.getElementById('addLivestockModal');
-                                    if (modal) {
-                                        const bsModal = bootstrap.Modal.getInstance(modal);
-                                        if (bsModal) bsModal.hide();
+                                // Close modal and reset form BEFORE reloading
+                                const modal = document.getElementById('addLivestockModal');
+                                if (modal) {
+                                    const bsModal = bootstrap.Modal.getInstance(modal);
+                                    if (bsModal) {
+                                        bsModal.hide();
                                     }
                                 }
                                 
-                                document.getElementById('addLivestockForm').reset();
+                                // Reset form
+                                const form = document.getElementById('addLivestockForm');
+                                if (form) {
+                                    form.reset();
+                                }
                                 
-                                // Show success message
-                                showAlert('Animal added successfully!', 'success');
+                                // Re-enable save button
+                                if (saveButton) {
+                                    saveButton.disabled = false;
+                                    saveButton.innerHTML = '<i class="fas fa-save me-1"></i>Save Animal';
+                                }
+                                window._savingLivestock = false;
+                                
+                                // Mark save success
+                                if (window.ModalValidator) {
+                                    window.ModalValidator.markSaveSuccess(modalId);
+                                }
+                                
+                                // Update UI after modal closes (non-blocking)
+                                setTimeout(() => {
+                                    loadLivestock();
+                                    updateStatistics();
+                                    showAlert('Animal added successfully!', 'success');
+                                }, 300);
                             } else {
                                 console.warn('⚠️ API request failed, falling back to localStorage:', response.error);
                                 // Fall through to localStorage fallback
@@ -2247,21 +2324,44 @@
                     livestock.push(newAnimal);
                     localStorage.setItem('livestock', JSON.stringify(livestock));
                     
-                    loadLivestock();
-                    updateStatistics();
-                    
-                    // Close modal and reset form
+                    // Close modal and reset form BEFORE reloading
                     const modal = document.getElementById('addLivestockModal');
                     if (modal) {
-                        bootstrap.Modal.getInstance(modal).hide();
+                        const bsModal = bootstrap.Modal.getInstance(modal);
+                        if (bsModal) {
+                            bsModal.hide();
+                        }
                     }
-                    document.getElementById('addLivestockForm').reset();
                     
-                    // Show success message
-                    showAlert('Animal added successfully! (Saved locally)', 'success');
+                    // Reset form
+                    const form = document.getElementById('addLivestockForm');
+                    if (form) {
+                        form.reset();
+                    }
+                    
+                    // Re-enable save button
+                    if (saveButton) {
+                        saveButton.disabled = false;
+                        saveButton.innerHTML = '<i class="fas fa-save me-1"></i>Save Animal';
+                    }
+                    window._savingLivestock = false;
+                    
+                    // Update UI after modal closes (non-blocking)
+                    setTimeout(() => {
+                        loadLivestock();
+                        updateStatistics();
+                        showAlert('Animal added successfully! (Saved locally)', 'success');
+                    }, 300);
                 }
             } catch (error) {
                 console.error('❌ Error saving livestock:', error);
+                
+                // Re-enable save button on error
+                if (saveButton) {
+                    saveButton.disabled = false;
+                    saveButton.innerHTML = '<i class="fas fa-save me-1"></i>Save Animal';
+                }
+                window._savingLivestock = false;
                 
                 // Reset saving state
                 if (window.ModalValidator) {
@@ -2995,3 +3095,4 @@
     </script>
 </body>
 </html>
+
