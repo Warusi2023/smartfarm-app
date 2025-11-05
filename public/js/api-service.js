@@ -77,55 +77,29 @@ class SmartFarmAPIService {
                 console.log(`🌐 API Request: ${config.method || 'GET'} ${url}`);
             }
             
-            const response = await fetch(url, config);
+            // Add timeout to prevent hanging requests (30 seconds for save operations, 15 seconds for others)
+            const timeoutMs = config.method === 'POST' || config.method === 'PUT' ? 30000 : 15000;
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
             
-            // Handle 401 Unauthorized - try token refresh once
-            if (response.status === 401 && !isRetrying401) {
-                console.log('🔄 401 Unauthorized, attempting token refresh...');
-                const refreshed = await this.refreshTokenSafely();
-                if (refreshed) {
-                    // Retry the request with new token
-                    return this.request(endpoint, options, retryCount, true);
-                } else {
-                    // Token refresh failed, show error but don't clear UI
-                    console.warn('⚠️ Token refresh failed, keeping last good data');
-                    return {
-                        success: false,
-                        error: 'Authentication failed. Please login again.',
-                        statusCode: 401,
-                        retries: retryCount
-                    };
+            try {
+                const response = await fetch(url, {
+                    ...config,
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+                
+                // Continue with response handling
+                return await this.handleResponse(response, url, endpoint, options, retryCount, isRetrying401);
+            } catch (fetchError) {
+                clearTimeout(timeoutId);
+                
+                // Check if it's a timeout/abort error
+                if (fetchError.name === 'AbortError' || fetchError.message.includes('aborted')) {
+                    throw new Error(`Request timeout after ${timeoutMs/1000}s. Please check your connection and try again.`);
                 }
+                throw fetchError;
             }
-            
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-            
-            const data = await response.json();
-            
-            // Connection successful - remove any server unavailable banners
-            const banner = document.getElementById('server-unavailable-banner');
-            if (banner) {
-                banner.remove();
-                if (document.body) {
-                    document.body.style.paddingTop = '0px';
-                }
-                // Reset dismiss flag since connection is restored
-                sessionStorage.removeItem('serverBannerDismissed');
-            }
-            
-            // Silent logging to reduce console spam
-            if (window.location.hostname === 'localhost') {
-                console.log(`✅ API Response: ${url}`, data);
-            }
-            
-            return {
-                success: true,
-                data: data.data || data,
-                message: data.message || 'Success'
-            };
-            
         } catch (error) {
             // Only log errors in development, reduce production noise
             if (window.location.hostname === 'localhost') {
@@ -142,36 +116,74 @@ class SmartFarmAPIService {
                 }
             }
             
-            // Retry logic with minimal delay to reduce error spam
-            if (retryCount < maxRetries && this.shouldRetry(error)) {
-                const delay = 1000; // 1 second only
-                if (window.location.hostname === 'localhost') {
-                    console.log(`🔄 Retrying in ${delay}ms (attempt ${retryCount + 1}/${maxRetries})`);
-                }
-                
-                await this.delay(delay);
+            // Retry logic for network errors
+            if (retryCount < maxRetries && (
+                error.message.includes('Failed to fetch') ||
+                error.message.includes('NetworkError') ||
+                error.message.includes('timeout')
+            )) {
+                console.log(`🔄 Retrying request (${retryCount + 1}/${maxRetries})...`);
+                await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1))); // Exponential backoff
                 return this.request(endpoint, options, retryCount + 1, isRetrying401);
-            }
-            
-            // Show server unavailable banner only if user hasn't dismissed it
-            // And only show once per session to avoid spam
-            if (retryCount >= maxRetries && 
-                sessionStorage.getItem('serverBannerDismissed') !== 'true' &&
-                !document.getElementById('server-unavailable-banner')) {
-                // Only show if this is a critical endpoint (not just any failed request)
-                const criticalEndpoints = ['/auth', '/farms', '/livestock', '/crops'];
-                const isCritical = criticalEndpoints.some(ep => endpoint.includes(ep));
-                if (isCritical) {
-                    this.showServerUnavailableBanner();
-                }
             }
             
             return {
                 success: false,
-                error: error.message,
+                error: error.message || 'Network error. Please check your connection.',
+                statusCode: error.status || 0,
                 retries: retryCount
             };
         }
+    }
+
+    // Helper method to handle response processing
+    async handleResponse(response, url, endpoint, options, retryCount, isRetrying401) {
+        // Handle 401 Unauthorized - try token refresh once
+        if (response.status === 401 && !isRetrying401) {
+            console.log('🔄 401 Unauthorized, attempting token refresh...');
+            const refreshed = await this.refreshTokenSafely();
+            if (refreshed) {
+                // Retry the request with new token
+                return this.request(endpoint, options, retryCount, true);
+            } else {
+                // Token refresh failed, show error but don't clear UI
+                console.warn('⚠️ Token refresh failed, keeping last good data');
+                return {
+                    success: false,
+                    error: 'Authentication failed. Please login again.',
+                    statusCode: 401,
+                    retries: retryCount
+                };
+            }
+        }
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        // Connection successful - remove any server unavailable banners
+        const banner = document.getElementById('server-unavailable-banner');
+        if (banner) {
+            banner.remove();
+            if (document.body) {
+                document.body.style.paddingTop = '0px';
+            }
+            // Reset dismiss flag since connection is restored
+            sessionStorage.removeItem('serverBannerDismissed');
+        }
+        
+        // Silent logging to reduce console spam
+        if (window.location.hostname === 'localhost') {
+            console.log(`✅ API Response: ${url}`, data);
+        }
+        
+        return {
+            success: true,
+            data: data.data || data,
+            message: data.message || 'Success'
+        };
     }
     
     // Safely attempt to refresh token

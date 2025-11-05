@@ -918,6 +918,17 @@
                             <label class="form-label">Health Notes</label>
                             <textarea class="form-control form-control-custom" id="healthNotes" rows="3"></textarea>
                         </div>
+                        <div class="mb-3">
+                            <label class="form-label">Animal Photo</label>
+                            <input type="file" class="form-control form-control-custom" id="animalPhoto" accept="image/*" onchange="previewLivestockImage(event)">
+                            <small class="text-muted"><i class="fas fa-info-circle me-1"></i>Upload a photo to help identify the animal (optional)</small>
+                            <div id="imagePreviewContainer" class="mt-2" style="display: none;">
+                                <img id="imagePreview" src="" alt="Preview" class="img-thumbnail" style="max-width: 200px; max-height: 200px; object-fit: cover; border-radius: 8px;">
+                                <button type="button" class="btn btn-sm btn-outline-danger ms-2" onclick="clearImagePreview()">
+                                    <i class="fas fa-times me-1"></i>Remove
+                                </button>
+                            </div>
+                        </div>
                     </form>
                 </div>
                 <div class="modal-footer">
@@ -2089,6 +2100,62 @@
             }
         }
 
+        // Helper function to add a single livestock item to the UI without full reload
+        function addLivestockItemToUI(savedLivestock) {
+            // Convert API response format to UI format
+            const animal = {
+                id: savedLivestock.id,
+                species: savedLivestock.type || savedLivestock.species,
+                breed: savedLivestock.breed,
+                tag: savedLivestock.tag,
+                sex: savedLivestock.sex,
+                birthDate: savedLivestock.birthDate,
+                weight: savedLivestock.weight || 0,
+                productionPurpose: savedLivestock.purpose,
+                lifecycle: savedLivestock.lifecycle,
+                location: savedLivestock.location,
+                value: savedLivestock.value || 0,
+                healthStatus: 'healthy', // Default status
+                sireTag: savedLivestock.sireTag,
+                damTag: savedLivestock.damTag,
+                breedingStatus: savedLivestock.breedingStatus,
+                firstCalvingDate: savedLivestock.firstCalvingDate,
+                healthNotes: savedLivestock.description || '',
+                photo: savedLivestock.photo || null,
+                createdAt: savedLivestock.createdAt
+            };
+            
+            // Add to livestock array
+            livestock.push(animal);
+            lastGoodLivestock = [...livestock];
+            
+            // Save to localStorage as backup
+            localStorage.setItem('livestock', JSON.stringify(livestock));
+            
+            // Hide "no animals" message if visible
+            const noAnimalsMessage = document.getElementById('noAnimalsMessage');
+            if (noAnimalsMessage) {
+                noAnimalsMessage.style.display = 'none';
+            }
+            
+            // Get container and add the card
+            const container = document.getElementById('livestockContainer');
+            if (container) {
+                // Apply filters to see if this item should be shown
+                const filters = getLivestockFilters();
+                const shouldShow = (!filters.species || filters.species === 'all' || animal.species === filters.species) &&
+                                  (!filters.status || filters.status === 'all' || animal.healthStatus === filters.status);
+                
+                if (shouldShow) {
+                    const card = createLivestockCard(animal);
+                    container.appendChild(card);
+                }
+            }
+            
+            // Update statistics
+            updateStatistics();
+        }
+
         function createLivestockCard(animal) {
             const col = document.createElement('div');
             col.className = 'col-lg-4 col-md-6 mb-4';
@@ -2130,8 +2197,21 @@
                 `;
             }
             
+            // Add image display if available
+            const imageDisplay = animal.photo ? `
+                <div class="mb-3 text-center">
+                    <img src="${animal.photo}" alt="${animal.tag}" class="livestock-image" style="max-height: 200px; width: 100%; object-fit: cover; border-radius: 8px; cursor: pointer;" data-photo="${animal.id}" data-tag="${animal.tag}">
+                </div>
+            ` : `
+                <div class="mb-3 text-center" style="background: #f8f9fa; border-radius: 8px; padding: 40px; color: #6c757d;">
+                    <i class="fas fa-image fa-3x mb-2"></i>
+                    <p class="mb-0 small">No photo available</p>
+                </div>
+            `;
+            
             col.innerHTML = `
                 <div class="livestock-card">
+                    ${imageDisplay}
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div>
                             <h5 class="mb-1">${animal.tag} - ${animal.species.charAt(0).toUpperCase() + animal.species.slice(1)}</h5>
@@ -2191,6 +2271,18 @@
                 </div>
             `;
             
+            // Add click event listener for image if photo exists
+            if (animal.photo) {
+                setTimeout(() => {
+                    const img = col.querySelector('.livestock-image');
+                    if (img) {
+                        img.addEventListener('click', function() {
+                            viewFullImage(animal.photo, animal.tag);
+                        });
+                    }
+                }, 0);
+            }
+            
             return col;
         }
 
@@ -2239,6 +2331,97 @@
             document.getElementById('healthyAnimals').textContent = livestock.filter(a => a.healthStatus === 'healthy').length;
             document.getElementById('pregnantAnimals').textContent = livestock.filter(a => a.healthStatus === 'pregnant').length;
             document.getElementById('totalValue').textContent = livestock.reduce((sum, a) => sum + a.value, 0).toFixed(0);
+        }
+
+        // Image preview and handling functions
+        function previewLivestockImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                // Validate file type
+                if (!file.type.startsWith('image/')) {
+                    showAlert('Please select a valid image file', 'error');
+                    event.target.value = '';
+                    return;
+                }
+                
+                // Validate file size (max 5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    showAlert('Image size must be less than 5MB. Please compress the image and try again.', 'error');
+                    event.target.value = '';
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('imagePreview');
+                    const container = document.getElementById('imagePreviewContainer');
+                    if (preview && container) {
+                        preview.src = e.target.result;
+                        container.style.display = 'block';
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function clearImagePreview() {
+            const fileInput = document.getElementById('animalPhoto');
+            const preview = document.getElementById('imagePreview');
+            const container = document.getElementById('imagePreviewContainer');
+            
+            if (fileInput) fileInput.value = '';
+            if (preview) preview.src = '';
+            if (container) container.style.display = 'none';
+        }
+
+        // Convert image file to base64
+        async function convertImageToBase64(file) {
+            return new Promise((resolve, reject) => {
+                if (!file) {
+                    resolve(null);
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    resolve(e.target.result);
+                };
+                reader.onerror = function(error) {
+                    reject(error);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // View full image in a modal
+        function viewFullImage(imageSrc, animalTag) {
+            // Create modal for full image view
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.id = 'imageViewModal';
+            modal.setAttribute('tabindex', '-1');
+            modal.innerHTML = `
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">${animalTag} - Full Photo</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body text-center">
+                            <img src="${imageSrc}" alt="${animalTag}" class="img-fluid" style="max-height: 70vh; border-radius: 8px;">
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            // Clean up when modal is hidden
+            modal.addEventListener('hidden.bs.modal', function() {
+                document.body.removeChild(modal);
+            });
         }
 
         // Ensure function is globally accessible
@@ -2291,6 +2474,18 @@
             const animalSex = document.getElementById('animalSex').value;
             const birthDate = document.getElementById('birthDate').value;
             const animalWeight = document.getElementById('animalWeight').value ? parseFloat(document.getElementById('animalWeight').value) : null;
+            
+            // Get and convert image if provided
+            const photoInput = document.getElementById('animalPhoto');
+            let animalPhoto = null;
+            if (photoInput && photoInput.files && photoInput.files.length > 0) {
+                try {
+                    animalPhoto = await convertImageToBase64(photoInput.files[0]);
+                } catch (error) {
+                    console.warn('⚠️ Failed to convert image:', error);
+                    showAlert('Failed to process image. Saving without photo.', 'warning');
+                }
+            }
             const productionPurpose = document.getElementById('productionPurpose').value;
             const lifecycleStage = document.getElementById('lifecycleStage').value;
             const animalLocation = document.getElementById('animalLocation').value;
@@ -2352,7 +2547,8 @@
                                 sireTag: sireTag,
                                 damTag: damTag,
                                 breedingStatus: breedingStatus,
-                                firstCalvingDate: firstCalvingDate
+                                firstCalvingDate: firstCalvingDate,
+                                photo: animalPhoto
                             };
 
                             console.log('Sending to API:', livestockData);
@@ -2362,7 +2558,7 @@
                                 console.log('✅ Livestock saved successfully:', response.data);
                                 savedViaAPI = true;
                                 
-                                // Close modal and reset form BEFORE reloading
+                                // Close modal and reset form BEFORE updating UI
                                 const modal = document.getElementById('addLivestockModal');
                                 if (modal) {
                                     const bsModal = bootstrap.Modal.getInstance(modal);
@@ -2375,6 +2571,7 @@
                                 const form = document.getElementById('addLivestockForm');
                                 if (form) {
                                     form.reset();
+                                    clearImagePreview();
                                 }
                                 
                                 // Re-enable save button
@@ -2389,12 +2586,11 @@
                                     window.ModalValidator.markSaveSuccess(modalId);
                                 }
                                 
-                                // Update UI after modal closes (non-blocking)
+                                // Optimized: Add item directly to UI instead of full reload
                                 setTimeout(() => {
-                                    loadLivestock();
-                                    updateStatistics();
+                                    addLivestockItemToUI(response.data);
                                     showAlert('Animal added successfully!', 'success');
-                                }, 300);
+                                }, 100);
                             } else {
                                 console.warn('⚠️ API request failed:', response.error);
                                 const errorMsg = response.error || 'Failed to save animal. Please try again.';
@@ -2459,6 +2655,7 @@
                     const form = document.getElementById('addLivestockForm');
                     if (form) {
                         form.reset();
+                        clearImagePreview();
                     }
                     
                     // Re-enable save button
@@ -2529,6 +2726,7 @@
                         bootstrap.Modal.getInstance(modal).hide();
                     }
                     document.getElementById('addLivestockForm').reset();
+                    clearImagePreview();
                 } else {
                     showAlert('Failed to save animal: ' + error.message, 'error');
                 }
