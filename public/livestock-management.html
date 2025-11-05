@@ -2457,14 +2457,25 @@
                 const originalText = saveButton.innerHTML;
                 saveButton.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Saving...';
                 
-                // Re-enable after 5 seconds as safety (in case of error)
-                setTimeout(() => {
-                    if (saveButton) {
-                        saveButton.disabled = false;
-                        saveButton.innerHTML = originalText;
+                // Store timeout ID so we can clear it on success
+                const timeoutId = setTimeout(() => {
+                    // Only reset if still saving (safety timeout)
+                    if (window._savingLivestock) {
+                        console.warn('⚠️ Save operation timed out after 30 seconds');
+                        if (saveButton) {
+                            saveButton.disabled = false;
+                            saveButton.innerHTML = originalText;
+                        }
+                        window._savingLivestock = false;
+                        if (window.ModalValidator) {
+                            window.ModalValidator.setSaving(modalId, false);
+                        }
+                        showAlert('Save operation timed out. Please try again.', 'error');
                     }
-                    window._savingLivestock = false;
-                }, 5000);
+                }, 30000); // Increased to 30 seconds
+                
+                // Store timeout ID for cleanup
+                window._saveTimeoutId = timeoutId;
             }
             
             // Get all form values
@@ -2504,12 +2515,27 @@
 
             // Validate required fields
             if (!animalSpecies || !animalBreed || !animalTag || !animalSex || !birthDate || !animalLocation) {
+                // Reset saving state
+                window._savingLivestock = false;
                 if (window.ModalValidator) {
                     window.ModalValidator.setSaving(modalId, false);
                 }
+                // Clear timeout if it exists
+                if (window._saveTimeoutId) {
+                    clearTimeout(window._saveTimeoutId);
+                    window._saveTimeoutId = null;
+                }
+                // Re-enable save button
+                if (saveButton) {
+                    saveButton.disabled = false;
+                    saveButton.innerHTML = '<i class="fas fa-save me-1"></i>Save Animal';
+                }
+                console.warn('⚠️ Validation failed - missing required fields');
                 showAlert('Please fill in all required fields (Species, Breed, Tag/ID, Sex, Birth Date, Location)', 'error');
                 return;
             }
+            
+            console.log('✅ Validation passed, proceeding with save...');
 
             try {
                 console.log('🐄 Saving livestock with comprehensive data...');
@@ -2579,6 +2605,11 @@
                                     saveButton.disabled = false;
                                     saveButton.innerHTML = '<i class="fas fa-save me-1"></i>Save Animal';
                                 }
+                                // Clear timeout if it exists
+                                if (window._saveTimeoutId) {
+                                    clearTimeout(window._saveTimeoutId);
+                                    window._saveTimeoutId = null;
+                                }
                                 window._savingLivestock = false;
                                 
                                 // Mark save success
@@ -2594,8 +2625,9 @@
                             } else {
                                 console.warn('⚠️ API request failed:', response.error);
                                 const errorMsg = response.error || 'Failed to save animal. Please try again.';
-                                showAlert(errorMsg, 'error');
-                                // Fall through to localStorage fallback
+                                showAlert(errorMsg, 'warning');
+                                // Don't reset state here - let it fall through to localStorage fallback
+                                // localStorage save will handle state reset
                             }
                         } else {
                             console.warn('⚠️ No farms found, falling back to localStorage');
@@ -2603,9 +2635,10 @@
                             // Fall through to localStorage fallback
                         }
                     } catch (apiError) {
-                        console.warn('⚠️ API error, falling back to localStorage:', apiError);
+                        console.error('⚠️ API error, falling back to localStorage:', apiError);
                         const errorMsg = apiError.message || 'API error. Data will be saved locally.';
                         showAlert(errorMsg, 'warning');
+                        // Don't reset state here - let it fall through to localStorage save
                         // Fall through to localStorage fallback
                         }
                     } else {
@@ -2636,6 +2669,7 @@
                         breedingStatus: breedingStatus,
                         firstCalvingDate: firstCalvingDate,
                         healthNotes: healthNotes,
+                        photo: animalPhoto,
                         lastUpdated: new Date().toISOString()
                     };
                     
@@ -2663,6 +2697,11 @@
                         saveButton.disabled = false;
                         saveButton.innerHTML = '<i class="fas fa-save me-1"></i>Save Animal';
                     }
+                    // Clear timeout if it exists
+                    if (window._saveTimeoutId) {
+                        clearTimeout(window._saveTimeoutId);
+                        window._saveTimeoutId = null;
+                    }
                     window._savingLivestock = false;
                     
                     // Update UI after modal closes (non-blocking)
@@ -2679,6 +2718,11 @@
                 if (saveButton) {
                     saveButton.disabled = false;
                     saveButton.innerHTML = '<i class="fas fa-save me-1"></i>Save Animal';
+                }
+                // Clear timeout if it exists
+                if (window._saveTimeoutId) {
+                    clearTimeout(window._saveTimeoutId);
+                    window._saveTimeoutId = null;
                 }
                 window._savingLivestock = false;
                 
@@ -2711,6 +2755,7 @@
                         breedingStatus: breedingStatus,
                         firstCalvingDate: firstCalvingDate,
                         healthNotes: healthNotes,
+                        photo: animalPhoto,
                         lastUpdated: new Date().toISOString()
                     };
                     
