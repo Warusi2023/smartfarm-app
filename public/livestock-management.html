@@ -555,7 +555,7 @@
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <button class="btn btn-custom w-100" onclick="applyFilters()">
+                    <button class="btn btn-custom w-100" onclick="applyFilters()" title="Filters are applied automatically">
                         <i class="fas fa-filter me-2"></i>Filter
                     </button>
                 </div>
@@ -1771,6 +1771,60 @@
             updateStatistics();
             initializeBreedSuggestions();
             
+            // Add visibility change listener to refetch when tab becomes active
+            document.addEventListener('visibilitychange', function() {
+                if (!document.hidden) {
+                    console.log('📱 Tab became visible, refreshing livestock data...');
+                    loadLivestock(false); // Don't show error banner on auto-refresh
+                }
+            });
+            
+            // Add online/offline listeners to refetch when network returns
+            window.addEventListener('online', function() {
+                console.log('🌐 Network connection restored, refreshing livestock data...');
+                loadLivestock();
+            });
+            
+            window.addEventListener('offline', function() {
+                console.log('📴 Network connection lost');
+                showAlert('Network connection lost. Working in offline mode.', 'warning');
+            });
+            
+            // Ensure Add New Animal button opens modal reliably
+            const addAnimalButtons = document.querySelectorAll('[data-bs-target="#addLivestockModal"]');
+            // Also find buttons by text content
+            document.querySelectorAll('button').forEach(btn => {
+                const text = btn.textContent || btn.innerText;
+                if (text.includes('Add New Animal') || text.includes('Add Your First Animal')) {
+                    if (!btn.hasAttribute('data-bs-target')) {
+                        addAnimalButtons.push(btn);
+                    }
+                }
+            });
+            
+            addAnimalButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    const modal = document.getElementById('addLivestockModal');
+                    if (modal) {
+                        // Ensure Bootstrap modal is initialized
+                        let bsModal = bootstrap.Modal.getInstance(modal);
+                        if (!bsModal) {
+                            bsModal = new bootstrap.Modal(modal);
+                        }
+                        // Show modal (Bootstrap will handle if already triggered)
+                        try {
+                            bsModal.show();
+                            console.log('✅ Add New Animal modal opened');
+                        } catch (err) {
+                            console.warn('Modal show error (may already be showing):', err);
+                        }
+                    } else {
+                        console.error('❌ addLivestockModal not found');
+                        showAlert('Error: Modal not found. Please refresh the page.', 'error');
+                    }
+                });
+            });
+            
             // Add robust event listener for save button
             // Set up when modal is shown
             const addLivestockModal = document.getElementById('addLivestockModal');
@@ -1875,30 +1929,62 @@
             console.log('User authenticated for livestock management:', user);
         }
 
-        async function loadLivestock() {
+        // Keep last good data to prevent UI from clearing on errors
+        let lastGoodLivestock = [];
+        
+        async function loadLivestock(showErrorBanner = true) {
+            const container = document.getElementById('livestockContainer');
+            const noAnimalsMessage = document.getElementById('noAnimalsMessage');
+            
+            if (!container || !noAnimalsMessage) {
+                console.error('❌ Required DOM elements not found');
+                return;
+            }
+            
+            // Remove existing error banner
+            const existingBanner = document.getElementById('livestock-error-banner');
+            if (existingBanner) {
+                existingBanner.remove();
+            }
+            
+            let loadError = null;
+            let loadedFromAPI = false;
+            
             try {
                 console.log('🐄 Loading livestock data...');
                 
-                let loadedFromAPI = false;
-                
                 // Load from API if available
-                if (window.SmartFarmAPI && window.SmartFarmAPI.isBackendAvailable()) {
+                if (window.SmartFarmAPI && typeof window.SmartFarmAPI.isBackendAvailable === 'function') {
                     try {
-                        const response = await window.SmartFarmAPI.getLivestock();
-                        if (response && response.success && response.data && Array.isArray(response.data)) {
-                            console.log('✅ Livestock data loaded from API:', response.data.length, 'animals');
-                            livestock = response.data;
-                            // Save to localStorage as backup
-                            localStorage.setItem('livestock', JSON.stringify(livestock));
-                            loadedFromAPI = true;
-                        } else {
-                            console.warn('⚠️ API returned unsuccessful response:', response);
+                        const isAvailable = await window.SmartFarmAPI.isBackendAvailable();
+                        if (isAvailable) {
+                            // Get stable filter params (default to 'all')
+                            const filters = getLivestockFilters();
+                            const params = {};
+                            if (filters.species && filters.species !== 'all') {
+                                params.species = filters.species;
+                            }
+                            if (filters.status && filters.status !== 'all') {
+                                params.status = filters.status;
+                            }
+                            
+                            const response = await window.SmartFarmAPI.getLivestock(params);
+                            if (response && response.success && response.data && Array.isArray(response.data)) {
+                                console.log('✅ Livestock data loaded from API:', response.data.length, 'animals');
+                                livestock = response.data;
+                                lastGoodLivestock = [...livestock]; // Keep last good data
+                                // Save to localStorage as backup
+                                localStorage.setItem('livestock', JSON.stringify(livestock));
+                                loadedFromAPI = true;
+                            } else {
+                                console.warn('⚠️ API returned unsuccessful response:', response);
+                                loadError = response?.error || 'API returned unsuccessful response';
+                            }
                         }
                     } catch (apiError) {
                         console.warn('⚠️ API error, loading from localStorage:', apiError);
+                        loadError = apiError.message || 'Failed to load from API';
                     }
-                } else {
-                    console.warn('⚠️ SmartFarmAPI not available, using localStorage');
                 }
                 
                 // Load from localStorage if API didn't work or not available
@@ -1910,71 +1996,97 @@
                             if (Array.isArray(parsedLivestock) && parsedLivestock.length > 0) {
                                 console.log('✅ Livestock data loaded from localStorage:', parsedLivestock.length, 'animals');
                                 livestock = parsedLivestock;
+                                lastGoodLivestock = [...livestock]; // Keep last good data
                             } else {
                                 console.warn('⚠️ localStorage data is empty or invalid');
+                                // Use last good data if available
+                                if (lastGoodLivestock.length > 0) {
+                                    livestock = lastGoodLivestock;
+                                    console.log('✅ Using last good livestock data:', livestock.length, 'animals');
+                                }
                             }
                         } else {
                             console.log('ℹ️ No saved livestock data in localStorage');
+                            // Use last good data if available
+                            if (lastGoodLivestock.length > 0) {
+                                livestock = lastGoodLivestock;
+                                console.log('✅ Using last good livestock data:', livestock.length, 'animals');
+                            }
                         }
                     } catch (storageError) {
                         console.error('❌ Error loading from localStorage:', storageError);
+                        loadError = storageError.message || 'Failed to load from storage';
+                        // Use last good data if available
+                        if (lastGoodLivestock.length > 0) {
+                            livestock = lastGoodLivestock;
+                            console.log('✅ Using last good livestock data after storage error:', livestock.length, 'animals');
+                        }
                     }
                 }
             } catch (error) {
                 console.error('❌ Error loading livestock data:', error);
-                // Try to load from localStorage as last resort
-                try {
-                    const savedLivestock = localStorage.getItem('livestock');
-                    if (savedLivestock) {
-                        livestock = JSON.parse(savedLivestock);
-                        console.log('✅ Recovered livestock from localStorage after error');
-                    }
-                } catch (e) {
-                    console.error('❌ Could not recover from localStorage:', e);
+                loadError = error.message || 'Unexpected error loading livestock';
+                // Use last good data if available
+                if (lastGoodLivestock.length > 0) {
+                    livestock = lastGoodLivestock;
+                    console.log('✅ Using last good livestock data after error:', livestock.length, 'animals');
                 }
-            }
-
-            const container = document.getElementById('livestockContainer');
-            const noAnimalsMessage = document.getElementById('noAnimalsMessage');
-            
-            if (!container) {
-                console.error('❌ livestockContainer not found');
-                return;
-            }
-            
-            if (!noAnimalsMessage) {
-                console.error('❌ noAnimalsMessage not found');
-                return;
             }
             
             // Ensure livestock is an array
             if (!Array.isArray(livestock)) {
-                console.warn('⚠️ livestock is not an array, resetting to empty array');
-                livestock = [];
-            }
-            
-            if (livestock.length === 0) {
-                container.innerHTML = '';
-                noAnimalsMessage.style.display = 'block';
-                return;
-            }
-            
-            noAnimalsMessage.style.display = 'none';
-            container.innerHTML = '';
-            
-            // Render livestock cards
-            livestock.forEach(animal => {
-                try {
-                    const animalCard = createLivestockCard(animal);
-                    if (animalCard) {
-                        container.appendChild(animalCard);
-                    }
-                } catch (cardError) {
-                    console.error('❌ Error creating card for animal:', animal, cardError);
+                console.warn('⚠️ livestock is not an array, using last good data or resetting');
+                if (lastGoodLivestock.length > 0) {
+                    livestock = lastGoodLivestock;
+                } else {
+                    livestock = [];
                 }
-            });
+            }
             
-            console.log('✅ Livestock display updated:', livestock.length, 'animals');
+            // Update last good data if we have valid data
+            if (Array.isArray(livestock) && livestock.length > 0) {
+                lastGoodLivestock = [...livestock];
+            }
+            
+            // Show error banner if there was an error and we're showing it
+            if (loadError && showErrorBanner) {
+                showErrorBannerWithRetry(loadError);
+            }
+            
+            // Apply filters and render
+            applyFilters();
+        }
+        
+        function showErrorBannerWithRetry(errorMessage) {
+            // Remove existing banner
+            const existingBanner = document.getElementById('livestock-error-banner');
+            if (existingBanner) {
+                existingBanner.remove();
+            }
+            
+            const banner = document.createElement('div');
+            banner.id = 'livestock-error-banner';
+            banner.className = 'alert alert-warning alert-dismissible fade show';
+            banner.setAttribute('role', 'alert');
+            banner.style.cssText = 'margin-bottom: 20px;';
+            banner.innerHTML = `
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Failed to load animals:</strong> ${errorMessage}
+                <button type="button" class="btn btn-sm btn-primary ms-2" onclick="loadLivestock()">
+                    <i class="fas fa-redo me-1"></i>Retry
+                </button>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            
+            const container = document.querySelector('.container');
+            if (container) {
+                const filterCard = document.querySelector('.card-custom');
+                if (filterCard && filterCard.nextSibling) {
+                    container.insertBefore(banner, filterCard.nextSibling);
+                } else {
+                    container.insertBefore(banner, container.firstChild);
+                }
+            }
         }
 
         function createLivestockCard(animal) {
@@ -2210,9 +2322,11 @@
                 let savedViaAPI = false;
                 
                 // Check if API is available
-                if (window.SmartFarmAPI && window.SmartFarmAPI.isBackendAvailable) {
-                    try {
-                        console.log('🌐 Attempting to add livestock via API');
+                if (window.SmartFarmAPI && typeof window.SmartFarmAPI.isBackendAvailable === 'function') {
+                    const isAvailable = await window.SmartFarmAPI.isBackendAvailable();
+                    if (isAvailable) {
+                        try {
+                            console.log('🌐 Attempting to add livestock via API');
                         
                         // Get the first farm ID (in a real app, user would select farm)
                         const farmsResponse = await window.SmartFarmAPI.getFarms();
@@ -2282,16 +2396,24 @@
                                     showAlert('Animal added successfully!', 'success');
                                 }, 300);
                             } else {
-                                console.warn('⚠️ API request failed, falling back to localStorage:', response.error);
+                                console.warn('⚠️ API request failed:', response.error);
+                                const errorMsg = response.error || 'Failed to save animal. Please try again.';
+                                showAlert(errorMsg, 'error');
                                 // Fall through to localStorage fallback
                             }
                         } else {
                             console.warn('⚠️ No farms found, falling back to localStorage');
+                            showAlert('No farm found. Please create a farm first or data will be saved locally.', 'warning');
                             // Fall through to localStorage fallback
                         }
                     } catch (apiError) {
                         console.warn('⚠️ API error, falling back to localStorage:', apiError);
+                        const errorMsg = apiError.message || 'API error. Data will be saved locally.';
+                        showAlert(errorMsg, 'warning');
                         // Fall through to localStorage fallback
+                        }
+                    } else {
+                        console.warn('⚠️ Backend not available, using localStorage');
                     }
                 }
                 
@@ -2368,8 +2490,10 @@
                     window.ModalValidator.setSaving(modalId, false);
                 }
                 
+                // Show error message to user
+                const errorMsg = error.message || 'Failed to save animal. Please check your connection and try again.';
                 if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-                    showAlert('Unable to connect to server. Data saved locally.', 'warning');
+                    showAlert('Unable to connect to server. Data will be saved locally.', 'warning');
                     
                     // Fallback to localStorage on network error
                     const newAnimal = {
@@ -2622,18 +2746,53 @@
             }
         }
 
-        function applyFilters() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const speciesFilter = document.getElementById('speciesFilter').value;
-            const statusFilter = document.getElementById('statusFilter').value;
+        // Filter management with URL persistence
+        function getLivestockFilters() {
+            const params = new URLSearchParams(window.location.search);
+            const species = params.get('species') || 'all';
+            const status = params.get('status') || 'all';
+            return { species, status };
+        }
+        
+        function setLivestockFilter(key, value) {
+            const params = new URLSearchParams(window.location.search);
+            if (value && value !== 'all') {
+                params.set(key, value);
+            } else {
+                params.delete(key);
+            }
+            // Update URL without reload
+            window.history.replaceState({}, '', `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`);
+            // Update filter UI
+            updateFilterUI();
+        }
+        
+        function updateFilterUI() {
+            const filters = getLivestockFilters();
+            const speciesSelect = document.getElementById('speciesFilter');
+            const statusSelect = document.getElementById('statusFilter');
             
-            let filteredLivestock = livestock;
+            if (speciesSelect) {
+                speciesSelect.value = filters.species === 'all' ? '' : filters.species;
+            }
+            if (statusSelect) {
+                statusSelect.value = filters.status === 'all' ? '' : filters.status;
+            }
+        }
+        
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
+            const filters = getLivestockFilters();
+            const speciesFilter = filters.species !== 'all' ? filters.species : '';
+            const statusFilter = filters.status !== 'all' ? filters.status : '';
+            
+            let filteredLivestock = livestock || [];
             
             if (searchTerm) {
                 filteredLivestock = filteredLivestock.filter(animal => 
-                    animal.tag.toLowerCase().includes(searchTerm) ||
-                    animal.breed.toLowerCase().includes(searchTerm) ||
-                    animal.species.toLowerCase().includes(searchTerm)
+                    (animal.tag && animal.tag.toLowerCase().includes(searchTerm)) ||
+                    (animal.breed && animal.breed.toLowerCase().includes(searchTerm)) ||
+                    (animal.species && animal.species.toLowerCase().includes(searchTerm))
                 );
             }
             
@@ -2649,6 +2808,10 @@
             const container = document.getElementById('livestockContainer');
             const noAnimalsMessage = document.getElementById('noAnimalsMessage');
             
+            if (!container || !noAnimalsMessage) {
+                return;
+            }
+            
             if (filteredLivestock.length === 0) {
                 container.innerHTML = '';
                 noAnimalsMessage.style.display = 'block';
@@ -2659,8 +2822,14 @@
             container.innerHTML = '';
             
             filteredLivestock.forEach(animal => {
-                const animalCard = createLivestockCard(animal);
-                container.appendChild(animalCard);
+                try {
+                    const animalCard = createLivestockCard(animal);
+                    if (animalCard) {
+                        container.appendChild(animalCard);
+                    }
+                } catch (cardError) {
+                    console.error('❌ Error creating card for animal:', animal, cardError);
+                }
             });
         }
 
@@ -2750,10 +2919,33 @@
             }
         });
 
-        // Search functionality
-        document.getElementById('searchInput').addEventListener('input', applyFilters);
-        document.getElementById('speciesFilter').addEventListener('change', applyFilters);
-        document.getElementById('statusFilter').addEventListener('change', applyFilters);
+        // Search functionality with filter persistence
+        const searchInput = document.getElementById('searchInput');
+        const speciesFilter = document.getElementById('speciesFilter');
+        const statusFilter = document.getElementById('statusFilter');
+        
+        if (searchInput) {
+            searchInput.addEventListener('input', applyFilters);
+        }
+        
+        if (speciesFilter) {
+            speciesFilter.addEventListener('change', function() {
+                const value = this.value || 'all';
+                setLivestockFilter('species', value);
+                applyFilters();
+            });
+        }
+        
+        if (statusFilter) {
+            statusFilter.addEventListener('change', function() {
+                const value = this.value || 'all';
+                setLivestockFilter('status', value);
+                applyFilters();
+            });
+        }
+        
+        // Initialize filter UI from URL on load
+        updateFilterUI();
 
         // Authentication functions
         function logout() {
@@ -2910,11 +3102,14 @@
                 };
 
                 // Try to save to API
-                if (window.SmartFarmAPI && window.SmartFarmAPI.isBackendAvailable) {
-                    const response = await window.SmartFarmAPI.createFeedMix(feedMixData);
-                    if (response.success) {
-                        console.log('✅ Feed mix saved to API:', response.data);
-                        return response.data;
+                if (window.SmartFarmAPI && typeof window.SmartFarmAPI.isBackendAvailable === 'function') {
+                    const isAvailable = await window.SmartFarmAPI.isBackendAvailable();
+                    if (isAvailable) {
+                        const response = await window.SmartFarmAPI.createFeedMix(feedMixData);
+                        if (response.success) {
+                            console.log('✅ Feed mix saved to API:', response.data);
+                            return response.data;
+                        }
                     }
                 }
                 
@@ -3095,4 +3290,5 @@
     </script>
 </body>
 </html>
+
 

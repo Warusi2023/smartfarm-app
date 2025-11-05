@@ -53,7 +53,7 @@ class SmartFarmAPIService {
     }
 
     // Generic API request method with retry logic and error handling
-    async request(endpoint, options = {}, retryCount = 0) {
+    async request(endpoint, options = {}, retryCount = 0, isRetrying401 = false) {
         const url = `${this.baseURL}/api${endpoint}`;
         const maxRetries = 1; // Reduced to 1 to minimize error spam
         const config = {
@@ -78,6 +78,25 @@ class SmartFarmAPIService {
             }
             
             const response = await fetch(url, config);
+            
+            // Handle 401 Unauthorized - try token refresh once
+            if (response.status === 401 && !isRetrying401) {
+                console.log('🔄 401 Unauthorized, attempting token refresh...');
+                const refreshed = await this.refreshTokenSafely();
+                if (refreshed) {
+                    // Retry the request with new token
+                    return this.request(endpoint, options, retryCount, true);
+                } else {
+                    // Token refresh failed, show error but don't clear UI
+                    console.warn('⚠️ Token refresh failed, keeping last good data');
+                    return {
+                        success: false,
+                        error: 'Authentication failed. Please login again.',
+                        statusCode: 401,
+                        retries: retryCount
+                    };
+                }
+            }
             
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -113,6 +132,16 @@ class SmartFarmAPIService {
                 console.error(`❌ API Error: ${url}`, error);
             }
             
+            // Check if it's a 401 error in the error message
+            if (error.message.includes('401') && !isRetrying401) {
+                console.log('🔄 401 detected in error, attempting token refresh...');
+                const refreshed = await this.refreshTokenSafely();
+                if (refreshed) {
+                    // Retry the request with new token
+                    return this.request(endpoint, options, retryCount, true);
+                }
+            }
+            
             // Retry logic with minimal delay to reduce error spam
             if (retryCount < maxRetries && this.shouldRetry(error)) {
                 const delay = 1000; // 1 second only
@@ -121,7 +150,7 @@ class SmartFarmAPIService {
                 }
                 
                 await this.delay(delay);
-                return this.request(endpoint, options, retryCount + 1);
+                return this.request(endpoint, options, retryCount + 1, isRetrying401);
             }
             
             // Show server unavailable banner only if user hasn't dismissed it
@@ -142,6 +171,46 @@ class SmartFarmAPIService {
                 error: error.message,
                 retries: retryCount
             };
+        }
+    }
+    
+    // Safely attempt to refresh token
+    async refreshTokenSafely() {
+        try {
+            // Check if we have a refresh token
+            const refreshToken = localStorage.getItem('smartfarm_refresh_token') || 
+                                sessionStorage.getItem('smartfarm_refresh_token');
+            
+            if (!refreshToken) {
+                console.warn('No refresh token available');
+                return false;
+            }
+            
+            // Attempt to refresh
+            const response = await fetch(`${this.baseURL}/api/auth/refresh`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ refreshToken }),
+                credentials: 'include',
+                mode: 'cors'
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                if (data.token) {
+                    this.setAuthToken(data.token);
+                    console.log('✅ Token refreshed successfully');
+                    return true;
+                }
+            }
+            
+            console.warn('Token refresh failed');
+            return false;
+        } catch (error) {
+            console.warn('Error during token refresh:', error);
+            return false;
         }
     }
 
