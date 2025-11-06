@@ -2149,32 +2149,29 @@
                 createdAt: savedLivestock.createdAt
             };
             
-            // Add to livestock array
-            livestock.push(animal);
-            lastGoodLivestock = [...livestock];
+            // Check if animal already exists (prevent duplicates)
+            const exists = livestock.some(item => 
+                (item.id && item.id === animal.id) || 
+                (item.tag && item.tag === animal.tag && item.species === animal.species)
+            );
             
-            // Save to localStorage as backup
-            localStorage.setItem('livestock', JSON.stringify(livestock));
-            
-            // Hide "no animals" message if visible
-            const noAnimalsMessage = document.getElementById('noAnimalsMessage');
-            if (noAnimalsMessage) {
-                noAnimalsMessage.style.display = 'none';
-            }
-            
-            // Get container and add the card
-            const container = document.getElementById('livestockContainer');
-            if (container) {
-                // Apply filters to see if this item should be shown
-                const filters = getLivestockFilters();
-                const shouldShow = (!filters.species || filters.species === 'all' || animal.species === filters.species) &&
-                                  (!filters.status || filters.status === 'all' || animal.healthStatus === filters.status);
+            if (!exists) {
+                // Add to livestock array
+                livestock.push(animal);
+                lastGoodLivestock = [...livestock];
                 
-                if (shouldShow) {
-                    const card = createLivestockCard(animal);
-                    container.appendChild(card);
-                }
+                // Save to localStorage as backup
+                localStorage.setItem('livestock', JSON.stringify(livestock));
+                
+                console.log('✅ Added livestock to array:', animal);
+                console.log('📊 Total livestock count:', livestock.length);
+            } else {
+                console.log('⚠️ Livestock already exists, skipping duplicate:', animal);
             }
+            
+            // Re-render the entire list with filters applied
+            // This ensures the new item appears if it matches current filters
+            applyFilters();
             
             // Update statistics
             updateStatistics();
@@ -2676,9 +2673,9 @@
                                     window._justAddedLivestock = false;
                                 }, 5000); // Prevent auto-refresh for 5 seconds
                                 
+                                console.log('📦 API response data:', response.data);
                                 setTimeout(() => {
                                     addLivestockItemToUI(response.data);
-                                    updateStatistics(); // Update stats with new animal
                                     showAlert('Animal added successfully!', 'success');
                                 }, 100);
                             } else {
@@ -3115,6 +3112,13 @@
             
             let filteredLivestock = livestock || [];
             
+            console.log('🔍 Applying filters:', { 
+                searchTerm, 
+                speciesFilter, 
+                statusFilter, 
+                totalLivestock: filteredLivestock.length 
+            });
+            
             if (searchTerm) {
                 filteredLivestock = filteredLivestock.filter(animal => 
                     (animal.tag && animal.tag.toLowerCase().includes(searchTerm)) ||
@@ -3130,6 +3134,8 @@
             if (statusFilter) {
                 filteredLivestock = filteredLivestock.filter(animal => animal.healthStatus === statusFilter);
             }
+            
+            console.log('✅ Filtered livestock count:', filteredLivestock.length);
             
             // Update display with filtered livestock
             const container = document.getElementById('livestockContainer');
