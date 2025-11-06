@@ -80,9 +80,8 @@
             sidebar.appendChild(navElement);
         }
         
-        // Add dropdown toggle button
-        const dropdownToggle = createDropdownToggle();
-        navElement.appendChild(dropdownToggle);
+        // Removed Quick Navigation dropdown button to avoid confusion
+        // Users can use the regular navigation items directly
         
         // Add main navigation items
         navigationConfig.mainMenu.forEach(item => {
@@ -164,33 +163,11 @@
     }
     
     // Create standalone navigation (for pages without sidebar)
+    // Removed to avoid confusion - users should use regular navigation
     function createStandaloneNavigation() {
-        const navContainer = document.createElement('div');
-        navContainer.id = 'smartfarm-navigation';
-        navContainer.className = 'position-fixed top-0 end-0 p-3';
-        navContainer.style.cssText = `
-            z-index: 1050;
-            margin-top: 20px;
-        `;
-        
-        navContainer.innerHTML = `
-            <div class="dropdown">
-                <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="fas fa-bars me-2"></i>
-                    SmartFarm Menu
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end" style="min-width: 300px;">
-                    <li><h6 class="dropdown-header">Navigation</h6></li>
-                    ${navigationConfig.mainMenu.map(item => createDropdownItem(item)).join('')}
-                    <li><hr class="dropdown-divider"></li>
-                    <li><h6 class="dropdown-header">Quick Actions</h6></li>
-                    ${navigationConfig.quickActions.map(action => createQuickActionItem(action)).join('')}
-                </ul>
-            </div>
-        `;
-        
-        document.body.appendChild(navContainer);
-        console.log('✅ Standalone navigation created');
+        // Function disabled - Quick Navigation removed to avoid confusion
+        console.log('ℹ️ Standalone navigation disabled - Quick Navigation removed');
+        return;
     }
     
     // Create navigation item for sidebar
