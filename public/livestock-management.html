@@ -1784,7 +1784,7 @@
             
             // Add visibility change listener to refetch when tab becomes active
             document.addEventListener('visibilitychange', function() {
-                if (!document.hidden) {
+                if (!document.hidden && !window._justAddedLivestock) {
                     console.log('📱 Tab became visible, refreshing livestock data...');
                     loadLivestock(false); // Don't show error banner on auto-refresh
                 }
@@ -1792,8 +1792,10 @@
             
             // Add online/offline listeners to refetch when network returns
             window.addEventListener('online', function() {
-                console.log('🌐 Network connection restored, refreshing livestock data...');
-                loadLivestock();
+                if (!window._justAddedLivestock) {
+                    console.log('🌐 Network connection restored, refreshing livestock data...');
+                    loadLivestock();
+                }
             });
             
             window.addEventListener('offline', function() {
@@ -1982,7 +1984,29 @@
                             const response = await window.SmartFarmAPI.getLivestock(params);
                             if (response && response.success && response.data && Array.isArray(response.data)) {
                                 console.log('✅ Livestock data loaded from API:', response.data.length, 'animals');
-                                livestock = response.data;
+                                
+                                // Merge API data with existing local data to preserve recently added items
+                                // Create a map of existing livestock by ID for quick lookup
+                                const existingMap = new Map();
+                                livestock.forEach(item => {
+                                    if (item.id) {
+                                        existingMap.set(item.id, item);
+                                    } else if (item.tag) {
+                                        // Use tag as fallback identifier
+                                        existingMap.set(`tag_${item.tag}`, item);
+                                    }
+                                });
+                                
+                                // Add API data, but preserve local items that aren't in API response yet
+                                const apiData = response.data;
+                                apiData.forEach(item => {
+                                    const key = item.id || `tag_${item.tag}`;
+                                    existingMap.set(key, item);
+                                });
+                                
+                                // Convert map back to array
+                                livestock = Array.from(existingMap.values());
+                                
                                 lastGoodLivestock = [...livestock]; // Keep last good data
                                 // Save to localStorage as backup
                                 localStorage.setItem('livestock', JSON.stringify(livestock));
@@ -2646,8 +2670,15 @@
                                 }
                                 
                                 // Optimized: Add item directly to UI instead of full reload
+                                // Mark that we just added livestock to prevent auto-refresh
+                                window._justAddedLivestock = true;
+                                setTimeout(() => {
+                                    window._justAddedLivestock = false;
+                                }, 5000); // Prevent auto-refresh for 5 seconds
+                                
                                 setTimeout(() => {
                                     addLivestockItemToUI(response.data);
+                                    updateStatistics(); // Update stats with new animal
                                     showAlert('Animal added successfully!', 'success');
                                 }, 100);
                             } else {
@@ -2746,13 +2777,20 @@
                         console.warn('⚠️ Error closing modal (continuing anyway):', modalError);
                     }
                     
+                    // Mark that we just added livestock to prevent auto-refresh
+                    window._justAddedLivestock = true;
+                    setTimeout(() => {
+                        window._justAddedLivestock = false;
+                    }, 5000); // Prevent auto-refresh for 5 seconds
+                    
                     // Show success message immediately
                     showAlert('Animal added successfully! (Saved locally)', 'success');
                     
                     // Update UI after a short delay to ensure modal is closed
                     setTimeout(() => {
                         console.log('🔄 Updating UI after save...');
-                        loadLivestock();
+                        // Re-render the livestock list with the updated array
+                        applyFilters(); // This will re-render with the new animal
                         updateStatistics();
                         console.log('✅ UI update completed');
                     }, 200);
