@@ -302,15 +302,25 @@ class SmartFarmAPIService {
     // Check if backend is available
     async isBackendAvailable() {
         try {
+            // Use AbortController for proper timeout (3 seconds)
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 3000);
+            
             const response = await fetch(`${this.baseURL}/api/health`, {
                 method: 'GET',
                 credentials: 'include',
                 mode: 'cors',
-                timeout: 5000
+                signal: controller.signal
             });
+            
+            clearTimeout(timeoutId);
             return response.ok;
         } catch (error) {
-            console.warn('Backend not available:', error.message);
+            if (error.name === 'AbortError') {
+                console.warn('Backend health check timed out');
+            } else {
+                console.warn('Backend not available:', error.message);
+            }
             return false;
         }
     }

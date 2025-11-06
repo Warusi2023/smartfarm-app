@@ -8419,50 +8419,76 @@
             try {
                 let savedViaAPI = false;
                 
-                // Check if API is available
-                if (typeof window.SmartFarmAPI !== 'undefined' && window.SmartFarmAPI.isBackendAvailable) {
+                // Try to save via API directly (skip health check for faster response)
+                if (typeof window.SmartFarmAPI !== 'undefined') {
                     try {
                         console.log('🌐 Attempting to add livestock via API');
                         
-                        // Get the first farm ID (in a real app, user would select farm)
-                        const farmsResponse = await window.SmartFarmAPI.getFarms();
+                        // Get farm ID - use cached value if available, otherwise fetch with timeout
+                        let farmId = null;
                         
-                        if (farmsResponse.success && farmsResponse.data && farmsResponse.data.length > 0) {
-                            const farmId = farmsResponse.data[0].id;
-
-                            const livestockData = {
-                                name: `${breed} ${tag}`,
-                                type: species,
-                                farmId: farmId,
-                                breed: breed,
-                                birthDate: birthDate,
-                                weight: weight ? parseFloat(weight) : null,
-                                description: `${sex} ${species} - ${purpose} - Tag: ${tag}${healthNotes ? ' - ' + healthNotes : ''}`,
-                                tag: tag,
-                                sex: sex,
-                                purpose: purpose,
-                                location: location,
-                                lifecycle: calculatedLifecycle,
-                                value: value ? parseFloat(value) : null,
-                                sireTag: sireTag,
-                                damTag: damTag
-                            };
-
-                            const response = await window.SmartFarmAPI.createLivestock(livestockData);
-
-                            if (response.success) {
-                                console.log('✅ Livestock added successfully via API');
-                                savedViaAPI = true;
-                                showSuccessMessage('Livestock added successfully!');
-                                
-                                // Refresh livestock data
-                                await loadLivestockData();
-                            } else {
-                                console.warn('⚠️ API request failed, falling back to localStorage:', response.error);
-                                // Fall through to localStorage fallback
-                            }
+                        // Check for cached farm ID first (to avoid unnecessary API call)
+                        const cachedFarmId = sessionStorage.getItem('smartfarm_current_farm_id');
+                        if (cachedFarmId) {
+                            farmId = cachedFarmId;
+                            console.log('✅ Using cached farm ID:', farmId);
                         } else {
-                            console.warn('⚠️ No farms found, falling back to localStorage');
+                            // Fetch farms with timeout to avoid hanging
+                            try {
+                                const farmsPromise = window.SmartFarmAPI.getFarms();
+                                const timeoutPromise = new Promise((_, reject) => 
+                                    setTimeout(() => reject(new Error('Farm fetch timeout')), 2000)
+                                );
+                                
+                                const farmsResponse = await Promise.race([farmsPromise, timeoutPromise]);
+                                
+                                if (farmsResponse && farmsResponse.success && farmsResponse.data && farmsResponse.data.length > 0) {
+                                    farmId = farmsResponse.data[0].id;
+                                    // Cache the farm ID for future use
+                                    sessionStorage.setItem('smartfarm_current_farm_id', farmId);
+                                    console.log('✅ Using farm ID:', farmId);
+                                } else {
+                                    console.log('ℹ️ No farms found, saving without farm ID');
+                                }
+                            } catch (farmError) {
+                                console.warn('⚠️ Error fetching farms, continuing without farm ID:', farmError.message);
+                            }
+                        }
+                        
+                        // Prepare livestock data (farmId is optional)
+                        const livestockData = {
+                            name: `${breed} ${tag}`,
+                            type: species,
+                            breed: breed,
+                            birthDate: birthDate,
+                            weight: weight ? parseFloat(weight) : null,
+                            description: `${sex} ${species} - ${purpose} - Tag: ${tag}${healthNotes ? ' - ' + healthNotes : ''}`,
+                            tag: tag,
+                            sex: sex,
+                            purpose: purpose,
+                            location: location,
+                            lifecycle: calculatedLifecycle,
+                            value: value ? parseFloat(value) : null,
+                            sireTag: sireTag,
+                            damTag: damTag
+                        };
+                        
+                        // Only add farmId if we have one
+                        if (farmId) {
+                            livestockData.farmId = farmId;
+                        }
+
+                        const response = await window.SmartFarmAPI.createLivestock(livestockData);
+
+                        if (response.success) {
+                            console.log('✅ Livestock added successfully via API');
+                            savedViaAPI = true;
+                            showSuccessMessage('Livestock added successfully!');
+                            
+                            // Refresh livestock data
+                            await loadLivestockData();
+                        } else {
+                            console.warn('⚠️ API request failed, falling back to localStorage:', response.error);
                             // Fall through to localStorage fallback
                         }
                     } catch (apiError) {

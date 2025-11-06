@@ -2542,24 +2542,47 @@
                 
                 let savedViaAPI = false;
                 
-                // Check if API is available
-                if (window.SmartFarmAPI && typeof window.SmartFarmAPI.isBackendAvailable === 'function') {
-                    const isAvailable = await window.SmartFarmAPI.isBackendAvailable();
-                    if (isAvailable) {
-                        try {
-                            console.log('🌐 Attempting to add livestock via API');
+                // Try to save via API directly (skip health check for faster response)
+                if (window.SmartFarmAPI) {
+                    try {
+                        console.log('🌐 Attempting to add livestock via API');
+                    
+                        // Get farm ID - use cached value if available, otherwise fetch with timeout
+                        let farmId = null;
                         
-                        // Get the first farm ID (in a real app, user would select farm)
-                        const farmsResponse = await window.SmartFarmAPI.getFarms();
-                        
-                        if (farmsResponse.success && farmsResponse.data && farmsResponse.data.length > 0) {
-                            const farmId = farmsResponse.data[0].id;
+                        // Check for cached farm ID first (to avoid unnecessary API call)
+                        const cachedFarmId = sessionStorage.getItem('smartfarm_current_farm_id');
+                        if (cachedFarmId) {
+                            farmId = cachedFarmId;
+                            console.log('✅ Using cached farm ID:', farmId);
+                        } else {
+                            // Fetch farms with timeout to avoid hanging
+                            try {
+                                const farmsPromise = window.SmartFarmAPI.getFarms();
+                                const timeoutPromise = new Promise((_, reject) => 
+                                    setTimeout(() => reject(new Error('Farm fetch timeout')), 2000)
+                                );
+                                
+                                const farmsResponse = await Promise.race([farmsPromise, timeoutPromise]);
+                                
+                                if (farmsResponse && farmsResponse.success && farmsResponse.data && farmsResponse.data.length > 0) {
+                                    farmId = farmsResponse.data[0].id;
+                                    // Cache the farm ID for future use
+                                    sessionStorage.setItem('smartfarm_current_farm_id', farmId);
+                                    console.log('✅ Using farm ID:', farmId);
+                                } else {
+                                    console.log('ℹ️ No farms found, saving without farm ID');
+                                }
+                            } catch (farmError) {
+                                console.warn('⚠️ Error fetching farms, continuing without farm ID:', farmError.message);
+                            }
+                        }
 
-                            // Prepare comprehensive data in correct API format
-                            const livestockData = {
-                                name: `${animalBreed} ${animalTag}`,
-                                type: animalSpecies,
-                                farmId: farmId,
+                        // Prepare comprehensive data in correct API format
+                        // farmId is optional - only include if we have one
+                        const livestockData = {
+                            name: `${animalBreed} ${animalTag}`,
+                            type: animalSpecies,
                                 breed: animalBreed,
                                 birthDate: birthDate,
                                 weight: animalWeight,
@@ -2576,6 +2599,11 @@
                                 firstCalvingDate: firstCalvingDate,
                                 photo: animalPhoto
                             };
+                            
+                            // Only add farmId if we have one
+                            if (farmId) {
+                                livestockData.farmId = farmId;
+                            }
 
                             console.log('Sending to API:', livestockData);
                             const response = await window.SmartFarmAPI.createLivestock(livestockData);
@@ -2629,20 +2657,12 @@
                                 // Don't reset state here - let it fall through to localStorage fallback
                                 // localStorage save will handle state reset
                             }
-                        } else {
-                            console.warn('⚠️ No farms found, falling back to localStorage');
-                            showAlert('No farm found. Please create a farm first or data will be saved locally.', 'warning');
-                            // Fall through to localStorage fallback
-                        }
                     } catch (apiError) {
                         console.error('⚠️ API error, falling back to localStorage:', apiError);
                         const errorMsg = apiError.message || 'API error. Data will be saved locally.';
                         showAlert(errorMsg, 'warning');
                         // Don't reset state here - let it fall through to localStorage save
                         // Fall through to localStorage fallback
-                        }
-                    } else {
-                        console.warn('⚠️ Backend not available, using localStorage');
                     }
                 }
                 
@@ -2673,16 +2693,30 @@
                         lastUpdated: new Date().toISOString()
                     };
                     
+                    // Save to localStorage
                     livestock.push(newAnimal);
-                    localStorage.setItem('livestock', JSON.stringify(livestock));
+                    try {
+                        localStorage.setItem('livestock', JSON.stringify(livestock));
+                        console.log('✅ Livestock saved to localStorage:', newAnimal);
+                        console.log('✅ Total livestock in storage:', livestock.length);
+                    } catch (storageError) {
+                        console.error('❌ Error saving to localStorage:', storageError);
+                        throw new Error('Failed to save to local storage: ' + storageError.message);
+                    }
                     
-                    // Close modal and reset form BEFORE reloading
-                    const modal = document.getElementById('addLivestockModal');
-                    if (modal) {
-                        const bsModal = bootstrap.Modal.getInstance(modal);
-                        if (bsModal) {
-                            bsModal.hide();
-                        }
+                    // Reset save state FIRST
+                    window._savingLivestock = false;
+                    
+                    // Re-enable save button
+                    if (saveButton) {
+                        saveButton.disabled = false;
+                        saveButton.innerHTML = '<i class="fas fa-save me-1"></i>Save Animal';
+                    }
+                    
+                    // Clear timeout if it exists
+                    if (window._saveTimeoutId) {
+                        clearTimeout(window._saveTimeoutId);
+                        window._saveTimeoutId = null;
                     }
                     
                     // Reset form
@@ -2692,24 +2726,36 @@
                         clearImagePreview();
                     }
                     
-                    // Re-enable save button
-                    if (saveButton) {
-                        saveButton.disabled = false;
-                        saveButton.innerHTML = '<i class="fas fa-save me-1"></i>Save Animal';
+                    // Close modal immediately
+                    try {
+                        const modal = document.getElementById('addLivestockModal');
+                        if (modal) {
+                            const bsModal = bootstrap.Modal.getInstance(modal);
+                            if (bsModal) {
+                                bsModal.hide();
+                            } else {
+                                // Modal might not be initialized, try direct hide
+                                modal.classList.remove('show');
+                                modal.style.display = 'none';
+                                document.body.classList.remove('modal-open');
+                                const backdrop = document.querySelector('.modal-backdrop');
+                                if (backdrop) backdrop.remove();
+                            }
+                        }
+                    } catch (modalError) {
+                        console.warn('⚠️ Error closing modal (continuing anyway):', modalError);
                     }
-                    // Clear timeout if it exists
-                    if (window._saveTimeoutId) {
-                        clearTimeout(window._saveTimeoutId);
-                        window._saveTimeoutId = null;
-                    }
-                    window._savingLivestock = false;
                     
-                    // Update UI after modal closes (non-blocking)
+                    // Show success message immediately
+                    showAlert('Animal added successfully! (Saved locally)', 'success');
+                    
+                    // Update UI after a short delay to ensure modal is closed
                     setTimeout(() => {
+                        console.log('🔄 Updating UI after save...');
                         loadLivestock();
                         updateStatistics();
-                        showAlert('Animal added successfully! (Saved locally)', 'success');
-                    }, 300);
+                        console.log('✅ UI update completed');
+                    }, 200);
                 }
             } catch (error) {
                 console.error('❌ Error saving livestock:', error);
