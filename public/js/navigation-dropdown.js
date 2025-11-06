@@ -22,16 +22,16 @@
                 icon: 'fas fa-seedling',
                 href: '#',
                 submenu: [
-                    { title: 'Crops', href: 'dashboard.html#crops', icon: 'fas fa-leaf' },
-                    { title: 'Livestock', href: 'dashboard.html#livestock', icon: 'fas fa-cow' },
-                    { title: 'Inventory', href: 'dashboard.html#inventory', icon: 'fas fa-boxes' },
+                    { title: 'Crops', href: 'crop-management.html', icon: 'fas fa-leaf' },
+                    { title: 'Livestock', href: 'livestock-management.html', icon: 'fas fa-cow' },
+                    { title: 'Inventory', href: 'inventory-management.html', icon: 'fas fa-boxes' },
                     { title: 'Tasks', href: 'dashboard.html#tasks', icon: 'fas fa-tasks' }
                 ]
             },
             {
                 title: 'Analytics',
                 icon: 'fas fa-chart-line',
-                href: 'dashboard.html#analytics',
+                href: 'analytics-dashboard.html',
                 description: 'Reports and insights'
             },
             {
@@ -56,9 +56,9 @@
             }
         ],
         quickActions: [
-            { title: 'Add Crop', icon: 'fas fa-plus', href: 'dashboard.html#add-crop', color: 'success' },
-            { title: 'Add Livestock', icon: 'fas fa-plus', href: 'dashboard.html#add-livestock', color: 'info' },
-            { title: 'View Reports', icon: 'fas fa-chart-bar', href: 'dashboard.html#reports', color: 'warning' },
+            { title: 'Add Crop', icon: 'fas fa-plus', href: 'crop-management.html', color: 'success' },
+            { title: 'Add Livestock', icon: 'fas fa-plus', href: 'livestock-management.html', color: 'info' },
+            { title: 'View Reports', icon: 'fas fa-chart-bar', href: 'analytics-dashboard.html', color: 'warning' },
             { title: 'Emergency', icon: 'fas fa-exclamation-triangle', href: 'dashboard.html#emergency', color: 'danger' }
         ]
     };
