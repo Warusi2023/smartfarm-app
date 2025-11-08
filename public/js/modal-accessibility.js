@@ -97,8 +97,42 @@ class ModalAccessibility {
                 delete modal._ariaHiddenExpected;
             }
 
-            const instance = bootstrap.Modal.getInstance(modal) || new bootstrap.Modal(modal);
-            instance.hide();
+            try {
+                const instance = bootstrap?.Modal?.getInstance(modal);
+
+                if (instance) {
+                    instance.hide();
+                } else {
+                    // Fallback for non-Bootstrap or manually toggled dialogs
+                    if (typeof bootstrap?.Modal?.getOrCreateInstance === 'function') {
+                        const createdInstance = bootstrap.Modal.getOrCreateInstance(modal);
+                        if (createdInstance) {
+                            createdInstance.hide();
+                            return;
+                        }
+                    }
+
+                    // Manual hide fallback: remove visibility classes / restore scrolling
+                    modal.classList.remove('show');
+                    modal.setAttribute('aria-hidden', 'true');
+                    modal.style.display = 'none';
+
+                    // Clean up any leftover backdrop
+                    const backdrop = document.querySelector('.modal-backdrop');
+                    if (backdrop) {
+                        backdrop.remove();
+                    }
+
+                    document.body.classList.remove('modal-open');
+                    document.body.style.removeProperty('overflow');
+                    document.body.style.removeProperty('paddingRight');
+
+                    // Ensure accessibility state resets even if Bootstrap events don't fire
+                    this.toggleModalAccessibility(modal, false);
+                }
+            } catch (error) {
+                console.error('❌ ModalAccessibility: Failed to hide modal via close button:', error);
+            }
         }, true);
     }
 
