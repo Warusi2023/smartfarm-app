@@ -9,7 +9,8 @@
     "build:production": "echo 'No build needed - serving static files'",
     "build:preview": "echo 'No build needed - serving static files'",
     "build:development": "echo 'No build needed - serving static files'",
-    "build:catalog": "node scripts/buildCatalog.mjs"
+    "build:catalog": "node scripts/buildCatalog.mjs",
+    "dev": "node backend/server-simple.cjs"
   },
   "engines": {
     "node": ">=18.0.0"
@@ -22,6 +23,10 @@
   ],
   "author": "SmartFarm Team",
   "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2"
+  },
   "devDependencies": {
     "yaml": "^2.5.0"
   }
