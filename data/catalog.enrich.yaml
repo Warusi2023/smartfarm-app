@@ -1,0 +1,134 @@
+defaults:
+  all:
+    notes: null
+  groups:
+    plants:
+      climate: tropical
+      soil: loam
+    fish:
+      environment: freshwater
+      waterQuality: "pH 6.5–8.5"
+    bivalves:
+      environment: marine
+    crustaceans:
+      environment: marine
+    trees:
+      climate: tropical
+    flowers:
+      climate: tropical
+  categories:
+    plants:
+      "Legumes (Pulses)":
+        nitrogenFixer: true
+        soil: loam
+        notes: "Rotate with cereals to improve nitrogen balance."
+        growthDurationDays: 90
+        yieldKgPerAcre: 1200
+        marketPriceFJDPerKg: 2.2
+        preventiveActions:
+          - "Monitor for aphids monthly"
+          - "Rotate fields every season"
+      "Cereal Crops (Grains)":
+        soil: loam
+        notes: "Provide balanced NPK fertilizer before planting."
+        growthDurationDays: 120
+        yieldKgPerAcre: 2500
+        marketPriceFJDPerKg: 1.8
+        commonDiseases:
+          - "rust"
+          - "leaf spot"
+        preventiveActions:
+          - "Ensure good drainage"
+          - "Use resistant varieties when available"
+      "Root and Tuber Crops":
+        soil: loam
+        notes: "Avoid water logging to prevent rot."
+        growthDurationDays: 150
+        yieldKgPerAcre: 1800
+        marketPriceFJDPerKg: 2.5
+    fish:
+      "Freshwater Fish":
+        climate: tropical
+        waterQuality: "Freshwater pH 6.5–8.5"
+        feedRequirements: "2% of biomass daily"
+        growthDurationDays: 150
+        yieldKgPerAcre: 3000
+        marketPriceFJDPerKg: 6
+        preventiveActions:
+          - "Maintain aeration"
+          - "Check dissolved oxygen weekly"
+      "Marine Fish":
+        climate: tropical
+        waterQuality: "Salinity 28–35 ppt"
+        feedRequirements: "High-protein pellets twice daily"
+        growthDurationDays: 210
+        yieldKgPerAcre: 2500
+        marketPriceFJDPerKg: 9
+    bivalves:
+      "Bivalves (Filter Feeders)":
+        climate: tropical
+        waterQuality: "Clean marine water, salinity 25–35 ppt"
+        notes: "Low feed input; requires good water exchange."
+        growthDurationDays: 180
+        yieldKgPerAcre: 2000
+        marketPriceFJDPerKg: 8
+    crustaceans:
+      "Shrimp and Prawns":
+        climate: tropical
+        waterQuality: "Brackish water, salinity 15–25 ppt"
+        feedRequirements: "3% biomass per day"
+        growthDurationDays: 160
+        yieldKgPerAcre: 1800
+        marketPriceFJDPerKg: 12
+      Crabs:
+        climate: tropical
+        waterQuality: "Brackish-to-marine water, salinity 15–30 ppt"
+        growthDurationDays: 200
+        yieldKgPerAcre: 1200
+        marketPriceFJDPerKg: 14
+    trees:
+      "Tropical and Subtropical Trees":
+        climate: tropical
+        growthDurationDays: 365
+        notes: "Provide seasonal pruning and mulching."
+      "Fruit Trees (Temperate)":
+        climate: temperate
+        growthDurationDays: 240
+        notes: "Requires chilling hours; plant in cooler zones."
+    flowers:
+      "Ornamental Garden Flowers":
+        climate: tropical
+        growthDurationDays: 75
+        notes: "Maintain consistent watering; partial sun."
+
+overrides:
+  items:
+    plants:wheat:
+      climate: temperate
+      growthDurationDays: 130
+      yieldKgPerAcre: 2600
+      marketPriceFJDPerKg: 1.9
+      commonDiseases:
+        - "rust"
+        - "powdery mildew"
+    plants:rice:
+      climate: tropical
+      soil: clay
+      waterRequirement: "Flooded paddies during vegetative stage"
+      growthDurationDays: 150
+      yieldKgPerAcre: 2800
+      marketPriceFJDPerKg: 2.1
+      preventiveActions:
+        - "Maintain standing water depth 5–10 cm"
+        - "Scout for stem borers"
+    fish:tilapia:
+      climate: tropical
+      waterQuality: "Freshwater, temperature 25–30°C"
+      feedRequirements: "2–3% bodyweight per day"
+      marketPriceFJDPerKg: 7
+      commonDiseases:
+        - "streptococcosis"
+      preventiveActions:
+        - "Vaccinate fingerlings where available"
+        - "Maintain proper aeration"
+

@@ -8,12 +8,21 @@
     "build": "echo 'No build needed - serving static files'",
     "build:production": "echo 'No build needed - serving static files'",
     "build:preview": "echo 'No build needed - serving static files'",
-    "build:development": "echo 'No build needed - serving static files'"
+    "build:development": "echo 'No build needed - serving static files'",
+    "build:catalog": "node scripts/buildCatalog.mjs"
   },
   "engines": {
     "node": ">=18.0.0"
   },
-  "keywords": ["smartfarm", "dashboard", "agriculture", "farming"],
+  "keywords": [
+    "smartfarm",
+    "dashboard",
+    "agriculture",
+    "farming"
+  ],
   "author": "SmartFarm Team",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "yaml": "^2.5.0"
+  }
 }

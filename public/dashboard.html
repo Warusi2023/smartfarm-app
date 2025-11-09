@@ -1246,6 +1246,23 @@
                     </ul>
                 </div>
             </div>
+
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-lightbulb me-2"></i>SmartFarm Insights</span>
+                            <button class="btn btn-sm btn-light" onclick="refreshSmartFarmInsights()">
+                                <i class="fas fa-sync-alt me-1"></i>Refresh
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted mb-3">Personalized recommendations based on your farm profile and current goals.</p>
+                            <div id="smartFarmInsights" class="row gy-3"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </nav>
 
@@ -9104,7 +9121,7 @@
                                     <div class="col-md-6">
                                         <div class="mb-3">
                                             <label for="petSpecies" class="form-label">Species</label>
-                                            <select class="form-select" id="petSpecies" required onchange="updatePetBreeds()">
+                                            <select class="form-select" id="petSpecies" data-catalog-group="pets" required onchange="updatePetBreeds()">
                                                 <option value="">Select Species</option>
                                                 <option value="Dog">Dog</option>
                                                 <option value="Cat">Cat</option>
@@ -16246,7 +16263,7 @@ INVENTORY SUMMARY:
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="dashboardLivestockSpecies" class="form-label">Species</label>
-                                    <select class="form-select" id="dashboardLivestockSpecies" required>
+                                    <select class="form-select" id="dashboardLivestockSpecies" data-catalog-group="pets" required>
                                         <option value="">Select Species</option>
                                         <option value="Cattle">Cattle</option>
                                         <option value="Pigs">Pigs</option>
@@ -16342,5 +16359,63 @@ INVENTORY SUMMARY:
     <!-- SmartFarm Core Scripts (duplicates removed) -->
     <link rel="stylesheet" href="css/utilities.css">
     <script src="js/ux-enhancer.js"></script>
+    <script src="/js/catalog-picker.js"></script>
+    <script src="/js/catalog-popovers.js"></script>
+    <script>
+        async function refreshSmartFarmInsights() {
+            const insightsContainer = document.getElementById('smartFarmInsights');
+            if (!insightsContainer) return;
+
+            insightsContainer.innerHTML = '<div class="col-12 text-center text-muted"><i class="fas fa-spinner fa-spin me-2"></i>Loading personalized recommendations...</div>';
+
+            try {
+                const response = await fetch('/api/recommend?goal=high-yield&limit=3');
+                if (!response.ok) throw new Error(`Request failed with status ${response.status}`);
+                const data = await response.json();
+                const items = data.results || [];
+
+                if (!items.length) {
+                    insightsContainer.innerHTML = '<div class="col-12 text-center text-muted">No personalized insights available. Try updating your farm profile or goals.</div>';
+                    return;
+                }
+
+                insightsContainer.innerHTML = items.slice(0, 3).map(result => createInsightCard(result)).join('');
+            } catch (error) {
+                console.error('Failed to fetch SmartFarm insights:', error);
+                insightsContainer.innerHTML = '<div class="col-12 text-center text-danger">Unable to load insights at the moment.</div>';
+            }
+        }
+
+        function createInsightCard(result) {
+            const { item, plan, score } = result;
+            const cropIcon = item.group === 'fish' ? 'fas fa-fish' :
+                item.group === 'bivalves' ? 'fas fa-water' :
+                item.group === 'crustaceans' ? 'fas fa-drumstick-bite' :
+                item.group === 'trees' ? 'fas fa-tree' :
+                item.group === 'flowers' ? 'fas fa-spa' :
+                item.group === 'pets' ? 'fas fa-paw' :
+                'fas fa-seedling';
+
+            return `
+                <div class="col-md-4">
+                    <div class="border rounded p-3 h-100">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h5 class="mb-0"><i class="${cropIcon} text-success me-2"></i>${item.name}</h5>
+                            <span class="badge bg-light text-success">Score ${score}</span>
+                        </div>
+                        <p class="text-muted mb-2">${item.category || ''}${item.subCategory ? ` • ${item.subCategory}` : ''}</p>
+                        ${plan.estimatedYieldKg ? `<div><strong>Projected Yield:</strong> ${Number(plan.estimatedYieldKg).toLocaleString()} kg</div>` : ''}
+                        ${plan.estimatedValueFJD ? `<div><strong>Projected Value:</strong> FJD ${Number(plan.estimatedValueFJD).toLocaleString()}</div>` : ''}
+                        ${plan.timelineDays ? `<div><strong>Growth Duration:</strong> ${plan.timelineDays} days</div>` : ''}
+                        ${plan.inputs.fertilizerOrFeed ? `<div class="mt-2"><strong>Input Tip:</strong> ${plan.inputs.fertilizerOrFeed}</div>` : ''}
+                        ${plan.warnings && plan.warnings.length ? `<div class="mt-2 text-warning"><strong>Risk:</strong> ${plan.warnings.slice(0, 2).join(', ')}</div>` : ''}
+                        ${plan.preventiveActions && plan.preventiveActions.length ? `<div class="mt-2 text-muted"><strong>Prevention:</strong> ${plan.preventiveActions.slice(0, 2).join(', ')}</div>` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        document.addEventListener('DOMContentLoaded', refreshSmartFarmInsights);
+    </script>
 </body>
 </html>

@@ -4,9 +4,18 @@
  */
 
 const express = require('express');
+const path = require('path');
+const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const PUBLIC_DIR = path.join(__dirname, '../public');
+const CATALOG_PATH = path.join(PUBLIC_DIR, 'data/catalog.json');
+const FARM_PROFILE_PATH = path.join(PUBLIC_DIR, 'data/farm-profile.json');
+let cachedCatalog = null;
+let cachedCatalogMtime = 0;
+let cachedFarmProfile = null;
+let cachedFarmProfileMtime = 0;
 
 /** Allow only known web origins */
 const ALLOWED_ORIGINS = new Set([
@@ -75,6 +84,244 @@ app.use((req, res, next) => {
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.static(PUBLIC_DIR));
+
+function readCatalog() {
+    try {
+        const stats = fs.statSync(CATALOG_PATH);
+        if (!cachedCatalog || stats.mtimeMs !== cachedCatalogMtime) {
+            cachedCatalog = JSON.parse(fs.readFileSync(CATALOG_PATH, 'utf8'));
+            cachedCatalogMtime = stats.mtimeMs;
+        }
+        return cachedCatalog;
+    } catch (error) {
+        console.error('Failed to read catalog.json:', error);
+        return null;
+    }
+}
+
+function readFarmProfile() {
+    try {
+        const stats = fs.statSync(FARM_PROFILE_PATH);
+        if (!cachedFarmProfile || stats.mtimeMs !== cachedFarmProfileMtime) {
+            cachedFarmProfile = JSON.parse(fs.readFileSync(FARM_PROFILE_PATH, 'utf8'));
+            cachedFarmProfileMtime = stats.mtimeMs;
+        }
+        return cachedFarmProfile;
+    } catch (_err) {
+        return {};
+    }
+}
+
+// --- Catalog API (reads static JSON) ---
+app.get('/api/catalog', (req, res) => {
+    const catalog = readCatalog();
+    if (!catalog) {
+        return res.status(500).json({ error: 'CATALOG_READ_FAILED' });
+    }
+
+    const { group, q, category, limit = 50, offset = 0 } = req.query;
+    let items = catalog.items || [];
+
+    if (group) {
+        const groupValue = String(group).toLowerCase();
+        items = items.filter(item => (item.group || '').toLowerCase() === groupValue);
+    }
+
+    if (category) {
+        const categoryNeedle = String(category).toLowerCase();
+        items = items.filter(item => (item.category || '').toLowerCase().includes(categoryNeedle));
+    }
+
+    if (q) {
+        const needle = String(q).toLowerCase();
+        items = items.filter(item => {
+            const nameMatch = (item.name || '').toLowerCase().includes(needle);
+            const sciMatch = (item.scientificName || '').toLowerCase().includes(needle);
+            const tagMatch = (item.tags || []).some(tag => tag.toLowerCase().includes(needle));
+            return nameMatch || sciMatch || tagMatch;
+        });
+    }
+
+    const start = Number(offset) || 0;
+    const end = start + (Number(limit) || 50);
+    const paged = items.slice(start, end);
+
+    res.json({
+        count: items.length,
+        items: paged,
+    });
+});
+
+function toArray(value) {
+    if (!value) return [];
+    if (Array.isArray(value)) return value;
+    return String(value)
+        .split(/[,/|;]/)
+        .map(s => s.trim())
+        .filter(Boolean);
+}
+
+function normalize(str) {
+    return String(str || '').trim().toLowerCase();
+}
+
+function scoreItem(item, context) {
+    let score = 0;
+    const reasons = [];
+
+    const itemClimates = toArray(item.climate).map(normalize);
+    const itemSoils = toArray(item.soil).map(normalize);
+    const itemEnv = normalize(item.environment);
+
+    // Climate match
+    if (context.climate && itemClimates.length) {
+        if (itemClimates.includes(context.climate)) {
+            score += 3;
+            reasons.push('Climate fit');
+        }
+    }
+
+    // Soil match
+    if (context.soil && itemSoils.length) {
+        if (itemSoils.includes(context.soil)) {
+            score += 2;
+            reasons.push('Soil fit');
+        }
+    }
+
+    // Water compatibility (for aquaculture / livestock)
+    if (context.water) {
+        if (context.water === 'river' && itemEnv === 'freshwater') {
+            score += 2;
+            reasons.push('Freshwater compatible');
+        } else if (context.water === 'coastal' && itemEnv === 'marine') {
+            score += 2;
+            reasons.push('Marine compatible');
+        } else if (context.water === 'pond' && (itemEnv === 'freshwater' || itemEnv === 'brackish')) {
+            score += 1.5;
+            reasons.push('Suitable for pond systems');
+        }
+    }
+
+    const duration = Number(item.growthDurationDays || 0);
+    const yieldPerAcre = Number(item.yieldKgPerAcre || 0);
+    const pricePerKg = Number(item.marketPriceFJDPerKg || 0);
+
+    if (context.goals.includes('quick-harvest') && duration > 0 && duration <= 100) {
+        score += 2;
+        reasons.push('Quick harvest');
+    }
+
+    if (context.goals.includes('high-yield') && yieldPerAcre) {
+        score += Math.min(yieldPerAcre / 1500, 3); // cap contribution
+        reasons.push('High yield potential');
+    }
+
+    if (context.goals.includes('high-value') && pricePerKg) {
+        score += Math.min(pricePerKg / 2, 3);
+        reasons.push('High market value');
+    }
+
+    if (context.goals.includes('low-cost') && item.nitrogenFixer) {
+        score += 1.5;
+        reasons.push('Nitrogen fixer (lower input)');
+    }
+
+    if (!context.goals.length && (yieldPerAcre || pricePerKg)) {
+        score += 1;
+    }
+
+    return { score, reasons, duration, yieldPerAcre, pricePerKg };
+}
+
+app.get('/api/recommend', (req, res) => {
+    try {
+        const catalog = readCatalog();
+        if (!catalog) {
+            return res.status(500).json({ error: 'CATALOG_UNAVAILABLE' });
+        }
+
+        const profile = readFarmProfile();
+
+        const climate = normalize(req.query.climate || profile.climate);
+        const soil = normalize(req.query.soil || profile.soil);
+        const water = normalize(req.query.water || profile.waterAccess);
+        const landSizeAcres = Number(req.query.landSizeAcres || profile.landSizeAcres || 1);
+
+        const goalsRaw =
+            req.query.goal ||
+            req.query.goals ||
+            (Array.isArray(profile.goals) ? profile.goals.join(',') : '');
+        const goals = toArray(goalsRaw).map(normalize);
+
+        const groupFilter = normalize(req.query.group);
+
+        const context = { climate, soil, water, landSizeAcres, goals };
+
+        const items = (catalog.items || []).filter(item => {
+            if (!groupFilter) return true;
+            return normalize(item.group) === groupFilter;
+        });
+
+        const scored = items
+            .map(item => {
+                const { score, reasons, duration, yieldPerAcre, pricePerKg } = scoreItem(item, context);
+                if (score <= 0) return null;
+
+                const estimatedYieldKg = yieldPerAcre ? Math.round(yieldPerAcre * landSizeAcres) : null;
+                const estimatedValueFJD =
+                    estimatedYieldKg && pricePerKg ? Number((estimatedYieldKg * pricePerKg).toFixed(2)) : null;
+
+                const plan = {
+                    timelineDays: duration || null,
+                    inputs: {
+                        fertilizerOrFeed: item.feedRequirements || item.fertilizerRequirements || null,
+                        waterQuality: item.waterQuality || null,
+                        soil: item.soil || null,
+                    },
+                    estimatedYieldKg,
+                    estimatedValueFJD,
+                    warnings: item.commonDiseases || [],
+                    preventiveActions: item.preventiveActions || [],
+                };
+
+                const summary = {
+                    name: item.name,
+                    group: item.group,
+                    category: item.category,
+                    subCategory: item.subCategory || null,
+                    scientificName: item.scientificName || null,
+                    tags: item.tags || [],
+                };
+
+                return {
+                    item: summary,
+                    score: Number(score.toFixed(3)),
+                    reasons,
+                    plan,
+                };
+            })
+            .filter(Boolean)
+            .sort((a, b) => b.score - a.score)
+            .slice(0, 20);
+
+        res.json({
+            query: {
+                climate: climate || null,
+                soil: soil || null,
+                water: water || null,
+                goals,
+                landSizeAcres,
+                group: groupFilter || null,
+            },
+            results: scored,
+        });
+    } catch (error) {
+        console.error('Failed to generate recommendations:', error);
+        res.status(500).json({ error: 'RECOMMEND_FAILED' });
+    }
+});
 
 /** Fast health for Railway */
 app.get('/api/health', (_req, res) => {

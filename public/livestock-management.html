@@ -536,7 +536,7 @@
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <select class="form-select" id="speciesFilter">
+                    <select class="form-select" id="speciesFilter" data-catalog-group="pets">
                         <option value="">All Species</option>
                         <option value="cattle">Cattle</option>
                         <option value="pigs">Pigs</option>
@@ -781,11 +781,11 @@
                 </div>
                 <div class="modal-body">
                     <form id="addLivestockForm">
-                        <div class="row">
+                        <div class="row align-items-center">
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">Species</label>
-                                    <select class="form-select form-control-custom" id="animalSpecies" required onchange="updateLifecycleFields()">
+                                    <select class="form-select form-control-custom" id="animalSpecies" data-catalog-group="pets" required onchange="updateLifecycleFields()">
                                         <option value="">Select Species</option>
                                         <option value="cattle">Cattle</option>
                                         <option value="pigs">Pigs</option>
@@ -805,6 +805,9 @@
                                         <div id="breedSuggestions" class="breed-suggestions"></div>
                                     </div>
                                 </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div id="animalSpeciesInsights" class="alert alert-success d-none mb-3"></div>
                             </div>
                         </div>
                         <div class="row">
@@ -952,11 +955,11 @@
                 <div class="modal-body">
                     <form id="editLivestockForm">
                         <input type="hidden" id="editAnimalId">
-                        <div class="row">
+                        <div class="row align-items-center">
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">Species</label>
-                                    <select class="form-select form-control-custom" id="editAnimalSpecies" required>
+                                    <select class="form-select form-control-custom" id="editAnimalSpecies" data-catalog-group="pets" required>
                                         <option value="">Select Species</option>
                                         <option value="cattle">Cattle</option>
                                         <option value="pigs">Pigs</option>
@@ -976,6 +979,9 @@
                                         <div id="editBreedSuggestions" class="breed-suggestions"></div>
                                     </div>
                                 </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div id="editAnimalSpeciesInsights" class="alert alert-success d-none mb-3"></div>
                             </div>
                         </div>
                         <div class="row">
@@ -3848,6 +3854,61 @@
             printWindow.document.close();
             printWindow.print();
         }
+    </script>
+    <script src="/js/catalog-picker.js"></script>
+    <script src="/js/catalog-popovers.js"></script>
+    <script>
+        async function updateSpeciesInsight(selectId, panelId) {
+            const selectEl = document.getElementById(selectId);
+            const panel = document.getElementById(panelId);
+            if (!selectEl || !panel) return;
+
+            const speciesName = selectEl.value;
+            if (!speciesName) {
+                panel.classList.add('d-none');
+                panel.innerHTML = '';
+                return;
+            }
+
+            try {
+                const params = new URLSearchParams({ group: selectEl.dataset.catalogGroup || 'pets', q: speciesName, limit: 1 });
+                const response = await fetch(`/api/catalog?${params.toString()}`);
+                if (!response.ok) throw new Error('Failed to fetch catalog item');
+                const data = await response.json();
+                const item = (data.items || [])[0];
+                if (!item) return;
+
+                const lines = [];
+                if (item.feedRequirements) lines.push(`<div><strong>Feed Guidance:</strong> ${item.feedRequirements}</div>`);
+                if (item.waterQuality) lines.push(`<div><strong>Water:</strong> ${item.waterQuality}</div>`);
+                if (item.commonDiseases && item.commonDiseases.length) lines.push(`<div><strong>Risks:</strong> ${item.commonDiseases.slice(0,2).join(', ')}</div>`);
+                if (item.preventiveActions && item.preventiveActions.length) lines.push(`<div><strong>Prevention:</strong> ${item.preventiveActions.slice(0,2).join(', ')}</div>`);
+
+                if (!lines.length) {
+                    panel.classList.add('d-none');
+                    panel.innerHTML = '';
+                    return;
+                }
+
+                panel.innerHTML = lines.join('');
+                panel.classList.remove('d-none');
+            } catch (error) {
+                console.error('Failed to update species insight panel:', error);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const speciesSelect = document.getElementById('animalSpecies');
+            const editSpeciesSelect = document.getElementById('editAnimalSpecies');
+
+            if (speciesSelect) {
+                speciesSelect.addEventListener('change', () => updateSpeciesInsight('animalSpecies', 'animalSpeciesInsights'));
+            }
+
+            if (editSpeciesSelect) {
+                editSpeciesSelect.addEventListener('change', () => updateSpeciesInsight('editAnimalSpecies', 'editAnimalSpeciesInsights'));
+            }
+        });
     </script>
 </body>
 </html>

@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>SmartFarm • Farm Insights</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="/css/main.css" />
+    <style>
+        :root {
+            color-scheme: light;
+        }
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            margin: 16px;
+            background: #f9fafb;
+            color: #111827;
+        }
+        header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+        }
+        h1 {
+            margin: 0;
+            font-size: 1.75rem;
+        }
+        .filters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin: 16px 0;
+        }
+        .filters select,
+        .filters input,
+        .filters button {
+            padding: 10px;
+            font-size: 0.95rem;
+            border-radius: 8px;
+            border: 1px solid #d1d5db;
+            background: #fff;
+        }
+        .filters button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s ease-in-out;
+        }
+        .filters button:hover {
+            background: #1d4ed8;
+        }
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+            padding: 16px;
+            border: 1px solid #e5e7eb;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .card h3 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+        .card .muted {
+            color: #6b7280;
+        }
+        .tag-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 6px;
+        }
+        .tag {
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            border-radius: 999px;
+            background: #e0f2fe;
+            color: #0369a1;
+            border: 1px solid #bae6fd;
+        }
+        .key-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 8px;
+            margin: 8px 0;
+        }
+        .metric {
+            background: #f3f4f6;
+            border-radius: 10px;
+            padding: 8px;
+        }
+        .metric strong {
+            display: block;
+            font-size: 0.85rem;
+            color: #374151;
+        }
+        .plan {
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            border-radius: 10px;
+            padding: 10px;
+            font-size: 0.9rem;
+            color: #065f46;
+        }
+        .warnings {
+            background: #fff7ed;
+            border: 1px solid #fed7aa;
+            border-radius: 10px;
+            padding: 10px;
+            font-size: 0.85rem;
+            color: #9a3412;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px 16px;
+            color: #6b7280;
+        }
+        .empty {
+            text-align: center;
+            padding: 32px 16px;
+            color: #9ca3af;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div>
+            <h1>Farm Insights</h1>
+            <p class="muted">Recommendations based on your farm profile and catalog intelligence.</p>
+        </div>
+        <a href="/" style="align-self: center; color: #2563eb; text-decoration: none;">← Back to Dashboard</a>
+    </header>
+
+    <section class="filters">
+        <select id="group">
+            <option value="">All Groups</option>
+            <option value="plants">Plants & Crops</option>
+            <option value="trees">Trees</option>
+            <option value="flowers">Flowers</option>
+            <option value="fish">Fish</option>
+            <option value="bivalves">Bivalves</option>
+            <option value="crustaceans">Crustaceans</option>
+            <option value="pets">Livestock & Pets</option>
+        </select>
+
+        <select id="climate">
+            <option value="">Profile Climate</option>
+            <option value="tropical">Tropical</option>
+            <option value="subtropical">Subtropical</option>
+            <option value="temperate">Temperate</option>
+            <option value="cold">Cold</option>
+        </select>
+
+        <select id="soil">
+            <option value="">Profile Soil</option>
+            <option value="sand">Sand</option>
+            <option value="loam">Loam</option>
+            <option value="clay">Clay</option>
+            <option value="peat">Peat</option>
+            <option value="silt">Silt</option>
+        </select>
+
+        <select id="water">
+            <option value="">Profile Water Access</option>
+            <option value="none">None</option>
+            <option value="borehole">Borehole</option>
+            <option value="river">River</option>
+            <option value="coastal">Coastal</option>
+            <option value="pond">Pond</option>
+        </select>
+
+        <select id="goal">
+            <option value="">Goal</option>
+            <option value="high-yield">High Yield</option>
+            <option value="high-value">High Value</option>
+            <option value="low-cost">Low Input Cost</option>
+            <option value="quick-harvest">Quick Harvest</option>
+        </select>
+
+        <input id="acres" type="number" min="0.01" step="0.01" placeholder="Land size (acres)" />
+
+        <button id="refreshBtn">Get Recommendations</button>
+    </section>
+
+    <section id="results">
+        <div class="loading">Loading insights…</div>
+    </section>
+
+    <script>
+        const resultsContainer = document.getElementById('results');
+        const inputs = {
+            group: document.getElementById('group'),
+            climate: document.getElementById('climate'),
+            soil: document.getElementById('soil'),
+            water: document.getElementById('water'),
+            goal: document.getElementById('goal'),
+            acres: document.getElementById('acres'),
+        };
+
+        function buildQuery() {
+            const params = new URLSearchParams();
+            Object.entries(inputs).forEach(([key, el]) => {
+                if (!el.value) return;
+                if (key === 'goal') {
+                    params.append('goal', el.value);
+                } else if (key === 'acres') {
+                    params.append('landSizeAcres', el.value);
+                } else {
+                    params.append(key, el.value);
+                }
+            });
+            return params.toString();
+        }
+
+        function renderLoading() {
+            resultsContainer.innerHTML = '<div class="loading">Loading insights…</div>';
+        }
+
+        function renderEmpty() {
+            resultsContainer.innerHTML =
+                '<div class="empty">No matches yet. Try adjusting the climate, soil, or goal filters.</div>';
+        }
+
+        function renderResults(data) {
+            if (!data.results || !data.results.length) {
+                renderEmpty();
+                return;
+            }
+
+            const cards = data.results
+                .map(result => {
+                    const { item, score, reasons, plan } = result;
+                    const metrics = [];
+                    if (plan.estimatedYieldKg) {
+                        metrics.push(`<div class="metric"><strong>Projected Yield</strong>${plan.estimatedYieldKg.toLocaleString()} kg</div>`);
+                    }
+                    if (plan.estimatedValueFJD) {
+                        metrics.push(`<div class="metric"><strong>Projected Value</strong>FJD ${plan.estimatedValueFJD.toLocaleString()}</div>`);
+                    }
+                    if (plan.timelineDays) {
+                        metrics.push(`<div class="metric"><strong>Growth Duration</strong>${plan.timelineDays} days</div>`);
+                    }
+                    const tags = (item.tags || []).slice(0, 8).map(tag => `<span class="tag">${tag}</span>`).join('');
+                    const reasonsList = reasons.length
+                        ? `<div class="muted">Reasons: ${reasons.join(', ')}</div>`
+                        : '';
+                    const warnings = plan.warnings && plan.warnings.length
+                        ? `<div class="warnings"><strong>Risks:</strong> ${plan.warnings.join(', ')}</div>`
+                        : '';
+                    const actions = plan.preventiveActions && plan.preventiveActions.length
+                        ? `<div class="warnings" style="background:#eff6ff;border-color:#bfdbfe;color:#1e3a8a;"><strong>Prevention:</strong> ${plan.preventiveActions.join(', ')}</div>`
+                        : '';
+                    const inputsList = [];
+                    if (plan.inputs.fertilizerOrFeed) inputsList.push(`Feed/Fertilizer: ${plan.inputs.fertilizerOrFeed}`);
+                    if (plan.inputs.waterQuality) inputsList.push(`Water Quality: ${plan.inputs.waterQuality}`);
+                    if (plan.inputs.soil) inputsList.push(`Soil: ${plan.inputs.soil}`);
+
+                    const inputsHtml = inputsList.length
+                        ? `<div class="plan"><strong>Input Guidance</strong><br>${inputsList.join('<br>')}</div>`
+                        : '';
+
+                    return `
+                        <article class="card">
+                            <div>
+                                <h3>${item.name} <span class="muted">(${item.group}${
+                        item.scientificName ? ` • ${item.scientificName}` : ''
+                    })</span></h3>
+                                <div class="muted">${item.category || ''}${item.subCategory ? ` • ${item.subCategory}` : ''}</div>
+                                <div class="muted">Score: <strong>${score}</strong></div>
+                                ${reasonsList}
+                            </div>
+                            <div class="key-metrics">
+                                ${metrics.join('')}
+                            </div>
+                            ${inputsHtml}
+                            ${warnings}
+                            ${actions}
+                            <div class="tag-row">${tags}</div>
+                        </article>
+                    `;
+                })
+                .join('');
+
+            resultsContainer.innerHTML = `<section class="insights-grid">${cards}</section>`;
+        }
+
+        async function loadRecommendations() {
+            try {
+                renderLoading();
+                const query = buildQuery();
+                const response = await fetch(`/api/recommend${query ? `?${query}` : ''}`);
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch recommendations: ${response.status}`);
+                }
+                const data = await response.json();
+                renderResults(data);
+            } catch (error) {
+                console.error(error);
+                resultsContainer.innerHTML = `<div class="empty">Unable to load insights at the moment. Please try again later.</div>`;
+            }
+        }
+
+        document.getElementById('refreshBtn').addEventListener('click', loadRecommendations);
+
+        // Kick off with defaults
+        loadRecommendations();
+    </script>
+</body>
+</html>
+

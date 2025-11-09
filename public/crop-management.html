@@ -345,12 +345,16 @@
                 </div>
                 <div class="modal-body">
                     <form id="addCropForm">
-                        <div class="row">
+                        <div class="row align-items-center">
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">Crop Name</label>
-                                    <input type="text" class="form-control form-control-custom" id="cropName" required>
+                                    <input type="text" class="form-control form-control-custom" id="cropName" required list="catalog-plants-list" data-catalog-search data-catalog-group="plants">
+                                    <datalist id="catalog-plants-list"></datalist>
                                 </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div id="cropNameInsights" class="alert alert-info d-none mb-3"></div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
@@ -445,12 +449,15 @@
                     <form id="editCropForm">
                         <input type="hidden" id="editCropId">
                         <!-- Same form fields as add crop modal -->
-                        <div class="row">
+                        <div class="row align-items-center">
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">Crop Name</label>
-                                    <input type="text" class="form-control form-control-custom" id="editCropName" required>
+                                    <input type="text" class="form-control form-control-custom" id="editCropName" required list="catalog-plants-list" data-catalog-search data-catalog-group="plants">
                                 </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div id="editCropNameInsights" class="alert alert-info d-none mb-3"></div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
@@ -1498,6 +1505,64 @@
         document.getElementById('searchInput').addEventListener('input', applyFilters);
         document.getElementById('statusFilter').addEventListener('change', applyFilters);
         document.getElementById('fieldFilter').addEventListener('change', applyFilters);
+    </script>
+    <script src="/js/catalog-picker.js"></script>
+    <script src="/js/catalog-popovers.js"></script>
+    <script>
+        async function updateCropInsight(inputId, panelId) {
+            const input = document.getElementById(inputId);
+            const panel = document.getElementById(panelId);
+            if (!input || !panel) return;
+
+            const name = input.value.trim();
+            if (!name) {
+                panel.classList.add('d-none');
+                panel.innerHTML = '';
+                return;
+            }
+
+            try {
+                const params = new URLSearchParams({ group: 'plants', q: name, limit: 1 });
+                const response = await fetch(`/api/recommend?${params.toString()}`);
+                if (!response.ok) throw new Error('Failed to fetch recommendations');
+                const data = await response.json();
+                const item = (data.results || [])[0];
+                if (!item) return;
+
+                const info = [];
+                if (item.plan.estimatedYieldKg) info.push(`<div><strong>Projected Yield:</strong> ${item.plan.estimatedYieldKg.toLocaleString()} kg</div>`);
+                if (item.plan.estimatedValueFJD) info.push(`<div><strong>Projected Value:</strong> FJD ${item.plan.estimatedValueFJD.toLocaleString()}</div>`);
+                if (item.plan.timelineDays) info.push(`<div><strong>Growth Duration:</strong> ${item.plan.timelineDays} days</div>`);
+                if (item.plan.inputs.fertilizerOrFeed) info.push(`<div><strong>Input Tip:</strong> ${item.plan.inputs.fertilizerOrFeed}</div>`);
+                if (item.plan.warnings && item.plan.warnings.length) info.push(`<div><strong>Risks:</strong> ${item.plan.warnings.slice(0,2).join(', ')}</div>`);
+
+                if (!info.length) {
+                    panel.classList.add('d-none');
+                    panel.innerHTML = '';
+                    return;
+                }
+
+                panel.innerHTML = info.join('');
+                panel.classList.remove('d-none');
+            } catch (error) {
+                console.error('Failed to load crop insight:', error);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const cropInput = document.getElementById('cropName');
+            const editCropInput = document.getElementById('editCropName');
+
+            if (cropInput) {
+                cropInput.addEventListener('change', () => updateCropInsight('cropName', 'cropNameInsights'));
+                cropInput.addEventListener('blur', () => updateCropInsight('cropName', 'cropNameInsights'));
+            }
+
+            if (editCropInput) {
+                editCropInput.addEventListener('change', () => updateCropInsight('editCropName', 'editCropNameInsights'));
+                editCropInput.addEventListener('blur', () => updateCropInsight('editCropName', 'editCropNameInsights'));
+            }
+        });
     </script>
 </body>
 </html>

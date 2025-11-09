@@ -1,0 +1,529 @@
+plants:
+  Cereal Crops (Grains):
+    tags: [cereal, crop, edible]
+    items:
+      - Wheat
+      - Rice
+      - Maize (corn)
+      - Barley
+      - Sorghum
+      - Millet
+      - Oats
+      - Rye
+      - Triticale
+  Legumes (Pulses):
+    tags: [legume, crop, edible, nitrogen-fixer]
+    items:
+      - Soybeans
+      - Lentils
+      - Chickpeas
+      - Peas
+      - Beans (kidney, navy, pinto, mung, black)
+      - Pigeon peas
+      - Cowpeas
+      - Faba beans
+  Root and Tuber Crops:
+    tags: [root, crop, edible]
+    items:
+      - Potatoes
+      - Cassava
+      - Sweet potatoes
+      - Yams
+      - Taro
+      - Beets
+      - Carrots
+      - Radish
+      - Turnips
+      - Ginger
+      - Turmeric
+  Vegetables:
+    tags: [vegetable, crop, edible]
+    items:
+      - Tomatoes
+      - Onions
+      - Cabbage
+      - Lettuce
+      - Spinach
+      - Kale
+      - Cauliflower
+      - Broccoli
+      - Cucumber
+      - Pumpkin
+      - Eggplant
+      - Zucchini
+      - Peppers (bell, chili)
+      - Okra
+  Fruits:
+    Tree Fruits:
+      tags: [fruit, crop, edible, tree]
+      items:
+        - Apples
+        - Oranges
+        - Mangoes
+        - Bananas
+        - Avocados
+        - Papayas
+        - Pears
+        - Cherries
+        - Plums
+        - Coconuts
+        - Dates
+        - Olives
+    Vine/Bush Fruits:
+      tags: [fruit, crop, edible]
+      items:
+        - Grapes
+        - Strawberries
+        - Blueberries
+        - Melons (watermelon, cantaloupe, honeydew)
+        - Pineapples
+        - Passion fruit
+        - Guava
+  Herbs & Spices:
+    tags: [herb, spice, medicinal, edible]
+    items:
+      - Coriander
+      - Basil
+      - Mint
+      - Parsley
+      - Thyme
+      - Oregano
+      - Rosemary
+      - Sage
+      - Chili pepper
+      - Black pepper
+      - Cinnamon
+      - Cloves
+      - Nutmeg
+      - Cardamom
+      - Vanilla
+  Oilseed Crops:
+    tags: [oilseed, crop, edible]
+    items:
+      - Sunflower
+      - Canola
+      - Soybeans
+      - Sesame
+      - Groundnuts (peanuts)
+      - Palm oil (oil palm)
+      - Flaxseed
+      - Cottonseed
+      - Safflower
+  Beverage Crops:
+    tags: [beverage, crop]
+    items:
+      - Coffee
+      - Tea
+      - Cocoa
+      - Sugarcane
+      - Sugar beet
+  Industrial/Fiber Crops:
+    tags: [industrial, crop]
+    items:
+      - Cotton
+      - Hemp
+      - Flax
+      - Jute
+      - Rubber (Hevea brasiliensis)
+      - Kenaf
+      - Agave (sisal)
+      - Indigo
+  Medicinal and Aromatic:
+    tags: [medicinal]
+    items:
+      - Aloe vera
+      - Neem
+      - Chamomile
+      - Echinacea
+      - Lemongrass
+      - Ginseng
+      - Ashwagandha
+      - Turmeric
+      - Moringa
+      - Lavender
+  Specialty & Other:
+    tags: [crop, edible]
+    items:
+      - Mushrooms (oyster, shiitake)
+      - Bamboo shoots
+      - Seaweed
+      - Quinoa
+      - Amaranth
+      - Buckwheat
+
+flowers:
+  Ornamental Garden Flowers:
+    tags: [flower, ornamental]
+    items:
+      - Rose
+      - Lily
+      - Tulip
+      - Daffodil
+      - Hyacinth
+      - Iris
+      - Peony
+      - Chrysanthemum
+      - Dahlia
+      - Gladiolus
+      - Zinnia
+      - Marigold
+      - Geranium
+      - Petunia
+      - Begonia
+      - Snapdragon
+      - Pansy
+      - Morning Glory
+      - Hibiscus
+      - Cosmos
+      - Sunflower
+  Florist & Bouquet Flowers:
+    tags: [flower, ornamental]
+    items:
+      - Carnation
+      - Freesia
+      - Anemone
+      - Ranunculus
+      - Orchid
+      - Calla Lily
+      - Alstroemeria
+      - Lisianthus
+      - Stock
+      - Baby’s Breath
+      - Protea
+      - Bird of Paradise
+  Wildflowers:
+    tags: [flower]
+    items:
+      - Bluebell
+      - Black-eyed Susan
+      - Cornflower
+      - California Poppy
+      - Queen Anne's Lace
+      - Forget-me-not
+      - Lupine
+      - Buttercup
+      - Yarrow
+      - Aster
+      - Violet
+      - Trillium
+      - Goldenrod
+  Tropical & Exotic Flowers:
+    tags: [flower, tropical, ornamental]
+    items:
+      - Frangipani
+      - Heliconia
+      - Hibiscus
+      - Bird of Paradise
+      - Bougainvillea
+      - Ixora
+      - Jasmine
+      - Ginger Lily
+      - Anthurium
+      - Ti Plant
+  Religious & Cultural Flowers:
+    tags: [flower, cultural]
+    items:
+      - Lotus
+      - Jasmine
+      - Marigold
+      - Rose
+      - Champa
+      - Tuberose
+      - Tulsi flowers
+      - Ashoka flower
+  Edible & Medicinal Flowers:
+    tags: [flower, edible, medicinal]
+    items:
+      - Chamomile
+      - Calendula
+      - Lavender
+      - Hibiscus
+      - Borage
+      - Nasturtium
+      - Elderflower
+      - Rose petals
+      - Dandelion
+      - Saffron
+  Climbers and Creepers:
+    tags: [flower, ornamental]
+    items:
+      - Wisteria
+      - Clematis
+      - Trumpet Vine
+      - Bougainvillea
+      - Morning Glory
+      - Passionflower
+
+trees:
+  Coniferous Trees:
+    tags: [tree, temperate, softwood]
+    items:
+      - Pine
+      - Fir
+      - Spruce
+      - Cedar
+      - Cypress
+      - Douglas Fir
+      - Larch
+      - Hemlock
+      - Redwood
+      - Juniper
+  Tropical and Subtropical Trees:
+    tags: [tree, tropical]
+    items:
+      - Coconut
+      - Banana
+      - Papaya
+      - Mango
+      - Avocado
+      - Guava
+      - Breadfruit
+      - Tamarind
+      - Neem
+      - Flame Tree
+      - Baobab
+      - Jackfruit
+      - Kava (Yaqona)
+  Fruit Trees (Temperate):
+    tags: [tree, fruit, edible]
+    items:
+      - Apple
+      - Pear
+      - Cherry
+      - Plum
+      - Peach
+      - Apricot
+      - Persimmon
+      - Quince
+      - Fig
+      - Pomegranate
+  Fruit Trees (Tropical/Subtropical):
+    tags: [tree, fruit, edible, tropical]
+    items:
+      - Mango
+      - Citrus (Orange, Lemon, Lime, Grapefruit)
+      - Guava
+      - Avocado
+      - Starfruit
+      - Lychee
+      - Durian
+      - Sapodilla
+      - Mulberry
+      - Date Palm
+  Medicinal or Cultural Trees:
+    tags: [tree, medicinal]
+    items:
+      - Neem
+      - Moringa
+      - Sandalwood
+      - Tulsi (shrubby tree)
+      - Arjuna
+      - Ashoka
+      - Bael
+      - Eucalyptus
+      - Frankincense
+      - Myrrh
+  Hardwood Trees:
+    tags: [tree, hardwood]
+    items:
+      - Teak
+      - Mahogany
+      - Ebony
+      - Rosewood
+      - Oak
+      - Maple
+      - Walnut
+      - Cherry (wood)
+      - Ash
+      - Birch
+  Softwood Trees:
+    tags: [tree, softwood]
+    items:
+      - Pine
+      - Spruce
+      - Fir
+      - Cedar
+      - Hemlock
+  Shade and Ornamental Trees:
+    tags: [tree, ornamental]
+    items:
+      - Maple
+      - Jacaranda
+      - Banyan Tree
+      - Rain Tree
+      - Bottlebrush Tree
+      - Flame Tree
+      - Golden Shower Tree
+      - Tabebuia
+      - Cherry Blossom Tree
+  Nitrogen-Fixing Trees:
+    tags: [tree, nitrogen-fixer]
+    items:
+      - Leucaena
+      - Gliricidia
+      - Sesbania
+      - Albizia
+      - Calliandra
+      - Acacia
+      - Mimosa
+  Agricultural or Plantation Trees:
+    tags: [tree, industrial]
+    items:
+      - Cocoa
+      - Coffee
+      - Rubber Tree
+      - Oil Palm
+      - Tea
+      - Cinchona
+      - Eucalyptus
+
+fish:
+  Freshwater Fish:
+    tags: [fish, aquaculture, freshwater, edible]
+    items:
+      - name: Tilapia
+        scientific: Oreochromis niloticus
+        notes: Most farmed globally, fast-growing
+      - name: Catfish
+        scientific: Clarias spp.; Ictalurus spp.
+        notes: Hardy, high protein diet
+      - name: Carp
+        scientific: Cyprinus carpio (incl. Rohu/Grass/Silver carp)
+      - name: Trout
+        scientific: Oncorhynchus mykiss
+        notes: Coldwater species
+      - name: Barramundi
+        scientific: Lates calcarifer
+      - name: Pangasius
+        scientific: Pangasianodon hypophthalmus
+      - name: Snakehead fish
+        scientific: Channa striata
+      - name: Eel
+        scientific: Anguilla spp.
+      - name: Pacu
+        scientific: Piaractus mesopotamicus
+      - name: Gourami
+        scientific: Osphronemidae
+      - name: Tilapia hybrids
+        scientific: Various
+  Marine Fish:
+    tags: [fish, aquaculture, marine, edible]
+    items:
+      - { name: Salmon, scientific: Salmo salar }
+      - { name: Sea Bass, scientific: Dicentrarchus labrax }
+      - { name: Sea Bream, scientific: Sparus aurata }
+      - { name: Cobia, scientific: Rachycentron canadum }
+      - { name: Tuna (fattening), scientific: Thunnus spp., notes: Not bred; fattened in captivity }
+      - { name: Flounder, scientific: Paralichthys spp. }
+      - { name: Milkfish, scientific: Chanos chanos }
+      - { name: Halibut, scientific: Hippoglossus hippoglossus }
+      - { name: Amberjack, scientific: Seriola spp. }
+
+bivalves:
+  Bivalves (Filter Feeders):
+    tags: [bivalve, aquaculture, marine, edible]
+    items:
+      - { name: Manila Clam, scientific: Ruditapes philippinarum }
+      - { name: Hard Clam (Quahog), scientific: Mercenaria mercenaria }
+      - { name: Pacific Oyster, scientific: Crassostrea gigas }
+      - { name: Eastern Oyster, scientific: Crassostrea virginica }
+      - { name: Sydney Rock Oyster, scientific: Saccostrea glomerata }
+      - { name: Blue Mussel, scientific: Mytilus edulis }
+      - { name: Green-lipped Mussel, scientific: Perna canaliculus }
+      - { name: Japanese Scallop, scientific: Patinopecten yessoensis }
+      - { name: Common Cockle, scientific: Cerastoderma edule }
+      - { name: Blood Clam, scientific: Anadara granosa }
+
+crustaceans:
+  Shrimp and Prawns:
+    tags: [crustacean, aquaculture, edible, marine]
+    items:
+      - { name: Whiteleg shrimp, scientific: Litopenaeus vannamei }
+      - { name: Giant tiger prawn, scientific: Penaeus monodon }
+      - { name: Freshwater prawn, scientific: Macrobrachium rosenbergii }
+  Crabs:
+    tags: [crustacean, aquaculture, edible]
+    items:
+      - { name: Mud Crab, scientific: Scylla serrata }
+      - { name: Blue Swimming Crab, scientific: Portunus pelagicus }
+
+pets:
+  Mammals (Household):
+    tags: [pet, mammal, domestic]
+    items:
+      - Dog
+      - Cat
+      - Rabbit
+      - Guinea Pig
+      - Hamster
+      - Gerbil
+      - Mouse
+      - Rat
+      - Ferret
+  Mini/Farm Companion:
+    tags: [pet, farm]
+    items:
+      - Miniature Pig
+      - Goat (Miniature/Pygmy)
+      - Miniature Horse
+      - Cow (Calves)
+  Birds:
+    tags: [pet, bird]
+    items:
+      - Budgerigar
+      - Cockatiel
+      - Parakeet
+      - African Grey Parrot
+      - Macaw
+      - Lovebird
+      - Canary
+      - Finch
+      - Cockatoo
+      - Dove/Pigeon
+  Aquarium Fish:
+    tags: [pet, fish, freshwater]
+    items:
+      - Goldfish
+      - Betta
+      - Guppy
+      - Tetra
+      - Angelfish
+      - Koi
+      - Cichlids
+      - Oscar
+      - Catfish (aquarium)
+      - Discus
+  Reptiles & Amphibians:
+    tags: [pet, reptile]
+    items:
+      - Turtle
+      - Tortoise
+      - Gecko
+      - Bearded Dragon
+      - Chameleon
+      - Iguana
+      - Snake (Corn, Ball Python)
+      - Frog (Tree/Pacman)
+      - Axolotl
+  Exotic & Uncommon:
+    tags: [pet, exotic]
+    items:
+      - Hedgehog
+      - Sugar Glider
+      - Capybara
+      - Fennec Fox
+      - Kinkajou
+      - Skunk (descented)
+      - Serval/Savannah Cat
+      - Wallaby
+  Invertebrates:
+    tags: [pet, invertebrate]
+    items:
+      - Hermit Crab
+      - Tarantula
+      - Scorpion
+      - Snails (Giant African)
+      - Stick Insects / Leaf Insects
+      - Ant Farms
+      - Bees (Beehives)
+

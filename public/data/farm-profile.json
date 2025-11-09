@@ -1,0 +1,14 @@
+{
+  "farmerName": "SmartFarm Demo",
+  "location": "Rewa River Delta",
+  "climate": "tropical",
+  "soil": "loam",
+  "landSizeAcres": 0.25,
+  "waterAccess": "river",
+  "goals": ["high-yield", "low-cost"],
+  "aquaculture": {
+    "hasFreshwater": true,
+    "hasMarine": false
+  }
+}
+
