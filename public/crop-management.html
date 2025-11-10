@@ -596,6 +596,61 @@
             }
         ];
 
+        const catalogGrowthData = {
+            map: new Map(),
+            loaded: false,
+            promise: null
+        };
+
+        let lastAIMaturityContext = null;
+
+        async function preloadCatalogGrowthData() {
+            if (catalogGrowthData.loaded) {
+                return catalogGrowthData.map;
+            }
+
+            if (!catalogGrowthData.promise) {
+                catalogGrowthData.promise = fetch('/api/catalog?group=plants&limit=2000')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`Catalog preload failed (${response.status})`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        const map = new Map();
+                        (data.items || []).forEach(item => {
+                            if (!item || !item.name) return;
+                            const primaryKey = item.name.toLowerCase();
+                            map.set(primaryKey, item);
+                            if (Array.isArray(item.aliases)) {
+                                item.aliases.forEach(alias => {
+                                    if (alias) {
+                                        map.set(alias.toLowerCase(), item);
+                                    }
+                                });
+                            }
+                        });
+                        catalogGrowthData.map = map;
+                        catalogGrowthData.loaded = true;
+                        return map;
+                    })
+                    .catch(error => {
+                        console.error('Failed to preload plant catalog data:', error);
+                        catalogGrowthData.loaded = true;
+                        return catalogGrowthData.map;
+                    });
+            }
+
+            return catalogGrowthData.promise;
+        }
+
+        function getCatalogPlantRecord(name) {
+            if (!name) return null;
+            const key = name.toLowerCase();
+            return catalogGrowthData.map.get(key) || null;
+        }
+
         // Save crops to localStorage
         function saveCropsToStorage() {
             try {
@@ -622,7 +677,9 @@
         }
 
         // Initialize page
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
+            await preloadCatalogGrowthData();
+
             // Check authentication first
             checkAuthentication();
             
@@ -635,6 +692,7 @@
             loadCrops();
             updateStatistics();
             setupEventListeners();
+            calculateAndDisplayMaturityDate();
         });
 
         function setupEventListeners() {
@@ -740,6 +798,28 @@
             const aiInfo = document.createElement('div');
             aiInfo.id = 'aiCalculationInfo';
             aiInfo.className = 'alert alert-info mt-2';
+            const context = lastAIMaturityContext;
+            let extraInfo = '';
+
+            if (context?.source === 'catalog' && context.catalogItem) {
+                const parts = [];
+                if (context.catalogItem.growthDurationDays) {
+                    parts.push(`Catalog growth window: ${context.catalogItem.growthDurationDays} days`);
+                }
+                if (context.catalogItem.postPollinationMaturityDays) {
+                    parts.push(`Post-pollination maturity: ${context.catalogItem.postPollinationMaturityDays} days`);
+                }
+                if (Array.isArray(context.catalogItem.regions) && context.catalogItem.regions.length) {
+                    const regionSample = context.catalogItem.regions.slice(0, 3).join(', ');
+                    parts.push(`Regions: ${regionSample}${context.catalogItem.regions.length > 3 ? '…' : ''}`);
+                }
+                if (parts.length) {
+                    extraInfo = `<div class="mt-2 small text-muted">${parts.join(' • ')}</div>`;
+                }
+            } else if (context?.source === 'fallback') {
+                extraInfo = `<div class="mt-2 small text-muted">Using generic estimate — enrich catalog data for more precise guidance.</div>`;
+            }
+
             aiInfo.innerHTML = `
                 <div class="d-flex align-items-center">
                     <i class="fas fa-robot me-2"></i>
@@ -750,6 +830,7 @@
                         ${crop.field && crop.field.toLowerCase().includes('hydroponic') ? ' (Hydroponic: 15% faster growth)' : ''}
                     </div>
                 </div>
+                ${extraInfo}
             `;
             
             // Insert after the harvest date field
@@ -966,6 +1047,25 @@
         }
 
         function calculateMaturityDate(crop) {
+            const normalizedCropName = (crop.name || '').trim().toLowerCase();
+            const catalogRecord = getCatalogPlantRecord(normalizedCropName);
+            let catalogBaseDays = null;
+
+            if (catalogRecord) {
+                const numericDuration = Number(catalogRecord.growthDurationDays);
+                if (!Number.isNaN(numericDuration) && numericDuration > 0) {
+                    catalogBaseDays = numericDuration;
+                } else if (typeof catalogRecord.growthDuration === 'string') {
+                    const match = catalogRecord.growthDuration.match(/(\d+)/);
+                    if (match) {
+                        const parsed = Number(match[1]);
+                        if (!Number.isNaN(parsed) && parsed > 0) {
+                            catalogBaseDays = parsed;
+                        }
+                    }
+                }
+            }
+
             const cropDatabase = {
                 // Vegetables (harvest times based on global agricultural standards)
                 'tomatoes': { baseDays: 75, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 60-90 days
@@ -1063,11 +1163,15 @@
                 'quinoa': { baseDays: 120, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 90-150 days
             };
 
-            const cropName = crop.name.toLowerCase();
+            const cropName = normalizedCropName;
             const variety = crop.variety ? crop.variety.toLowerCase() : '';
-            
-            // Find the best match for the crop
-            let cropData = cropDatabase[cropName];
+
+            let cropData = null;
+            if (catalogBaseDays) {
+                cropData = { baseDays: catalogBaseDays, varietyMultiplier: 1.0, seasonAdjustment: 0 };
+            } else {
+                cropData = cropDatabase[cropName];
+            }
             
             // Try to find by variety if crop name doesn't match
             if (!cropData) {
@@ -1083,6 +1187,12 @@
             if (!cropData) {
                 cropData = { baseDays: 60, varietyMultiplier: 1.0, seasonAdjustment: 0 };
             }
+
+            lastAIMaturityContext = {
+                source: catalogBaseDays ? 'catalog' : (cropDatabase[cropName] ? 'heuristic' : 'fallback'),
+                baseDays: cropData.baseDays,
+                catalogItem: catalogRecord
+            };
 
             // Calculate maturity days with AI adjustments
             let maturityDays = cropData.baseDays * cropData.varietyMultiplier;
