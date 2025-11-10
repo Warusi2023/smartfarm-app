@@ -104,31 +104,1351 @@ defaults:
 overrides:
   items:
     plants:wheat:
+      scientificName: "Triticum aestivum"
       climate: temperate
-      growthDurationDays: 130
-      yieldKgPerAcre: 2600
-      marketPriceFJDPerKg: 1.9
+      varieties: ["HD-2967", "PBW-343", "GW-322", "Winter-hardy lines"]
+      plantingSeason: "South Asia: Rabi (November–April); Russia/Europe: Winter sow Sep–Oct, harvest July; spring types Apr–May"
+      spacing: "20–22 cm row spacing"
+      fertilizerRequirements: "Basal NPK; top-dress nitrogen at tillering and booting stages; split N for winter wheat systems"
       commonDiseases:
-        - "rust"
-        - "powdery mildew"
+        - "Rusts"
+        - "Aphids"
+        - "Snow mold"
+      preventiveActions:
+        - "Grow rust-resistant varieties"
+        - "Seed dressing and timely fungicide/insecticide sprays"
+        - "Maintain snow cover and stubble to protect winter stands"
+      growthDurationDays: 130
+      yieldKgPerAcre: 1619
+      marketPriceFJDPerKg: 1.9
+      southAsiaNotes: "Requires cool, dry winters for proper grain filling across the Indo-Gangetic plains."
+      russiaEuropeNotes: "Winter wheat sown in Krasnodar/Kuban benefits from snow cover; manage stripe rust and snow mold."
+      regions: ["south-asia", "russia-europe"]
+      countries:
+        - "India"
+        - "Pakistan"
+        - "Bangladesh"
+        - "Sri Lanka"
+        - "Nepal"
+        - "Bhutan"
+        - "Maldives"
+        - "Afghanistan"
+        - "Russia"
+        - "Ukraine"
+        - "Belarus"
+        - "Poland"
+        - "Estonia"
+        - "Latvia"
+        - "Lithuania"
+        - "Finland"
+        - "Sweden"
+        - "Norway"
+        - "Kazakhstan"
+        - "Czech Republic"
+        - "Slovakia"
+        - "Romania"
+        - "Hungary"
     plants:rice:
+      scientificName: "Oryza sativa"
       climate: tropical
       soil: clay
-      waterRequirement: "Flooded paddies during vegetative stage"
-      growthDurationDays: 150
-      yieldKgPerAcre: 2800
-      marketPriceFJDPerKg: 2.1
+      varieties: ["IR64", "Swarna", "MTU-1010"]
+      plantingSeason: "Kharif (June–October) and Rabi (November–February in South India)"
+      spacing: "20 x 15 cm for transplanted puddled fields"
+      fertilizerRequirements: "Basal NPK with top-dress nitrogen; maintain puddled fields and standing water"
+      commonDiseases:
+        - "Blast"
+        - "Bacterial leaf blight"
+        - "Stem borer"
+        - "Brown planthopper"
       preventiveActions:
-        - "Maintain standing water depth 5–10 cm"
-        - "Scout for stem borers"
+        - "Plant resistant varieties and treat seed before sowing"
+        - "Adopt integrated pest management (IPM) including pheromone traps and need-based sprays"
+      growthDurationDays: 135
+      yieldKgPerAcre: 1821
+      marketPriceFJDPerKg: 2.1
+      southAsiaNotes: "Monsoon-dependent production; ensure consistent water depth during vegetative growth."
+      russiaEuropeNotes: "Storage cultivars cured well ensure winter supply in Belarus and Gomel regions."
+      regions: ["south-asia", "russia-europe"]
+      countries:
+        - "India"
+        - "Pakistan"
+        - "Bangladesh"
+        - "Sri Lanka"
+        - "Nepal"
+        - "Bhutan"
+        - "Maldives"
+        - "Afghanistan"
+        - "Russia"
+        - "Ukraine"
+        - "Belarus"
+        - "Poland"
+        - "Estonia"
+        - "Latvia"
+        - "Lithuania"
+    plants:barley:
+      scientificName: "Hordeum vulgare"
+      varieties: ["Feed barley", "Malting types"]
+      plantingSeason: "Spring sowing April–May; harvest August"
+      spacing: "12.5–18 cm row spacing"
+      fertilizerRequirements: "Balanced NPK with sulfur addition for malting quality"
+      commonDiseases:
+        - "Net blotch"
+        - "Leaf scald"
+      preventiveActions:
+        - "Use crop rotation and seed treatment"
+        - "Apply fungicide programs when disease thresholds are reached"
+      growthDurationDays: 105
+      yieldKgPerAcre: 2023
+      russiaEuropeNotes: "Hardy, short-season grain for feed and brewing across Russia, Ukraine, and Baltic states."
+      regions: ["russia-europe"]
+      countries:
+        - "Russia"
+        - "Ukraine"
+        - "Belarus"
+        - "Poland"
+        - "Germany"
+        - "Czech Republic"
+        - "Slovakia"
+        - "Hungary"
+        - "Romania"
+        - "Ukraine"
+        - "Belarus"
+        - "Poland"
+        - "Estonia"
+        - "Latvia"
+        - "Lithuania"
+        - "Finland"
+        - "Sweden"
+        - "Norway"
+        - "Kazakhstan"
+        - "Czech Republic"
+        - "Slovakia"
+        - "Romania"
+        - "Hungary"
+    plants:oats:
+      scientificName: "Avena sativa"
+      varieties: ["Food and feed oat lines"]
+      plantingSeason: "Sow April–May; harvest August"
+      spacing: "12.5–18 cm row spacing"
+      fertilizerRequirements: "Moderate nitrogen; add potassium on light soils"
+      commonDiseases:
+        - "Crown rust"
+        - "Smut"
+      preventiveActions:
+        - "Treat seed with fungicide before sowing"
+        - "Rotate and select resistant varieties"
+      growthDurationDays: 110
+      yieldKgPerAcre: 1619
+      russiaEuropeNotes: "Performs on acidic soils in Belarus and Baltic states; short growing season friendly."
+      regions: ["russia-europe"]
+      countries:
+        - "Russia"
+        - "Ukraine"
+        - "Belarus"
+        - "Poland"
+        - "Estonia"
+        - "Latvia"
+        - "Lithuania"
+        - "Finland"
+        - "Sweden"
+        - "Norway"
+    plants:rye:
+      scientificName: "Secale cereale"
+      varieties: ["Winter rye cultivars"]
+      plantingSeason: "Sow September–October; harvest July"
+      spacing: "12.5–15 cm row spacing"
+      fertilizerRequirements: "Moderate nitrogen; balance nutrients to prevent lodging"
+      commonDiseases:
+        - "Ergot"
+        - "Snow mold"
+      preventiveActions:
+        - "Use clean, treated seed and rotate with non-host crops"
+        - "Employ fungicides if disease pressure builds"
+      growthDurationDays: 255
+      yieldKgPerAcre: 1619
+      russiaEuropeNotes: "Extremely frost tolerant; thrives on sandy soils with protective snow cover."
+      regions: ["russia-europe"]
+      countries:
+        - "Russia"
+        - "Poland"
+        - "Belarus"
+        - "Ukraine"
+        - "Estonia"
+        - "Latvia"
+        - "Lithuania"
+        - "Germany"
+        - "Czech Republic"
+        - "Slovakia"
+        - "Finland"
+    plants:sugar beet:
+      scientificName: "Beta vulgaris"
+      varieties: ["High-sugar hybrids"]
+      plantingSeason: "Sow April; harvest September–October"
+      spacing: "45–50 cm rows x 18–22 cm"
+      fertilizerRequirements: "High NPK demand; supply boron on deficient soils"
+      commonDiseases:
+        - "Cercospora leaf spot"
+        - "Rhizoctonia"
+      preventiveActions:
+        - "Apply fungicides and maintain rotations"
+        - "Use boron sprays and improve drainage"
+      growthDurationDays: 170
+      yieldKgPerAcre: 19190
+      coldNotes: "Core crop in south/central Russia and Europe; irrigation boosts root yield."
+      regions: ["russia-europe"]
+      countries:
+        - "Russia"
+        - "Ukraine"
+        - "Belarus"
+        - "Germany"
+        - "Poland"
+        - "France"
+    plants:sunflower:
+      scientificName: "Helianthus annuus"
+      varieties: ["High-oleic oilseed hybrids"]
+      plantingSeason: "Sow April; harvest September"
+      spacing: "70 cm rows x 25–30 cm"
+      fertilizerRequirements: "Balanced NPK; avoid excessive nitrogen to reduce lodging"
+      commonDiseases:
+        - "Sclerotinia"
+        - "Downy mildew"
+      preventiveActions:
+        - "Adopt tolerant hybrids and rotate away from susceptible crops"
+        - "Apply fungicides when disease pressure builds"
+      growthDurationDays: 150
+      yieldKgPerAcre: 1345
+      russiaEuropeNotes: "Major oilseed crop across Ukraine and southern Russia; maintain wider rotations to curb Sclerotinia."
+      regions: ["russia-europe"]
+      countries:
+        - "Ukraine"
+        - "Russia"
+        - "Belarus"
+        - "Kazakhstan"
+        - "Poland"
+        - "Romania"
+        - "Hungary"
+        - "Romania"
+        - "Bulgaria"
+    plants:buckwheat:
+      scientificName: "Fagopyrum esculentum"
+      varieties: ["Local landraces and improved selections"]
+      plantingSeason: "Sow May–June; harvest August–September"
+      spacing: "15–25 cm rows or broadcast"
+      fertilizerRequirements: "Low input; prefers light, well-drained soils"
+      commonDiseases:
+        - "Lodging"
+        - "Late frost injury"
+      preventiveActions:
+        - "Time sowing to avoid late frosts during bloom"
+        - "Encourage pollinator activity for better seed set"
+      growthDurationDays: 80
+      yieldKgPerAcre: 707
+      russiaEuropeNotes: "Quick-maturing pseudo-cereal valued for honey and grain in Altai and Baltic regions."
+      regions: ["russia-europe"]
+      countries:
+        - "Russia"
+        - "Ukraine"
+        - "Belarus"
+        - "Poland"
+        - "Estonia"
+        - "Latvia"
+        - "Lithuania"
     fish:tilapia:
       climate: tropical
+      varieties: ["Nile Tilapia"]
       waterQuality: "Freshwater, temperature 25–30°C"
-      feedRequirements: "2–3% bodyweight per day"
+      waterTemperatureRangeC: "26–30"
+      stockingDensityPerSqMeter: "3–5"
+      feedRequirements: "Feed 2–3% bodyweight per day using 25–30% protein pellets"
       marketPriceFJDPerKg: 7
       commonDiseases:
-        - "streptococcosis"
+        - "Streptococcosis"
       preventiveActions:
         - "Vaccinate fingerlings where available"
-        - "Maintain proper aeration"
+        - "Maintain dissolved oxygen above 4 mg/L"
+        - "Perform partial harvests to manage biomass"
+      growthDurationDays: 165
+      yieldKgPerAcre: 1619
+      fijiNotes: "Well adapted to Fiji ponds; ensure aeration and regular water exchange."
+      regions: ["pacific", "south-asia"]
+      countries:
+        - "Fiji"
+        - "Samoa"
+        - "Tonga"
+        - "Vanuatu"
+        - "Solomon Islands"
+        - "Papua New Guinea"
+        - "Kiribati"
+        - "Tuvalu"
+        - "Nauru"
+        - "Marshall Islands"
+        - "Palau"
+        - "Federated States of Micronesia"
+        - "India"
+        - "Pakistan"
+        - "Bangladesh"
+        - "Sri Lanka"
+        - "Nepal"
+        - "Bhutan"
+        - "Maldives"
+        - "Afghanistan"
+    plants:cabbage:
+      scientificName: "Brassica oleracea var. capitata"
+      varieties: ["Storage types", "Fresh-market cultivars"]
+      plantingSeason: "Transplant April–May; harvest July–October"
+      spacing: "60–70 cm rows x 40–50 cm"
+      fertilizerRequirements: "Basal NPK with side-dressed nitrogen; lime acidic soils"
+      commonDiseases:
+        - "Clubroot"
+        - "Diamondback moth"
+      preventiveActions:
+        - "Apply lime to maintain pH above 6.5"
+        - "Implement IPM and rotation to break pest cycles"
+      growthDurationDays: 120
+      yieldKgPerAcre: 18180
+      russiaEuropeNotes: "Late-storage cultivars for winter supplies; manage clubroot with liming and rotations."
+      regions: ["russia-europe"]
+      countries:
+        - "Russia"
+        - "Poland"
+        - "Ukraine"
+        - "Belarus"
+        - "Lithuania"
+        - "Latvia"
+        - "Estonia"
+        - "Belarus"
+    plants:peppers:
+      aliases: ["Capsicum"]
+      scientificName: "Capsicum grossum"
+      varieties: ["Yolo Wonder A", "Blue Star"]
+      plantingSeason: "April–September"
+      spacing: "70 x 35 cm"
+      fertilizerRequirements: "Poultry manure 10 t/ha; apply NPK (13-13-13) at 200 kg/ha"
+      commonDiseases:
+        - "Bacterial wilt"
+        - "Mites"
+      preventiveActions:
+        - "Rotate with non-solanaceous crops"
+        - "Apply Benomyl, Kocide or Dimethoate as required"
+      growthDurationDays: 90
+      yieldKgPerAcre: 4046
+      fijiNotes: "Cool-season crop in Fiji highlands; ensure consistent soil moisture and pest monitoring."
+      regions: ["pacific"]
+      countries:
+        - "Fiji"
+        - "Samoa"
+        - "Tonga"
+        - "Vanuatu"
+        - "Solomon Islands"
+        - "Papua New Guinea"
+        - "Kiribati"
+        - "Tuvalu"
+        - "Nauru"
+        - "Marshall Islands"
+        - "Palau"
+        - "Federated States of Micronesia"
+    plants:carrots:
+      scientificName: "Daucus carota"
+      varieties: ["Chantenay", "New Kuroda"]
+      plantingSeason: "Fiji: April–September; Russia/Europe: Sow April–May, harvest August–September"
+      spacing: "50 x 8 cm"
+      fertilizerRequirements: "Poultry manure 10 t/ha; NPK 200 kg/ha"
+      commonDiseases:
+        - "Soft rot"
+        - "Nematodes"
+      preventiveActions:
+        - "Maintain friable, well-drained soils"
+        - "Apply Mancozeb or Kocide as needed"
+      growthDurationDays: 116
+      yieldKgPerAcre: 5058
+      fijiNotes: "Requires loose soil for straight roots; ideal for Fiji's cool-season districts."
+      russiaEuropeNotes: "Use Nantes/Flakkee types; protect against Alternaria and root fly with seed treatment and netting."
+      regions: ["pacific", "russia-europe"]
+      countries:
+        - "Fiji"
+        - "Samoa"
+        - "Tonga"
+        - "Vanuatu"
+        - "Solomon Islands"
+        - "Papua New Guinea"
+        - "Kiribati"
+        - "Tuvalu"
+        - "Nauru"
+        - "Marshall Islands"
+        - "Palau"
+        - "Federated States of Micronesia"
+        - "Russia"
+        - "Ukraine"
+        - "Belarus"
+        - "Poland"
+        - "Estonia"
+        - "Latvia"
+        - "Lithuania"
+        - "Finland"
+        - "Sweden"
+        - "Norway"
+        - "Czech Republic"
+        - "Slovakia"
+        - "Hungary"
+        - "Romania"
+        - "Germany"
+    plants:taro:
+      aliases: ["Dalo"]
+      varieties: ["Samoan Pink", "Tausala"]
+      plantingSeason: "All year"
+      spacing: "1 x 1 m"
+      fertilizerRequirements: "Organic manure 10 t/ha"
+      commonDiseases:
+        - "Taro beetle"
+        - "Leaf blight"
+      preventiveActions:
+        - "Ensure good drainage"
+        - "Apply Benlate for blight management"
+      growthDurationDays: 240
+      yieldKgPerAcre: 4046
+      fijiNotes: "Thrives in wet lowlands; essential staple known locally as Dalo."
+      regions: ["pacific"]
+      countries:
+        - "Fiji"
+        - "Samoa"
+        - "Tonga"
+        - "Vanuatu"
+        - "Solomon Islands"
+        - "Papua New Guinea"
+        - "Kiribati"
+        - "Tuvalu"
+        - "Nauru"
+        - "Marshall Islands"
+        - "Palau"
+        - "Federated States of Micronesia"
+    plants:vanilla:
+      scientificName: "Vanilla planifolia"
+      growthDurationDays: 1095
+      postPollinationMaturityDays: 270
+      notes: "Requires trellising and hand pollination; pods mature 8–9 months after pollination."
+      fijiNotes: "Shade-loving vine; maintain humidity and provide regular pruning."
+      regions: ["pacific"]
+      countries:
+        - "Fiji"
+        - "Samoa"
+        - "Tonga"
+        - "Vanuatu"
+        - "Solomon Islands"
+        - "Papua New Guinea"
+        - "Kiribati"
+        - "Tuvalu"
+        - "Nauru"
+        - "Marshall Islands"
+        - "Palau"
+        - "Federated States of Micronesia"
+    plants:maize:
+      scientificName: "Zea mays"
+      varieties: ["HQPM hybrids", "DKC hybrids", "Local composites"]
+      plantingSeason: "Kharif and Rabi windows depending on agro-climatic zone"
+      spacing: "60–75 cm rows x 20–25 cm between plants"
+      fertilizerRequirements: "Basal NPK with split nitrogen; ensure good drainage and weed control"
+      commonDiseases:
+        - "Fall armyworm"
+        - "Stem borer"
+      preventiveActions:
+        - "Seed treatment before sowing"
+        - "Deploy pheromone traps and IPM interventions"
+      growthDurationDays: 105
+      yieldKgPerAcre: 1821
+      southAsiaNotes: "Avoid waterlogging; vigilant scouting for fall armyworm is essential."
+      regions: ["south-asia"]
+      countries:
+        - "India"
+        - "Pakistan"
+        - "Bangladesh"
+        - "Sri Lanka"
+        - "Nepal"
+        - "Bhutan"
+        - "Maldives"
+        - "Afghanistan"
+    plants:sugarcane:
+      scientificName: "Saccharum officinarum"
+      varieties: ["Co-0238"]
+      plantingSeason: "February–April or September–October depending on region"
+      spacing: "Ridges 90–120 cm apart with 2–3 bud setts per furrow"
+      fertilizerRequirements: "High NPK doses supplemented with organic manures and trash mulching"
+      commonDiseases:
+        - "Red rot"
+        - "Smut"
+        - "Sugarcane borers"
+      preventiveActions:
+        - "Use healthy, treated setts and rogue infected stools"
+        - "Maintain trash mulching and integrated pest management"
+      growthDurationDays: 365
+      yieldKgPerAcre: 32375
+      southAsiaNotes: "Requires assured irrigation and high nutrient inputs for optimal cane yields."
+      regions: ["south-asia"]
+      countries:
+        - "India"
+        - "Pakistan"
+        - "Bangladesh"
+        - "Sri Lanka"
+        - "Nepal"
+        - "Bhutan"
+        - "Maldives"
+        - "Afghanistan"
+    plants:groundnuts (peanuts):
+      scientificName: "Arachis hypogaea"
+      varieties: ["JL-24", "GG-20", "TMV-2"]
+      plantingSeason: "Kharif (rainfed) and Rabi (irrigated)"
+      spacing: "45 cm rows x 10–15 cm"
+      fertilizerRequirements: "Apply gypsum at pegging; ensure balanced NPK and calcium supply"
+      commonDiseases:
+        - "Leaf spot"
+        - "Rust"
+        - "Thrips"
+      preventiveActions:
+        - "Treat seed before sowing"
+        - "Schedule fungicide sprays based on disease forecasts"
+      growthDurationDays: 110
+      yieldKgPerAcre: 910
+      southAsiaNotes: "Prefers well-drained sandy loam; moisture stress during pegging reduces yield."
+      regions: ["south-asia"]
+      countries:
+        - "India"
+        - "Pakistan"
+        - "Bangladesh"
+        - "Sri Lanka"
+        - "Nepal"
+        - "Bhutan"
+        - "Maldives"
+        - "Afghanistan"
+    plants:chickpeas:
+      scientificName: "Cicer arietinum"
+      varieties: ["JG-11", "Pusa-372", "Annigeri-1"]
+      plantingSeason: "Rabi sowing (October–November)"
+      spacing: "30–45 cm rows x 10 cm"
+      fertilizerRequirements: "Starter nitrogen, adequate phosphorus, and Rhizobium inoculation"
+      commonDiseases:
+        - "Fusarium wilt"
+        - "Pod borer"
+      preventiveActions:
+        - "Cultivate resistant varieties and treat seed"
+        - "Use pheromone traps and IPM for pod borer"
+      growthDurationDays: 120
+      yieldKgPerAcre: 707
+      southAsiaNotes: "Requires cool, dry season; terminal drought reduces pod fill."
+      regions: ["south-asia"]
+      countries:
+        - "India"
+        - "Pakistan"
+        - "Bangladesh"
+        - "Sri Lanka"
+        - "Nepal"
+        - "Bhutan"
+        - "Maldives"
+        - "Afghanistan"
+    plants:mustard:
+      scientificName: "Brassica juncea"
+      varieties: ["Pusa Bold", "NRCHB-101"]
+      plantingSeason: "Rabi (October–November)"
+      spacing: "30 cm rows x 10–15 cm"
+      fertilizerRequirements: "Balanced NPK with sulfur supplementation and micronutrients as needed"
+      commonDiseases:
+        - "Alternaria blight"
+        - "Aphids"
+      preventiveActions:
+        - "Treat seed and maintain field sanitation"
+        - "Apply need-based fungicide/insecticide sprays"
+      growthDurationDays: 120
+      yieldKgPerAcre: 607
+      southAsiaNotes: "Cool temperatures during flowering improve pod set and oil content."
+      regions: ["south-asia"]
+      countries:
+        - "India"
+        - "Pakistan"
+        - "Bangladesh"
+        - "Sri Lanka"
+        - "Nepal"
+        - "Bhutan"
+        - "Maldives"
+        - "Afghanistan"
+    plants:sorghum:
+      scientificName: "Sorghum bicolor"
+      varieties: ["CSV hybrids", "Local landraces"]
+      plantingSeason: "Kharif (rainfed) and Rabi (post-rain) depending on zone"
+      spacing: "45 cm rows x 10–15 cm"
+      fertilizerRequirements: "Basal NPK; tolerant to moderate drought"
+      commonDiseases:
+        - "Shoot fly"
+        - "Midge"
+      preventiveActions:
+        - "Sow early to escape pest pressure"
+        - "Treat seed with recommended insecticides/fungicides"
+      growthDurationDays: 110
+      yieldKgPerAcre: 910
+      southAsiaNotes: "Key staple in semi-arid tropics; also used for fodder and silage."
+      regions: ["south-asia"]
+      countries:
+        - "India"
+        - "Pakistan"
+        - "Bangladesh"
+        - "Sri Lanka"
+        - "Nepal"
+        - "Bhutan"
+        - "Maldives"
+        - "Afghanistan"
+    plants:pearl millet:
+      scientificName: "Pennisetum glaucum"
+      varieties: ["HHB-67", "ICTP-8203"]
+      plantingSeason: "Kharif (rainfed season)"
+      spacing: "45 cm rows x 10–12 cm"
+      fertilizerRequirements: "Apply basal NPK; supplement micronutrients on deficient soils"
+      commonDiseases:
+        - "Downy mildew"
+        - "Ergot"
+      preventiveActions:
+        - "Adopt resistant hybrids and treat seed with fungicide"
+        - "Maintain field sanitation"
+      growthDurationDays: 90
+      yieldKgPerAcre: 707
+      southAsiaNotes: "Performs well on marginal soils with limited rainfall."
+      regions: ["south-asia"]
+      countries:
+        - "India"
+        - "Pakistan"
+        - "Bangladesh"
+        - "Sri Lanka"
+        - "Nepal"
+        - "Bhutan"
+        - "Maldives"
+        - "Afghanistan"
+    plants:soybeans:
+      scientificName: "Glycine max"
+      varieties: ["JS-335", "JS-95-60"]
+      plantingSeason: "Kharif sowing (June–July)"
+      spacing: "45 cm rows x 5–7 cm"
+      fertilizerRequirements: "Inoculate seed with Rhizobium; ensure balanced phosphorus and potassium"
+      commonDiseases:
+        - "Rust"
+        - "Girdle beetle"
+      preventiveActions:
+        - "Apply fungicides at disease onset"
+        - "Use IPM including pheromone traps"
+      growthDurationDays: 100
+      yieldKgPerAcre: 910
+      southAsiaNotes: "Waterlogging severely affects nodulation and yield; ensure drainage."
+      regions: ["south-asia"]
+      countries:
+        - "India"
+        - "Pakistan"
+        - "Bangladesh"
+        - "Sri Lanka"
+        - "Nepal"
+        - "Bhutan"
+        - "Maldives"
+        - "Afghanistan"
+    plants:tomatoes:
+      scientificName: "Solanum lycopersicum"
+      varieties: ["Arka Vikas", "Pusa Ruby", "Commercial hybrids"]
+      plantingSeason: "Multiple windows, avoid peak heat or heavy rains"
+      spacing: "60–75 cm rows x 45 cm"
+      fertilizerRequirements: "Basal NPK plus organic manures; mulching and fertigation recommended"
+      commonDiseases:
+        - "Late blight"
+        - "Fruit borer"
+        - "Whitefly"
+      preventiveActions:
+        - "Stake and prune plants; use drip irrigation"
+        - "Adopt IPM nets and targeted sprays"
+      growthDurationDays: 105
+      yieldKgPerAcre: 13152
+      southAsiaNotes: "Optimum at 20–25°C; staggered planting maintains continuous supply."
+      regions: ["south-asia"]
+      countries:
+        - "India"
+        - "Pakistan"
+        - "Bangladesh"
+        - "Sri Lanka"
+        - "Nepal"
+        - "Bhutan"
+        - "Maldives"
+        - "Afghanistan"
+    plants:onions:
+      scientificName: "Allium cepa"
+      varieties: ["N-53 (Kharif)", "Poona Fursungi (Rabi)"]
+      plantingSeason: "Kharif and Rabi cycles"
+      spacing: "15 x 10 cm transplanted"
+      fertilizerRequirements: "Basal phosphorus and potassium; split nitrogen doses; avoid standing water"
+      commonDiseases:
+        - "Purple blotch"
+        - "Thrips"
+      preventiveActions:
+        - "Rotate fungicides and use sticky traps"
+        - "Maintain field hygiene and irrigation discipline"
+      growthDurationDays: 105
+      yieldKgPerAcre: 8094
+      southAsiaNotes: "Cure bulbs thoroughly for storage and reduce post-harvest losses."
+      regions: ["south-asia", "russia-europe"]
+      countries:
+        - "India"
+        - "Pakistan"
+        - "Bangladesh"
+        - "Sri Lanka"
+        - "Nepal"
+        - "Bhutan"
+        - "Maldives"
+        - "Afghanistan"
+        - "Russia"
+        - "Ukraine"
+        - "Belarus"
+        - "Poland"
+        - "Estonia"
+        - "Latvia"
+        - "Lithuania"
+        - "Germany"
+    plants:potatoes:
+      scientificName: "Solanum tuberosum"
+      varieties: ["Kufri Jyoti", "Kufri Pukhraj"]
+      plantingSeason: "South Asia: Rabi (plains) and summer (hills); Russia/Europe: Plant May, harvest Aug–Sep"
+      spacing: "60–67.5 cm rows x 20 cm"
+      fertilizerRequirements: "Basal NPK with earthing up; treat seed tubers before planting"
+      commonDiseases:
+        - "Late blight"
+      preventiveActions:
+        - "Use certified seed and adopt protective sprays"
+        - "Ensure irrigation scheduling to prevent stress"
+      growthDurationDays: 100
+      yieldKgPerAcre: 10117
+      southAsiaNotes: "Requires cool nights; irrigation critical during tuber bulking."
+      russiaEuropeNotes: "Cool summer nights in Karelia and Baltic regions favor tuber bulking; manage Colorado beetle."
+      regions: ["south-asia", "russia-europe"]
+      countries:
+        - "India"
+        - "Pakistan"
+        - "Bangladesh"
+        - "Sri Lanka"
+        - "Nepal"
+        - "Bhutan"
+        - "Maldives"
+        - "Afghanistan"
+        - "Russia"
+        - "Ukraine"
+        - "Belarus"
+        - "Poland"
+        - "Estonia"
+        - "Latvia"
+        - "Lithuania"
+        - "Finland"
+        - "Norway"
+    plants:bananas:
+      scientificName: "Musa spp."
+      varieties: ["Grand Naine", "Robusta", "Nendran"]
+      plantingSeason: "Year-round with staggered planting"
+      spacing: "1.8 x 1.8 m (adjust per variety and density)"
+      fertilizerRequirements: "Apply FYM 10–20 t/ha with fertigation emphasizing potassium"
+      commonDiseases:
+        - "Panama disease"
+        - "Sigatoka"
+      preventiveActions:
+        - "Use tissue-culture plants and maintain sanitation"
+        - "Implement windbreaks and propping in cyclone-prone areas"
+      growthDurationDays: 330
+      yieldKgPerAcre: 20234
+      southAsiaNotes: "Provide windbreaks and drainage; propping reduces lodging in monsoon winds."
+      regions: ["south-asia"]
+      countries:
+        - "India"
+        - "Pakistan"
+        - "Bangladesh"
+        - "Sri Lanka"
+        - "Nepal"
+        - "Bhutan"
+        - "Maldives"
+        - "Afghanistan"
+    plants:mangoes:
+      scientificName: "Mangifera indica"
+      varieties: ["Alphonso", "Dashehari", "Banganapalle"]
+      plantingSeason: "Flowering January–February; harvest April–June"
+      spacing: "10 x 10 m orchard spacing"
+      fertilizerRequirements: "Annual FYM plus NPK; supplement micronutrients as needed"
+      commonDiseases:
+        - "Anthracnose"
+        - "Fruit fly"
+      preventiveActions:
+        - "Prune and sanitize orchard regularly"
+        - "Deploy bait traps and timely sprays"
+      growthDurationDays: 135
+      yieldKgPerAcre: 4047
+      southAsiaNotes: "Alternate bearing requires canopy management and flower induction practices."
+      regions: ["south-asia"]
+      countries:
+        - "India"
+        - "Pakistan"
+        - "Bangladesh"
+        - "Sri Lanka"
+        - "Nepal"
+        - "Bhutan"
+        - "Maldives"
+        - "Afghanistan"
+    crustaceans:freshwater prawn:
+      scientificName: "Macrobrachium rosenbergii"
+      waterTemperatureRangeC: "27–31"
+      stockingDensityPerSqMeter: "10–15"
+      feedRequirements: "Pellet feed (30–35% protein)"
+      commonDiseases:
+        - "Fungal infections"
+        - "Stress from low aeration"
+      preventiveActions:
+        - "Maintain aeration and water exchange"
+        - "Lime ponds to stabilize pH"
+      growthDurationDays: 165
+      yieldKgPerAcre: 607
+      fijiNotes: "Prefers clean, warm freshwater; popular for rural aquaculture in Fiji."
+      regions: ["pacific"]
+      countries:
+        - "Fiji"
+        - "Samoa"
+        - "Tonga"
+        - "Vanuatu"
+        - "Solomon Islands"
+        - "Papua New Guinea"
+        - "Kiribati"
+        - "Tuvalu"
+        - "Nauru"
+        - "Marshall Islands"
+        - "Palau"
+        - "Federated States of Micronesia"
+    pets:pig:
+      scientificName: "Sus scrofa domesticus"
+      breeds: ["Large White", "Landrace"]
+      breedingCycleDays: 114
+      feedRequirements: "Starter-Grower-Finisher rations as per stage"
+      commonDiseases:
+        - "Classical swine fever"
+        - "Internal parasites"
+      preventiveActions:
+        - "Vaccination program"
+        - "Scheduled deworming"
+      growthDurationDays: 180
+      yieldPerAnimalKgLive: 90
+      fijiNotes: "Performs well in humid tropics; maintain housing hygiene to limit disease."
+      southAsiaNotes: "Popular in North-East India and Bangladesh; maintain hygiene and vaccination schedules."
+      regions: ["pacific", "south-asia", "russia-europe"]
+      countries:
+        - "Fiji"
+        - "Samoa"
+        - "Tonga"
+        - "Vanuatu"
+        - "Solomon Islands"
+        - "Papua New Guinea"
+        - "Kiribati"
+        - "Tuvalu"
+        - "Nauru"
+        - "Marshall Islands"
+        - "Palau"
+        - "Federated States of Micronesia"
+        - "India"
+        - "Pakistan"
+        - "Bangladesh"
+        - "Sri Lanka"
+        - "Nepal"
+        - "Bhutan"
+        - "Maldives"
+        - "Afghanistan"
+        - "Russia"
+        - "Ukraine"
+        - "Belarus"
+        - "Poland"
+        - "Estonia"
+        - "Latvia"
+        - "Lithuania"
+        - "Germany"
+        - "Czech Republic"
+        - "Slovakia"
+        - "Russia"
+        - "Poland"
+        - "Ukraine"
+        - "Belarus"
+    pets:broiler chicken:
+      breeds: ["Ross 308", "Cobb 500"]
+      productionCycleDays: 42
+      feedRequirements: "Starter, grower and finisher feeds with clean water"
+      commonDiseases:
+        - "Coccidiosis"
+      preventiveActions:
+        - "Vaccinate chicks"
+        - "Maintain dry litter and ventilation"
+      growthDurationDays: 42
+      yieldPerAnimalKgLive: 2.25
+      fijiNotes: "Fast turnover for Fiji smallholders; ensure biosecurity to reduce losses."
+      southAsiaNotes: "Commonly raised in commercial sheds; enforce biosecurity to prevent CRD and coccidiosis."
+      regions: ["pacific", "south-asia", "russia-europe"]
+      countries:
+        - "Fiji"
+        - "Samoa"
+        - "Tonga"
+        - "Vanuatu"
+        - "Solomon Islands"
+        - "Papua New Guinea"
+        - "Kiribati"
+        - "Tuvalu"
+        - "Nauru"
+        - "Marshall Islands"
+        - "Palau"
+        - "Federated States of Micronesia"
+        - "India"
+        - "Pakistan"
+        - "Bangladesh"
+        - "Sri Lanka"
+        - "Nepal"
+        - "Bhutan"
+        - "Maldives"
+        - "Afghanistan"
+        - "Russia"
+        - "Ukraine"
+        - "Poland"
+        - "Belarus"
+    pets:dairy cattle:
+      breeds: ["Brahman", "Holstein Cross", "Gir", "Sahiwal", "HF cross"]
+      calvingIntervalDays: 395
+      feedRequirements: "Rotational pasture or green fodder with concentrate and mineral mix"
+      commonDiseases:
+        - "Tick fever"
+        - "Mastitis"
+        - "Internal worms"
+      preventiveActions:
+        - "Regular dipping or pour-on treatments"
+        - "Maintain milking hygiene and schedule deworming"
+      milkYieldLitresPerDay: 10
+      milkYieldLitresPerMonth: 300
+      fijiNotes: "Requires consistent pasture rotation and mineral supplementation in Fiji."
+      southAsiaNotes: "Heat-tolerant indigenous breeds (Gir, Sahiwal) perform well under hot climates."
+      regions: ["pacific", "south-asia", "russia-europe"]
+      countries:
+        - "Fiji"
+        - "Samoa"
+        - "Tonga"
+        - "Vanuatu"
+        - "Solomon Islands"
+        - "Papua New Guinea"
+        - "Kiribati"
+        - "Tuvalu"
+        - "Nauru"
+        - "Marshall Islands"
+        - "Palau"
+        - "Federated States of Micronesia"
+        - "India"
+        - "Pakistan"
+        - "Bangladesh"
+        - "Sri Lanka"
+        - "Nepal"
+        - "Bhutan"
+        - "Maldives"
+        - "Afghanistan"
+        - "Russia"
+        - "Ukraine"
+        - "Belarus"
+        - "Poland"
+    pets:beef cattle:
+      breeds: ["Hereford", "Aberdeen Angus"]
+      calvingIntervalDays: 420
+      feedRequirements: "Pasture grazing with haylage and mineral blocks; finish on pasture or high-energy rations"
+      commonDiseases:
+        - "Ticks"
+        - "Internal worms"
+      preventiveActions:
+        - "Implement regular deworming"
+        - "Rotate pastures and provide shelter during severe cold"
+      growthDurationDays: 540
+      yieldPerAnimalKgLive: 520
+      russiaEuropeNotes: "Steppe grazing systems common; spring calving aligns with pasture flush and winter housing."
+      regions: ["russia-europe"]
+      countries:
+        - "Russia"
+        - "Ukraine"
+        - "Kazakhstan"
+        - "Poland"
+        - "Belarus"
+        - "Romania"
+        - "Hungary"
+    pets:buffalo:
+      breeds: ["Murrah", "Surti"]
+      calvingIntervalDays: 455
+      feedRequirements: "Green fodder plus concentrate; access to wallowing or sprinklers"
+      commonDiseases:
+        - "Hemorrhagic septicemia"
+        - "Internal worms"
+      preventiveActions:
+        - "Follow vaccination schedule"
+        - "Conduct routine deworming and maintain hygiene"
+      milkYieldLitresPerDay: 9
+      southAsiaNotes: "Thrives in hot-humid tracts; high-fat milk preferred for dairy processing."
+      regions: ["south-asia"]
+      countries:
+        - "India"
+        - "Pakistan"
+        - "Bangladesh"
+        - "Sri Lanka"
+        - "Nepal"
+        - "Bhutan"
+        - "Maldives"
+        - "Afghanistan"
+    pets:goat:
+      breeds: ["Jamunapari", "Black Bengal", "Osmanabadi"]
+      kiddingIntervalDays: 180
+      feedRequirements: "Grazing plus tree leaves and supplemental mineral lick"
+      commonDiseases:
+        - "Internal worms"
+        - "Peste des petits ruminants (PPR)"
+      preventiveActions:
+        - "Regular drenching/deworming"
+        - "Vaccinate against PPR as per regional program"
+      growthDurationDays: 210
+      yieldPerAnimalKgLive: 22
+      southAsiaNotes: "Adapted to dryland and backyard systems; ensure shelter during monsoon."
+      regions: ["south-asia"]
+      countries:
+        - "India"
+        - "Pakistan"
+        - "Bangladesh"
+        - "Sri Lanka"
+        - "Nepal"
+        - "Bhutan"
+        - "Maldives"
+        - "Afghanistan"
+    pets:sheep:
+      breeds: ["Nellore", "Deccani", "Romanov"]
+      lambingIntervalDays: 365
+      feedRequirements: "Grazing with supplemental fodder or concentrates in stall-fed systems"
+      commonDiseases:
+        - "Sheep pox"
+        - "Internal worms"
+        - "Foot rot"
+      preventiveActions:
+        - "Annual vaccination"
+        - "Strategic deworming and pasture rotation"
+        - "Hoof care in wet conditions"
+      growthDurationDays: 210
+      yieldPerAnimalKgLive: 30
+      southAsiaNotes: "Suited to arid and semi-arid belts; manage shade and water during peak heat."
+      russiaEuropeNotes: "Romanov sheep are cold-hardy and prolific for fibre and meat in continental winters."
+      regions: ["south-asia", "russia-europe"]
+      countries:
+        - "India"
+        - "Pakistan"
+        - "Bangladesh"
+        - "Sri Lanka"
+        - "Nepal"
+        - "Bhutan"
+        - "Maldives"
+        - "Russia"
+        - "Belarus"
+        - "Ukraine"
+        - "Afghanistan"
+        - "Poland"
+        - "Kazakhstan"
+    pets:layer chicken:
+      breeds: ["Hy-Line", "BV-300"]
+      productionCycleDays: 504
+      feedRequirements: "Layer mash with 16–18% protein and high calcium for shell quality"
+      commonDiseases:
+        - "Fowl pox"
+        - "Mites"
+      preventiveActions:
+        - "Implement vaccination and biosecurity protocols"
+        - "Monitor and manage external parasites in housing"
+      eggsPerHenPerYear: 280
+      southAsiaNotes: "Temperature moderation inside sheds maintains egg production."
+      regions: ["south-asia", "russia-europe"]
+      countries:
+        - "India"
+        - "Pakistan"
+        - "Bangladesh"
+        - "Sri Lanka"
+        - "Nepal"
+        - "Bhutan"
+        - "Maldives"
+        - "Russia"
+        - "Ukraine"
+        - "Belarus"
+        - "Afghanistan"
+        - "Poland"
+        - "Estonia"
+        - "Latvia"
+        - "Lithuania"
+    pets:duck:
+      breeds: ["Khaki Campbell", "Pekin"]
+      breedingCycleDays: 365
+      feedRequirements: "Balanced poultry mash supplemented with scavenged feed; ensure clean water"
+      commonDiseases:
+        - "Duck plague"
+        - "Internal parasites"
+      preventiveActions:
+        - "Vaccinate and provide sanitary water bodies"
+        - "Maintain litter hygiene and periodic deworming"
+      growthDurationDays: 165
+      eggsPerHenPerYear: 275
+      southAsiaNotes: "Suited to wetlands and backwaters; integrate with paddy for pest control."
+      regions: ["south-asia"]
+      countries:
+        - "India"
+        - "Pakistan"
+        - "Bangladesh"
+        - "Sri Lanka"
+        - "Nepal"
+        - "Bhutan"
+        - "Maldives"
+        - "Afghanistan"
+    fish:rohu:
+      scientificName: "Labeo rohita"
+      stockingDensityPerHectare: "3,000–4,000 fingerlings (in composite culture)"
+      feedRequirements: "Rice bran and oilcake mixture; supplement with pelleted feeds"
+      commonDiseases:
+        - "Epizootic ulcerative syndrome"
+        - "Low dissolved oxygen stress"
+      preventiveActions:
+        - "Regular liming and water exchange"
+        - "Maintain dissolved oxygen above 4 mg/L"
+      growthDurationDays: 210
+      yieldKgPerAcre: 607
+      southAsiaNotes: "Performs best in polyculture with Catla and Mrigal; stock before monsoon."
+      regions: ["south-asia"]
+      countries:
+        - "India"
+        - "Pakistan"
+        - "Bangladesh"
+        - "Sri Lanka"
+        - "Nepal"
+        - "Bhutan"
+        - "Maldives"
+        - "Afghanistan"
+    fish:catla:
+      scientificName: "Catla catla"
+      stockingDensityPerHectare: "3,000–4,000 fingerlings (composite culture)"
+      feedRequirements: "Balanced pellets; bran and oilcake blends"
+      commonDiseases:
+        - "Handling stress"
+        - "Low dissolved oxygen"
+      preventiveActions:
+        - "Provide aeration and graded harvests"
+        - "Avoid overcrowding during transport"
+      growthDurationDays: 210
+      yieldKgPerAcre: 607
+      southAsiaNotes: "Surface feeder complementing Rohu and Mrigal in Indian major carp systems."
+      regions: ["south-asia"]
+      countries:
+        - "India"
+        - "Pakistan"
+        - "Bangladesh"
+        - "Sri Lanka"
+        - "Nepal"
+        - "Bhutan"
+        - "Maldives"
+        - "Afghanistan"
+    fish:mrigal:
+      scientificName: "Cirrhinus mrigala"
+      stockingDensityPerHectare: "3,000–4,000 fingerlings (composite culture)"
+      feedRequirements: "Bran/oilcake mixture and sinking pellets"
+      commonDiseases:
+        - "Bottom anoxia"
+      preventiveActions:
+        - "Periodic liming and sludge removal"
+        - "Maintain water depth and circulation"
+      growthDurationDays: 210
+      yieldKgPerAcre: 607
+      southAsiaNotes: "Bottom feeder that completes IMC polyculture alongside Rohu and Catla."
+      regions: ["south-asia"]
+      countries:
+        - "India"
+        - "Pakistan"
+        - "Bangladesh"
+        - "Sri Lanka"
+        - "Nepal"
+        - "Bhutan"
+        - "Maldives"
+        - "Afghanistan"
+    fish:grass carp:
+      scientificName: "Ctenopharyngodon idella"
+      stockingDensityPerHectare: "Introduce based on weed biomass in ponds"
+      feedRequirements: "Aquatic weeds supplemented with pellets"
+      commonDiseases:
+        - "Low dissolved oxygen"
+        - "Parasites"
+      preventiveActions:
+        - "Maintain aeration and monitor health"
+        - "Avoid overstocking with weeds"
+      growthDurationDays: 210
+      yieldKgPerAcre: 607
+      southAsiaNotes: "Provides weed control and additional biomass in composite carp culture."
+      regions: ["south-asia"]
+      countries:
+        - "India"
+        - "Pakistan"
+        - "Bangladesh"
+        - "Sri Lanka"
+        - "Nepal"
+        - "Bhutan"
+        - "Maldives"
+        - "Afghanistan"
+    fish:silver carp:
+      scientificName: "Hypophthalmichthys molitrix"
+      stockingDensityPerHectare: "Stock as surface filter feeder in polyculture"
+      feedRequirements: "Utilizes phytoplankton; supplement pond fertility"
+      commonDiseases:
+        - "Low dissolved oxygen"
+        - "Crowding stress"
+      preventiveActions:
+        - "Maintain proper density and aeration"
+        - "Ensure plankton-rich ponds"
+      growthDurationDays: 210
+      yieldKgPerAcre: 607
+      southAsiaNotes: "Improves plankton utilization with Rohu, Catla, and Mrigal."
+      regions: ["south-asia"]
+      countries:
+        - "India"
+        - "Pakistan"
+        - "Bangladesh"
+        - "Sri Lanka"
+        - "Nepal"
+        - "Bhutan"
+        - "Maldives"
+        - "Afghanistan"
+    fish:pangasius catfish:
+      scientificName: "Pangasianodon hypophthalmus"
+      stockingDensityPerSqMeter: "High density possible in intensive systems"
+      feedRequirements: "High-protein pelleted feeds with strong aeration"
+      commonDiseases:
+        - "Bacterial diseases"
+      preventiveActions:
+        - "Maintain biosecurity and regular probiotic use"
+        - "Ensure continuous aeration and water exchange"
+      growthDurationDays: 210
+      yieldKgPerAcre: 6070
+      southAsiaNotes: "Requires intensive management with robust aeration infrastructure."
+      regions: ["south-asia"]
+      countries:
+        - "India"
+        - "Bangladesh"
+        - "Vietnam"
+    fish:carp:
+      scientificName: "Cyprinus carpio"
+      stockingDensityPerHectare: "1,000–3,000 fingerlings (extensive to semi-intensive)"
+      feedRequirements: "Rice bran and oilcake mixtures; supplemental pellets optional"
+      commonDiseases:
+        - "Parasitic infestations"
+        - "Low dissolved oxygen in wintering ponds"
+      preventiveActions:
+        - "Lime ponds and maintain aeration"
+        - "Provide wintering ponds or deeper refuges"
+      growthDurationDays: 180
+      yieldKgPerAcre: 1212
+      russiaEuropeNotes: "Requires wintering phase in cold climates; hardy omnivore for pond polyculture."
+      regions: ["russia-europe"]
+      countries:
+        - "Russia"
+        - "Poland"
+        - "Belarus"
+        - "Ukraine"
+        - "Lithuania"
+        - "Latvia"
+        - "Estonia"
+        - "Hungary"
+    fish:trout:
+      scientificName: "Oncorhynchus mykiss"
+      stockingNotes: "Raceways, tanks, or cages in cold, oxygen-rich waters"
+      feedRequirements: "High-protein floating feeds; maintain high dissolved oxygen"
+      commonDiseases:
+        - "Bacterial gill disease"
+        - "Off-flavor due to poor water quality"
+      preventiveActions:
+        - "Ensure continuous aeration and filtration"
+        - "Maintain strict biosecurity and regular health checks"
+      growthDurationDays: 330
+      yieldKgPerAcre: 24280
+      russiaEuropeNotes: "Requires cold (<16°C), clear water; year-round production with tempered flows in Karelia and Scandinavia."
+      regions: ["russia-europe"]
+      countries:
+        - "Russia"
+        - "Poland"
+        - "Finland"
+        - "Sweden"
+    fish:siberian sturgeon:
+      scientificName: "Acipenser baerii"
+      stockingNotes: "Hatchery fingerlings stocked in intensive ponds or tanks"
+      feedRequirements: "High-protein sinking pellets; meticulous water quality management"
+      commonDiseases:
+        - "Bacterial infections"
+      preventiveActions:
+        - "Implement biosecurity and regular health monitoring"
+        - "Maintain optimal oxygen levels and clean systems"
+      growthDurationDays: 900
+      yieldKgPerAcre: 2428
+      russiaEuropeNotes: "Multi-year grow-out for meat and caviar; requires licensing and strict compliance."
+      regions: ["russia-europe"]
+      countries:
+        - "Russia"
+        - "Kazakhstan"
+        - "Ukraine"
+    fish:pike-perch:
+      scientificName: "Sander lucioperca"
+      stockingNotes: "Low to moderate densities in ponds or cages during warm season"
+      feedRequirements: "High-quality pellets supplemented with forage fish"
+      commonDiseases:
+        - "Predation stress"
+        - "Low dissolved oxygen"
+      preventiveActions:
+        - "Provide aeration and protective netting"
+        - "Handle carefully to reduce stress"
+      growthDurationDays: 240
+      yieldKgPerAcre: 1212
+      russiaEuropeNotes: "High-value predator requiring careful handling; sensitive to transport and stress."
+      regions: ["russia-europe"]
+      countries:
+        - "Belarus"
+        - "Russia"
+        - "Poland"
+        - "Ukraine"
+    crustaceans:black tiger shrimp:
+      scientificName: "Penaeus monodon"
+      stockingNotes: "Post-monsoon stockings common; follow salinity-specific PL stocking rates"
+      feedRequirements: "Commercial pellets with mineral supplementation"
+      commonDiseases:
+        - "WSSV"
+        - "Early mortality syndrome"
+      preventiveActions:
+        - "Use SPF seed and strict biosecurity"
+        - "Prepare ponds thoroughly before stocking"
+      growthDurationDays: 120
+      yieldKgPerAcre: 707
+      southAsiaNotes: "Salinity management and permits required in coastal belts."
+      regions: ["south-asia"]
+      countries:
+        - "India"
+        - "Pakistan"
+        - "Bangladesh"
+        - "Sri Lanka"
+        - "Nepal"
+        - "Bhutan"
+        - "Maldives"
+        - "Afghanistan"
+    crustaceans:indian white prawn:
+      scientificName: "Fenneropenaeus indicus"
+      stockingNotes: "Suitable for traditional and improved extensive brackishwater systems"
+      feedRequirements: "Pelleted feeds with lime/mineral management"
+      commonDiseases:
+        - "WSSV"
+        - "Bacterial infections"
+      preventiveActions:
+        - "Adopt BMPs and maintain biosecurity"
+        - "Regular water exchange and monitoring"
+      growthDurationDays: 115
+      yieldKgPerAcre: 506
+      southAsiaNotes: "Performs in traditional ponds; ideal for coastal farmers transitioning to aquaculture."
+      regions: ["south-asia"]
+      countries:
+        - "India"
+        - "Pakistan"
+        - "Bangladesh"
+        - "Sri Lanka"
+        - "Nepal"
+        - "Bhutan"
+        - "Maldives"
+        - "Afghanistan"
 

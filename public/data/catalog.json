@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "count": 341,
+  "count": 359,
   "items": [
     {
       "id": "bivalves:[object object]",
@@ -121,7 +121,7 @@
       "category": "Freshwater Fish",
       "subCategory": null,
       "name": "Carp",
-      "scientificName": "Cyprinus carpio (incl. Rohu/Grass/Silver carp)",
+      "scientificName": "Cyprinus carpio",
       "aliases": [],
       "notes": null,
       "environment": "freshwater",
@@ -137,13 +137,34 @@
       "isFlower": false,
       "waterQuality": "Freshwater pH 6.5–8.5",
       "climate": "tropical",
-      "feedRequirements": "2% of biomass daily",
-      "growthDurationDays": 150,
-      "yieldKgPerAcre": 3000,
+      "feedRequirements": "Rice bran and oilcake mixtures; supplemental pellets optional",
+      "growthDurationDays": 180,
+      "yieldKgPerAcre": 1212,
       "marketPriceFJDPerKg": 6,
       "preventiveActions": [
         "Maintain aeration",
-        "Check dissolved oxygen weekly"
+        "Check dissolved oxygen weekly",
+        "Lime ponds and maintain aeration",
+        "Provide wintering ponds or deeper refuges"
+      ],
+      "stockingDensityPerHectare": "1,000–3,000 fingerlings (extensive to semi-intensive)",
+      "commonDiseases": [
+        "Parasitic infestations",
+        "Low dissolved oxygen in wintering ponds"
+      ],
+      "russiaEuropeNotes": "Requires wintering phase in cold climates; hardy omnivore for pond polyculture.",
+      "regions": [
+        "russia-europe"
+      ],
+      "countries": [
+        "Russia",
+        "Poland",
+        "Belarus",
+        "Ukraine",
+        "Lithuania",
+        "Latvia",
+        "Estonia",
+        "Hungary"
       ]
     },
     {
@@ -175,6 +196,58 @@
       "preventiveActions": [
         "Maintain aeration",
         "Check dissolved oxygen weekly"
+      ]
+    },
+    {
+      "id": "fish:catla",
+      "group": "fish",
+      "category": "Freshwater Fish",
+      "subCategory": null,
+      "name": "Catla",
+      "scientificName": "Catla catla",
+      "aliases": [],
+      "notes": null,
+      "environment": "freshwater",
+      "tags": [
+        "fish",
+        "aquaculture",
+        "freshwater",
+        "edible"
+      ],
+      "isEdible": true,
+      "isCrop": false,
+      "isTree": false,
+      "isFlower": false,
+      "waterQuality": "Freshwater pH 6.5–8.5",
+      "climate": "tropical",
+      "feedRequirements": "Balanced pellets; bran and oilcake blends",
+      "growthDurationDays": 210,
+      "yieldKgPerAcre": 607,
+      "marketPriceFJDPerKg": 6,
+      "preventiveActions": [
+        "Maintain aeration",
+        "Check dissolved oxygen weekly",
+        "Provide aeration and graded harvests",
+        "Avoid overcrowding during transport"
+      ],
+      "stockingDensityPerHectare": "3,000–4,000 fingerlings (composite culture)",
+      "commonDiseases": [
+        "Handling stress",
+        "Low dissolved oxygen"
+      ],
+      "southAsiaNotes": "Surface feeder complementing Rohu and Mrigal in Indian major carp systems.",
+      "regions": [
+        "south-asia"
+      ],
+      "countries": [
+        "India",
+        "Pakistan",
+        "Bangladesh",
+        "Sri Lanka",
+        "Nepal",
+        "Bhutan",
+        "Maldives",
+        "Afghanistan"
       ]
     },
     {
@@ -294,6 +367,58 @@
       ]
     },
     {
+      "id": "fish:grass carp",
+      "group": "fish",
+      "category": "Freshwater Fish",
+      "subCategory": null,
+      "name": "Grass Carp",
+      "scientificName": "Ctenopharyngodon idella",
+      "aliases": [],
+      "notes": null,
+      "environment": "freshwater",
+      "tags": [
+        "fish",
+        "aquaculture",
+        "freshwater",
+        "edible"
+      ],
+      "isEdible": true,
+      "isCrop": false,
+      "isTree": false,
+      "isFlower": false,
+      "waterQuality": "Freshwater pH 6.5–8.5",
+      "climate": "tropical",
+      "feedRequirements": "Aquatic weeds supplemented with pellets",
+      "growthDurationDays": 210,
+      "yieldKgPerAcre": 607,
+      "marketPriceFJDPerKg": 6,
+      "preventiveActions": [
+        "Maintain aeration",
+        "Check dissolved oxygen weekly",
+        "Maintain aeration and monitor health",
+        "Avoid overstocking with weeds"
+      ],
+      "stockingDensityPerHectare": "Introduce based on weed biomass in ponds",
+      "commonDiseases": [
+        "Low dissolved oxygen",
+        "Parasites"
+      ],
+      "southAsiaNotes": "Provides weed control and additional biomass in composite carp culture.",
+      "regions": [
+        "south-asia"
+      ],
+      "countries": [
+        "India",
+        "Pakistan",
+        "Bangladesh",
+        "Sri Lanka",
+        "Nepal",
+        "Bhutan",
+        "Maldives",
+        "Afghanistan"
+      ]
+    },
+    {
       "id": "fish:halibut",
       "group": "fish",
       "category": "Marine Fish",
@@ -346,6 +471,57 @@
       "growthDurationDays": 210,
       "yieldKgPerAcre": 2500,
       "marketPriceFJDPerKg": 9
+    },
+    {
+      "id": "fish:mrigal",
+      "group": "fish",
+      "category": "Freshwater Fish",
+      "subCategory": null,
+      "name": "Mrigal",
+      "scientificName": "Cirrhinus mrigala",
+      "aliases": [],
+      "notes": null,
+      "environment": "freshwater",
+      "tags": [
+        "fish",
+        "aquaculture",
+        "freshwater",
+        "edible"
+      ],
+      "isEdible": true,
+      "isCrop": false,
+      "isTree": false,
+      "isFlower": false,
+      "waterQuality": "Freshwater pH 6.5–8.5",
+      "climate": "tropical",
+      "feedRequirements": "Bran/oilcake mixture and sinking pellets",
+      "growthDurationDays": 210,
+      "yieldKgPerAcre": 607,
+      "marketPriceFJDPerKg": 6,
+      "preventiveActions": [
+        "Maintain aeration",
+        "Check dissolved oxygen weekly",
+        "Periodic liming and sludge removal",
+        "Maintain water depth and circulation"
+      ],
+      "stockingDensityPerHectare": "3,000–4,000 fingerlings (composite culture)",
+      "commonDiseases": [
+        "Bottom anoxia"
+      ],
+      "southAsiaNotes": "Bottom feeder that completes IMC polyculture alongside Rohu and Catla.",
+      "regions": [
+        "south-asia"
+      ],
+      "countries": [
+        "India",
+        "Pakistan",
+        "Bangladesh",
+        "Sri Lanka",
+        "Nepal",
+        "Bhutan",
+        "Maldives",
+        "Afghanistan"
+      ]
     },
     {
       "id": "fish:pacu",
@@ -407,6 +583,152 @@
       "preventiveActions": [
         "Maintain aeration",
         "Check dissolved oxygen weekly"
+      ]
+    },
+    {
+      "id": "fish:pangasius catfish",
+      "group": "fish",
+      "category": "Freshwater Fish",
+      "subCategory": null,
+      "name": "Pangasius Catfish",
+      "scientificName": "Pangasianodon hypophthalmus",
+      "aliases": [],
+      "notes": null,
+      "environment": "freshwater",
+      "tags": [
+        "fish",
+        "aquaculture",
+        "freshwater",
+        "edible"
+      ],
+      "isEdible": true,
+      "isCrop": false,
+      "isTree": false,
+      "isFlower": false,
+      "waterQuality": "Freshwater pH 6.5–8.5",
+      "climate": "tropical",
+      "feedRequirements": "High-protein pelleted feeds with strong aeration",
+      "growthDurationDays": 210,
+      "yieldKgPerAcre": 6070,
+      "marketPriceFJDPerKg": 6,
+      "preventiveActions": [
+        "Maintain aeration",
+        "Check dissolved oxygen weekly",
+        "Maintain biosecurity and regular probiotic use",
+        "Ensure continuous aeration and water exchange"
+      ],
+      "stockingDensityPerSqMeter": "High density possible in intensive systems",
+      "commonDiseases": [
+        "Bacterial diseases"
+      ],
+      "southAsiaNotes": "Requires intensive management with robust aeration infrastructure.",
+      "regions": [
+        "south-asia"
+      ],
+      "countries": [
+        "India",
+        "Bangladesh",
+        "Vietnam"
+      ]
+    },
+    {
+      "id": "fish:pike-perch",
+      "group": "fish",
+      "category": "Freshwater Fish",
+      "subCategory": null,
+      "name": "Pike-Perch",
+      "scientificName": "Sander lucioperca",
+      "aliases": [],
+      "notes": null,
+      "environment": "freshwater",
+      "tags": [
+        "fish",
+        "aquaculture",
+        "freshwater",
+        "edible"
+      ],
+      "isEdible": true,
+      "isCrop": false,
+      "isTree": false,
+      "isFlower": false,
+      "waterQuality": "Freshwater pH 6.5–8.5",
+      "climate": "tropical",
+      "feedRequirements": "High-quality pellets supplemented with forage fish",
+      "growthDurationDays": 240,
+      "yieldKgPerAcre": 1212,
+      "marketPriceFJDPerKg": 6,
+      "preventiveActions": [
+        "Maintain aeration",
+        "Check dissolved oxygen weekly",
+        "Provide aeration and protective netting",
+        "Handle carefully to reduce stress"
+      ],
+      "stockingNotes": "Low to moderate densities in ponds or cages during warm season",
+      "commonDiseases": [
+        "Predation stress",
+        "Low dissolved oxygen"
+      ],
+      "russiaEuropeNotes": "High-value predator requiring careful handling; sensitive to transport and stress.",
+      "regions": [
+        "russia-europe"
+      ],
+      "countries": [
+        "Belarus",
+        "Russia",
+        "Poland",
+        "Ukraine"
+      ]
+    },
+    {
+      "id": "fish:rohu",
+      "group": "fish",
+      "category": "Freshwater Fish",
+      "subCategory": null,
+      "name": "Rohu",
+      "scientificName": "Labeo rohita",
+      "aliases": [],
+      "notes": null,
+      "environment": "freshwater",
+      "tags": [
+        "fish",
+        "aquaculture",
+        "freshwater",
+        "edible"
+      ],
+      "isEdible": true,
+      "isCrop": false,
+      "isTree": false,
+      "isFlower": false,
+      "waterQuality": "Freshwater pH 6.5–8.5",
+      "climate": "tropical",
+      "feedRequirements": "Rice bran and oilcake mixture; supplement with pelleted feeds",
+      "growthDurationDays": 210,
+      "yieldKgPerAcre": 607,
+      "marketPriceFJDPerKg": 6,
+      "preventiveActions": [
+        "Maintain aeration",
+        "Check dissolved oxygen weekly",
+        "Regular liming and water exchange",
+        "Maintain dissolved oxygen above 4 mg/L"
+      ],
+      "stockingDensityPerHectare": "3,000–4,000 fingerlings (in composite culture)",
+      "commonDiseases": [
+        "Epizootic ulcerative syndrome",
+        "Low dissolved oxygen stress"
+      ],
+      "southAsiaNotes": "Performs best in polyculture with Catla and Mrigal; stock before monsoon.",
+      "regions": [
+        "south-asia"
+      ],
+      "countries": [
+        "India",
+        "Pakistan",
+        "Bangladesh",
+        "Sri Lanka",
+        "Nepal",
+        "Bhutan",
+        "Maldives",
+        "Afghanistan"
       ]
     },
     {
@@ -491,6 +813,104 @@
       "marketPriceFJDPerKg": 9
     },
     {
+      "id": "fish:siberian sturgeon",
+      "group": "fish",
+      "category": "Freshwater Fish",
+      "subCategory": null,
+      "name": "Siberian Sturgeon",
+      "scientificName": "Acipenser baerii",
+      "aliases": [],
+      "notes": null,
+      "environment": "freshwater",
+      "tags": [
+        "fish",
+        "aquaculture",
+        "freshwater",
+        "edible"
+      ],
+      "isEdible": true,
+      "isCrop": false,
+      "isTree": false,
+      "isFlower": false,
+      "waterQuality": "Freshwater pH 6.5–8.5",
+      "climate": "tropical",
+      "feedRequirements": "High-protein sinking pellets; meticulous water quality management",
+      "growthDurationDays": 900,
+      "yieldKgPerAcre": 2428,
+      "marketPriceFJDPerKg": 6,
+      "preventiveActions": [
+        "Maintain aeration",
+        "Check dissolved oxygen weekly",
+        "Implement biosecurity and regular health monitoring",
+        "Maintain optimal oxygen levels and clean systems"
+      ],
+      "stockingNotes": "Hatchery fingerlings stocked in intensive ponds or tanks",
+      "commonDiseases": [
+        "Bacterial infections"
+      ],
+      "russiaEuropeNotes": "Multi-year grow-out for meat and caviar; requires licensing and strict compliance.",
+      "regions": [
+        "russia-europe"
+      ],
+      "countries": [
+        "Russia",
+        "Kazakhstan",
+        "Ukraine"
+      ]
+    },
+    {
+      "id": "fish:silver carp",
+      "group": "fish",
+      "category": "Freshwater Fish",
+      "subCategory": null,
+      "name": "Silver Carp",
+      "scientificName": "Hypophthalmichthys molitrix",
+      "aliases": [],
+      "notes": null,
+      "environment": "freshwater",
+      "tags": [
+        "fish",
+        "aquaculture",
+        "freshwater",
+        "edible"
+      ],
+      "isEdible": true,
+      "isCrop": false,
+      "isTree": false,
+      "isFlower": false,
+      "waterQuality": "Freshwater pH 6.5–8.5",
+      "climate": "tropical",
+      "feedRequirements": "Utilizes phytoplankton; supplement pond fertility",
+      "growthDurationDays": 210,
+      "yieldKgPerAcre": 607,
+      "marketPriceFJDPerKg": 6,
+      "preventiveActions": [
+        "Maintain aeration",
+        "Check dissolved oxygen weekly",
+        "Maintain proper density and aeration",
+        "Ensure plankton-rich ponds"
+      ],
+      "stockingDensityPerHectare": "Stock as surface filter feeder in polyculture",
+      "commonDiseases": [
+        "Low dissolved oxygen",
+        "Crowding stress"
+      ],
+      "southAsiaNotes": "Improves plankton utilization with Rohu, Catla, and Mrigal.",
+      "regions": [
+        "south-asia"
+      ],
+      "countries": [
+        "India",
+        "Pakistan",
+        "Bangladesh",
+        "Sri Lanka",
+        "Nepal",
+        "Bhutan",
+        "Maldives",
+        "Afghanistan"
+      ]
+    },
+    {
       "id": "fish:snakehead fish",
       "group": "fish",
       "category": "Freshwater Fish",
@@ -543,18 +963,51 @@
       "isFlower": false,
       "waterQuality": "Freshwater, temperature 25–30°C",
       "climate": "tropical",
-      "feedRequirements": "2–3% bodyweight per day",
-      "growthDurationDays": 150,
-      "yieldKgPerAcre": 3000,
+      "feedRequirements": "Feed 2–3% bodyweight per day using 25–30% protein pellets",
+      "growthDurationDays": 165,
+      "yieldKgPerAcre": 1619,
       "marketPriceFJDPerKg": 7,
       "preventiveActions": [
         "Maintain aeration",
         "Check dissolved oxygen weekly",
         "Vaccinate fingerlings where available",
-        "Maintain proper aeration"
+        "Maintain dissolved oxygen above 4 mg/L",
+        "Perform partial harvests to manage biomass"
       ],
+      "varieties": [
+        "Nile Tilapia"
+      ],
+      "waterTemperatureRangeC": "26–30",
+      "stockingDensityPerSqMeter": "3–5",
       "commonDiseases": [
-        "streptococcosis"
+        "Streptococcosis"
+      ],
+      "fijiNotes": "Well adapted to Fiji ponds; ensure aeration and regular water exchange.",
+      "regions": [
+        "pacific",
+        "south-asia"
+      ],
+      "countries": [
+        "Fiji",
+        "Samoa",
+        "Tonga",
+        "Vanuatu",
+        "Solomon Islands",
+        "Papua New Guinea",
+        "Kiribati",
+        "Tuvalu",
+        "Nauru",
+        "Marshall Islands",
+        "Palau",
+        "Federated States of Micronesia",
+        "India",
+        "Pakistan",
+        "Bangladesh",
+        "Sri Lanka",
+        "Nepal",
+        "Bhutan",
+        "Maldives",
+        "Afghanistan"
       ]
     },
     {
@@ -610,13 +1063,30 @@
       "isFlower": false,
       "waterQuality": "Freshwater pH 6.5–8.5",
       "climate": "tropical",
-      "feedRequirements": "2% of biomass daily",
-      "growthDurationDays": 150,
-      "yieldKgPerAcre": 3000,
+      "feedRequirements": "High-protein floating feeds; maintain high dissolved oxygen",
+      "growthDurationDays": 330,
+      "yieldKgPerAcre": 24280,
       "marketPriceFJDPerKg": 6,
       "preventiveActions": [
         "Maintain aeration",
-        "Check dissolved oxygen weekly"
+        "Check dissolved oxygen weekly",
+        "Ensure continuous aeration and filtration",
+        "Maintain strict biosecurity and regular health checks"
+      ],
+      "stockingNotes": "Raceways, tanks, or cages in cold, oxygen-rich waters",
+      "commonDiseases": [
+        "Bacterial gill disease",
+        "Off-flavor due to poor water quality"
+      ],
+      "russiaEuropeNotes": "Requires cold (<16°C), clear water; year-round production with tempered flows in Karelia and Scandinavia.",
+      "regions": [
+        "russia-europe"
+      ],
+      "countries": [
+        "Russia",
+        "Poland",
+        "Finland",
+        "Sweden"
       ]
     },
     {
@@ -2292,6 +2762,56 @@
       "isFlower": false
     },
     {
+      "id": "pets:beef cattle",
+      "group": "pets",
+      "category": "Livestock (Production)",
+      "subCategory": null,
+      "name": "Beef Cattle",
+      "scientificName": null,
+      "aliases": [],
+      "notes": null,
+      "environment": "domestic",
+      "tags": [
+        "livestock",
+        "farm",
+        "production",
+        "pets"
+      ],
+      "isEdible": false,
+      "isCrop": false,
+      "isTree": false,
+      "isFlower": false,
+      "breeds": [
+        "Hereford",
+        "Aberdeen Angus"
+      ],
+      "calvingIntervalDays": 420,
+      "feedRequirements": "Pasture grazing with haylage and mineral blocks; finish on pasture or high-energy rations",
+      "commonDiseases": [
+        "Ticks",
+        "Internal worms"
+      ],
+      "preventiveActions": [
+        "Implement regular deworming",
+        "Rotate pastures and provide shelter during severe cold"
+      ],
+      "growthDurationDays": 540,
+      "yieldPerAnimalKgLive": 520,
+      "russiaEuropeNotes": "Steppe grazing systems common; spring calving aligns with pasture flush and winter housing.",
+      "regions": [
+        "russia-europe"
+      ],
+      "countries": [
+        "Russia",
+        "Ukraine",
+        "Kazakhstan",
+        "Poland",
+        "Belarus",
+        "Romania",
+        "Hungary"
+      ]
+    },
+    {
       "id": "pets:bees",
       "group": "pets",
       "category": "Invertebrates",
@@ -2333,6 +2853,75 @@
       "isFlower": false
     },
     {
+      "id": "pets:broiler chicken",
+      "group": "pets",
+      "category": "Livestock (Production)",
+      "subCategory": null,
+      "name": "Broiler Chicken",
+      "scientificName": null,
+      "aliases": [],
+      "notes": null,
+      "environment": "domestic",
+      "tags": [
+        "livestock",
+        "farm",
+        "production",
+        "pets"
+      ],
+      "isEdible": false,
+      "isCrop": false,
+      "isTree": false,
+      "isFlower": false,
+      "breeds": [
+        "Ross 308",
+        "Cobb 500"
+      ],
+      "productionCycleDays": 42,
+      "feedRequirements": "Starter, grower and finisher feeds with clean water",
+      "commonDiseases": [
+        "Coccidiosis"
+      ],
+      "preventiveActions": [
+        "Vaccinate chicks",
+        "Maintain dry litter and ventilation"
+      ],
+      "growthDurationDays": 42,
+      "yieldPerAnimalKgLive": 2.25,
+      "fijiNotes": "Fast turnover for Fiji smallholders; ensure biosecurity to reduce losses.",
+      "southAsiaNotes": "Commonly raised in commercial sheds; enforce biosecurity to prevent CRD and coccidiosis.",
+      "regions": [
+        "pacific",
+        "south-asia",
+        "russia-europe"
+      ],
+      "countries": [
+        "Fiji",
+        "Samoa",
+        "Tonga",
+        "Vanuatu",
+        "Solomon Islands",
+        "Papua New Guinea",
+        "Kiribati",
+        "Tuvalu",
+        "Nauru",
+        "Marshall Islands",
+        "Palau",
+        "Federated States of Micronesia",
+        "India",
+        "Pakistan",
+        "Bangladesh",
+        "Sri Lanka",
+        "Nepal",
+        "Bhutan",
+        "Maldives",
+        "Afghanistan",
+        "Russia",
+        "Ukraine",
+        "Poland",
+        "Belarus"
+      ]
+    },
+    {
       "id": "pets:budgerigar",
       "group": "pets",
       "category": "Birds",
@@ -2351,6 +2940,56 @@
       "isCrop": false,
       "isTree": false,
       "isFlower": false
+    },
+    {
+      "id": "pets:buffalo",
+      "group": "pets",
+      "category": "Livestock (Production)",
+      "subCategory": null,
+      "name": "Buffalo",
+      "scientificName": null,
+      "aliases": [],
+      "notes": null,
+      "environment": "domestic",
+      "tags": [
+        "livestock",
+        "farm",
+        "production",
+        "pets"
+      ],
+      "isEdible": false,
+      "isCrop": false,
+      "isTree": false,
+      "isFlower": false,
+      "breeds": [
+        "Murrah",
+        "Surti"
+      ],
+      "calvingIntervalDays": 455,
+      "feedRequirements": "Green fodder plus concentrate; access to wallowing or sprinklers",
+      "commonDiseases": [
+        "Hemorrhagic septicemia",
+        "Internal worms"
+      ],
+      "preventiveActions": [
+        "Follow vaccination schedule",
+        "Conduct routine deworming and maintain hygiene"
+      ],
+      "milkYieldLitresPerDay": 9,
+      "southAsiaNotes": "Thrives in hot-humid tracts; high-fat milk preferred for dairy processing.",
+      "regions": [
+        "south-asia"
+      ],
+      "countries": [
+        "India",
+        "Pakistan",
+        "Bangladesh",
+        "Sri Lanka",
+        "Nepal",
+        "Bhutan",
+        "Maldives",
+        "Afghanistan"
+      ]
     },
     {
       "id": "pets:canary",
@@ -2536,6 +3175,80 @@
       "isFlower": false
     },
     {
+      "id": "pets:dairy cattle",
+      "group": "pets",
+      "category": "Livestock (Production)",
+      "subCategory": null,
+      "name": "Dairy Cattle",
+      "scientificName": null,
+      "aliases": [],
+      "notes": null,
+      "environment": "domestic",
+      "tags": [
+        "livestock",
+        "farm",
+        "production",
+        "pets"
+      ],
+      "isEdible": false,
+      "isCrop": false,
+      "isTree": false,
+      "isFlower": false,
+      "breeds": [
+        "Brahman",
+        "Holstein Cross",
+        "Gir",
+        "Sahiwal",
+        "HF cross"
+      ],
+      "calvingIntervalDays": 395,
+      "feedRequirements": "Rotational pasture or green fodder with concentrate and mineral mix",
+      "commonDiseases": [
+        "Tick fever",
+        "Mastitis",
+        "Internal worms"
+      ],
+      "preventiveActions": [
+        "Regular dipping or pour-on treatments",
+        "Maintain milking hygiene and schedule deworming"
+      ],
+      "milkYieldLitresPerDay": 10,
+      "milkYieldLitresPerMonth": 300,
+      "fijiNotes": "Requires consistent pasture rotation and mineral supplementation in Fiji.",
+      "southAsiaNotes": "Heat-tolerant indigenous breeds (Gir, Sahiwal) perform well under hot climates.",
+      "regions": [
+        "pacific",
+        "south-asia",
+        "russia-europe"
+      ],
+      "countries": [
+        "Fiji",
+        "Samoa",
+        "Tonga",
+        "Vanuatu",
+        "Solomon Islands",
+        "Papua New Guinea",
+        "Kiribati",
+        "Tuvalu",
+        "Nauru",
+        "Marshall Islands",
+        "Palau",
+        "Federated States of Micronesia",
+        "India",
+        "Pakistan",
+        "Bangladesh",
+        "Sri Lanka",
+        "Nepal",
+        "Bhutan",
+        "Maldives",
+        "Afghanistan",
+        "Russia",
+        "Ukraine",
+        "Belarus",
+        "Poland"
+      ]
+    },
+    {
       "id": "pets:discus",
       "group": "pets",
       "category": "Aquarium Fish",
@@ -2596,6 +3309,57 @@
       "isCrop": false,
       "isTree": false,
       "isFlower": false
+    },
+    {
+      "id": "pets:duck",
+      "group": "pets",
+      "category": "Livestock (Production)",
+      "subCategory": null,
+      "name": "Duck",
+      "scientificName": null,
+      "aliases": [],
+      "notes": null,
+      "environment": "domestic",
+      "tags": [
+        "livestock",
+        "farm",
+        "production",
+        "pets"
+      ],
+      "isEdible": false,
+      "isCrop": false,
+      "isTree": false,
+      "isFlower": false,
+      "breeds": [
+        "Khaki Campbell",
+        "Pekin"
+      ],
+      "breedingCycleDays": 365,
+      "feedRequirements": "Balanced poultry mash supplemented with scavenged feed; ensure clean water",
+      "commonDiseases": [
+        "Duck plague",
+        "Internal parasites"
+      ],
+      "preventiveActions": [
+        "Vaccinate and provide sanitary water bodies",
+        "Maintain litter hygiene and periodic deworming"
+      ],
+      "growthDurationDays": 165,
+      "eggsPerHenPerYear": 275,
+      "southAsiaNotes": "Suited to wetlands and backwaters; integrate with paddy for pest control.",
+      "regions": [
+        "south-asia"
+      ],
+      "countries": [
+        "India",
+        "Pakistan",
+        "Bangladesh",
+        "Sri Lanka",
+        "Nepal",
+        "Bhutan",
+        "Maldives",
+        "Afghanistan"
+      ]
     },
     {
       "id": "pets:fennec fox",
@@ -2732,12 +3496,45 @@
       "tags": [
         "pet",
         "farm",
-        "pets"
+        "pets",
+        "livestock",
+        "production"
       ],
       "isEdible": false,
       "isCrop": false,
       "isTree": false,
-      "isFlower": false
+      "isFlower": false,
+      "breeds": [
+        "Jamunapari",
+        "Black Bengal",
+        "Osmanabadi"
+      ],
+      "kiddingIntervalDays": 180,
+      "feedRequirements": "Grazing plus tree leaves and supplemental mineral lick",
+      "commonDiseases": [
+        "Internal worms",
+        "Peste des petits ruminants (PPR)"
+      ],
+      "preventiveActions": [
+        "Regular drenching/deworming",
+        "Vaccinate against PPR as per regional program"
+      ],
+      "growthDurationDays": 210,
+      "yieldPerAnimalKgLive": 22,
+      "southAsiaNotes": "Adapted to dryland and backyard systems; ensure shelter during monsoon.",
+      "regions": [
+        "south-asia"
+      ],
+      "countries": [
+        "India",
+        "Pakistan",
+        "Bangladesh",
+        "Sri Lanka",
+        "Nepal",
+        "Bhutan",
+        "Maldives",
+        "Afghanistan"
+      ]
     },
     {
       "id": "pets:goldfish",
@@ -2925,6 +3722,64 @@
       "isFlower": false
     },
     {
+      "id": "pets:layer chicken",
+      "group": "pets",
+      "category": "Livestock (Production)",
+      "subCategory": null,
+      "name": "Layer Chicken",
+      "scientificName": null,
+      "aliases": [],
+      "notes": null,
+      "environment": "domestic",
+      "tags": [
+        "livestock",
+        "farm",
+        "production",
+        "pets"
+      ],
+      "isEdible": false,
+      "isCrop": false,
+      "isTree": false,
+      "isFlower": false,
+      "breeds": [
+        "Hy-Line",
+        "BV-300"
+      ],
+      "productionCycleDays": 504,
+      "feedRequirements": "Layer mash with 16–18% protein and high calcium for shell quality",
+      "commonDiseases": [
+        "Fowl pox",
+        "Mites"
+      ],
+      "preventiveActions": [
+        "Implement vaccination and biosecurity protocols",
+        "Monitor and manage external parasites in housing"
+      ],
+      "eggsPerHenPerYear": 280,
+      "southAsiaNotes": "Temperature moderation inside sheds maintains egg production.",
+      "regions": [
+        "south-asia",
+        "russia-europe"
+      ],
+      "countries": [
+        "India",
+        "Pakistan",
+        "Bangladesh",
+        "Sri Lanka",
+        "Nepal",
+        "Bhutan",
+        "Maldives",
+        "Russia",
+        "Ukraine",
+        "Belarus",
+        "Afghanistan",
+        "Poland",
+        "Estonia",
+        "Latvia",
+        "Lithuania"
+      ]
+    },
+    {
       "id": "pets:lovebird",
       "group": "pets",
       "category": "Birds",
@@ -3067,6 +3922,82 @@
       "isFlower": false
     },
     {
+      "id": "pets:pig",
+      "group": "pets",
+      "category": "Livestock (Production)",
+      "subCategory": null,
+      "name": "Pig",
+      "scientificName": "Sus scrofa domesticus",
+      "aliases": [],
+      "notes": null,
+      "environment": "domestic",
+      "tags": [
+        "livestock",
+        "farm",
+        "production",
+        "pets"
+      ],
+      "isEdible": false,
+      "isCrop": false,
+      "isTree": false,
+      "isFlower": false,
+      "breeds": [
+        "Large White",
+        "Landrace"
+      ],
+      "breedingCycleDays": 114,
+      "feedRequirements": "Starter-Grower-Finisher rations as per stage",
+      "commonDiseases": [
+        "Classical swine fever",
+        "Internal parasites"
+      ],
+      "preventiveActions": [
+        "Vaccination program",
+        "Scheduled deworming"
+      ],
+      "growthDurationDays": 180,
+      "yieldPerAnimalKgLive": 90,
+      "fijiNotes": "Performs well in humid tropics; maintain housing hygiene to limit disease.",
+      "southAsiaNotes": "Popular in North-East India and Bangladesh; maintain hygiene and vaccination schedules.",
+      "regions": [
+        "pacific",
+        "south-asia",
+        "russia-europe"
+      ],
+      "countries": [
+        "Fiji",
+        "Samoa",
+        "Tonga",
+        "Vanuatu",
+        "Solomon Islands",
+        "Papua New Guinea",
+        "Kiribati",
+        "Tuvalu",
+        "Nauru",
+        "Marshall Islands",
+        "Palau",
+        "Federated States of Micronesia",
+        "India",
+        "Pakistan",
+        "Bangladesh",
+        "Sri Lanka",
+        "Nepal",
+        "Bhutan",
+        "Maldives",
+        "Afghanistan",
+        "Russia",
+        "Ukraine",
+        "Belarus",
+        "Poland",
+        "Estonia",
+        "Latvia",
+        "Lithuania",
+        "Germany",
+        "Czech Republic",
+        "Slovakia"
+      ]
+    },
+    {
       "id": "pets:rabbit",
       "group": "pets",
       "category": "Mammals (Household)",
@@ -3147,6 +4078,67 @@
       "isCrop": false,
       "isTree": false,
       "isFlower": false
+    },
+    {
+      "id": "pets:sheep",
+      "group": "pets",
+      "category": "Livestock (Production)",
+      "subCategory": null,
+      "name": "Sheep",
+      "scientificName": null,
+      "aliases": [],
+      "notes": null,
+      "environment": "domestic",
+      "tags": [
+        "livestock",
+        "farm",
+        "production",
+        "pets"
+      ],
+      "isEdible": false,
+      "isCrop": false,
+      "isTree": false,
+      "isFlower": false,
+      "breeds": [
+        "Nellore",
+        "Deccani",
+        "Romanov"
+      ],
+      "lambingIntervalDays": 365,
+      "feedRequirements": "Grazing with supplemental fodder or concentrates in stall-fed systems",
+      "commonDiseases": [
+        "Sheep pox",
+        "Internal worms",
+        "Foot rot"
+      ],
+      "preventiveActions": [
+        "Annual vaccination",
+        "Strategic deworming and pasture rotation",
+        "Hoof care in wet conditions"
+      ],
+      "growthDurationDays": 210,
+      "yieldPerAnimalKgLive": 30,
+      "southAsiaNotes": "Suited to arid and semi-arid belts; manage shade and water during peak heat.",
+      "russiaEuropeNotes": "Romanov sheep are cold-hardy and prolific for fibre and meat in continental winters.",
+      "regions": [
+        "south-asia",
+        "russia-europe"
+      ],
+      "countries": [
+        "India",
+        "Pakistan",
+        "Bangladesh",
+        "Sri Lanka",
+        "Nepal",
+        "Bhutan",
+        "Maldives",
+        "Russia",
+        "Belarus",
+        "Ukraine",
+        "Afghanistan",
+        "Poland",
+        "Kazakhstan"
+      ]
     },
     {
       "id": "pets:skunk",
@@ -3513,7 +4505,7 @@
       "category": "Fruits",
       "subCategory": "Tree Fruits",
       "name": "Bananas",
-      "scientificName": null,
+      "scientificName": "Musa spp.",
       "aliases": [],
       "notes": null,
       "environment": "terrestrial",
@@ -3529,7 +4521,39 @@
       "isTree": true,
       "isFlower": false,
       "climate": "tropical",
-      "soil": "loam"
+      "soil": "loam",
+      "varieties": [
+        "Grand Naine",
+        "Robusta",
+        "Nendran"
+      ],
+      "plantingSeason": "Year-round with staggered planting",
+      "spacing": "1.8 x 1.8 m (adjust per variety and density)",
+      "fertilizerRequirements": "Apply FYM 10–20 t/ha with fertigation emphasizing potassium",
+      "commonDiseases": [
+        "Panama disease",
+        "Sigatoka"
+      ],
+      "preventiveActions": [
+        "Use tissue-culture plants and maintain sanitation",
+        "Implement windbreaks and propping in cyclone-prone areas"
+      ],
+      "growthDurationDays": 330,
+      "yieldKgPerAcre": 20234,
+      "southAsiaNotes": "Provide windbreaks and drainage; propping reduces lodging in monsoon winds.",
+      "regions": [
+        "south-asia"
+      ],
+      "countries": [
+        "India",
+        "Pakistan",
+        "Bangladesh",
+        "Sri Lanka",
+        "Nepal",
+        "Bhutan",
+        "Maldives",
+        "Afghanistan"
+      ]
     },
     {
       "id": "plants:barley",
@@ -3537,7 +4561,7 @@
       "category": "Cereal Crops (Grains)",
       "subCategory": null,
       "name": "Barley",
-      "scientificName": null,
+      "scientificName": "Hordeum vulgare",
       "aliases": [],
       "notes": "Provide balanced NPK fertilizer before planting.",
       "environment": "terrestrial",
@@ -3553,16 +4577,49 @@
       "isFlower": false,
       "climate": "tropical",
       "soil": "loam",
-      "growthDurationDays": 120,
-      "yieldKgPerAcre": 2500,
+      "growthDurationDays": 105,
+      "yieldKgPerAcre": 2023,
       "marketPriceFJDPerKg": 1.8,
       "commonDiseases": [
         "rust",
-        "leaf spot"
+        "leaf spot",
+        "Net blotch",
+        "Leaf scald"
       ],
       "preventiveActions": [
         "Ensure good drainage",
-        "Use resistant varieties when available"
+        "Use resistant varieties when available",
+        "Use crop rotation and seed treatment",
+        "Apply fungicide programs when disease thresholds are reached"
+      ],
+      "varieties": [
+        "Feed barley",
+        "Malting types"
+      ],
+      "plantingSeason": "Spring sowing April–May; harvest August",
+      "spacing": "12.5–18 cm row spacing",
+      "fertilizerRequirements": "Balanced NPK with sulfur addition for malting quality",
+      "russiaEuropeNotes": "Hardy, short-season grain for feed and brewing across Russia, Ukraine, and Baltic states.",
+      "regions": [
+        "russia-europe"
+      ],
+      "countries": [
+        "Russia",
+        "Ukraine",
+        "Belarus",
+        "Poland",
+        "Germany",
+        "Czech Republic",
+        "Slovakia",
+        "Hungary",
+        "Romania",
+        "Estonia",
+        "Latvia",
+        "Lithuania",
+        "Finland",
+        "Sweden",
+        "Norway",
+        "Kazakhstan"
       ]
     },
     {
@@ -3725,7 +4782,7 @@
       "category": "Specialty & Other",
       "subCategory": null,
       "name": "Buckwheat",
-      "scientificName": null,
+      "scientificName": "Fagopyrum esculentum",
       "aliases": [],
       "notes": null,
       "environment": "terrestrial",
@@ -3739,7 +4796,36 @@
       "isTree": false,
       "isFlower": false,
       "climate": "tropical",
-      "soil": "loam"
+      "soil": "loam",
+      "varieties": [
+        "Local landraces and improved selections"
+      ],
+      "plantingSeason": "Sow May–June; harvest August–September",
+      "spacing": "15–25 cm rows or broadcast",
+      "fertilizerRequirements": "Low input; prefers light, well-drained soils",
+      "commonDiseases": [
+        "Lodging",
+        "Late frost injury"
+      ],
+      "preventiveActions": [
+        "Time sowing to avoid late frosts during bloom",
+        "Encourage pollinator activity for better seed set"
+      ],
+      "growthDurationDays": 80,
+      "yieldKgPerAcre": 707,
+      "russiaEuropeNotes": "Quick-maturing pseudo-cereal valued for honey and grain in Altai and Baltic regions.",
+      "regions": [
+        "russia-europe"
+      ],
+      "countries": [
+        "Russia",
+        "Ukraine",
+        "Belarus",
+        "Poland",
+        "Estonia",
+        "Latvia",
+        "Lithuania"
+      ]
     },
     {
       "id": "plants:cabbage",
@@ -3747,7 +4833,7 @@
       "category": "Vegetables",
       "subCategory": null,
       "name": "Cabbage",
-      "scientificName": null,
+      "scientificName": "Brassica oleracea var. capitata",
       "aliases": [],
       "notes": null,
       "environment": "terrestrial",
@@ -3762,7 +4848,37 @@
       "isTree": false,
       "isFlower": false,
       "climate": "tropical",
-      "soil": "loam"
+      "soil": "loam",
+      "varieties": [
+        "Storage types",
+        "Fresh-market cultivars"
+      ],
+      "plantingSeason": "Transplant April–May; harvest July–October",
+      "spacing": "60–70 cm rows x 40–50 cm",
+      "fertilizerRequirements": "Basal NPK with side-dressed nitrogen; lime acidic soils",
+      "commonDiseases": [
+        "Clubroot",
+        "Diamondback moth"
+      ],
+      "preventiveActions": [
+        "Apply lime to maintain pH above 6.5",
+        "Implement IPM and rotation to break pest cycles"
+      ],
+      "growthDurationDays": 120,
+      "yieldKgPerAcre": 18180,
+      "russiaEuropeNotes": "Late-storage cultivars for winter supplies; manage clubroot with liming and rotations.",
+      "regions": [
+        "russia-europe"
+      ],
+      "countries": [
+        "Russia",
+        "Poland",
+        "Ukraine",
+        "Belarus",
+        "Lithuania",
+        "Latvia",
+        "Estonia"
+      ]
     },
     {
       "id": "plants:canola",
@@ -3818,7 +4934,7 @@
       "category": "Root and Tuber Crops",
       "subCategory": null,
       "name": "Carrots",
-      "scientificName": null,
+      "scientificName": "Daucus carota",
       "aliases": [],
       "notes": "Avoid water logging to prevent rot.",
       "environment": "terrestrial",
@@ -3834,9 +4950,59 @@
       "isFlower": false,
       "climate": "tropical",
       "soil": "loam",
-      "growthDurationDays": 150,
-      "yieldKgPerAcre": 1800,
-      "marketPriceFJDPerKg": 2.5
+      "growthDurationDays": 116,
+      "yieldKgPerAcre": 5058,
+      "marketPriceFJDPerKg": 2.5,
+      "varieties": [
+        "Chantenay",
+        "New Kuroda"
+      ],
+      "plantingSeason": "Fiji: April–September; Russia/Europe: Sow April–May, harvest August–September",
+      "spacing": "50 x 8 cm",
+      "fertilizerRequirements": "Poultry manure 10 t/ha; NPK 200 kg/ha",
+      "commonDiseases": [
+        "Soft rot",
+        "Nematodes"
+      ],
+      "preventiveActions": [
+        "Maintain friable, well-drained soils",
+        "Apply Mancozeb or Kocide as needed"
+      ],
+      "fijiNotes": "Requires loose soil for straight roots; ideal for Fiji's cool-season districts.",
+      "russiaEuropeNotes": "Use Nantes/Flakkee types; protect against Alternaria and root fly with seed treatment and netting.",
+      "regions": [
+        "pacific",
+        "russia-europe"
+      ],
+      "countries": [
+        "Fiji",
+        "Samoa",
+        "Tonga",
+        "Vanuatu",
+        "Solomon Islands",
+        "Papua New Guinea",
+        "Kiribati",
+        "Tuvalu",
+        "Nauru",
+        "Marshall Islands",
+        "Palau",
+        "Federated States of Micronesia",
+        "Russia",
+        "Ukraine",
+        "Belarus",
+        "Poland",
+        "Estonia",
+        "Latvia",
+        "Lithuania",
+        "Finland",
+        "Sweden",
+        "Norway",
+        "Czech Republic",
+        "Slovakia",
+        "Hungary",
+        "Romania",
+        "Germany"
+      ]
     },
     {
       "id": "plants:cassava",
@@ -3939,7 +5105,7 @@
       "category": "Legumes (Pulses)",
       "subCategory": null,
       "name": "Chickpeas",
-      "scientificName": null,
+      "scientificName": "Cicer arietinum",
       "aliases": [],
       "notes": "Rotate with cereals to improve nitrogen balance.",
       "environment": "terrestrial",
@@ -3957,12 +5123,40 @@
       "climate": "tropical",
       "soil": "loam",
       "nitrogenFixer": true,
-      "growthDurationDays": 90,
-      "yieldKgPerAcre": 1200,
+      "growthDurationDays": 120,
+      "yieldKgPerAcre": 707,
       "marketPriceFJDPerKg": 2.2,
       "preventiveActions": [
         "Monitor for aphids monthly",
-        "Rotate fields every season"
+        "Rotate fields every season",
+        "Cultivate resistant varieties and treat seed",
+        "Use pheromone traps and IPM for pod borer"
+      ],
+      "varieties": [
+        "JG-11",
+        "Pusa-372",
+        "Annigeri-1"
+      ],
+      "plantingSeason": "Rabi sowing (October–November)",
+      "spacing": "30–45 cm rows x 10 cm",
+      "fertilizerRequirements": "Starter nitrogen, adequate phosphorus, and Rhizobium inoculation",
+      "commonDiseases": [
+        "Fusarium wilt",
+        "Pod borer"
+      ],
+      "southAsiaNotes": "Requires cool, dry season; terminal drought reduces pod fill.",
+      "regions": [
+        "south-asia"
+      ],
+      "countries": [
+        "India",
+        "Pakistan",
+        "Bangladesh",
+        "Sri Lanka",
+        "Nepal",
+        "Bhutan",
+        "Maldives",
+        "Afghanistan"
       ]
     },
     {
@@ -4712,7 +5906,7 @@
       "category": "Cereal Crops (Grains)",
       "subCategory": null,
       "name": "Maize",
-      "scientificName": null,
+      "scientificName": "Zea mays",
       "aliases": [],
       "notes": "Provide balanced NPK fertilizer before planting.",
       "environment": "terrestrial",
@@ -4728,16 +5922,42 @@
       "isFlower": false,
       "climate": "tropical",
       "soil": "loam",
-      "growthDurationDays": 120,
-      "yieldKgPerAcre": 2500,
+      "growthDurationDays": 105,
+      "yieldKgPerAcre": 1821,
       "marketPriceFJDPerKg": 1.8,
       "commonDiseases": [
         "rust",
-        "leaf spot"
+        "leaf spot",
+        "Fall armyworm",
+        "Stem borer"
       ],
       "preventiveActions": [
         "Ensure good drainage",
-        "Use resistant varieties when available"
+        "Use resistant varieties when available",
+        "Seed treatment before sowing",
+        "Deploy pheromone traps and IPM interventions"
+      ],
+      "varieties": [
+        "HQPM hybrids",
+        "DKC hybrids",
+        "Local composites"
+      ],
+      "plantingSeason": "Kharif and Rabi windows depending on agro-climatic zone",
+      "spacing": "60–75 cm rows x 20–25 cm between plants",
+      "fertilizerRequirements": "Basal NPK with split nitrogen; ensure good drainage and weed control",
+      "southAsiaNotes": "Avoid waterlogging; vigilant scouting for fall armyworm is essential.",
+      "regions": [
+        "south-asia"
+      ],
+      "countries": [
+        "India",
+        "Pakistan",
+        "Bangladesh",
+        "Sri Lanka",
+        "Nepal",
+        "Bhutan",
+        "Maldives",
+        "Afghanistan"
       ]
     },
     {
@@ -4746,7 +5966,7 @@
       "category": "Fruits",
       "subCategory": "Tree Fruits",
       "name": "Mangoes",
-      "scientificName": null,
+      "scientificName": "Mangifera indica",
       "aliases": [],
       "notes": null,
       "environment": "terrestrial",
@@ -4762,7 +5982,39 @@
       "isTree": true,
       "isFlower": false,
       "climate": "tropical",
-      "soil": "loam"
+      "soil": "loam",
+      "varieties": [
+        "Alphonso",
+        "Dashehari",
+        "Banganapalle"
+      ],
+      "plantingSeason": "Flowering January–February; harvest April–June",
+      "spacing": "10 x 10 m orchard spacing",
+      "fertilizerRequirements": "Annual FYM plus NPK; supplement micronutrients as needed",
+      "commonDiseases": [
+        "Anthracnose",
+        "Fruit fly"
+      ],
+      "preventiveActions": [
+        "Prune and sanitize orchard regularly",
+        "Deploy bait traps and timely sprays"
+      ],
+      "growthDurationDays": 135,
+      "yieldKgPerAcre": 4047,
+      "southAsiaNotes": "Alternate bearing requires canopy management and flower induction practices.",
+      "regions": [
+        "south-asia"
+      ],
+      "countries": [
+        "India",
+        "Pakistan",
+        "Bangladesh",
+        "Sri Lanka",
+        "Nepal",
+        "Bhutan",
+        "Maldives",
+        "Afghanistan"
+      ]
     },
     {
       "id": "plants:melons",
@@ -4891,6 +6143,60 @@
       "soil": "loam"
     },
     {
+      "id": "plants:mustard",
+      "group": "plants",
+      "category": "Oilseed Crops",
+      "subCategory": null,
+      "name": "Mustard",
+      "scientificName": "Brassica juncea",
+      "aliases": [],
+      "notes": null,
+      "environment": "terrestrial",
+      "tags": [
+        "oilseed",
+        "crop",
+        "edible",
+        "plants"
+      ],
+      "isEdible": true,
+      "isCrop": true,
+      "isTree": false,
+      "isFlower": false,
+      "climate": "tropical",
+      "soil": "loam",
+      "varieties": [
+        "Pusa Bold",
+        "NRCHB-101"
+      ],
+      "plantingSeason": "Rabi (October–November)",
+      "spacing": "30 cm rows x 10–15 cm",
+      "fertilizerRequirements": "Balanced NPK with sulfur supplementation and micronutrients as needed",
+      "commonDiseases": [
+        "Alternaria blight",
+        "Aphids"
+      ],
+      "preventiveActions": [
+        "Treat seed and maintain field sanitation",
+        "Apply need-based fungicide/insecticide sprays"
+      ],
+      "growthDurationDays": 120,
+      "yieldKgPerAcre": 607,
+      "southAsiaNotes": "Cool temperatures during flowering improve pod set and oil content.",
+      "regions": [
+        "south-asia"
+      ],
+      "countries": [
+        "India",
+        "Pakistan",
+        "Bangladesh",
+        "Sri Lanka",
+        "Nepal",
+        "Bhutan",
+        "Maldives",
+        "Afghanistan"
+      ]
+    },
+    {
       "id": "plants:neem",
       "group": "plants",
       "category": "Medicinal and Aromatic",
@@ -4943,7 +6249,7 @@
       "category": "Cereal Crops (Grains)",
       "subCategory": null,
       "name": "Oats",
-      "scientificName": null,
+      "scientificName": "Avena sativa",
       "aliases": [],
       "notes": "Provide balanced NPK fertilizer before planting.",
       "environment": "terrestrial",
@@ -4959,16 +6265,42 @@
       "isFlower": false,
       "climate": "tropical",
       "soil": "loam",
-      "growthDurationDays": 120,
-      "yieldKgPerAcre": 2500,
+      "growthDurationDays": 110,
+      "yieldKgPerAcre": 1619,
       "marketPriceFJDPerKg": 1.8,
       "commonDiseases": [
         "rust",
-        "leaf spot"
+        "leaf spot",
+        "Crown rust",
+        "Smut"
       ],
       "preventiveActions": [
         "Ensure good drainage",
-        "Use resistant varieties when available"
+        "Use resistant varieties when available",
+        "Treat seed with fungicide before sowing",
+        "Rotate and select resistant varieties"
+      ],
+      "varieties": [
+        "Food and feed oat lines"
+      ],
+      "plantingSeason": "Sow April–May; harvest August",
+      "spacing": "12.5–18 cm row spacing",
+      "fertilizerRequirements": "Moderate nitrogen; add potassium on light soils",
+      "russiaEuropeNotes": "Performs on acidic soils in Belarus and Baltic states; short growing season friendly.",
+      "regions": [
+        "russia-europe"
+      ],
+      "countries": [
+        "Russia",
+        "Ukraine",
+        "Belarus",
+        "Poland",
+        "Estonia",
+        "Latvia",
+        "Lithuania",
+        "Finland",
+        "Sweden",
+        "Norway"
       ]
     },
     {
@@ -5024,7 +6356,7 @@
       "category": "Vegetables",
       "subCategory": null,
       "name": "Onions",
-      "scientificName": null,
+      "scientificName": "Allium cepa",
       "aliases": [],
       "notes": null,
       "environment": "terrestrial",
@@ -5039,7 +6371,47 @@
       "isTree": false,
       "isFlower": false,
       "climate": "tropical",
-      "soil": "loam"
+      "soil": "loam",
+      "varieties": [
+        "N-53 (Kharif)",
+        "Poona Fursungi (Rabi)"
+      ],
+      "plantingSeason": "Kharif and Rabi cycles",
+      "spacing": "15 x 10 cm transplanted",
+      "fertilizerRequirements": "Basal phosphorus and potassium; split nitrogen doses; avoid standing water",
+      "commonDiseases": [
+        "Purple blotch",
+        "Thrips"
+      ],
+      "preventiveActions": [
+        "Rotate fungicides and use sticky traps",
+        "Maintain field hygiene and irrigation discipline"
+      ],
+      "growthDurationDays": 105,
+      "yieldKgPerAcre": 8094,
+      "southAsiaNotes": "Cure bulbs thoroughly for storage and reduce post-harvest losses.",
+      "regions": [
+        "south-asia",
+        "russia-europe"
+      ],
+      "countries": [
+        "India",
+        "Pakistan",
+        "Bangladesh",
+        "Sri Lanka",
+        "Nepal",
+        "Bhutan",
+        "Maldives",
+        "Afghanistan",
+        "Russia",
+        "Ukraine",
+        "Belarus",
+        "Poland",
+        "Estonia",
+        "Latvia",
+        "Lithuania",
+        "Germany"
+      ]
     },
     {
       "id": "plants:oranges",
@@ -5186,6 +6558,65 @@
       "soil": "loam"
     },
     {
+      "id": "plants:pearl millet",
+      "group": "plants",
+      "category": "Cereal Crops (Grains)",
+      "subCategory": null,
+      "name": "Pearl millet",
+      "scientificName": "Pennisetum glaucum",
+      "aliases": [],
+      "notes": "Provide balanced NPK fertilizer before planting.",
+      "environment": "terrestrial",
+      "tags": [
+        "cereal",
+        "crop",
+        "edible",
+        "plants"
+      ],
+      "isEdible": true,
+      "isCrop": true,
+      "isTree": false,
+      "isFlower": false,
+      "climate": "tropical",
+      "soil": "loam",
+      "growthDurationDays": 90,
+      "yieldKgPerAcre": 707,
+      "marketPriceFJDPerKg": 1.8,
+      "commonDiseases": [
+        "rust",
+        "leaf spot",
+        "Downy mildew",
+        "Ergot"
+      ],
+      "preventiveActions": [
+        "Ensure good drainage",
+        "Use resistant varieties when available",
+        "Adopt resistant hybrids and treat seed with fungicide",
+        "Maintain field sanitation"
+      ],
+      "varieties": [
+        "HHB-67",
+        "ICTP-8203"
+      ],
+      "plantingSeason": "Kharif (rainfed season)",
+      "spacing": "45 cm rows x 10–12 cm",
+      "fertilizerRequirements": "Apply basal NPK; supplement micronutrients on deficient soils",
+      "southAsiaNotes": "Performs well on marginal soils with limited rainfall.",
+      "regions": [
+        "south-asia"
+      ],
+      "countries": [
+        "India",
+        "Pakistan",
+        "Bangladesh",
+        "Sri Lanka",
+        "Nepal",
+        "Bhutan",
+        "Maldives",
+        "Afghanistan"
+      ]
+    },
+    {
       "id": "plants:pears",
       "group": "plants",
       "category": "Fruits",
@@ -5247,8 +6678,10 @@
       "category": "Vegetables",
       "subCategory": null,
       "name": "Peppers",
-      "scientificName": null,
-      "aliases": [],
+      "scientificName": "Capsicum grossum",
+      "aliases": [
+        "Capsicum"
+      ],
       "notes": null,
       "environment": "terrestrial",
       "tags": [
@@ -5262,7 +6695,42 @@
       "isTree": false,
       "isFlower": false,
       "climate": "tropical",
-      "soil": "loam"
+      "soil": "loam",
+      "varieties": [
+        "Yolo Wonder A",
+        "Blue Star"
+      ],
+      "plantingSeason": "April–September",
+      "spacing": "70 x 35 cm",
+      "fertilizerRequirements": "Poultry manure 10 t/ha; apply NPK (13-13-13) at 200 kg/ha",
+      "commonDiseases": [
+        "Bacterial wilt",
+        "Mites"
+      ],
+      "preventiveActions": [
+        "Rotate with non-solanaceous crops",
+        "Apply Benomyl, Kocide or Dimethoate as required"
+      ],
+      "growthDurationDays": 90,
+      "yieldKgPerAcre": 4046,
+      "fijiNotes": "Cool-season crop in Fiji highlands; ensure consistent soil moisture and pest monitoring.",
+      "regions": [
+        "pacific"
+      ],
+      "countries": [
+        "Fiji",
+        "Samoa",
+        "Tonga",
+        "Vanuatu",
+        "Solomon Islands",
+        "Papua New Guinea",
+        "Kiribati",
+        "Tuvalu",
+        "Nauru",
+        "Marshall Islands",
+        "Palau",
+        "Federated States of Micronesia"
+      ]
     },
     {
       "id": "plants:pigeon peas",
@@ -5349,7 +6817,7 @@
       "category": "Root and Tuber Crops",
       "subCategory": null,
       "name": "Potatoes",
-      "scientificName": null,
+      "scientificName": "Solanum tuberosum",
       "aliases": [],
       "notes": "Avoid water logging to prevent rot.",
       "environment": "terrestrial",
@@ -5365,9 +6833,48 @@
       "isFlower": false,
       "climate": "tropical",
       "soil": "loam",
-      "growthDurationDays": 150,
-      "yieldKgPerAcre": 1800,
-      "marketPriceFJDPerKg": 2.5
+      "growthDurationDays": 100,
+      "yieldKgPerAcre": 10117,
+      "marketPriceFJDPerKg": 2.5,
+      "varieties": [
+        "Kufri Jyoti",
+        "Kufri Pukhraj"
+      ],
+      "plantingSeason": "South Asia: Rabi (plains) and summer (hills); Russia/Europe: Plant May, harvest Aug–Sep",
+      "spacing": "60–67.5 cm rows x 20 cm",
+      "fertilizerRequirements": "Basal NPK with earthing up; treat seed tubers before planting",
+      "commonDiseases": [
+        "Late blight"
+      ],
+      "preventiveActions": [
+        "Use certified seed and adopt protective sprays",
+        "Ensure irrigation scheduling to prevent stress"
+      ],
+      "southAsiaNotes": "Requires cool nights; irrigation critical during tuber bulking.",
+      "russiaEuropeNotes": "Cool summer nights in Karelia and Baltic regions favor tuber bulking; manage Colorado beetle.",
+      "regions": [
+        "south-asia",
+        "russia-europe"
+      ],
+      "countries": [
+        "India",
+        "Pakistan",
+        "Bangladesh",
+        "Sri Lanka",
+        "Nepal",
+        "Bhutan",
+        "Maldives",
+        "Afghanistan",
+        "Russia",
+        "Ukraine",
+        "Belarus",
+        "Poland",
+        "Estonia",
+        "Latvia",
+        "Lithuania",
+        "Finland",
+        "Norway"
+      ]
     },
     {
       "id": "plants:pumpkin",
@@ -5446,7 +6953,7 @@
       "category": "Cereal Crops (Grains)",
       "subCategory": null,
       "name": "Rice",
-      "scientificName": null,
+      "scientificName": "Oryza sativa",
       "aliases": [],
       "notes": "Provide balanced NPK fertilizer before planting.",
       "environment": "terrestrial",
@@ -5462,20 +6969,54 @@
       "isFlower": false,
       "climate": "tropical",
       "soil": "clay",
-      "growthDurationDays": 150,
-      "yieldKgPerAcre": 2800,
+      "growthDurationDays": 135,
+      "yieldKgPerAcre": 1821,
       "marketPriceFJDPerKg": 2.1,
       "commonDiseases": [
         "rust",
-        "leaf spot"
+        "leaf spot",
+        "Blast",
+        "Bacterial leaf blight",
+        "Stem borer",
+        "Brown planthopper"
       ],
       "preventiveActions": [
         "Ensure good drainage",
         "Use resistant varieties when available",
-        "Maintain standing water depth 5–10 cm",
-        "Scout for stem borers"
+        "Plant resistant varieties and treat seed before sowing",
+        "Adopt integrated pest management (IPM) including pheromone traps and need-based sprays"
       ],
-      "waterRequirement": "Flooded paddies during vegetative stage"
+      "varieties": [
+        "IR64",
+        "Swarna",
+        "MTU-1010"
+      ],
+      "plantingSeason": "Kharif (June–October) and Rabi (November–February in South India)",
+      "spacing": "20 x 15 cm for transplanted puddled fields",
+      "fertilizerRequirements": "Basal NPK with top-dress nitrogen; maintain puddled fields and standing water",
+      "southAsiaNotes": "Monsoon-dependent production; ensure consistent water depth during vegetative growth.",
+      "russiaEuropeNotes": "Storage cultivars cured well ensure winter supply in Belarus and Gomel regions.",
+      "regions": [
+        "south-asia",
+        "russia-europe"
+      ],
+      "countries": [
+        "India",
+        "Pakistan",
+        "Bangladesh",
+        "Sri Lanka",
+        "Nepal",
+        "Bhutan",
+        "Maldives",
+        "Afghanistan",
+        "Russia",
+        "Ukraine",
+        "Belarus",
+        "Poland",
+        "Estonia",
+        "Latvia",
+        "Lithuania"
+      ]
     },
     {
       "id": "plants:rosemary",
@@ -5530,7 +7071,7 @@
       "category": "Cereal Crops (Grains)",
       "subCategory": null,
       "name": "Rye",
-      "scientificName": null,
+      "scientificName": "Secale cereale",
       "aliases": [],
       "notes": "Provide balanced NPK fertilizer before planting.",
       "environment": "terrestrial",
@@ -5546,16 +7087,43 @@
       "isFlower": false,
       "climate": "tropical",
       "soil": "loam",
-      "growthDurationDays": 120,
-      "yieldKgPerAcre": 2500,
+      "growthDurationDays": 255,
+      "yieldKgPerAcre": 1619,
       "marketPriceFJDPerKg": 1.8,
       "commonDiseases": [
         "rust",
-        "leaf spot"
+        "leaf spot",
+        "Ergot",
+        "Snow mold"
       ],
       "preventiveActions": [
         "Ensure good drainage",
-        "Use resistant varieties when available"
+        "Use resistant varieties when available",
+        "Use clean, treated seed and rotate with non-host crops",
+        "Employ fungicides if disease pressure builds"
+      ],
+      "varieties": [
+        "Winter rye cultivars"
+      ],
+      "plantingSeason": "Sow September–October; harvest July",
+      "spacing": "12.5–15 cm row spacing",
+      "fertilizerRequirements": "Moderate nitrogen; balance nutrients to prevent lodging",
+      "russiaEuropeNotes": "Extremely frost tolerant; thrives on sandy soils with protective snow cover.",
+      "regions": [
+        "russia-europe"
+      ],
+      "countries": [
+        "Russia",
+        "Poland",
+        "Belarus",
+        "Ukraine",
+        "Estonia",
+        "Latvia",
+        "Lithuania",
+        "Germany",
+        "Czech Republic",
+        "Slovakia",
+        "Finland"
       ]
     },
     {
@@ -5657,7 +7225,7 @@
       "category": "Cereal Crops (Grains)",
       "subCategory": null,
       "name": "Sorghum",
-      "scientificName": null,
+      "scientificName": "Sorghum bicolor",
       "aliases": [],
       "notes": "Provide balanced NPK fertilizer before planting.",
       "environment": "terrestrial",
@@ -5673,16 +7241,41 @@
       "isFlower": false,
       "climate": "tropical",
       "soil": "loam",
-      "growthDurationDays": 120,
-      "yieldKgPerAcre": 2500,
+      "growthDurationDays": 110,
+      "yieldKgPerAcre": 910,
       "marketPriceFJDPerKg": 1.8,
       "commonDiseases": [
         "rust",
-        "leaf spot"
+        "leaf spot",
+        "Shoot fly",
+        "Midge"
       ],
       "preventiveActions": [
         "Ensure good drainage",
-        "Use resistant varieties when available"
+        "Use resistant varieties when available",
+        "Sow early to escape pest pressure",
+        "Treat seed with recommended insecticides/fungicides"
+      ],
+      "varieties": [
+        "CSV hybrids",
+        "Local landraces"
+      ],
+      "plantingSeason": "Kharif (rainfed) and Rabi (post-rain) depending on zone",
+      "spacing": "45 cm rows x 10–15 cm",
+      "fertilizerRequirements": "Basal NPK; tolerant to moderate drought",
+      "southAsiaNotes": "Key staple in semi-arid tropics; also used for fodder and silage.",
+      "regions": [
+        "south-asia"
+      ],
+      "countries": [
+        "India",
+        "Pakistan",
+        "Bangladesh",
+        "Sri Lanka",
+        "Nepal",
+        "Bhutan",
+        "Maldives",
+        "Afghanistan"
       ]
     },
     {
@@ -5691,7 +7284,7 @@
       "category": "Legumes (Pulses)",
       "subCategory": null,
       "name": "Soybeans",
-      "scientificName": null,
+      "scientificName": "Glycine max",
       "aliases": [],
       "notes": "Rotate with cereals to improve nitrogen balance.",
       "environment": "terrestrial",
@@ -5710,12 +7303,39 @@
       "climate": "tropical",
       "soil": "loam",
       "nitrogenFixer": true,
-      "growthDurationDays": 90,
-      "yieldKgPerAcre": 1200,
+      "growthDurationDays": 100,
+      "yieldKgPerAcre": 910,
       "marketPriceFJDPerKg": 2.2,
       "preventiveActions": [
         "Monitor for aphids monthly",
-        "Rotate fields every season"
+        "Rotate fields every season",
+        "Apply fungicides at disease onset",
+        "Use IPM including pheromone traps"
+      ],
+      "varieties": [
+        "JS-335",
+        "JS-95-60"
+      ],
+      "plantingSeason": "Kharif sowing (June–July)",
+      "spacing": "45 cm rows x 5–7 cm",
+      "fertilizerRequirements": "Inoculate seed with Rhizobium; ensure balanced phosphorus and potassium",
+      "commonDiseases": [
+        "Rust",
+        "Girdle beetle"
+      ],
+      "southAsiaNotes": "Waterlogging severely affects nodulation and yield; ensure drainage.",
+      "regions": [
+        "south-asia"
+      ],
+      "countries": [
+        "India",
+        "Pakistan",
+        "Bangladesh",
+        "Sri Lanka",
+        "Nepal",
+        "Bhutan",
+        "Maldives",
+        "Afghanistan"
       ]
     },
     {
@@ -5770,7 +7390,7 @@
       "category": "Beverage Crops",
       "subCategory": null,
       "name": "Sugar beet",
-      "scientificName": null,
+      "scientificName": "Beta vulgaris",
       "aliases": [],
       "notes": null,
       "environment": "terrestrial",
@@ -5784,7 +7404,35 @@
       "isTree": false,
       "isFlower": false,
       "climate": "tropical",
-      "soil": "loam"
+      "soil": "loam",
+      "varieties": [
+        "High-sugar hybrids"
+      ],
+      "plantingSeason": "Sow April; harvest September–October",
+      "spacing": "45–50 cm rows x 18–22 cm",
+      "fertilizerRequirements": "High NPK demand; supply boron on deficient soils",
+      "commonDiseases": [
+        "Cercospora leaf spot",
+        "Rhizoctonia"
+      ],
+      "preventiveActions": [
+        "Apply fungicides and maintain rotations",
+        "Use boron sprays and improve drainage"
+      ],
+      "growthDurationDays": 170,
+      "yieldKgPerAcre": 19190,
+      "coldNotes": "Core crop in south/central Russia and Europe; irrigation boosts root yield.",
+      "regions": [
+        "russia-europe"
+      ],
+      "countries": [
+        "Russia",
+        "Ukraine",
+        "Belarus",
+        "Germany",
+        "Poland",
+        "France"
+      ]
     },
     {
       "id": "plants:sugarcane",
@@ -5792,7 +7440,7 @@
       "category": "Beverage Crops",
       "subCategory": null,
       "name": "Sugarcane",
-      "scientificName": null,
+      "scientificName": "Saccharum officinarum",
       "aliases": [],
       "notes": null,
       "environment": "terrestrial",
@@ -5806,7 +7454,38 @@
       "isTree": false,
       "isFlower": false,
       "climate": "tropical",
-      "soil": "loam"
+      "soil": "loam",
+      "varieties": [
+        "Co-0238"
+      ],
+      "plantingSeason": "February–April or September–October depending on region",
+      "spacing": "Ridges 90–120 cm apart with 2–3 bud setts per furrow",
+      "fertilizerRequirements": "High NPK doses supplemented with organic manures and trash mulching",
+      "commonDiseases": [
+        "Red rot",
+        "Smut",
+        "Sugarcane borers"
+      ],
+      "preventiveActions": [
+        "Use healthy, treated setts and rogue infected stools",
+        "Maintain trash mulching and integrated pest management"
+      ],
+      "growthDurationDays": 365,
+      "yieldKgPerAcre": 32375,
+      "southAsiaNotes": "Requires assured irrigation and high nutrient inputs for optimal cane yields.",
+      "regions": [
+        "south-asia"
+      ],
+      "countries": [
+        "India",
+        "Pakistan",
+        "Bangladesh",
+        "Sri Lanka",
+        "Nepal",
+        "Bhutan",
+        "Maldives",
+        "Afghanistan"
+      ]
     },
     {
       "id": "plants:sunflower",
@@ -5814,7 +7493,7 @@
       "category": "Oilseed Crops",
       "subCategory": null,
       "name": "Sunflower",
-      "scientificName": null,
+      "scientificName": "Helianthus annuus",
       "aliases": [],
       "notes": null,
       "environment": "terrestrial",
@@ -5829,7 +7508,37 @@
       "isTree": false,
       "isFlower": false,
       "climate": "tropical",
-      "soil": "loam"
+      "soil": "loam",
+      "varieties": [
+        "High-oleic oilseed hybrids"
+      ],
+      "plantingSeason": "Sow April; harvest September",
+      "spacing": "70 cm rows x 25–30 cm",
+      "fertilizerRequirements": "Balanced NPK; avoid excessive nitrogen to reduce lodging",
+      "commonDiseases": [
+        "Sclerotinia",
+        "Downy mildew"
+      ],
+      "preventiveActions": [
+        "Adopt tolerant hybrids and rotate away from susceptible crops",
+        "Apply fungicides when disease pressure builds"
+      ],
+      "growthDurationDays": 150,
+      "yieldKgPerAcre": 1345,
+      "russiaEuropeNotes": "Major oilseed crop across Ukraine and southern Russia; maintain wider rotations to curb Sclerotinia.",
+      "regions": [
+        "russia-europe"
+      ],
+      "countries": [
+        "Ukraine",
+        "Russia",
+        "Belarus",
+        "Kazakhstan",
+        "Poland",
+        "Romania",
+        "Hungary",
+        "Bulgaria"
+      ]
     },
     {
       "id": "plants:sweet potatoes",
@@ -5864,7 +7573,9 @@
       "subCategory": null,
       "name": "Taro",
       "scientificName": null,
-      "aliases": [],
+      "aliases": [
+        "Dalo"
+      ],
       "notes": "Avoid water logging to prevent rot.",
       "environment": "terrestrial",
       "tags": [
@@ -5879,9 +7590,42 @@
       "isFlower": false,
       "climate": "tropical",
       "soil": "loam",
-      "growthDurationDays": 150,
-      "yieldKgPerAcre": 1800,
-      "marketPriceFJDPerKg": 2.5
+      "growthDurationDays": 240,
+      "yieldKgPerAcre": 4046,
+      "marketPriceFJDPerKg": 2.5,
+      "varieties": [
+        "Samoan Pink",
+        "Tausala"
+      ],
+      "plantingSeason": "All year",
+      "spacing": "1 x 1 m",
+      "fertilizerRequirements": "Organic manure 10 t/ha",
+      "commonDiseases": [
+        "Taro beetle",
+        "Leaf blight"
+      ],
+      "preventiveActions": [
+        "Ensure good drainage",
+        "Apply Benlate for blight management"
+      ],
+      "fijiNotes": "Thrives in wet lowlands; essential staple known locally as Dalo.",
+      "regions": [
+        "pacific"
+      ],
+      "countries": [
+        "Fiji",
+        "Samoa",
+        "Tonga",
+        "Vanuatu",
+        "Solomon Islands",
+        "Papua New Guinea",
+        "Kiribati",
+        "Tuvalu",
+        "Nauru",
+        "Marshall Islands",
+        "Palau",
+        "Federated States of Micronesia"
+      ]
     },
     {
       "id": "plants:tea",
@@ -5936,7 +7680,7 @@
       "category": "Vegetables",
       "subCategory": null,
       "name": "Tomatoes",
-      "scientificName": null,
+      "scientificName": "Solanum lycopersicum",
       "aliases": [],
       "notes": null,
       "environment": "terrestrial",
@@ -5951,7 +7695,40 @@
       "isTree": false,
       "isFlower": false,
       "climate": "tropical",
-      "soil": "loam"
+      "soil": "loam",
+      "varieties": [
+        "Arka Vikas",
+        "Pusa Ruby",
+        "Commercial hybrids"
+      ],
+      "plantingSeason": "Multiple windows, avoid peak heat or heavy rains",
+      "spacing": "60–75 cm rows x 45 cm",
+      "fertilizerRequirements": "Basal NPK plus organic manures; mulching and fertigation recommended",
+      "commonDiseases": [
+        "Late blight",
+        "Fruit borer",
+        "Whitefly"
+      ],
+      "preventiveActions": [
+        "Stake and prune plants; use drip irrigation",
+        "Adopt IPM nets and targeted sprays"
+      ],
+      "growthDurationDays": 105,
+      "yieldKgPerAcre": 13152,
+      "southAsiaNotes": "Optimum at 20–25°C; staggered planting maintains continuous supply.",
+      "regions": [
+        "south-asia"
+      ],
+      "countries": [
+        "India",
+        "Pakistan",
+        "Bangladesh",
+        "Sri Lanka",
+        "Nepal",
+        "Bhutan",
+        "Maldives",
+        "Afghanistan"
+      ]
     },
     {
       "id": "plants:triticale",
@@ -6046,9 +7823,9 @@
       "category": "Herbs & Spices",
       "subCategory": null,
       "name": "Vanilla",
-      "scientificName": null,
+      "scientificName": "Vanilla planifolia",
       "aliases": [],
-      "notes": null,
+      "notes": "Requires trellising and hand pollination; pods mature 8–9 months after pollination.",
       "environment": "terrestrial",
       "tags": [
         "herb",
@@ -6063,7 +7840,27 @@
       "isTree": false,
       "isFlower": false,
       "climate": "tropical",
-      "soil": "loam"
+      "soil": "loam",
+      "growthDurationDays": 1095,
+      "postPollinationMaturityDays": 270,
+      "fijiNotes": "Shade-loving vine; maintain humidity and provide regular pruning.",
+      "regions": [
+        "pacific"
+      ],
+      "countries": [
+        "Fiji",
+        "Samoa",
+        "Tonga",
+        "Vanuatu",
+        "Solomon Islands",
+        "Papua New Guinea",
+        "Kiribati",
+        "Tuvalu",
+        "Nauru",
+        "Marshall Islands",
+        "Palau",
+        "Federated States of Micronesia"
+      ]
     },
     {
       "id": "plants:wheat",
@@ -6071,7 +7868,7 @@
       "category": "Cereal Crops (Grains)",
       "subCategory": null,
       "name": "Wheat",
-      "scientificName": null,
+      "scientificName": "Triticum aestivum",
       "aliases": [],
       "notes": "Provide balanced NPK fertilizer before planting.",
       "environment": "terrestrial",
@@ -6088,16 +7885,61 @@
       "climate": "temperate",
       "soil": "loam",
       "growthDurationDays": 130,
-      "yieldKgPerAcre": 2600,
+      "yieldKgPerAcre": 1619,
       "marketPriceFJDPerKg": 1.9,
       "commonDiseases": [
         "rust",
         "leaf spot",
-        "powdery mildew"
+        "Rusts",
+        "Aphids",
+        "Snow mold"
       ],
       "preventiveActions": [
         "Ensure good drainage",
-        "Use resistant varieties when available"
+        "Use resistant varieties when available",
+        "Grow rust-resistant varieties",
+        "Seed dressing and timely fungicide/insecticide sprays",
+        "Maintain snow cover and stubble to protect winter stands"
+      ],
+      "varieties": [
+        "HD-2967",
+        "PBW-343",
+        "GW-322",
+        "Winter-hardy lines"
+      ],
+      "plantingSeason": "South Asia: Rabi (November–April); Russia/Europe: Winter sow Sep–Oct, harvest July; spring types Apr–May",
+      "spacing": "20–22 cm row spacing",
+      "fertilizerRequirements": "Basal NPK; top-dress nitrogen at tillering and booting stages; split N for winter wheat systems",
+      "southAsiaNotes": "Requires cool, dry winters for proper grain filling across the Indo-Gangetic plains.",
+      "russiaEuropeNotes": "Winter wheat sown in Krasnodar/Kuban benefits from snow cover; manage stripe rust and snow mold.",
+      "regions": [
+        "south-asia",
+        "russia-europe"
+      ],
+      "countries": [
+        "India",
+        "Pakistan",
+        "Bangladesh",
+        "Sri Lanka",
+        "Nepal",
+        "Bhutan",
+        "Maldives",
+        "Afghanistan",
+        "Russia",
+        "Ukraine",
+        "Belarus",
+        "Poland",
+        "Estonia",
+        "Latvia",
+        "Lithuania",
+        "Finland",
+        "Sweden",
+        "Norway",
+        "Kazakhstan",
+        "Czech Republic",
+        "Slovakia",
+        "Romania",
+        "Hungary"
       ]
     },
     {

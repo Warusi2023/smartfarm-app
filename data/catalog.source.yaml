@@ -8,6 +8,7 @@ plants:
       - Barley
       - Sorghum
       - Millet
+      - Pearl millet
       - Oats
       - Rye
       - Triticale
@@ -109,6 +110,7 @@ plants:
       - Flaxseed
       - Cottonseed
       - Safflower
+      - Mustard
   Beverage Crops:
     tags: [beverage, crop]
     items:
@@ -406,6 +408,26 @@ fish:
         scientific: Osphronemidae
       - name: Tilapia hybrids
         scientific: Various
+      - name: Rohu
+        scientific: Labeo rohita
+      - name: Catla
+        scientific: Catla catla
+      - name: Mrigal
+        scientific: Cirrhinus mrigala
+      - name: Grass Carp
+        scientific: Ctenopharyngodon idella
+      - name: Silver Carp
+        scientific: Hypophthalmichthys molitrix
+      - name: Pangasius Catfish
+        scientific: Pangasianodon hypophthalmus
+      - name: Siberian Sturgeon
+        scientific: Acipenser baerii
+      - name: Pike-Perch (Zander)
+        scientific: Sander lucioperca
+      - name: Siberian Sturgeon
+        scientific: Acipenser baerii
+      - name: Pike-perch
+        scientific: Sander lucioperca
   Marine Fish:
     tags: [fish, aquaculture, marine, edible]
     items:
@@ -441,6 +463,8 @@ crustaceans:
       - { name: Whiteleg shrimp, scientific: Litopenaeus vannamei }
       - { name: Giant tiger prawn, scientific: Penaeus monodon }
       - { name: Freshwater prawn, scientific: Macrobrachium rosenbergii }
+      - { name: Black tiger shrimp, scientific: Penaeus monodon }
+      - { name: Indian white prawn, scientific: Fenneropenaeus indicus }
   Crabs:
     tags: [crustacean, aquaculture, edible]
     items:
@@ -526,4 +550,16 @@ pets:
       - Stick Insects / Leaf Insects
       - Ant Farms
       - Bees (Beehives)
+  Livestock (Production):
+    tags: [livestock, farm, production]
+    items:
+      - Pig
+      - Broiler Chicken
+      - Dairy Cattle
+      - Beef Cattle
+      - Buffalo
+      - Goat
+      - Sheep
+      - Layer Chicken
+      - Duck
 
