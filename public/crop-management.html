@@ -610,10 +610,20 @@
             }
 
             if (!catalogGrowthData.promise) {
-                catalogGrowthData.promise = fetch('/api/catalog?group=plants&limit=2000')
-                    .then(response => {
+                catalogGrowthData.promise = fetch('/api/catalog?group=plants&limit=2000', { headers: { Accept: 'application/json' } })
+                    .then(async response => {
                         if (!response.ok) {
                             throw new Error(`Catalog preload failed (${response.status})`);
+                        }
+                        const contentType = response.headers.get('content-type') || '';
+                        if (!contentType.includes('application/json')) {
+                            const preview = await response.text();
+                            throw new Error(
+                                `Catalog preload returned non-JSON response (content-type: ${contentType || 'unknown'})\nPreview: ${preview.slice(
+                                    0,
+                                    120
+                                )}`
+                            );
                         }
                         return response.json();
                     })

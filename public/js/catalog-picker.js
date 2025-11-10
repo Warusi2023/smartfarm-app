@@ -19,6 +19,16 @@
         if (!response.ok) {
             throw new Error(`Catalog request failed (${response.status})`);
         }
+        const contentType = response.headers.get('content-type') || '';
+        if (!contentType.includes('application/json')) {
+            const preview = await response.text();
+            throw new Error(
+                `Catalog request returned non-JSON response (content-type: ${contentType || 'unknown'})\nPreview: ${preview.slice(
+                    0,
+                    120
+                )}`
+            );
+        }
         const json = await response.json();
         return json.items || [];
     }
