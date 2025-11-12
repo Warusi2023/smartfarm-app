@@ -1,36 +1,112 @@
 (function () {
-    const API_BASE = '/api/catalog';
+    function resolveCatalogUrl(params) {
+        let baseUrl = '/api/catalog';
+        if (window.SmartFarmConfig?.getApiUrl) {
+            // SmartFarmConfig expects the endpoint without the /api prefix
+            baseUrl = window.SmartFarmConfig.getApiUrl('catalog');
+        }
+
+        const url = new URL(baseUrl, window.location.origin);
+        Object.entries(params).forEach(([key, value]) => {
+            if (value !== undefined && value !== null && value !== '') {
+                url.searchParams.append(key, value);
+            }
+        });
+        return url.toString();
+    }
 
     const pendingEnhancements = new WeakSet();
 
-    function buildQuery(params) {
-        const searchParams = new URLSearchParams();
-        Object.entries(params).forEach(([key, value]) => {
-            if (value !== undefined && value !== null && value !== '') {
-                searchParams.append(key, value);
-            }
-        });
-        return `${API_BASE}?${searchParams.toString()}`;
+    let staticCatalogPromise = null;
+    let staticCatalogItems = null;
+
+    async function loadStaticCatalog() {
+        if (staticCatalogItems) {
+            return staticCatalogItems;
+        }
+        if (!staticCatalogPromise) {
+            staticCatalogPromise = (async () => {
+                const response = await fetch('/data/catalog.json', { headers: { Accept: 'application/json' } });
+                if (!response.ok) {
+                    throw new Error(`Static catalog request failed (${response.status})`);
+                }
+                const contentType = response.headers.get('content-type') || '';
+                if (!contentType.includes('application/json')) {
+                    const preview = await response.text();
+                    throw new Error(
+                        `Static catalog request returned non-JSON response (content-type: ${contentType || 'unknown'})\nPreview: ${preview.slice(
+                            0,
+                            120
+                        )}`
+                    );
+                }
+                const json = await response.json();
+                staticCatalogItems = Array.isArray(json) ? json : json.items || [];
+                return staticCatalogItems;
+            })();
+        }
+        return staticCatalogPromise;
+    }
+
+    function filterCatalogItems(items, params) {
+        const limit = params.limit ? Number(params.limit) : null;
+        const query = (params.q || '').toLowerCase();
+        const group = (params.group || '').toLowerCase();
+        const category = (params.category || '').toLowerCase();
+
+        let filtered = items;
+        if (group) {
+            filtered = filtered.filter(item => (item.group || '').toLowerCase() === group);
+        }
+        if (category) {
+            filtered = filtered.filter(item => (item.category || '').toLowerCase() === category);
+        }
+        if (query) {
+            filtered = filtered.filter(item => {
+                const name = (item.name || '').toLowerCase();
+                const scientific = (item.scientificName || '').toLowerCase();
+                return name.includes(query) || scientific.includes(query);
+            });
+        }
+        if (limit && limit > 0) {
+            filtered = filtered.slice(0, limit);
+        }
+        return filtered;
     }
 
     async function fetchCatalog(params) {
-        const url = buildQuery(params);
-        const response = await fetch(url, { headers: { Accept: 'application/json' } });
-        if (!response.ok) {
-            throw new Error(`Catalog request failed (${response.status})`);
+        try {
+            const url = resolveCatalogUrl(params);
+            const response = await fetch(url, { headers: { Accept: 'application/json' } });
+            if (!response.ok) {
+                throw new Error(`Catalog request failed (${response.status})`);
+            }
+            const contentType = response.headers.get('content-type') || '';
+            if (!contentType.includes('application/json')) {
+                const preview = await response.text();
+                throw new Error(
+                    `Catalog request returned non-JSON response (content-type: ${contentType || 'unknown'})\nPreview: ${preview.slice(
+                        0,
+                        120
+                    )}`
+                );
+            }
+            const json = await response.json();
+            const items = json.items || [];
+            if (items.length === 0) {
+                throw new Error('Catalog request returned no items');
+            }
+            return items;
+        } catch (error) {
+            console.warn('catalog-picker: falling back to static catalog due to error:', error);
+            try {
+                const staticItems = await loadStaticCatalog();
+                return filterCatalogItems(staticItems, params);
+            } catch (fallbackError) {
+                console.error('catalog-picker: static catalog fallback failed:', fallbackError);
+                return [];
+            }
         }
-        const contentType = response.headers.get('content-type') || '';
-        if (!contentType.includes('application/json')) {
-            const preview = await response.text();
-            throw new Error(
-                `Catalog request returned non-JSON response (content-type: ${contentType || 'unknown'})\nPreview: ${preview.slice(
-                    0,
-                    120
-                )}`
-            );
-        }
-        const json = await response.json();
-        return json.items || [];
     }
 
     function renderOptions(select, items, originalOptions, currentValue) {

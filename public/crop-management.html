@@ -625,8 +625,47 @@
             }
 
             if (!catalogGrowthData.promise) {
-                catalogGrowthData.promise = fetch(buildApiUrl('catalog', { group: 'plants', limit: 2000 }), { headers: { Accept: 'application/json' } })
-                    .then(async response => {
+                const buildMapFromItems = items => {
+                    const map = new Map();
+                    (items || []).forEach(item => {
+                        if (!item || !item.name) return;
+                        const primaryKey = item.name.toLowerCase();
+                        map.set(primaryKey, item);
+                        if (Array.isArray(item.aliases)) {
+                            item.aliases.forEach(alias => {
+                                if (alias) {
+                                    map.set(alias.toLowerCase(), item);
+                                }
+                            });
+                        }
+                    });
+                    return map;
+                };
+
+                const loadFromStaticCatalog = async () => {
+                    const response = await fetch('/data/catalog.json', { headers: { Accept: 'application/json' } });
+                    if (!response.ok) {
+                        throw new Error(`Static catalog preload failed (${response.status})`);
+                    }
+                    const contentType = response.headers.get('content-type') || '';
+                    if (!contentType.includes('application/json')) {
+                        const preview = await response.text();
+                        throw new Error(
+                            `Static catalog preload returned non-JSON response (content-type: ${contentType || 'unknown'})\nPreview: ${preview.slice(
+                                0,
+                                120
+                            )}`
+                        );
+                    }
+                    const data = await response.json();
+                    return buildMapFromItems(data.items || data);
+                };
+
+                catalogGrowthData.promise = (async () => {
+                    try {
+                        const response = await fetch(buildApiUrl('catalog', { group: 'plants', limit: 2000 }), {
+                            headers: { Accept: 'application/json' }
+                        });
                         if (!response.ok) {
                             throw new Error(`Catalog preload failed (${response.status})`);
                         }
@@ -640,31 +679,31 @@
                                 )}`
                             );
                         }
-                        return response.json();
-                    })
-                    .then(data => {
-                        const map = new Map();
-                        (data.items || []).forEach(item => {
-                            if (!item || !item.name) return;
-                            const primaryKey = item.name.toLowerCase();
-                            map.set(primaryKey, item);
-                            if (Array.isArray(item.aliases)) {
-                                item.aliases.forEach(alias => {
-                                    if (alias) {
-                                        map.set(alias.toLowerCase(), item);
-                                    }
-                                });
-                            }
-                        });
+                        const data = await response.json();
+                        const map = buildMapFromItems(data.items);
+                        if (map.size === 0) {
+                            throw new Error('Catalog preload returned no plant items');
+                        }
                         catalogGrowthData.map = map;
                         catalogGrowthData.loaded = true;
                         return map;
-                    })
-                    .catch(error => {
-                        console.error('Failed to preload plant catalog data:', error);
-                        catalogGrowthData.loaded = true;
-                        return catalogGrowthData.map;
-                    });
+                    } catch (apiError) {
+                        console.warn('Failed to preload plant catalog data via API, attempting static fallback:', apiError);
+                        try {
+                            const staticMap = await loadFromStaticCatalog();
+                            if (staticMap.size === 0) {
+                                throw new Error('Static catalog preload returned no items');
+                            }
+                            catalogGrowthData.map = staticMap;
+                            return staticMap;
+                        } catch (fallbackError) {
+                            console.error('Static catalog fallback failed:', fallbackError);
+                            return catalogGrowthData.map;
+                        } finally {
+                            catalogGrowthData.loaded = true;
+                        }
+                    }
+                })();
             }
 
             return catalogGrowthData.promise;
