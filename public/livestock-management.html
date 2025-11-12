@@ -310,6 +310,17 @@
         .health-good { background-color: #17a2b8; }
         .health-fair { background-color: #ffc107; }
         .health-poor { background-color: #dc3545; }
+        .health-record-entry {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 12px;
+            background: #fdfdfd;
+            margin-bottom: 12px;
+        }
+        .health-record-entry .record-meta {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
 
         .weight-chart {
             height: 250px;
@@ -2151,6 +2162,7 @@
                 breedingStatus: savedLivestock.breedingStatus,
                 firstCalvingDate: savedLivestock.firstCalvingDate,
                 healthNotes: savedLivestock.description || '',
+                healthRecords: Array.isArray(savedLivestock.healthRecords) ? savedLivestock.healthRecords : [],
                 photo: savedLivestock.photo || null,
                 createdAt: savedLivestock.createdAt
             };
@@ -2723,6 +2735,8 @@
                         breedingStatus: breedingStatus,
                         firstCalvingDate: firstCalvingDate,
                         healthNotes: healthNotes,
+                        healthRecords: [],
+                        healthRecords: [],
                         photo: animalPhoto,
                         lastUpdated: new Date().toISOString()
                     };
@@ -2984,7 +2998,9 @@
                             savedViaAPI = true;
                             
                             // Update local array with API response
+                            const existingAnimal = livestock[animalIndex] || {};
                             const updatedAnimal = {
+                                ...existingAnimal,
                                 id: response.data.id || id,
                                 species: response.data.type || updatedData.species,
                                 breed: response.data.breed || updatedData.breed,
@@ -2992,8 +3008,7 @@
                                 healthStatus: response.data.healthStatus || updatedData.healthStatus,
                                 weight: response.data.weight || updatedData.weight,
                                 value: response.data.value || updatedData.value,
-                                healthNotes: response.data.description || updatedData.healthNotes,
-                                ...livestock[animalIndex] // Preserve other fields
+                                healthNotes: response.data.description || updatedData.healthNotes
                             };
                             
                             livestock[animalIndex] = updatedAnimal;
@@ -3086,7 +3101,372 @@
         }
 
         function addHealthRecord(id) {
-            alert('Health record functionality will be implemented in the next version');
+            const animalIndex = livestock.findIndex(a => a.id === id);
+            if (animalIndex === -1) {
+                showAlert('Animal not found!', 'error');
+                return;
+            }
+
+            const modal = ensureHealthRecordModal();
+            const animal = livestock[animalIndex];
+            if (!Array.isArray(animal.healthRecords)) {
+                animal.healthRecords = [];
+            }
+
+            modal.dataset.animalId = String(id);
+
+            const headingEl = modal.querySelector('#healthRecordAnimalHeading');
+            if (headingEl) {
+                headingEl.textContent = `${animal.tag || 'Animal'} • ${animal.species ? animal.species.charAt(0).toUpperCase() + animal.species.slice(1) : ''}`;
+            }
+
+            const form = modal.querySelector('#healthRecordForm');
+            if (form) {
+                form.reset();
+                const today = new Date().toISOString().split('T')[0];
+                const dateInput = form.querySelector('#healthRecordDate');
+                if (dateInput) {
+                    dateInput.value = today;
+                }
+                const statusUpdate = form.querySelector('#healthRecordStatusUpdate');
+                if (statusUpdate) {
+                    statusUpdate.value = '';
+                }
+            }
+
+            updateHealthRecordStats(animal);
+            renderHealthRecordList(animal);
+
+            const modalInstance = bootstrap.Modal.getOrCreateInstance(modal);
+            modalInstance.show();
+        }
+
+        function ensureHealthRecordModal() {
+            let modal = document.getElementById('healthRecordModal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.className = 'modal fade';
+                modal.id = 'healthRecordModal';
+                modal.tabIndex = -1;
+                modal.innerHTML = `
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title"><i class="fas fa-notes-medical me-2"></i>Health Records</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <h6 id="healthRecordAnimalHeading" class="mb-1"></h6>
+                                    <div id="healthRecordStats" class="text-muted small"></div>
+                                </div>
+                                <form id="healthRecordForm" class="row g-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label" for="healthRecordDate">Record Date</label>
+                                        <input type="date" class="form-control" id="healthRecordDate" required>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label" for="healthRecordType">Record Type</label>
+                                        <select class="form-select" id="healthRecordType">
+                                            <option value="Check-up">Check-up</option>
+                                            <option value="Vaccination">Vaccination</option>
+                                            <option value="Treatment">Treatment</option>
+                                            <option value="Injury">Injury</option>
+                                            <option value="Observation">Observation</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label" for="healthRecordStatus">Condition</label>
+                                        <select class="form-select" id="healthRecordStatus">
+                                            <option value="">No change</option>
+                                            <option value="healthy">Healthy</option>
+                                            <option value="sick">Sick</option>
+                                            <option value="recovering">Recovering</option>
+                                            <option value="injured">Injured</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="healthRecordPerformedBy">Performed By</label>
+                                        <input type="text" class="form-control" id="healthRecordPerformedBy" placeholder="Veterinarian or staff name">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label" for="healthRecordCost">Cost (FJD)</label>
+                                        <input type="number" class="form-control" id="healthRecordCost" min="0" step="0.01">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label" for="healthRecordFollowUp">Follow-up Date</label>
+                                        <input type="date" class="form-control" id="healthRecordFollowUp">
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label" for="healthRecordNotes">Notes</label>
+                                        <textarea class="form-control" id="healthRecordNotes" rows="3" placeholder="Describe symptoms, medication, or treatment details"></textarea>
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label" for="healthRecordStatusUpdate">Update Overall Health Status</label>
+                                        <select class="form-select" id="healthRecordStatusUpdate">
+                                            <option value="">Keep current status</option>
+                                            <option value="healthy">Healthy</option>
+                                            <option value="sick">Sick</option>
+                                            <option value="pregnant">Pregnant</option>
+                                            <option value="breeding">Breeding</option>
+                                            <option value="sold">Sold</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-12 d-flex justify-content-end">
+                                        <button type="submit" class="btn btn-success">
+                                            <i class="fas fa-plus me-2"></i>Save Record
+                                        </button>
+                                    </div>
+                                </form>
+                                <hr>
+                                <div id="healthRecordList" class="mt-3"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            }
+
+            if (!modal.dataset.initialized) {
+                const form = modal.querySelector('#healthRecordForm');
+                if (form) {
+                    form.addEventListener('submit', saveHealthRecordFromModal);
+                }
+                modal.addEventListener('hidden.bs.modal', () => {
+                    const formEl = modal.querySelector('#healthRecordForm');
+                    if (formEl) {
+                        formEl.reset();
+                        const today = new Date().toISOString().split('T')[0];
+                        const dateInput = formEl.querySelector('#healthRecordDate');
+                        if (dateInput) {
+                            dateInput.value = today;
+                        }
+                        const statusUpdate = formEl.querySelector('#healthRecordStatusUpdate');
+                        if (statusUpdate) {
+                            statusUpdate.value = '';
+                        }
+                    }
+                    modal.dataset.animalId = '';
+                });
+                modal.dataset.initialized = 'true';
+            }
+
+            return modal;
+        }
+
+        function escapeHtml(value) {
+            if (value === null || value === undefined) {
+                return '';
+            }
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function formatHealthRecordDate(value) {
+            if (!value) return 'N/A';
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) {
+                return value;
+            }
+            return date.toLocaleDateString();
+        }
+
+        function updateHealthRecordStats(animal) {
+            const modal = document.getElementById('healthRecordModal');
+            if (!modal) return;
+            const statsEl = modal.querySelector('#healthRecordStats');
+            if (!statsEl) return;
+
+            const records = Array.isArray(animal.healthRecords) ? animal.healthRecords : [];
+            if (!records.length) {
+                statsEl.textContent = 'No health records yet.';
+                return;
+            }
+
+            const latest = records[0];
+            const dateString = formatHealthRecordDate(latest.recordDate || latest.createdAt);
+            statsEl.textContent = `Last record: ${dateString} • Total records: ${records.length}`;
+        }
+
+        function renderHealthRecordList(animal) {
+            const modal = ensureHealthRecordModal();
+            const listContainer = modal.querySelector('#healthRecordList');
+            if (!listContainer) return;
+
+            const records = Array.isArray(animal.healthRecords) ? animal.healthRecords : [];
+            if (!records.length) {
+                listContainer.innerHTML = '<div class="text-muted">No health records yet. Use the form above to add one.</div>';
+                return;
+            }
+
+            const entries = records
+                .map(record => {
+                    const dateLabel = formatHealthRecordDate(record.recordDate || record.createdAt);
+                    const typeBadge = `<span class="badge bg-primary ms-2">${escapeHtml(record.recordType || 'General')}</span>`;
+                    const conditionBadge = record.condition ? `<span class="badge bg-info text-dark ms-2 text-uppercase">${escapeHtml(record.condition)}</span>` : '';
+                    const performedMeta = record.performedBy ? `Performed by: ${escapeHtml(record.performedBy)}` : '';
+                    const costMeta = typeof record.cost === 'number' && !Number.isNaN(record.cost) ? `Cost: FJD ${record.cost.toFixed(2)}` : '';
+                    const metaParts = [performedMeta, costMeta].filter(Boolean).join(' • ');
+                    const followUp = record.followUpDate ? `<div class="record-meta mt-1"><i class="fas fa-calendar-alt me-1"></i>Follow-up: ${formatHealthRecordDate(record.followUpDate)}</div>` : '';
+                    const statusApplied = record.statusApplied ? `<div class="record-meta mt-1"><i class="fas fa-heartbeat me-1"></i>Status updated to ${escapeHtml(record.statusApplied.charAt(0).toUpperCase() + record.statusApplied.slice(1))}</div>` : '';
+                    const notes = record.notes ? `<p class="mb-0 mt-2">${escapeHtml(record.notes)}</p>` : '';
+
+                    return `
+                        <div class="health-record-entry">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>${dateLabel}</strong>
+                                    ${typeBadge}
+                                    ${conditionBadge}
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteHealthRecord(${animal.id}, ${record.id}, event)">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                            ${metaParts ? `<div class="record-meta mt-2">${metaParts}</div>` : ''}
+                            ${notes}
+                            ${followUp}
+                            ${statusApplied}
+                        </div>
+                    `;
+                })
+                .join('');
+
+            listContainer.innerHTML = entries;
+        }
+
+        function saveHealthRecordFromModal(event) {
+            event.preventDefault();
+            const modal = ensureHealthRecordModal();
+            const animalId = Number(modal.dataset.animalId);
+
+            if (!animalId) {
+                showAlert('No animal selected for health record.', 'error');
+                return;
+            }
+
+            const animalIndex = livestock.findIndex(a => a.id === animalId);
+            if (animalIndex === -1) {
+                showAlert('Animal not found!', 'error');
+                return;
+            }
+
+            const form = modal.querySelector('#healthRecordForm');
+            if (!form) {
+                showAlert('Unable to locate health record form.', 'error');
+                return;
+            }
+
+            const dateValue = form.querySelector('#healthRecordDate')?.value;
+            const typeValue = form.querySelector('#healthRecordType')?.value || 'Check-up';
+            const conditionValue = form.querySelector('#healthRecordStatus')?.value || '';
+            const performedBy = form.querySelector('#healthRecordPerformedBy')?.value.trim();
+            const costValueRaw = form.querySelector('#healthRecordCost')?.value;
+            const followUpValue = form.querySelector('#healthRecordFollowUp')?.value;
+            const notesValue = form.querySelector('#healthRecordNotes')?.value.trim();
+            const statusUpdateValue = form.querySelector('#healthRecordStatusUpdate')?.value || '';
+
+            if (!dateValue) {
+                showAlert('Please select a record date.', 'warning');
+                return;
+            }
+
+            const recordId = Date.now() + Math.floor(Math.random() * 1000);
+            const costValue = costValueRaw ? parseFloat(costValueRaw) : null;
+
+            const animal = { ...livestock[animalIndex] };
+            const existingRecords = Array.isArray(animal.healthRecords) ? [...animal.healthRecords] : [];
+
+            const newRecord = {
+                id: recordId,
+                recordDate: dateValue,
+                recordType: typeValue,
+                condition: conditionValue,
+                performedBy: performedBy || '',
+                notes: notesValue || '',
+                cost: typeof costValue === 'number' && !Number.isNaN(costValue) ? costValue : null,
+                followUpDate: followUpValue || null,
+                statusApplied: statusUpdateValue || '',
+                createdAt: new Date().toISOString()
+            };
+
+            existingRecords.unshift(newRecord);
+            animal.healthRecords = existingRecords;
+
+            if (statusUpdateValue) {
+                animal.healthStatus = statusUpdateValue;
+            }
+            if (notesValue) {
+                animal.healthNotes = notesValue;
+            }
+
+            livestock[animalIndex] = animal;
+            lastGoodLivestock = [...livestock];
+            try {
+                localStorage.setItem('livestock', JSON.stringify(livestock));
+            } catch (storageError) {
+                console.warn('Failed to persist livestock health records:', storageError);
+            }
+
+            renderHealthRecordList(animal);
+            updateHealthRecordStats(animal);
+
+            form.reset();
+            const today = new Date().toISOString().split('T')[0];
+            const dateInput = form.querySelector('#healthRecordDate');
+            if (dateInput) {
+                dateInput.value = today;
+            }
+            const statusUpdate = form.querySelector('#healthRecordStatusUpdate');
+            if (statusUpdate) {
+                statusUpdate.value = '';
+            }
+
+            showAlert('Health record saved successfully!', 'success');
+
+            applyFilters();
+            updateStatistics();
+        }
+
+        function deleteHealthRecord(animalId, recordId, event) {
+            if (event) {
+                event.stopPropagation();
+                event.preventDefault();
+            }
+
+            if (!confirm('Delete this health record?')) {
+                return;
+            }
+
+            const animalIndex = livestock.findIndex(a => a.id === animalId);
+            if (animalIndex === -1) {
+                showAlert('Animal not found!', 'error');
+                return;
+            }
+
+            const animal = { ...livestock[animalIndex] };
+            const currentRecords = Array.isArray(animal.healthRecords) ? animal.healthRecords : [];
+            animal.healthRecords = currentRecords.filter(record => record.id !== recordId);
+
+            livestock[animalIndex] = animal;
+            lastGoodLivestock = [...livestock];
+            try {
+                localStorage.setItem('livestock', JSON.stringify(livestock));
+            } catch (storageError) {
+                console.warn('Failed to persist livestock removal:', storageError);
+            }
+
+            renderHealthRecordList(animal);
+            updateHealthRecordStats(animal);
+            applyFilters();
+            updateStatistics();
+
+            showAlert('Health record removed.', 'success');
         }
 
         async function getAILivestockAdvice(animalId) {
