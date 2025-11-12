@@ -604,13 +604,28 @@
 
         let lastAIMaturityContext = null;
 
+        function buildApiUrl(endpoint, params = {}) {
+            const cleanEndpoint = endpoint.replace(/^\/+/, '');
+            let baseUrl = `/api/${cleanEndpoint}`;
+            if (window.SmartFarmConfig?.getApiUrl) {
+                baseUrl = window.SmartFarmConfig.getApiUrl(cleanEndpoint);
+            }
+            const url = new URL(baseUrl, window.location.origin);
+            Object.entries(params).forEach(([key, value]) => {
+                if (value !== undefined && value !== null && value !== '') {
+                    url.searchParams.append(key, value);
+                }
+            });
+            return url.toString();
+        }
+
         async function preloadCatalogGrowthData() {
             if (catalogGrowthData.loaded) {
                 return catalogGrowthData.map;
             }
 
             if (!catalogGrowthData.promise) {
-                catalogGrowthData.promise = fetch('/api/catalog?group=plants&limit=2000', { headers: { Accept: 'application/json' } })
+                catalogGrowthData.promise = fetch(buildApiUrl('catalog', { group: 'plants', limit: 2000 }), { headers: { Accept: 'application/json' } })
                     .then(async response => {
                         if (!response.ok) {
                             throw new Error(`Catalog preload failed (${response.status})`);
@@ -1134,6 +1149,7 @@
                 'lima beans': { baseDays: 75, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 65-85 days
                 
                 // Herbs and Spices
+                'vanilla': { baseDays: 1095, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 3-year maturation
                 'basil': { baseDays: 30, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 25-35 days
                 'cilantro': { baseDays: 25, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 20-30 days
                 'parsley': { baseDays: 70, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 60-80 days
@@ -1642,8 +1658,7 @@
             }
 
             try {
-                const params = new URLSearchParams({ group: 'plants', q: name, limit: 1 });
-                const response = await fetch(`/api/recommend?${params.toString()}`);
+                const response = await fetch(buildApiUrl('recommend', { group: 'plants', q: name, limit: 1 }));
                 if (!response.ok) throw new Error('Failed to fetch recommendations');
                 const data = await response.json();
                 const item = (data.results || [])[0];
