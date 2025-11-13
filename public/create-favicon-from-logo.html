@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Favicon from SmartFarm Logo</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2e7d32;
+            margin-bottom: 10px;
+        }
+        .instructions {
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .logo-preview {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .logo-preview img {
+            max-width: 200px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #218838;
+        }
+        .favicon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .favicon-item {
+            text-align: center;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        .favicon-item img {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+        }
+        .download-btn {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 8px 15px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 3px;
+            font-size: 14px;
+        }
+        .download-btn:hover {
+            background: #0056b3;
+        }
+        .code-block {
+            background: #f4f4f4;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌱 Create Favicon from SmartFarm Logo</h1>
+        <p>This tool will generate favicon files from your SmartFarm logo.</p>
+        
+        <div class="instructions">
+            <h3>📋 Instructions:</h3>
+            <ol>
+                <li>Click "Load Logo" to load your SmartFarm logo</li>
+                <li>Click "Generate All Favicons" to create all sizes</li>
+                <li>Download each favicon file</li>
+                <li>Save them to <code>public/images/favicon/</code> folder</li>
+                <li>Refresh your website to see the new favicon!</li>
+            </ol>
+        </div>
+
+        <div class="logo-preview">
+            <h3>Logo Preview:</h3>
+            <img id="logoPreview" src="images/logo/logo.png" alt="SmartFarm Logo" onerror="this.style.display='none'; document.getElementById('logoError').style.display='block';">
+            <p id="logoError" style="display:none; color:red;">⚠️ Logo not found at images/logo/logo.png</p>
+        </div>
+
+        <div style="text-align: center;">
+            <button onclick="loadLogo()">🖼️ Load Logo</button>
+            <button onclick="generateAllFavicons()">🚀 Generate All Favicons</button>
+        </div>
+
+        <div id="faviconContainer" class="favicon-grid" style="display: none;">
+            <!-- Generated favicons will appear here -->
+        </div>
+
+        <div id="htmlCode" style="display: none;">
+            <h3>📝 HTML Code (already in your files):</h3>
+            <div class="code-block" id="htmlCodeContent"></div>
+        </div>
+    </div>
+
+    <script>
+        let logoImage = null;
+
+        function loadLogo() {
+            const logoPath = 'images/logo/logo.png';
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            
+            img.onload = function() {
+                logoImage = img;
+                document.getElementById('logoPreview').src = logoPath;
+                document.getElementById('logoError').style.display = 'none';
+                alert('✅ Logo loaded successfully! Now click "Generate All Favicons"');
+            };
+            
+            img.onerror = function() {
+                alert('❌ Could not load logo. Please ensure images/logo/logo.png exists.');
+            };
+            
+            img.src = logoPath;
+        }
+
+        function generateAllFavicons() {
+            if (!logoImage) {
+                // Try to load logo first
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = function() {
+                    logoImage = img;
+                    generateFavicons();
+                };
+                img.onerror = function() {
+                    alert('❌ Please load the logo first or ensure images/logo/logo.png exists.');
+                };
+                img.src = 'images/logo/logo.png';
+                return;
+            }
+
+            generateFavicons();
+        }
+
+        function generateFavicons() {
+            const container = document.getElementById('faviconContainer');
+            container.style.display = 'grid';
+            container.innerHTML = '';
+
+            // Favicon sizes to generate
+            const sizes = [
+                { size: 16, name: 'favicon-16x16.png' },
+                { size: 32, name: 'favicon-32x32.png' },
+                { size: 64, name: 'favicon-64x64.png' },
+                { size: 180, name: 'apple-touch-icon.png' },
+                { size: 192, name: 'android-chrome-192x192.png' },
+                { size: 512, name: 'android-chrome-512x512.png' }
+            ];
+
+            sizes.forEach(({ size, name }) => {
+                const canvas = document.createElement('canvas');
+                canvas.width = size;
+                canvas.height = size;
+                const ctx = canvas.getContext('2d');
+
+                // Draw logo on canvas, scaled to fit
+                ctx.drawImage(logoImage, 0, 0, size, size);
+
+                const dataURL = canvas.toDataURL('image/png');
+
+                // Create favicon item
+                const item = document.createElement('div');
+                item.className = 'favicon-item';
+                item.innerHTML = `
+                    <img src="${dataURL}" alt="${name}">
+                    <div><strong>${size}x${size}</strong></div>
+                    <div>${name}</div>
+                    <a href="${dataURL}" download="${name}" class="download-btn">📥 Download</a>
+                `;
+                container.appendChild(item);
+            });
+
+            // Generate favicon.ico (32x32)
+            const icoCanvas = document.createElement('canvas');
+            icoCanvas.width = 32;
+            icoCanvas.height = 32;
+            const icoCtx = icoCanvas.getContext('2d');
+            icoCtx.drawImage(logoImage, 0, 0, 32, 32);
+            const icoDataURL = icoCanvas.toDataURL('image/png');
+
+            const icoItem = document.createElement('div');
+            icoItem.className = 'favicon-item';
+            icoItem.innerHTML = `
+                <img src="${icoDataURL}" alt="favicon.ico">
+                <div><strong>favicon.ico</strong></div>
+                <div>32x32 (ICO format)</div>
+                <a href="${icoDataURL}" download="favicon.ico" class="download-btn">📥 Download</a>
+                <p style="font-size: 11px; color: #666; margin-top: 5px;">Note: This is PNG. For true ICO, use an online converter.</p>
+            `;
+            container.appendChild(icoItem);
+
+            // Show HTML code
+            showHTMLCode();
+        }
+
+        function showHTMLCode() {
+            const htmlCodeDiv = document.getElementById('htmlCode');
+            htmlCodeDiv.style.display = 'block';
+            
+            const code = `<!-- Favicon -->
+<link rel="icon" type="image/x-icon" href="images/favicon/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="images/favicon/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="images/favicon/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="64x64" href="images/favicon/favicon-64x64.png">
+<link rel="apple-touch-icon" sizes="180x180" href="images/favicon/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="images/favicon/android-chrome-192x192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="images/favicon/android-chrome-512x512.png">`;
+            
+            document.getElementById('htmlCodeContent').textContent = code;
+        }
+
+        // Auto-load logo on page load
+        window.addEventListener('load', function() {
+            setTimeout(loadLogo, 500);
+        });
+    </script>
+</body>
+</html>
+
