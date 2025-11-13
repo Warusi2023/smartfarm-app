@@ -1983,7 +1983,24 @@
             try {
                 console.log('🐄 Loading livestock data...');
                 
-                // Load from API if available
+                // FIRST: Load from localStorage to get the most current data including newly added items
+                let localLivestock = [];
+                try {
+                    const savedLivestock = localStorage.getItem('livestock');
+                    if (savedLivestock) {
+                        const parsedLivestock = JSON.parse(savedLivestock);
+                        if (Array.isArray(parsedLivestock) && parsedLivestock.length > 0) {
+                            console.log('✅ Loaded livestock from localStorage:', parsedLivestock.length, 'animals');
+                            localLivestock = parsedLivestock;
+                            // Update the livestock array with localStorage data first
+                            livestock = [...localLivestock];
+                        }
+                    }
+                } catch (storageError) {
+                    console.warn('⚠️ Error loading from localStorage:', storageError);
+                }
+                
+                // THEN: Try to load from API and merge with localStorage data
                 if (window.SmartFarmAPI && typeof window.SmartFarmAPI.isBackendAvailable === 'function') {
                     try {
                         const isAvailable = await window.SmartFarmAPI.isBackendAvailable();
@@ -2002,76 +2019,97 @@
                             if (response && response.success && response.data && Array.isArray(response.data)) {
                                 console.log('✅ Livestock data loaded from API:', response.data.length, 'animals');
                                 
-                                // Merge API data with existing local data to preserve recently added items
-                                // Create a map of existing livestock by ID for quick lookup
-                                const existingMap = new Map();
-                                livestock.forEach(item => {
-                                    if (item.id) {
-                                        existingMap.set(item.id, item);
-                                    } else if (item.tag) {
-                                        // Use tag as fallback identifier
-                                        existingMap.set(`tag_${item.tag}`, item);
+                                // Merge API data with localStorage data to preserve recently added items
+                                // Create a map starting with localStorage data (most current)
+                                const mergedMap = new Map();
+                                
+                                // First, add all localStorage items (preserves newly added items)
+                                localLivestock.forEach(item => {
+                                    const key = item.id || (item.tag ? `tag_${item.tag}` : `temp_${Date.now()}`);
+                                    mergedMap.set(key, item);
+                                });
+                                
+                                // Then, add/update with API data (API data takes precedence for existing items)
+                                const apiData = response.data;
+                                apiData.forEach(item => {
+                                    const key = item.id || (item.tag ? `tag_${item.tag}` : null);
+                                    if (key) {
+                                        // Update existing or add new from API
+                                        mergedMap.set(key, item);
+                                    } else {
+                                        // If no ID or tag, add with a unique key
+                                        mergedMap.set(`api_${Date.now()}_${Math.random()}`, item);
                                     }
                                 });
                                 
-                                // Add API data, but preserve local items that aren't in API response yet
-                                const apiData = response.data;
-                                apiData.forEach(item => {
-                                    const key = item.id || `tag_${item.tag}`;
-                                    existingMap.set(key, item);
-                                });
-                                
                                 // Convert map back to array
-                                livestock = Array.from(existingMap.values());
+                                livestock = Array.from(mergedMap.values());
                                 
                                 lastGoodLivestock = [...livestock]; // Keep last good data
-                                // Save to localStorage as backup
+                                // Save merged data to localStorage as backup
                                 localStorage.setItem('livestock', JSON.stringify(livestock));
                                 loadedFromAPI = true;
                             } else {
                                 console.warn('⚠️ API returned unsuccessful response:', response);
                                 loadError = response?.error || 'API returned unsuccessful response';
+                                // Use localStorage data if API fails
+                                if (localLivestock.length > 0) {
+                                    livestock = localLivestock;
+                                    loadedFromAPI = false; // Will fall through to localStorage handling
+                                }
                             }
                         }
                     } catch (apiError) {
-                        console.warn('⚠️ API error, loading from localStorage:', apiError);
+                        console.warn('⚠️ API error, using localStorage data:', apiError);
                         loadError = apiError.message || 'Failed to load from API';
+                        // Use localStorage data if API fails
+                        if (localLivestock.length > 0) {
+                            livestock = localLivestock;
+                        }
                     }
                 }
                 
                 // Load from localStorage if API didn't work or not available
                 if (!loadedFromAPI) {
-                    try {
-                        const savedLivestock = localStorage.getItem('livestock');
-                        if (savedLivestock) {
-                            const parsedLivestock = JSON.parse(savedLivestock);
-                            if (Array.isArray(parsedLivestock) && parsedLivestock.length > 0) {
-                                console.log('✅ Livestock data loaded from localStorage:', parsedLivestock.length, 'animals');
-                                livestock = parsedLivestock;
-                                lastGoodLivestock = [...livestock]; // Keep last good data
+                    // If we already loaded from localStorage at the top, use that data
+                    if (localLivestock.length > 0) {
+                        livestock = localLivestock;
+                        lastGoodLivestock = [...livestock];
+                        console.log('✅ Using previously loaded localStorage data:', livestock.length, 'animals');
+                    } else {
+                        // Otherwise, try loading from localStorage again
+                        try {
+                            const savedLivestock = localStorage.getItem('livestock');
+                            if (savedLivestock) {
+                                const parsedLivestock = JSON.parse(savedLivestock);
+                                if (Array.isArray(parsedLivestock) && parsedLivestock.length > 0) {
+                                    console.log('✅ Livestock data loaded from localStorage:', parsedLivestock.length, 'animals');
+                                    livestock = parsedLivestock;
+                                    lastGoodLivestock = [...livestock]; // Keep last good data
+                                } else {
+                                    console.warn('⚠️ localStorage data is empty or invalid');
+                                    // Use last good data if available
+                                    if (lastGoodLivestock.length > 0) {
+                                        livestock = lastGoodLivestock;
+                                        console.log('✅ Using last good livestock data:', livestock.length, 'animals');
+                                    }
+                                }
                             } else {
-                                console.warn('⚠️ localStorage data is empty or invalid');
+                                console.log('ℹ️ No saved livestock data in localStorage');
                                 // Use last good data if available
                                 if (lastGoodLivestock.length > 0) {
                                     livestock = lastGoodLivestock;
                                     console.log('✅ Using last good livestock data:', livestock.length, 'animals');
                                 }
                             }
-                        } else {
-                            console.log('ℹ️ No saved livestock data in localStorage');
+                        } catch (storageError) {
+                            console.error('❌ Error loading from localStorage:', storageError);
+                            loadError = storageError.message || 'Failed to load from storage';
                             // Use last good data if available
                             if (lastGoodLivestock.length > 0) {
                                 livestock = lastGoodLivestock;
-                                console.log('✅ Using last good livestock data:', livestock.length, 'animals');
+                                console.log('✅ Using last good livestock data after storage error:', livestock.length, 'animals');
                             }
-                        }
-                    } catch (storageError) {
-                        console.error('❌ Error loading from localStorage:', storageError);
-                        loadError = storageError.message || 'Failed to load from storage';
-                        // Use last good data if available
-                        if (lastGoodLivestock.length > 0) {
-                            livestock = lastGoodLivestock;
-                            console.log('✅ Using last good livestock data after storage error:', livestock.length, 'animals');
                         }
                     }
                 }

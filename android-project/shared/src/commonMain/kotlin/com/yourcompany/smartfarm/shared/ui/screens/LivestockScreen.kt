@@ -19,6 +19,10 @@ import androidx.compose.ui.unit.sp
 import com.yourcompany.smartfarm.shared.models.*
 import com.yourcompany.smartfarm.shared.services.DataService
 import kotlinx.coroutines.launch
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.OutlinedTextField
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -253,6 +257,7 @@ fun LivestockScreen(
     if (showLivestockDetailsDialog && selectedLivestock != null) {
         LivestockDetailsDialog(
             livestock = selectedLivestock!!,
+            dataService = dataService,
             onDismiss = { 
                 showLivestockDetailsDialog = false
                 selectedLivestock = null
@@ -265,6 +270,18 @@ fun LivestockScreen(
                         livestock = updatedLivestock
                         showLivestockDetailsDialog = false
                         selectedLivestock = null
+                    } catch (e: Exception) {
+                        error = e.message
+                    }
+                }
+            },
+            onLivestockUpdated = {
+                scope.launch {
+                    try {
+                        val updatedLivestock = dataService.getLivestock()
+                        livestock = updatedLivestock
+                        // Update selected livestock to reflect changes
+                        selectedLivestock = updatedLivestock.find { it.id == selectedLivestock!!.id }
                     } catch (e: Exception) {
                         error = e.message
                     }
@@ -416,40 +433,248 @@ private fun AddLivestockDialog(
 @Composable
 private fun LivestockDetailsDialog(
     livestock: Livestock,
+    dataService: DataService,
     onDismiss: () -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    onLivestockUpdated: () -> Unit
+) {
+    var showHealthRecords by remember { mutableStateOf(false) }
+    var showAddHealthRecord by remember { mutableStateOf(false) }
+    var currentLivestock by remember { mutableStateOf(livestock) }
+    val scope = rememberCoroutineScope()
+    
+    // Refresh livestock data when dialog opens
+    LaunchedEffect(livestock.id) {
+        try {
+            val updated = dataService.getLivestock().find { it.id == livestock.id }
+            if (updated != null) {
+                currentLivestock = updated
+            }
+        } catch (e: Exception) {
+            // Ignore errors
+        }
+    }
+    
+    if (showHealthRecords) {
+        HealthRecordsDialog(
+            livestock = currentLivestock,
+            onDismiss = { showHealthRecords = false },
+            onAddRecord = { showAddHealthRecord = true }
+        )
+    } else if (showAddHealthRecord) {
+        AddHealthRecordDialog(
+            livestockId = currentLivestock.id,
+            dataService = dataService,
+            onDismiss = { showAddHealthRecord = false },
+            onConfirm = { record ->
+                scope.launch {
+                    try {
+                        dataService.addHealthRecord(currentLivestock.id, record)
+                        val updated = dataService.getLivestock().find { it.id == currentLivestock.id }
+                        if (updated != null) {
+                            currentLivestock = updated
+                        }
+                        onLivestockUpdated()
+                        showAddHealthRecord = false
+                        showHealthRecords = true
+                    } catch (e: Exception) {
+                        // Handle error - could show snackbar
+                    }
+                }
+            }
+        )
+    } else {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = { Text(livestock.name) },
+            text = {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text("Type: ${livestock.type.name}")
+                    Text("Breed: ${livestock.breed}")
+                    Text("Status: ${livestock.status.name}")
+                    Text("Farm ID: ${livestock.farmId}")
+                    Text("Weight: ${livestock.weight} kg")
+                    Text("Birth Date: ${livestock.birthDate}")
+                    if (livestock.notes.isNotBlank()) {
+                        Text("Notes: ${livestock.notes}")
+                    }
+                    Text(
+                        "Health Records: ${currentLivestock.healthRecords.size}",
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            },
+            confirmButton = {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Button(onClick = { showHealthRecords = true }) {
+                        Text("Health Records")
+                    }
+                    TextButton(onClick = onDismiss) {
+                        Text("Close")
+                    }
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = onDelete,
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Text("Delete")
+                }
+            }
+        )
+    }
+}
+
+@Composable
+private fun HealthRecordsDialog(
+    livestock: Livestock,
+    onDismiss: () -> Unit,
+    onAddRecord: () -> Unit
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(livestock.name) },
+        title = { Text("Health Records - ${livestock.name}") },
         text = {
             Column(
+                modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text("Type: ${livestock.type.name}")
-                Text("Breed: ${livestock.breed}")
-                Text("Status: ${livestock.status.name}")
-                Text("Farm ID: ${livestock.farmId}")
-                Text("Weight: ${livestock.weight} kg")
-                Text("Birth Date: ${livestock.birthDate}")
-                if (livestock.notes.isNotBlank()) {
-                    Text("Notes: ${livestock.notes}")
+                if (livestock.healthRecords.isEmpty()) {
+                    Text("No health records yet.")
+                } else {
+                    livestock.healthRecords.forEach { record ->
+                        Card(
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(12.dp),
+                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Text(
+                                    text = record.type.name,
+                                    fontWeight = FontWeight.Medium
+                                )
+                                Text("Date: ${record.date}", fontSize = 12.sp)
+                                if (record.performedBy != null) {
+                                    Text("By: ${record.performedBy}", fontSize = 12.sp)
+                                }
+                                if (record.notes.isNotBlank()) {
+                                    Text(record.notes, fontSize = 12.sp)
+                                }
+                            }
+                        }
+                    }
                 }
             }
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Close")
+            Button(onClick = onAddRecord) {
+                Text("Add Record")
             }
         },
         dismissButton = {
-            TextButton(
-                onClick = onDelete,
-                colors = ButtonDefaults.textButtonColors(
-                    contentColor = MaterialTheme.colorScheme.error
-                )
+            TextButton(onClick = onDismiss) {
+                Text("Close")
+            }
+        }
+    )
+}
+
+@Composable
+private fun AddHealthRecordDialog(
+    livestockId: Long,
+    dataService: DataService,
+    onDismiss: () -> Unit,
+    onConfirm: (HealthRecord) -> Unit
+) {
+    var recordType by remember { mutableStateOf(HealthRecordType.CHECK_UP) }
+    var date by remember { mutableStateOf(java.time.LocalDate.now().toString()) }
+    var performedBy by remember { mutableStateOf("") }
+    var cost by remember { mutableStateOf("") }
+    var notes by remember { mutableStateOf("") }
+    
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Add Health Record") },
+        text = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Text("Delete")
+                // Record Type
+                Text("Record Type")
+                HealthRecordType.values().forEach { type ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(
+                            selected = recordType == type,
+                            onClick = { recordType = type }
+                        )
+                        Text(type.name.replace("_", " "))
+                    }
+                }
+                
+                // Date
+                OutlinedTextField(
+                    value = date,
+                    onValueChange = { date = it },
+                    label = { Text("Date") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                
+                // Performed By
+                OutlinedTextField(
+                    value = performedBy,
+                    onValueChange = { performedBy = it },
+                    label = { Text("Performed By (optional)") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                
+                // Cost
+                OutlinedTextField(
+                    value = cost,
+                    onValueChange = { cost = it },
+                    label = { Text("Cost (optional)") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                
+                // Notes
+                OutlinedTextField(
+                    value = notes,
+                    onValueChange = { notes = it },
+                    label = { Text("Notes") },
+                    modifier = Modifier.fillMaxWidth(),
+                    maxLines = 3
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    val record = HealthRecord(
+                        livestockId = livestockId,
+                        date = date,
+                        type = recordType,
+                        performedBy = performedBy.ifBlank { null },
+                        cost = cost.toDoubleOrNull(),
+                        notes = notes
+                    )
+                    onConfirm(record)
+                }
+            ) {
+                Text("Save")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
             }
         }
     )

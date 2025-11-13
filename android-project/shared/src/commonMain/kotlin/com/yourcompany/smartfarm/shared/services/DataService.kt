@@ -2,6 +2,7 @@ package com.yourcompany.smartfarm.shared.services
 
 import com.yourcompany.smartfarm.shared.models.*
 import com.yourcompany.smartfarm.shared.config.CategoryConfig
+import com.yourcompany.smartfarm.shared.utils.CropMaturityCalculator
 import com.smartfarm.shared.services.ByproductsService
 import com.smartfarm.shared.domain.model.*
 import kotlinx.coroutines.delay
@@ -530,7 +531,19 @@ open class DataService {
     
     open suspend fun createCrop(crop: Crop): Crop {
         delay(500)
-        val newCrop = crop.copy(id = (mockCrops.maxOfOrNull { it.id } ?: 0) + 1)
+        // Calculate maturity date using CropMaturityCalculator if not provided
+        val maturityDate = if (crop.expectedHarvestDate.isBlank()) {
+            CropMaturityCalculator.calculateMaturityDate(
+                cropName = crop.name,
+                plantedDate = crop.plantedDate
+            )
+        } else {
+            crop.expectedHarvestDate
+        }
+        val newCrop = crop.copy(
+            id = (mockCrops.maxOfOrNull { it.id } ?: 0) + 1,
+            expectedHarvestDate = maturityDate
+        )
         mockCrops.add(newCrop)
         return newCrop
     }
@@ -539,7 +552,20 @@ open class DataService {
         delay(300)
         val index = mockCrops.indexOfFirst { it.id == crop.id }
         if (index != -1) {
-            mockCrops[index] = crop
+            // Recalculate maturity date if crop name or planted date changed
+            val existingCrop = mockCrops[index]
+            val maturityDate = if (crop.name != existingCrop.name || 
+                                   crop.plantedDate != existingCrop.plantedDate ||
+                                   crop.expectedHarvestDate.isBlank()) {
+                CropMaturityCalculator.calculateMaturityDate(
+                    cropName = crop.name,
+                    plantedDate = crop.plantedDate
+                )
+            } else {
+                crop.expectedHarvestDate
+            }
+            val updatedCrop = crop.copy(expectedHarvestDate = maturityDate)
+            mockCrops[index] = updatedCrop
             return mockCrops[index]
         }
         return crop
@@ -557,7 +583,19 @@ open class DataService {
     
     open suspend fun addCrop(crop: Crop): Crop {
         delay(500)
-        val newCrop = crop.copy(id = (mockCrops.maxOfOrNull { it.id } ?: 0) + 1)
+        // Calculate maturity date using CropMaturityCalculator if not provided
+        val maturityDate = if (crop.expectedHarvestDate.isBlank()) {
+            CropMaturityCalculator.calculateMaturityDate(
+                cropName = crop.name,
+                plantedDate = crop.plantedDate
+            )
+        } else {
+            crop.expectedHarvestDate
+        }
+        val newCrop = crop.copy(
+            id = (mockCrops.maxOfOrNull { it.id } ?: 0) + 1,
+            expectedHarvestDate = maturityDate
+        )
         mockCrops.add(newCrop)
         return newCrop
     }
@@ -591,10 +629,52 @@ open class DataService {
         delay(300)
         val index = mockLivestock.indexOfFirst { it.id == livestock.id }
         if (index != -1) {
-            mockLivestock[index] = livestock
+            // Preserve health records when updating
+            val existingLivestock = mockLivestock[index]
+            val updatedLivestock = livestock.copy(
+                healthRecords = livestock.healthRecords.ifEmpty { existingLivestock.healthRecords }
+            )
+            mockLivestock[index] = updatedLivestock
             return mockLivestock[index]
         }
         return livestock
+    }
+    
+    // Health Record operations
+    open suspend fun addHealthRecord(livestockId: Long, record: HealthRecord): HealthRecord {
+        delay(300)
+        val index = mockLivestock.indexOfFirst { it.id == livestockId }
+        if (index != -1) {
+            val livestock = mockLivestock[index]
+            val newRecord = record.copy(
+                id = (livestock.healthRecords.maxOfOrNull { it.id } ?: 0) + 1,
+                livestockId = livestockId
+            )
+            val updatedRecords = livestock.healthRecords + newRecord
+            val updatedLivestock = livestock.copy(healthRecords = updatedRecords)
+            mockLivestock[index] = updatedLivestock
+            return newRecord
+        }
+        throw IllegalArgumentException("Livestock with id $livestockId not found")
+    }
+    
+    open suspend fun getHealthRecords(livestockId: Long): List<HealthRecord> {
+        delay(200)
+        val livestock = mockLivestock.find { it.id == livestockId }
+        return livestock?.healthRecords ?: emptyList()
+    }
+    
+    open suspend fun deleteHealthRecord(livestockId: Long, recordId: Long): Boolean {
+        delay(300)
+        val index = mockLivestock.indexOfFirst { it.id == livestockId }
+        if (index != -1) {
+            val livestock = mockLivestock[index]
+            val updatedRecords = livestock.healthRecords.filter { it.id != recordId }
+            val updatedLivestock = livestock.copy(healthRecords = updatedRecords)
+            mockLivestock[index] = updatedLivestock
+            return true
+        }
+        return false
     }
     
     open suspend fun deleteLivestock(id: Long): Boolean {

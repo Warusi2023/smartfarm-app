@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.yourcompany.smartfarm.shared.models.*
 import com.yourcompany.smartfarm.shared.services.DataService
+import com.yourcompany.smartfarm.shared.utils.CropMaturityCalculator
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -252,16 +253,19 @@ fun CropsScreen(
             onConfirm = { name, variety, farmId, area, plantedDate, expectedHarvestDate ->
                 scope.launch {
                     try {
+                        // Use provided harvest date or let DataService calculate it
+                        val harvestDate = expectedHarvestDate.ifBlank { "" }
                         val newCrop = Crop(
                             name = name,
                             variety = variety,
                             farmId = farmId,
                             plantedDate = plantedDate,
-                            expectedHarvestDate = expectedHarvestDate,
+                            expectedHarvestDate = harvestDate,
                             area = area,
                             status = CropStatus.GROWING
                         )
-                        dataService.addCrop(newCrop)
+                        // DataService will auto-calculate maturity date if blank
+                        val savedCrop = dataService.addCrop(newCrop)
                         val updatedCrops = dataService.getCrops()
                         crops = updatedCrops
                         showAddCropDialog = false
@@ -384,6 +388,21 @@ private fun AddCropDialog(
         selectedFarmId = farms.first().id
     }
     
+    // Auto-calculate maturity date when crop name or planted date changes
+    LaunchedEffect(name, plantedDate) {
+        if (name.isNotBlank() && plantedDate.isNotBlank()) {
+            try {
+                val calculatedDate = CropMaturityCalculator.calculateMaturityDate(
+                    cropName = name,
+                    plantedDate = plantedDate
+                )
+                expectedHarvestDate = calculatedDate
+            } catch (e: Exception) {
+                // Keep existing date if calculation fails
+            }
+        }
+    }
+    
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Add New Crop") },
@@ -422,8 +441,14 @@ private fun AddCropDialog(
                 OutlinedTextField(
                     value = expectedHarvestDate,
                     onValueChange = { expectedHarvestDate = it },
-                    label = { Text("Expected Harvest Date (YYYY-MM-DD)") },
-                    modifier = Modifier.fillMaxWidth()
+                    label = { Text("Expected Harvest Date (YYYY-MM-DD) - Auto-calculated") },
+                    modifier = Modifier.fillMaxWidth(),
+                    readOnly = true, // Auto-calculated, but user can still see it
+                    supportingText = {
+                        if (name.isNotBlank() && plantedDate.isNotBlank()) {
+                            Text("Calculated based on crop type")
+                        }
+                    }
                 )
                 
                 if (farms.isNotEmpty()) {
@@ -447,8 +472,10 @@ private fun AddCropDialog(
                 onClick = {
                     val areaValue = area.toDoubleOrNull() ?: 0.0
                     if (name.isNotBlank() && variety.isNotBlank() && selectedFarmId != null && 
-                        plantedDate.isNotBlank() && expectedHarvestDate.isNotBlank()) {
-                        onConfirm(name, variety, selectedFarmId!!, areaValue, plantedDate, expectedHarvestDate)
+                        plantedDate.isNotBlank()) {
+                        // Use calculated date or empty string (DataService will calculate)
+                        val harvestDate = expectedHarvestDate.ifBlank { "" }
+                        onConfirm(name, variety, selectedFarmId!!, areaValue, plantedDate, harvestDate)
                     }
                 }
             ) {

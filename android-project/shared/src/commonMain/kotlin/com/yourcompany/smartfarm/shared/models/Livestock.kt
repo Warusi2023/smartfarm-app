@@ -12,8 +12,30 @@ data class Livestock(
     val location: String,
     val notes: String = "",
     val lastVaccination: String? = null, // ISO date string
-    val nextVaccination: String? = null // ISO date string
+    val nextVaccination: String? = null, // ISO date string
+    val healthRecords: List<HealthRecord> = emptyList() // Health record history
 )
+
+data class HealthRecord(
+    val id: Long = 0,
+    val livestockId: Long,
+    val date: String, // ISO date string
+    val type: HealthRecordType,
+    val condition: String? = null, // Optional condition update
+    val performedBy: String? = null,
+    val cost: Double? = null,
+    val followUpDate: String? = null, // ISO date string
+    val notes: String = ""
+)
+
+enum class HealthRecordType {
+    CHECK_UP,
+    VACCINATION,
+    TREATMENT,
+    INJURY,
+    OBSERVATION,
+    OTHER
+}
 
 enum class LivestockType {
     CATTLE,
