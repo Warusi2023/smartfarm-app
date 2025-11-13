@@ -40,7 +40,18 @@ class FarmToTableRecommendationService {
         await this.loadCrops();
         await this.loadLivestock();
         await this.cleanupOrphanedProducts();
-        console.log(`✅ Service initialized: ${this.crops.length} crops, ${this.livestock.length} livestock, ${this.products.length} existing products`);
+        
+        console.log(`✅ Service initialized:`);
+        console.log(`   - ${this.crops.length} crops loaded`);
+        if (this.crops.length > 0) {
+            console.log(`     Sample crops: ${this.crops.slice(0, 3).map(c => `"${c.name}"`).join(', ')}`);
+        }
+        console.log(`   - ${this.livestock.length} livestock loaded`);
+        if (this.livestock.length > 0) {
+            console.log(`     Sample livestock: ${this.livestock.slice(0, 3).map(a => `"${a.name || a.type || 'Unnamed'}"`).join(', ')}`);
+        }
+        console.log(`   - ${this.products.length} existing products`);
+        console.log(`   - Byproducts DB: ${Object.keys(this.byproductsDatabase?.crops || {}).length} crops, ${Object.keys(this.byproductsDatabase?.livestock || {}).length} livestock types`);
     }
     
     /**
@@ -170,9 +181,9 @@ class FarmToTableRecommendationService {
         
         // Generate recommendations from crops
         this.crops.forEach(crop => {
-            const cropName = (crop.name || '').toLowerCase().trim();
+            const cropName = crop.name || '';
+            console.log(`   📦 Processing crop: "${cropName}" (ID: ${crop.id})`);
             const cropByproducts = this.getByproductsForCrop(cropName);
-            console.log(`   - Crop "${crop.name}": Found ${cropByproducts.length} byproducts`);
             
             cropByproducts.forEach(byproduct => {
                 recommendations.push({
@@ -201,9 +212,10 @@ class FarmToTableRecommendationService {
         
         // Generate recommendations from livestock
         this.livestock.forEach(animal => {
-            const animalType = (animal.type || animal.species || '').toLowerCase().trim();
+            const animalType = animal.type || animal.species || '';
+            const animalName = animal.name || animalType;
+            console.log(`   🐄 Processing livestock: "${animalName}" (Type: ${animalType}, ID: ${animal.id})`);
             const animalByproducts = this.getByproductsForLivestock(animalType);
-            console.log(`   - Livestock "${animal.name || animalType}": Found ${animalByproducts.length} byproducts`);
             
             animalByproducts.forEach(byproduct => {
                 recommendations.push({
@@ -247,6 +259,14 @@ class FarmToTableRecommendationService {
     }
     
     /**
+     * Normalize a name for matching (lowercase, replace spaces with underscores)
+     */
+    normalizeName(name) {
+        if (!name) return '';
+        return name.toLowerCase().trim().replace(/\s+/g, '_');
+    }
+    
+    /**
      * Get byproducts for a specific crop
      */
     getByproductsForCrop(cropName) {
@@ -255,22 +275,58 @@ class FarmToTableRecommendationService {
             return [];
         }
         
-        // Try exact match first
-        let cropData = this.byproductsDatabase.crops[cropName];
+        if (!cropName) {
+            console.warn('⚠️ No crop name provided');
+            return [];
+        }
         
-        // Try partial match
+        // Normalize the crop name
+        const normalizedCropName = this.normalizeName(cropName);
+        const originalCropName = cropName.toLowerCase().trim();
+        
+        console.log(`   🔍 Looking for byproducts for crop: "${cropName}" (normalized: "${normalizedCropName}")`);
+        
+        // Strategy 1: Try exact match with normalized name
+        let cropData = this.byproductsDatabase.crops[normalizedCropName];
+        
+        // Strategy 2: Try exact match with original lowercase name
+        if (!cropData) {
+            cropData = this.byproductsDatabase.crops[originalCropName];
+        }
+        
+        // Strategy 3: Try partial match (normalized)
         if (!cropData) {
             for (const key in this.byproductsDatabase.crops) {
-                if (cropName.includes(key) || key.includes(cropName)) {
+                const normalizedKey = this.normalizeName(key);
+                if (normalizedCropName === normalizedKey || 
+                    normalizedCropName.includes(normalizedKey) || 
+                    normalizedKey.includes(normalizedCropName)) {
                     cropData = this.byproductsDatabase.crops[key];
+                    console.log(`   ✅ Matched "${cropName}" to database key "${key}"`);
+                    break;
+                }
+            }
+        }
+        
+        // Strategy 4: Try partial match (original)
+        if (!cropData) {
+            for (const key in this.byproductsDatabase.crops) {
+                if (originalCropName.includes(key) || key.includes(originalCropName)) {
+                    cropData = this.byproductsDatabase.crops[key];
+                    console.log(`   ✅ Matched "${cropName}" to database key "${key}" (partial match)`);
                     break;
                 }
             }
         }
         
         const byproducts = cropData ? (cropData.byproducts || []) : [];
-        if (byproducts.length === 0 && cropName) {
+        if (byproducts.length === 0) {
             console.log(`   ⚠️ No byproducts found for crop: "${cropName}"`);
+            // Log available keys for debugging
+            const availableKeys = Object.keys(this.byproductsDatabase.crops).slice(0, 10);
+            console.log(`   📋 Available crop keys (first 10): ${availableKeys.join(', ')}`);
+        } else {
+            console.log(`   ✅ Found ${byproducts.length} byproducts for "${cropName}"`);
         }
         return byproducts;
     }
@@ -284,22 +340,58 @@ class FarmToTableRecommendationService {
             return [];
         }
         
-        // Try exact match first
-        let animalData = this.byproductsDatabase.livestock[animalType];
+        if (!animalType) {
+            console.warn('⚠️ No livestock type provided');
+            return [];
+        }
         
-        // Try partial match
+        // Normalize the animal type
+        const normalizedAnimalType = this.normalizeName(animalType);
+        const originalAnimalType = animalType.toLowerCase().trim();
+        
+        console.log(`   🔍 Looking for byproducts for livestock: "${animalType}" (normalized: "${normalizedAnimalType}")`);
+        
+        // Strategy 1: Try exact match with normalized name
+        let animalData = this.byproductsDatabase.livestock[normalizedAnimalType];
+        
+        // Strategy 2: Try exact match with original lowercase name
+        if (!animalData) {
+            animalData = this.byproductsDatabase.livestock[originalAnimalType];
+        }
+        
+        // Strategy 3: Try partial match (normalized)
         if (!animalData) {
             for (const key in this.byproductsDatabase.livestock) {
-                if (animalType.includes(key) || key.includes(animalType)) {
+                const normalizedKey = this.normalizeName(key);
+                if (normalizedAnimalType === normalizedKey || 
+                    normalizedAnimalType.includes(normalizedKey) || 
+                    normalizedKey.includes(normalizedAnimalType)) {
                     animalData = this.byproductsDatabase.livestock[key];
+                    console.log(`   ✅ Matched "${animalType}" to database key "${key}"`);
+                    break;
+                }
+            }
+        }
+        
+        // Strategy 4: Try partial match (original)
+        if (!animalData) {
+            for (const key in this.byproductsDatabase.livestock) {
+                if (originalAnimalType.includes(key) || key.includes(originalAnimalType)) {
+                    animalData = this.byproductsDatabase.livestock[key];
+                    console.log(`   ✅ Matched "${animalType}" to database key "${key}" (partial match)`);
                     break;
                 }
             }
         }
         
         const byproducts = animalData ? (animalData.byproducts || []) : [];
-        if (byproducts.length === 0 && animalType) {
+        if (byproducts.length === 0) {
             console.log(`   ⚠️ No byproducts found for livestock: "${animalType}"`);
+            // Log available keys for debugging
+            const availableKeys = Object.keys(this.byproductsDatabase.livestock).slice(0, 10);
+            console.log(`   📋 Available livestock keys (first 10): ${availableKeys.join(', ')}`);
+        } else {
+            console.log(`   ✅ Found ${byproducts.length} byproducts for "${animalType}"`);
         }
         return byproducts;
     }
@@ -612,6 +704,46 @@ class FarmToTableRecommendationService {
                 mixed: active.filter(p => p.sourceType === 'mixed').length
             }
         };
+    }
+    
+    /**
+     * Debug method - call this from console to diagnose issues
+     * Usage: const service = new FarmToTableRecommendationService(); await service.init(); service.debug();
+     */
+    debug() {
+        console.log('🔍 === Farm-to-Table Recommendation Service Debug ===');
+        console.log('📦 Crops:', this.crops.length);
+        this.crops.forEach(crop => {
+            console.log(`   - "${crop.name}" (ID: ${crop.id})`);
+        });
+        console.log('🐄 Livestock:', this.livestock.length);
+        this.livestock.forEach(animal => {
+            console.log(`   - "${animal.name || 'Unnamed'}" (Type: ${animal.type || animal.species}, ID: ${animal.id})`);
+        });
+        console.log('💾 Products:', this.products.length);
+        console.log('📚 Byproducts Database:', {
+            cropsAvailable: this.byproductsDatabase?.crops ? Object.keys(this.byproductsDatabase.crops).length : 0,
+            livestockAvailable: this.byproductsDatabase?.livestock ? Object.keys(this.byproductsDatabase.livestock).length : 0,
+            sampleCropKeys: this.byproductsDatabase?.crops ? Object.keys(this.byproductsDatabase.crops).slice(0, 10) : [],
+            sampleLivestockKeys: this.byproductsDatabase?.livestock ? Object.keys(this.byproductsDatabase.livestock).slice(0, 10) : []
+        });
+        
+        // Test matching for each crop
+        console.log('🧪 Testing crop matching:');
+        this.crops.forEach(crop => {
+            const byproducts = this.getByproductsForCrop(crop.name);
+            console.log(`   "${crop.name}": ${byproducts.length} byproducts found`);
+        });
+        
+        // Test matching for each livestock
+        console.log('🧪 Testing livestock matching:');
+        this.livestock.forEach(animal => {
+            const animalType = animal.type || animal.species || '';
+            const byproducts = this.getByproductsForLivestock(animalType);
+            console.log(`   "${animal.name || animalType}" (${animalType}): ${byproducts.length} byproducts found`);
+        });
+        
+        console.log('🔍 === End Debug ===');
     }
 }
 
