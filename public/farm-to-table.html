@@ -610,83 +610,289 @@
 
     <!-- Create Processing Plan Modal -->
     <div class="modal fade" id="createPlanModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-xl">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Create Processing Plan</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-lightbulb me-2"></i>Create Export-Ready Processing Plan
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
+                    <!-- Guidance Banner -->
+                    <div class="alert alert-info mb-4">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Export Guidance:</strong> This tool helps you create processing plans that turn raw products into export-ready items with extended shelf life. Select your source to see recommended byproducts with export potential.
+                    </div>
+                    
                     <form id="createPlanForm">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Source Type</label>
-                                    <select class="form-select" id="planSourceType" required>
-                                        <option value="">Select Source Type</option>
-                                        <option value="crop">Crop</option>
-                                        <option value="livestock">Livestock</option>
-                                    </select>
-                                </div>
+                        <!-- Step 1: Source Selection -->
+                        <div class="card mb-3">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0"><i class="fas fa-1 me-2"></i>Step 1: Select Your Source</h6>
                             </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Source</label>
-                                    <select class="form-select" id="planSourceId" required>
-                                        <option value="">Select Source</option>
-                                    </select>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">
+                                                Source Type
+                                                <i class="fas fa-question-circle text-muted ms-1" data-bs-toggle="tooltip" title="Choose whether you're processing crops or livestock products"></i>
+                                            </label>
+                                            <select class="form-select" id="planSourceType" required>
+                                                <option value="">Select Source Type</option>
+                                                <option value="crop">Crop</option>
+                                                <option value="livestock">Livestock</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">
+                                                Source
+                                                <i class="fas fa-question-circle text-muted ms-1" data-bs-toggle="tooltip" title="Select the specific crop or livestock item you want to process"></i>
+                                            </label>
+                                            <select class="form-select" id="planSourceId" required>
+                                                <option value="">Select Source</option>
+                                            </select>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-md-6">
+                        
+                        <!-- Step 2: Byproduct Selection with Suggestions -->
+                        <div class="card mb-3" id="byproductSuggestionsCard" style="display: none;">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-2 me-2"></i>Step 2: Choose Export-Ready Byproduct
+                                    <span class="badge bg-success ms-2" id="suggestionsCount">0 suggestions</span>
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div id="byproductSuggestions" class="row mb-3"></div>
                                 <div class="mb-3">
-                                    <label class="form-label">Byproduct Name</label>
+                                    <label class="form-label">
+                                        Byproduct Name
+                                        <i class="fas fa-question-circle text-muted ms-1" data-bs-toggle="tooltip" title="Enter the name of the processed product. Click a suggestion above to auto-fill details."></i>
+                                    </label>
                                     <input type="text" class="form-control" id="planByproductName" required>
+                                    <small class="text-muted">Tip: Select a suggestion above for export-ready options with good shelf life</small>
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                        </div>
+                        
+                        <!-- Step 3: Processing Details -->
+                        <div class="card mb-3">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0"><i class="fas fa-3 me-2"></i>Step 3: Processing Details</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">
+                                                Quantity (kg)
+                                                <i class="fas fa-question-circle text-muted ms-1" data-bs-toggle="tooltip" title="Amount of raw product you plan to process"></i>
+                                            </label>
+                                            <input type="number" class="form-control" id="planQuantity" step="0.1" required min="0.1">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">
+                                                Expected Output (kg)
+                                                <i class="fas fa-question-circle text-muted ms-1" data-bs-toggle="tooltip" title="Estimated output after processing (auto-calculated if suggestion selected)"></i>
+                                            </label>
+                                            <input type="number" class="form-control" id="planExpectedOutput" step="0.1" readonly>
+                                            <small class="text-muted" id="yieldInfo"></small>
+                                        </div>
+                                    </div>
+                                </div>
+                                
                                 <div class="mb-3">
-                                    <label class="form-label">Quantity</label>
-                                    <input type="number" class="form-control" id="planQuantity" step="0.1" required>
+                                    <label class="form-label">
+                                        Processing Method
+                                        <i class="fas fa-question-circle text-muted ms-1" data-bs-toggle="tooltip" title="Detailed method for processing (auto-filled from suggestions)"></i>
+                                    </label>
+                                    <textarea class="form-control" id="planProcessingMethod" rows="3" required></textarea>
+                                    <small class="text-muted">Describe the step-by-step processing method</small>
                                 </div>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Processing Method</label>
-                            <textarea class="form-control" id="planProcessingMethod" rows="3" required></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Required Equipment</label>
-                            <input type="text" class="form-control" id="planEquipment" placeholder="Separate multiple items with commas">
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
+                                
                                 <div class="mb-3">
-                                    <label class="form-label">Target Market</label>
-                                    <input type="text" class="form-control" id="planTargetMarket">
+                                    <label class="form-label">
+                                        <i class="fas fa-list-ol me-1"></i>Processing Steps
+                                        <i class="fas fa-question-circle text-muted ms-1" data-bs-toggle="tooltip" title="Detailed step-by-step instructions (auto-filled from suggestions)"></i>
+                                    </label>
+                                    <div id="processingStepsContainer"></div>
+                                    <small class="text-muted">Step-by-step guide for processing (click suggestion to auto-fill)</small>
                                 </div>
-                            </div>
-                            <div class="col-md-6">
+                                
                                 <div class="mb-3">
-                                    <label class="form-label">Expected Revenue</label>
-                                    <input type="number" class="form-control" id="planExpectedRevenue" step="0.01">
+                                    <label class="form-label">
+                                        Required Equipment
+                                        <i class="fas fa-question-circle text-muted ms-1" data-bs-toggle="tooltip" title="Equipment needed for processing (auto-filled from suggestions)"></i>
+                                    </label>
+                                    <input type="text" class="form-control" id="planEquipment" placeholder="Separate multiple items with commas">
+                                    <small class="text-muted">List all equipment needed (e.g., Drying racks, Grinding mill, Packaging machine)</small>
                                 </div>
                             </div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Processing Date</label>
-                            <input type="date" class="form-control" id="planProcessingDate">
+                        
+                        <!-- Step 4: Export & Market Information -->
+                        <div class="card mb-3">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-4 me-2"></i>Step 4: Export Readiness & Market
+                                    <span class="badge bg-warning text-dark ms-2" id="exportReadinessBadge">Not Ready</span>
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <!-- Shelf Life & Export Info -->
+                                <div class="row mb-3">
+                                    <div class="col-md-4">
+                                        <div class="card border-primary">
+                                            <div class="card-body text-center">
+                                                <i class="fas fa-clock fa-2x text-primary mb-2"></i>
+                                                <h6>Shelf Life</h6>
+                                                <h4 class="text-primary" id="shelfLifeDisplay">-</h4>
+                                                <small class="text-muted" id="shelfLifeInfo">Select a suggestion to see shelf life</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card border-success">
+                                            <div class="card-body text-center">
+                                                <i class="fas fa-dollar-sign fa-2x text-success mb-2"></i>
+                                                <h6>Market Value</h6>
+                                                <h4 class="text-success" id="marketValueDisplay">-</h4>
+                                                <small class="text-muted">Per kg (FJD)</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card border-info">
+                                            <div class="card-body text-center">
+                                                <i class="fas fa-chart-line fa-2x text-info mb-2"></i>
+                                                <h6>Estimated Revenue</h6>
+                                                <h4 class="text-info" id="estimatedRevenueDisplay">-</h4>
+                                                <small class="text-muted" id="revenueInfo">Based on quantity</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">
+                                        Target Market
+                                        <i class="fas fa-question-circle text-muted ms-1" data-bs-toggle="tooltip" title="Where you plan to sell this product (local, export, specific countries)"></i>
+                                    </label>
+                                    <input type="text" class="form-control" id="planTargetMarket" placeholder="e.g., Export to Australia, Local supermarkets, Online retailers">
+                                    <small class="text-muted">Specify your target market for better export planning</small>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">
+                                        Expected Revenue (FJD)
+                                        <i class="fas fa-question-circle text-muted ms-1" data-bs-toggle="tooltip" title="Total expected revenue (auto-calculated based on market value and quantity)"></i>
+                                    </label>
+                                    <input type="number" class="form-control" id="planExpectedRevenue" step="0.01" readonly>
+                                    <small class="text-muted">Auto-calculated based on market value and quantity</small>
+                                </div>
+                                
+                                <!-- Export Readiness Checklist -->
+                                <div class="card border-warning mb-3">
+                                    <div class="card-header bg-warning bg-opacity-10">
+                                        <h6 class="mb-0">
+                                            <i class="fas fa-clipboard-check me-2"></i>Export Readiness Checklist
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-check mb-2">
+                                                    <input class="form-check-input" type="checkbox" id="exportCheck1">
+                                                    <label class="form-check-label" for="exportCheck1">
+                                                        Product has shelf life ≥ 6 months
+                                                    </label>
+                                                </div>
+                                                <div class="form-check mb-2">
+                                                    <input class="form-check-input" type="checkbox" id="exportCheck2">
+                                                    <label class="form-check-label" for="exportCheck2">
+                                                        Proper packaging materials available
+                                                    </label>
+                                                </div>
+                                                <div class="form-check mb-2">
+                                                    <input class="form-check-input" type="checkbox" id="exportCheck3">
+                                                    <label class="form-check-label" for="exportCheck3">
+                                                        Quality control procedures in place
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-check mb-2">
+                                                    <input class="form-check-input" type="checkbox" id="exportCheck4">
+                                                    <label class="form-check-label" for="exportCheck4">
+                                                        Export permits/licenses obtained
+                                                    </label>
+                                                </div>
+                                                <div class="form-check mb-2">
+                                                    <input class="form-check-input" type="checkbox" id="exportCheck5">
+                                                    <label class="form-check-label" for="exportCheck5">
+                                                        Meets destination country standards
+                                                    </label>
+                                                </div>
+                                                <div class="form-check mb-2">
+                                                    <input class="form-check-input" type="checkbox" id="exportCheck6">
+                                                    <label class="form-check-label" for="exportCheck6">
+                                                        Shipping/logistics arranged
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="alert alert-info mt-3 mb-0">
+                                            <i class="fas fa-lightbulb me-2"></i>
+                                            <strong>Export Tip:</strong> Products with shelf life ≥ 6 months are ideal for export. Consider drying, canning, or freezing methods to extend shelf life.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Notes</label>
-                            <textarea class="form-control" id="planNotes" rows="3"></textarea>
+                        
+                        <!-- Step 5: Additional Information -->
+                        <div class="card mb-3">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0"><i class="fas fa-5 me-2"></i>Step 5: Additional Information</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Processing Date</label>
+                                            <input type="date" class="form-control" id="planProcessingDate">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Processing Time</label>
+                                            <input type="text" class="form-control" id="planProcessingTime" placeholder="e.g., 5-7 days" readonly>
+                                            <small class="text-muted">Estimated processing duration</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Notes</label>
+                                    <textarea class="form-control" id="planNotes" rows="3" placeholder="Additional notes, special requirements, or reminders"></textarea>
+                                </div>
+                            </div>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-success" onclick="createProcessingPlan()">Create Plan</button>
+                    <button type="button" class="btn btn-success" onclick="createProcessingPlan()">
+                        <i class="fas fa-check me-2"></i>Create Processing Plan
+                    </button>
                 </div>
             </div>
         </div>
@@ -1117,18 +1323,43 @@
             }
         });
         
+        // Global variables for processing plan
+        let selectedByproduct = null;
+        let currentByproducts = []; // Store current suggestions
+        
         // Create Processing Plan Functions
         function showCreatePlanModal() {
-            const modal = new bootstrap.Modal(document.getElementById('createPlanModal'));
+            const modalElement = document.getElementById('createPlanModal');
+            const modal = new bootstrap.Modal(modalElement);
             
-            // Reset form
+            // Reset form and state
             const form = document.getElementById('createPlanForm');
             if (form) {
                 form.reset();
             }
+            selectedByproduct = null;
+            currentByproducts = [];
+            
+            // Reset displays
+            document.getElementById('shelfLifeDisplay').textContent = '-';
+            document.getElementById('shelfLifeInfo').textContent = 'Select a suggestion to see shelf life';
+            document.getElementById('marketValueDisplay').textContent = '-';
+            document.getElementById('estimatedRevenueDisplay').textContent = '-';
+            document.getElementById('revenueInfo').textContent = 'Based on quantity';
+            document.getElementById('planExpectedOutput').value = '';
+            document.getElementById('planExpectedRevenue').value = '';
+            document.getElementById('processingStepsContainer').innerHTML = '';
+            document.getElementById('byproductSuggestionsCard').style.display = 'none';
+            document.getElementById('exportReadinessBadge').textContent = 'Not Ready';
+            document.getElementById('exportReadinessBadge').className = 'badge bg-warning text-dark ms-2';
             
             // Load crops and livestock for source selection
             loadPlanSources();
+            
+            // Initialize tooltips when modal is shown
+            modalElement.addEventListener('shown.bs.modal', function() {
+                initializeTooltips();
+            }, { once: true });
             
             // Show modal
             modal.show();
@@ -1136,6 +1367,243 @@
         
         // Initialize source loading (only once)
         let sourceLoaderInitialized = false;
+        
+        // Initialize tooltips
+        function initializeTooltips() {
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        }
+        
+        // Get shelf life in months from string
+        function parseShelfLife(shelfLifeStr) {
+            if (!shelfLifeStr) return 0;
+            const match = shelfLifeStr.match(/(\d+)\s*(month|week|day|year)/i);
+            if (!match) return 0;
+            const value = parseInt(match[1]);
+            const unit = match[2].toLowerCase();
+            if (unit.includes('year')) return value * 12;
+            if (unit.includes('month')) return value;
+            if (unit.includes('week')) return value / 4.33;
+            if (unit.includes('day')) return value / 30;
+            return 0;
+        }
+        
+        // Update export readiness badge
+        function updateExportReadiness() {
+            const badge = document.getElementById('exportReadinessBadge');
+            if (!badge || !selectedByproduct) {
+                if (badge) badge.textContent = 'Not Ready';
+                return;
+            }
+            
+            const shelfLifeMonths = parseShelfLife(selectedByproduct.shelfLife);
+            const checks = [
+                document.getElementById('exportCheck1')?.checked || false,
+                document.getElementById('exportCheck2')?.checked || false,
+                document.getElementById('exportCheck3')?.checked || false,
+                document.getElementById('exportCheck4')?.checked || false,
+                document.getElementById('exportCheck5')?.checked || false,
+                document.getElementById('exportCheck6')?.checked || false
+            ];
+            
+            const checkedCount = checks.filter(c => c).length;
+            const hasGoodShelfLife = shelfLifeMonths >= 6;
+            
+            if (hasGoodShelfLife && checkedCount >= 4) {
+                badge.textContent = 'Export Ready';
+                badge.className = 'badge bg-success ms-2';
+            } else if (hasGoodShelfLife && checkedCount >= 2) {
+                badge.textContent = 'Almost Ready';
+                badge.className = 'badge bg-warning text-dark ms-2';
+            } else {
+                badge.textContent = 'Needs Work';
+                badge.className = 'badge bg-danger ms-2';
+            }
+        }
+        
+        // Load byproduct suggestions
+        function loadByproductSuggestions(sourceType, sourceName) {
+            if (!window.ByproductsDatabase) {
+                console.warn('ByproductsDatabase not available');
+                return;
+            }
+            
+            const suggestionsCard = document.getElementById('byproductSuggestionsCard');
+            const suggestionsContainer = document.getElementById('byproductSuggestions');
+            const suggestionsCount = document.getElementById('suggestionsCount');
+            
+            if (!suggestionsCard || !suggestionsContainer) return;
+            
+            // Normalize source name
+            const normalizedName = sourceName.toLowerCase().trim().replace(/\s+/g, '_');
+            
+            // Get byproducts
+            let byproducts = [];
+            if (sourceType === 'crop') {
+                const cropData = window.ByproductsDatabase.crops[normalizedName] || 
+                                Object.values(window.ByproductsDatabase.crops).find(c => 
+                                    c.primary?.toLowerCase().includes(sourceName.toLowerCase()) ||
+                                    sourceName.toLowerCase().includes(c.primary?.toLowerCase())
+                                );
+                if (cropData) {
+                    byproducts = cropData.byproducts || [];
+                }
+            } else if (sourceType === 'livestock') {
+                const livestockData = window.ByproductsDatabase.livestock[normalizedName] ||
+                                    Object.values(window.ByproductsDatabase.livestock).find(l => 
+                                        l.primary?.toLowerCase().includes(sourceName.toLowerCase()) ||
+                                        sourceName.toLowerCase().includes(l.primary?.toLowerCase())
+                                    );
+                if (livestockData) {
+                    byproducts = livestockData.byproducts || [];
+                }
+            }
+            
+            // Filter for export-ready (shelf life >= 6 months)
+            const exportReadyByproducts = byproducts.filter(bp => {
+                const shelfLifeMonths = parseShelfLife(bp.shelfLife);
+                return shelfLifeMonths >= 6;
+            });
+            
+            // Store byproducts globally for selection
+            currentByproducts = byproducts;
+            
+            // Show suggestions
+            if (byproducts.length > 0) {
+                suggestionsCard.style.display = 'block';
+                suggestionsContainer.innerHTML = '';
+                suggestionsCount.textContent = `${byproducts.length} suggestions (${exportReadyByproducts.length} export-ready)`;
+                
+                byproducts.forEach((byproduct, index) => {
+                    const shelfLifeMonths = parseShelfLife(byproduct.shelfLife);
+                    const isExportReady = shelfLifeMonths >= 6;
+                    
+                    const col = document.createElement('div');
+                    col.className = 'col-md-6 mb-3';
+                    
+                    col.innerHTML = `
+                        <div class="card h-100 ${isExportReady ? 'border-success' : 'border-secondary'} suggestion-card" 
+                             style="cursor: pointer; transition: all 0.3s;" 
+                             data-index="${index}"
+                             onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.1)'"
+                             onmouseout="this.style.transform=''; this.style.boxShadow=''">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h6 class="card-title mb-0">${byproduct.name}</h6>
+                                    ${isExportReady ? '<span class="badge bg-success">Export Ready</span>' : '<span class="badge bg-secondary">Local</span>'}
+                                </div>
+                                <p class="card-text small text-muted mb-2">${byproduct.description || ''}</p>
+                                <div class="row small">
+                                    <div class="col-6">
+                                        <i class="fas fa-clock text-primary"></i> ${byproduct.shelfLife || 'N/A'}
+                                    </div>
+                                    <div class="col-6">
+                                        <i class="fas fa-dollar-sign text-success"></i> FJD ${byproduct.marketValue || 0}/kg
+                                    </div>
+                                </div>
+                                <div class="mt-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-tag"></i> ${byproduct.category || 'Food Processing'}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Add click handler
+                    const card = col.querySelector('.suggestion-card');
+                    card.addEventListener('click', () => selectByproductSuggestion(index));
+                    
+                    suggestionsContainer.appendChild(col);
+                });
+            } else {
+                suggestionsCard.style.display = 'none';
+            }
+        }
+        
+        // Select byproduct suggestion
+        function selectByproductSuggestion(index) {
+            if (!currentByproducts || !currentByproducts[index]) return;
+            const byproduct = currentByproducts[index];
+            selectedByproduct = byproduct;
+            
+            // Fill form fields
+            document.getElementById('planByproductName').value = byproduct.name || '';
+            document.getElementById('planProcessingMethod').value = byproduct.processingMethod || '';
+            document.getElementById('planEquipment').value = byproduct.equipment ? byproduct.equipment.join(', ') : '';
+            document.getElementById('planTargetMarket').value = byproduct.targetMarket || '';
+            document.getElementById('planProcessingTime').value = byproduct.projectedOutput?.processingTime || '';
+            
+            // Update displays
+            document.getElementById('shelfLifeDisplay').textContent = byproduct.shelfLife || '-';
+            document.getElementById('shelfLifeInfo').textContent = parseShelfLife(byproduct.shelfLife) >= 6 ? 
+                '✅ Good for export' : '⚠️ Consider extending shelf life for export';
+            document.getElementById('marketValueDisplay').textContent = byproduct.marketValue ? 
+                `FJD ${byproduct.marketValue.toFixed(2)}` : '-';
+            
+            // Display processing steps
+            const stepsContainer = document.getElementById('processingStepsContainer');
+            if (stepsContainer && byproduct.processingSteps && byproduct.processingSteps.length > 0) {
+                stepsContainer.innerHTML = '<ol class="mb-0">' + 
+                    byproduct.processingSteps.map((step, i) => 
+                        `<li class="mb-2">${step}</li>`
+                    ).join('') + 
+                    '</ol>';
+            } else {
+                stepsContainer.innerHTML = '<p class="text-muted">No detailed steps available. Enter manually above.</p>';
+            }
+            
+            // Update export check 1 if shelf life is good
+            const exportCheck1 = document.getElementById('exportCheck1');
+            if (exportCheck1 && parseShelfLife(byproduct.shelfLife) >= 6) {
+                exportCheck1.checked = true;
+            }
+            
+            // Calculate revenue when quantity changes
+            const quantityInput = document.getElementById('planQuantity');
+            if (quantityInput) {
+                quantityInput.oninput = calculateRevenue;
+                calculateRevenue();
+            }
+            
+            updateExportReadiness();
+            
+            // Highlight selected card
+            document.querySelectorAll('.suggestion-card').forEach((card, i) => {
+                if (i === index) {
+                    card.classList.add('border-primary', 'border-3');
+                } else {
+                    card.classList.remove('border-primary', 'border-3');
+                }
+            });
+        }
+        
+        // Calculate revenue and output
+        function calculateRevenue() {
+            if (!selectedByproduct) return;
+            
+            const quantity = parseFloat(document.getElementById('planQuantity').value) || 0;
+            const marketValue = selectedByproduct.marketValue || 0;
+            const yieldPercentage = selectedByproduct.projectedOutput?.yieldPercentage || 100;
+            
+            // Calculate expected output
+            const expectedOutput = (quantity * yieldPercentage) / 100;
+            document.getElementById('planExpectedOutput').value = expectedOutput.toFixed(2);
+            
+            // Update yield info
+            const yieldInfo = document.getElementById('yieldInfo');
+            if (yieldInfo) {
+                yieldInfo.textContent = `Approx. ${yieldPercentage}% yield from raw product`;
+            }
+            
+            // Calculate revenue
+            const revenue = expectedOutput * marketValue;
+            document.getElementById('planExpectedRevenue').value = revenue.toFixed(2);
+            document.getElementById('estimatedRevenueDisplay').textContent = `FJD ${revenue.toFixed(2)}`;
+            document.getElementById('revenueInfo').textContent = `From ${expectedOutput.toFixed(2)} kg output`;
+        }
         
         async function loadPlanSources() {
             const sourceTypeSelect = document.getElementById('planSourceType');
@@ -1151,6 +1619,8 @@
                 sourceTypeSelect.addEventListener('change', async function() {
                     const sourceType = this.value;
                     sourceIdSelect.innerHTML = '<option value="">Select Source</option>';
+                    document.getElementById('byproductSuggestionsCard').style.display = 'none';
+                    selectedByproduct = null;
                     
                     if (!sourceType) return;
                     
@@ -1183,6 +1653,7 @@
                                 const option = document.createElement('option');
                                 option.value = crop.id;
                                 option.textContent = `${crop.name}${crop.variety ? ' - ' + crop.variety : ''}`;
+                                option.dataset.name = crop.name;
                                 sourceIdSelect.appendChild(option);
                             });
                             
@@ -1213,7 +1684,10 @@
                             livestock.forEach(animal => {
                                 const option = document.createElement('option');
                                 option.value = animal.id;
-                                option.textContent = `${animal.name || 'Unnamed'} (${animal.type || animal.species || 'Unknown'})`;
+                                const animalName = animal.name || 'Unnamed';
+                                const animalType = animal.type || animal.species || 'Unknown';
+                                option.textContent = `${animalName} (${animalType})`;
+                                option.dataset.name = animalType;
                                 sourceIdSelect.appendChild(option);
                             });
                         }
@@ -1222,6 +1696,25 @@
                         alert('Error loading sources. Please try again.');
                     }
                 });
+                
+                // Load suggestions when source is selected
+                sourceIdSelect.addEventListener('change', function() {
+                    const sourceType = sourceTypeSelect.value;
+                    const selectedOption = this.options[this.selectedIndex];
+                    if (selectedOption && selectedOption.value && sourceType) {
+                        const sourceName = selectedOption.dataset.name || selectedOption.textContent.split('(')[0].trim();
+                        loadByproductSuggestions(sourceType, sourceName);
+                    }
+                });
+                
+                // Update export readiness when checkboxes change
+                for (let i = 1; i <= 6; i++) {
+                    const check = document.getElementById(`exportCheck${i}`);
+                    if (check) {
+                        check.addEventListener('change', updateExportReadiness);
+                    }
+                }
+                
                 sourceLoaderInitialized = true;
             }
         }
