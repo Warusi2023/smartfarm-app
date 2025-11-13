@@ -2842,6 +2842,17 @@
                         console.warn('⚠️ Error closing modal (continuing anyway):', modalError);
                     }
                     
+                    // Sync Farm-to-Table recommendations
+                    if (window.FarmToTableRecommendationService) {
+                        try {
+                            const service = new window.FarmToTableRecommendationService();
+                            await service.syncRecommendations();
+                            console.log('✅ Farm-to-Table recommendations synced after livestock addition');
+                        } catch (error) {
+                            console.warn('⚠️ Error syncing Farm-to-Table recommendations:', error);
+                        }
+                    }
+                    
                     // Mark that we just added livestock to prevent auto-refresh
                     window._justAddedLivestock = true;
                     setTimeout(() => {
@@ -3090,6 +3101,17 @@
                     }
                 }
                 
+                // Sync Farm-to-Table recommendations
+                if (window.FarmToTableRecommendationService) {
+                    try {
+                        const service = new window.FarmToTableRecommendationService();
+                        await service.syncRecommendations();
+                        console.log('✅ Farm-to-Table recommendations synced after livestock update');
+                    } catch (error) {
+                        console.warn('⚠️ Error syncing Farm-to-Table recommendations:', error);
+                    }
+                }
+                
                 // Re-render the list (use applyFilters instead of loadLivestock to avoid API call and freezing)
                 applyFilters();
                 updateStatistics();
@@ -3129,6 +3151,17 @@
                         }
                     } catch (apiError) {
                         console.error('⚠️ API delete error:', apiError);
+                    }
+                }
+                
+                // Clean up Farm-to-Table products that depend on this livestock
+                if (window.FarmToTableRecommendationService) {
+                    try {
+                        const service = new window.FarmToTableRecommendationService();
+                        await service.onLivestockDeleted(id);
+                        console.log('✅ Farm-to-Table products cleaned up after livestock deletion');
+                    } catch (error) {
+                        console.warn('⚠️ Error cleaning up Farm-to-Table products:', error);
                     }
                 }
                 
