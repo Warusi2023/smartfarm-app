@@ -35,7 +35,7 @@ window.SmartFarmConfig = {
         const config = {
             API_BASE_URL: this.API_BASE_URL,
             VITE_API_URL: window.VITE_API_URL,
-            __SMARTFARM_API_BASE__: (window as any).__SMARTFARM_API_BASE__,
+            __SMARTFARM_API_BASE__: window.__SMARTFARM_API_BASE__,
             currentDomain: window.location.origin
         };
         

@@ -1116,6 +1116,231 @@
                 });
             }
         });
+        
+        // Create Processing Plan Functions
+        function showCreatePlanModal() {
+            const modal = new bootstrap.Modal(document.getElementById('createPlanModal'));
+            
+            // Reset form
+            const form = document.getElementById('createPlanForm');
+            if (form) {
+                form.reset();
+            }
+            
+            // Load crops and livestock for source selection
+            loadPlanSources();
+            
+            // Show modal
+            modal.show();
+        }
+        
+        // Initialize source loading (only once)
+        let sourceLoaderInitialized = false;
+        
+        async function loadPlanSources() {
+            const sourceTypeSelect = document.getElementById('planSourceType');
+            const sourceIdSelect = document.getElementById('planSourceId');
+            
+            if (!sourceTypeSelect || !sourceIdSelect) return;
+            
+            // Clear existing options
+            sourceIdSelect.innerHTML = '<option value="">Select Source</option>';
+            
+            // Load sources when source type changes (only add listener once)
+            if (!sourceLoaderInitialized) {
+                sourceTypeSelect.addEventListener('change', async function() {
+                    const sourceType = this.value;
+                    sourceIdSelect.innerHTML = '<option value="">Select Source</option>';
+                    
+                    if (!sourceType) return;
+                    
+                    try {
+                        if (sourceType === 'crop') {
+                            // Load crops
+                            let crops = [];
+                            
+                            // Try API first
+                            if (window.SmartFarmAPI && typeof window.SmartFarmAPI.isBackendAvailable === 'function') {
+                                const isAvailable = await window.SmartFarmAPI.isBackendAvailable();
+                                if (isAvailable) {
+                                    const response = await window.SmartFarmAPI.getCrops();
+                                    if (response && response.success && response.data) {
+                                        crops = Array.isArray(response.data) ? response.data : [];
+                                    }
+                                }
+                            }
+                            
+                            // Fallback to localStorage
+                            if (crops.length === 0) {
+                                const savedCrops = localStorage.getItem('smartfarm_crops') || localStorage.getItem('crops');
+                                if (savedCrops) {
+                                    crops = JSON.parse(savedCrops);
+                                }
+                            }
+                            
+                            // Populate dropdown
+                            crops.forEach(crop => {
+                                const option = document.createElement('option');
+                                option.value = crop.id;
+                                option.textContent = `${crop.name}${crop.variety ? ' - ' + crop.variety : ''}`;
+                                sourceIdSelect.appendChild(option);
+                            });
+                            
+                        } else if (sourceType === 'livestock') {
+                            // Load livestock
+                            let livestock = [];
+                            
+                            // Try API first
+                            if (window.SmartFarmAPI && typeof window.SmartFarmAPI.isBackendAvailable === 'function') {
+                                const isAvailable = await window.SmartFarmAPI.isBackendAvailable();
+                                if (isAvailable) {
+                                    const response = await window.SmartFarmAPI.getLivestock();
+                                    if (response && response.success && response.data) {
+                                        livestock = Array.isArray(response.data) ? response.data : [];
+                                    }
+                                }
+                            }
+                            
+                            // Fallback to localStorage
+                            if (livestock.length === 0) {
+                                const savedLivestock = localStorage.getItem('smartfarm_livestock') || localStorage.getItem('livestock');
+                                if (savedLivestock) {
+                                    livestock = JSON.parse(savedLivestock);
+                                }
+                            }
+                            
+                            // Populate dropdown
+                            livestock.forEach(animal => {
+                                const option = document.createElement('option');
+                                option.value = animal.id;
+                                option.textContent = `${animal.name || 'Unnamed'} (${animal.type || animal.species || 'Unknown'})`;
+                                sourceIdSelect.appendChild(option);
+                            });
+                        }
+                    } catch (error) {
+                        console.error('Error loading sources:', error);
+                        alert('Error loading sources. Please try again.');
+                    }
+                });
+                sourceLoaderInitialized = true;
+            }
+        }
+        
+        async function createProcessingPlan() {
+            const form = document.getElementById('createPlanForm');
+            if (!form) {
+                alert('Form not found');
+                return;
+            }
+            
+            // Validate form
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            
+            // Get form values
+            const sourceType = document.getElementById('planSourceType').value;
+            const sourceId = document.getElementById('planSourceId').value;
+            const byproductName = document.getElementById('planByproductName').value;
+            const quantity = parseFloat(document.getElementById('planQuantity').value);
+            const processingMethod = document.getElementById('planProcessingMethod').value;
+            const equipment = document.getElementById('planEquipment').value;
+            const targetMarket = document.getElementById('planTargetMarket').value;
+            const expectedRevenue = parseFloat(document.getElementById('planExpectedRevenue').value) || 0;
+            const processingDate = document.getElementById('planProcessingDate').value || new Date().toISOString().split('T')[0];
+            const notes = document.getElementById('planNotes').value;
+            
+            // Validate required fields
+            if (!sourceType || !sourceId || !byproductName || !quantity || !processingMethod) {
+                alert('Please fill in all required fields');
+                return;
+            }
+            
+            try {
+                // Create product using recommendation service if available
+                if (recommendationService) {
+                    const productData = {
+                        name: byproductName,
+                        category: 'Food Processing',
+                        description: `Processing plan for ${byproductName}`,
+                        sourceType: sourceType,
+                        sourceIds: [sourceId],
+                        sourceNames: [],
+                        marketValue: expectedRevenue,
+                        processingMethod: processingMethod,
+                        equipment: equipment ? equipment.split(',').map(e => e.trim()) : [],
+                        shelfLife: '',
+                        targetMarket: targetMarket,
+                        processingSteps: [],
+                        projectedOutput: {
+                            quantity: quantity,
+                            unit: 'kg'
+                        },
+                        status: 'planned'
+                    };
+                    
+                    const product = recommendationService.createManualProduct(productData);
+                    console.log('✅ Processing plan created:', product);
+                    
+                    // Show success message
+                    alert('Processing plan created successfully!');
+                    
+                    // Close modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('createPlanModal'));
+                    if (modal) {
+                        modal.hide();
+                    }
+                    
+                    // Refresh recommendations if on that tab
+                    const recommendationsTab = document.getElementById('recommendations-tab');
+                    if (recommendationsTab && recommendationsTab.classList.contains('active')) {
+                        if (recommendationService) {
+                            const products = recommendationService.getActiveProducts();
+                            displayRecommendations(products);
+                        }
+                    }
+                } else {
+                    // Fallback: save to localStorage
+                    const plan = {
+                        id: 'plan-' + Date.now(),
+                        sourceType: sourceType,
+                        sourceId: sourceId,
+                        byproductName: byproductName,
+                        quantity: quantity,
+                        processingMethod: processingMethod,
+                        equipment: equipment,
+                        targetMarket: targetMarket,
+                        expectedRevenue: expectedRevenue,
+                        processingDate: processingDate,
+                        notes: notes,
+                        status: 'planned',
+                        createdAt: new Date().toISOString()
+                    };
+                    
+                    // Save to localStorage
+                    let plans = [];
+                    const savedPlans = localStorage.getItem('processingPlans');
+                    if (savedPlans) {
+                        plans = JSON.parse(savedPlans);
+                    }
+                    plans.push(plan);
+                    localStorage.setItem('processingPlans', JSON.stringify(plans));
+                    
+                    console.log('✅ Processing plan saved to localStorage:', plan);
+                    alert('Processing plan created successfully!');
+                    
+                    // Close modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('createPlanModal'));
+                    if (modal) {
+                        modal.hide();
+                    }
+                }
+            } catch (error) {
+                console.error('Error creating processing plan:', error);
+                alert('Error creating processing plan: ' + error.message);
+            }
+        }
     </script>
 </body>
 </html>
