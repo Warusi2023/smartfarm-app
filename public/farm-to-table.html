@@ -69,6 +69,15 @@
             border-radius: 0.5rem;
             padding: 1rem;
         }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        #recommendationsBadge {
+            animation: pulse 2s infinite;
+        }
     </style>
 </head>
 <body>
@@ -708,11 +717,71 @@
         // Initialize Enhanced Farm to Table System
         let enhancedFarmToTable;
         document.addEventListener('DOMContentLoaded', async function() {
+            // Wait a bit for byproducts database to load
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
             // Initialize recommendation service
             if (window.FarmToTableRecommendationService) {
-                recommendationService = new window.FarmToTableRecommendationService();
-                await recommendationService.init();
-                await syncRecommendations();
+                try {
+                    recommendationService = new window.FarmToTableRecommendationService();
+                    await recommendationService.init();
+                    console.log('✅ Recommendation service initialized');
+                    
+                    // Sync and display recommendations
+                    const products = await syncRecommendations();
+                    
+                    // Show notification if recommendations are available
+                    if (products && products.length > 0) {
+                        console.log(`✅ ${products.length} recommendations ready! Click "Smart Recommendations" tab to view.`);
+                        // Update badge
+                        updateRecommendationsBadge(products.length);
+                        
+                        // Show a subtle notification
+                        const badge = document.getElementById('recommendationsBadge');
+                        if (badge) {
+                            badge.style.display = 'inline';
+                            badge.style.animation = 'pulse 2s infinite';
+                        }
+                    } else {
+                        console.log('ℹ️ No recommendations available. Add crops or livestock to see suggestions.');
+                    }
+                    
+                    // If on recommendations tab, make sure it's displayed
+                    const recommendationsTab = document.getElementById('recommendations-tab');
+                    if (recommendationsTab && recommendationsTab.classList.contains('active')) {
+                        const activeProducts = recommendationService.getActiveProducts();
+                        displayRecommendations(activeProducts);
+                    }
+                } catch (error) {
+                    console.error('❌ Error initializing recommendation service:', error);
+                    // Show error message to user
+                    const container = document.getElementById('recommendationsContainer');
+                    if (container) {
+                        container.innerHTML = `
+                            <div class="col-12">
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    <strong>Error loading recommendations:</strong> ${error.message}
+                                    <br><small>Please check the browser console for details.</small>
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+            } else {
+                console.error('❌ FarmToTableRecommendationService not found');
+                const container = document.getElementById('recommendationsContainer');
+                if (container) {
+                    container.innerHTML = `
+                        <div class="col-12">
+                            <div class="alert alert-danger">
+                                <i class="fas fa-exclamation-circle me-2"></i>
+                                <strong>Service not available:</strong> Farm-to-Table Recommendation Service could not be loaded.
+                                <br><small>Please refresh the page or check that all scripts are loaded correctly.</small>
+                            </div>
+                        </div>
+                    `;
+                }
             }
             try {
                 // Initialize the enhanced system
@@ -820,16 +889,55 @@
         // Farm-to-Table Recommendation Functions
         async function syncRecommendations() {
             if (!recommendationService) {
-                console.error('Recommendation service not initialized');
-                return;
+                console.error('❌ Recommendation service not initialized');
+                // Try to initialize
+                if (window.FarmToTableRecommendationService) {
+                    console.log('🔄 Attempting to initialize recommendation service...');
+                    recommendationService = new window.FarmToTableRecommendationService();
+                    await recommendationService.init();
+                } else {
+                    console.error('❌ FarmToTableRecommendationService class not found');
+                    return;
+                }
             }
             
             try {
+                console.log('🔄 Syncing recommendations...');
                 const products = await recommendationService.syncRecommendations();
+                console.log(`✅ Sync complete: ${products.length} active products`);
+                
+                // Always display recommendations, even if tab isn't active
                 displayRecommendations(products);
                 updateRecommendationsBadge(products.length);
+                
+                // Show message if no recommendations
+                if (products.length === 0) {
+                    const container = document.getElementById('recommendationsContainer');
+                    const noRecommendations = document.getElementById('noRecommendations');
+                    if (container) {
+                        container.innerHTML = '';
+                    }
+                    if (noRecommendations) {
+                        noRecommendations.style.display = 'block';
+                    }
+                }
+                
+                return products; // Return products for caller
             } catch (error) {
-                console.error('Error syncing recommendations:', error);
+                console.error('❌ Error syncing recommendations:', error);
+                const container = document.getElementById('recommendationsContainer');
+                if (container) {
+                    container.innerHTML = `
+                        <div class="col-12">
+                            <div class="alert alert-danger">
+                                <i class="fas fa-exclamation-circle me-2"></i>
+                                <strong>Error:</strong> ${error.message}
+                                <br><button class="btn btn-sm btn-primary mt-2" onclick="syncRecommendations()">Retry</button>
+                            </div>
+                        </div>
+                    `;
+                }
+                return []; // Return empty array on error
             }
         }
         
@@ -989,9 +1097,21 @@
             const recommendationsTab = document.getElementById('recommendations-tab');
             if (recommendationsTab) {
                 recommendationsTab.addEventListener('shown.bs.tab', function() {
+                    console.log('📋 Recommendations tab shown, refreshing...');
                     if (recommendationService) {
                         const products = recommendationService.getActiveProducts();
+                        console.log(`   Found ${products.length} active products`);
                         displayRecommendations(products);
+                        updateRecommendationsBadge(products.length);
+                    } else {
+                        console.warn('⚠️ Recommendation service not available when tab shown');
+                        // Try to initialize if not already done
+                        if (window.FarmToTableRecommendationService) {
+                            recommendationService = new window.FarmToTableRecommendationService();
+                            recommendationService.init().then(() => {
+                                syncRecommendations();
+                            });
+                        }
                     }
                 });
             }

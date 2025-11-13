@@ -12,18 +12,35 @@ class FarmToTableRecommendationService {
         this.products = []; // FarmToTableProduct records
         this.crops = [];
         this.livestock = [];
-        this.byproductsDatabase = window.ByproductsDatabase || {};
+        this.byproductsDatabase = null; // Will be set in init
         this.storageKey = 'farmToTableProducts';
         this.storageKeySources = 'farmToTableSources'; // Join table for relationships
         
-        this.init();
+        // Don't call init here - wait for explicit init() call
     }
     
     async init() {
+        console.log('🚀 Initializing Farm-to-Table Recommendation Service...');
+        
+        // Wait for byproducts database to be available
+        let attempts = 0;
+        while (!window.ByproductsDatabase && attempts < 10) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+        }
+        
+        this.byproductsDatabase = window.ByproductsDatabase || {};
+        if (!this.byproductsDatabase || (!this.byproductsDatabase.crops && !this.byproductsDatabase.livestock)) {
+            console.warn('⚠️ ByproductsDatabase not fully loaded, recommendations may be limited');
+        } else {
+            console.log('✅ ByproductsDatabase loaded');
+        }
+        
         await this.loadProducts();
         await this.loadCrops();
         await this.loadLivestock();
         await this.cleanupOrphanedProducts();
+        console.log(`✅ Service initialized: ${this.crops.length} crops, ${this.livestock.length} livestock, ${this.products.length} existing products`);
     }
     
     /**
@@ -66,14 +83,16 @@ class FarmToTableRecommendationService {
                 }
             }
             
-            // Fallback to localStorage
-            const savedCrops = localStorage.getItem('crops');
+            // Fallback to localStorage - try multiple possible keys
+            let savedCrops = localStorage.getItem('smartfarm_crops') || localStorage.getItem('crops');
             if (savedCrops) {
                 const parsed = JSON.parse(savedCrops);
                 this.crops = Array.isArray(parsed) ? parsed : [];
             } else {
                 this.crops = [];
             }
+            
+            console.log(`📦 Loaded ${this.crops.length} crops for recommendations`);
         } catch (error) {
             console.error('Error loading crops:', error);
             this.crops = [];
@@ -105,6 +124,8 @@ class FarmToTableRecommendationService {
             } else {
                 this.livestock = [];
             }
+            
+            console.log(`🐄 Loaded ${this.livestock.length} livestock for recommendations`);
         } catch (error) {
             console.error('Error loading livestock:', error);
             this.livestock = [];
@@ -143,12 +164,15 @@ class FarmToTableRecommendationService {
      * Generate dynamic product suggestions based on active crops and livestock
      */
     generateRecommendations() {
+        console.log('🔍 Generating recommendations...');
+        console.log(`   - Crops: ${this.crops.length}, Livestock: ${this.livestock.length}`);
         const recommendations = [];
         
         // Generate recommendations from crops
         this.crops.forEach(crop => {
             const cropName = (crop.name || '').toLowerCase().trim();
             const cropByproducts = this.getByproductsForCrop(cropName);
+            console.log(`   - Crop "${crop.name}": Found ${cropByproducts.length} byproducts`);
             
             cropByproducts.forEach(byproduct => {
                 recommendations.push({
@@ -179,6 +203,7 @@ class FarmToTableRecommendationService {
         this.livestock.forEach(animal => {
             const animalType = (animal.type || animal.species || '').toLowerCase().trim();
             const animalByproducts = this.getByproductsForLivestock(animalType);
+            console.log(`   - Livestock "${animal.name || animalType}": Found ${animalByproducts.length} byproducts`);
             
             animalByproducts.forEach(byproduct => {
                 recommendations.push({
@@ -217,6 +242,7 @@ class FarmToTableRecommendationService {
             }
         });
         
+        console.log(`✅ Generated ${uniqueRecommendations.length} unique recommendations`);
         return uniqueRecommendations;
     }
     
@@ -224,7 +250,10 @@ class FarmToTableRecommendationService {
      * Get byproducts for a specific crop
      */
     getByproductsForCrop(cropName) {
-        if (!this.byproductsDatabase.crops) return [];
+        if (!this.byproductsDatabase || !this.byproductsDatabase.crops) {
+            console.warn('⚠️ ByproductsDatabase.crops not available');
+            return [];
+        }
         
         // Try exact match first
         let cropData = this.byproductsDatabase.crops[cropName];
@@ -239,14 +268,21 @@ class FarmToTableRecommendationService {
             }
         }
         
-        return cropData ? (cropData.byproducts || []) : [];
+        const byproducts = cropData ? (cropData.byproducts || []) : [];
+        if (byproducts.length === 0 && cropName) {
+            console.log(`   ⚠️ No byproducts found for crop: "${cropName}"`);
+        }
+        return byproducts;
     }
     
     /**
      * Get byproducts for a specific livestock type
      */
     getByproductsForLivestock(animalType) {
-        if (!this.byproductsDatabase.livestock) return [];
+        if (!this.byproductsDatabase || !this.byproductsDatabase.livestock) {
+            console.warn('⚠️ ByproductsDatabase.livestock not available');
+            return [];
+        }
         
         // Try exact match first
         let animalData = this.byproductsDatabase.livestock[animalType];
@@ -261,7 +297,11 @@ class FarmToTableRecommendationService {
             }
         }
         
-        return animalData ? (animalData.byproducts || []) : [];
+        const byproducts = animalData ? (animalData.byproducts || []) : [];
+        if (byproducts.length === 0 && animalType) {
+            console.log(`   ⚠️ No byproducts found for livestock: "${animalType}"`);
+        }
+        return byproducts;
     }
     
     /**
