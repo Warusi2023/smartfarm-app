@@ -958,6 +958,12 @@
                         const activeProducts = recommendationService.getActiveProducts();
                         displayRecommendations(activeProducts);
                     }
+                    
+                    // Load guides if on guides tab
+                    const guidesTab = document.getElementById('guides-tab');
+                    if (guidesTab && guidesTab.classList.contains('active')) {
+                        loadGuides();
+                    }
                 } catch (error) {
                     console.error('❌ Error initializing recommendation service:', error);
                     // Show error message to user
@@ -1298,30 +1304,325 @@
             }
         }
         
-        // Listen for tab changes to refresh recommendations
+        // Tab change handlers
         document.addEventListener('DOMContentLoaded', function() {
-            const recommendationsTab = document.getElementById('recommendations-tab');
-            if (recommendationsTab) {
-                recommendationsTab.addEventListener('shown.bs.tab', function() {
-                    console.log('📋 Recommendations tab shown, refreshing...');
-                    if (recommendationService) {
-                        const products = recommendationService.getActiveProducts();
-                        console.log(`   Found ${products.length} active products`);
-                        displayRecommendations(products);
-                        updateRecommendationsBadge(products.length);
-                    } else {
-                        console.warn('⚠️ Recommendation service not available when tab shown');
-                        // Try to initialize if not already done
-                        if (window.FarmToTableRecommendationService) {
-                            recommendationService = new window.FarmToTableRecommendationService();
-                            recommendationService.init().then(() => {
-                                syncRecommendations();
-                            });
+            // Handle all tab changes
+            const tabButtons = document.querySelectorAll('#farmToTableTabs button[data-bs-toggle="tab"]');
+            tabButtons.forEach(button => {
+                button.addEventListener('shown.bs.tab', function(e) {
+                    const targetId = e.target.getAttribute('data-bs-target');
+                    console.log('📑 Tab changed to:', targetId);
+                    
+                    // Handle each tab
+                    if (targetId === '#recommendations') {
+                        console.log('📋 Recommendations tab shown, refreshing...');
+                        if (recommendationService) {
+                            const products = recommendationService.getActiveProducts();
+                            console.log(`   Found ${products.length} active products`);
+                            displayRecommendations(products);
+                            updateRecommendationsBadge(products.length);
+                        } else {
+                            console.warn('⚠️ Recommendation service not available when tab shown');
+                            // Try to initialize if not already done
+                            if (window.FarmToTableRecommendationService) {
+                                recommendationService = new window.FarmToTableRecommendationService();
+                                recommendationService.init().then(() => {
+                                    syncRecommendations();
+                                });
+                            }
                         }
+                    } else if (targetId === '#guides') {
+                        console.log('📚 Guides tab shown, loading guides...');
+                        loadGuides();
+                    } else if (targetId === '#record-processing') {
+                        console.log('📝 Record Processing tab shown, loading transformations...');
+                        if (enhancedFarmToTable) {
+                            enhancedFarmToTable.renderTransformations();
+                        }
+                    } else if (targetId === '#profit-analytics') {
+                        console.log('📊 Profit & Analytics tab shown, loading analytics...');
+                        if (enhancedFarmToTable) {
+                            enhancedFarmToTable.renderProfitAnalytics();
+                        }
+                    } else if (targetId === '#raw-products') {
+                        console.log('📦 Raw Products tab shown');
+                        // Initialize raw products search if needed
                     }
                 });
-            }
+            });
         });
+        
+        // Guides & Recipes Functions
+        function loadGuides() {
+            const container = document.getElementById('guidesContainer');
+            if (!container) return;
+            
+            // Get all byproducts from database
+            const guides = [];
+            
+            if (window.ByproductsDatabase) {
+                // Load crop guides
+                if (window.ByproductsDatabase.crops) {
+                    Object.keys(window.ByproductsDatabase.crops).forEach(cropKey => {
+                        const cropData = window.ByproductsDatabase.crops[cropKey];
+                        if (cropData && cropData.byproducts) {
+                            cropData.byproducts.forEach(byproduct => {
+                                guides.push({
+                                    title: `${byproduct.name} from ${cropData.primary || cropKey}`,
+                                    category: 'Crop',
+                                    description: byproduct.description || '',
+                                    processingMethod: byproduct.processingMethod || '',
+                                    equipment: byproduct.equipment || [],
+                                    processingSteps: byproduct.processingSteps || [],
+                                    shelfLife: byproduct.shelfLife || '',
+                                    marketValue: byproduct.marketValue || 0
+                                });
+                            });
+                        }
+                    });
+                }
+                
+                // Load livestock guides
+                if (window.ByproductsDatabase.livestock) {
+                    Object.keys(window.ByproductsDatabase.livestock).forEach(livestockKey => {
+                        const livestockData = window.ByproductsDatabase.livestock[livestockKey];
+                        if (livestockData && livestockData.byproducts) {
+                            livestockData.byproducts.forEach(byproduct => {
+                                guides.push({
+                                    title: `${byproduct.name} from ${livestockData.primary || livestockKey}`,
+                                    category: 'Livestock',
+                                    description: byproduct.description || '',
+                                    processingMethod: byproduct.processingMethod || '',
+                                    equipment: byproduct.equipment || [],
+                                    processingSteps: byproduct.processingSteps || [],
+                                    shelfLife: byproduct.shelfLife || '',
+                                    marketValue: byproduct.marketValue || 0
+                                });
+                            });
+                        }
+                    });
+                }
+            }
+            
+            // Store guides globally for filtering
+            window.farmToTableGuides = guides;
+            
+            // Render guides
+            renderGuides(guides);
+        }
+        
+        function renderGuides(guidesToRender) {
+            const container = document.getElementById('guidesContainer');
+            if (!container) return;
+            
+            if (!guidesToRender || guidesToRender.length === 0) {
+                container.innerHTML = `
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        No guides found. Try adjusting your search or filters.
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = guidesToRender.map((guide, index) => `
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="fas fa-book me-2"></i>${guide.title}
+                            <span class="badge bg-${guide.category === 'Crop' ? 'success' : 'primary'} ms-2">${guide.category}</span>
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        ${guide.description ? `<p class="card-text">${guide.description}</p>` : ''}
+                        ${guide.processingMethod ? `
+                            <div class="mb-2">
+                                <strong><i class="fas fa-cogs me-1"></i>Processing Method:</strong>
+                                <p class="mb-0">${guide.processingMethod}</p>
+                            </div>
+                        ` : ''}
+                        ${guide.processingSteps && guide.processingSteps.length > 0 ? `
+                            <div class="mb-2">
+                                <strong><i class="fas fa-list-ol me-1"></i>Processing Steps:</strong>
+                                <ol class="mb-0">
+                                    ${guide.processingSteps.map(step => `<li>${step}</li>`).join('')}
+                                </ol>
+                            </div>
+                        ` : ''}
+                        ${guide.equipment && guide.equipment.length > 0 ? `
+                            <div class="mb-2">
+                                <strong><i class="fas fa-tools me-1"></i>Required Equipment:</strong>
+                                <p class="mb-0">${guide.equipment.join(', ')}</p>
+                            </div>
+                        ` : ''}
+                        <div class="row mt-2">
+                            ${guide.shelfLife ? `
+                                <div class="col-md-6">
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock me-1"></i>Shelf Life: ${guide.shelfLife}
+                                    </small>
+                                </div>
+                            ` : ''}
+                            ${guide.marketValue > 0 ? `
+                                <div class="col-md-6">
+                                    <small class="text-muted">
+                                        <i class="fas fa-dollar-sign me-1"></i>Market Value: FJD ${guide.marketValue.toFixed(2)}/kg
+                                    </small>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function searchGuides() {
+            const searchTerm = document.getElementById('guideSearch')?.value.toLowerCase() || '';
+            const categoryFilter = document.getElementById('guideCategoryFilter')?.value || '';
+            const allGuides = window.farmToTableGuides || [];
+            
+            let filteredGuides = allGuides;
+            
+            // Filter by category
+            if (categoryFilter) {
+                filteredGuides = filteredGuides.filter(guide => guide.category === categoryFilter);
+            }
+            
+            // Filter by search term
+            if (searchTerm) {
+                filteredGuides = filteredGuides.filter(guide => 
+                    guide.title.toLowerCase().includes(searchTerm) ||
+                    guide.description.toLowerCase().includes(searchTerm) ||
+                    guide.processingMethod.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            renderGuides(filteredGuides);
+        }
+        
+        function filterGuidesByCategory() {
+            searchGuides(); // Reuse search function which handles category filtering
+        }
+        
+        // Raw Products Functions
+        if (typeof window.farmToTable === 'undefined') {
+            window.farmToTable = {
+                handleProductTypeChange() {
+                    console.log('Product type changed');
+                    const productType = document.getElementById('rawProductType')?.value;
+                    const productNameInput = document.getElementById('rawProductName');
+                    if (productNameInput) {
+                        productNameInput.value = '';
+                        productNameInput.disabled = !productType;
+                    }
+                },
+                
+                searchRawProduct() {
+                    const productType = document.getElementById('rawProductType')?.value;
+                    const productName = document.getElementById('rawProductName')?.value.toLowerCase();
+                    const suggestionsList = document.getElementById('productSuggestions');
+                    
+                    if (!productType || !productName || !suggestionsList) return;
+                    
+                    let suggestions = [];
+                    
+                    if (window.ByproductsDatabase) {
+                        if (productType === 'crop' && window.ByproductsDatabase.crops) {
+                            suggestions = Object.keys(window.ByproductsDatabase.crops)
+                                .filter(key => key.toLowerCase().includes(productName))
+                                .map(key => window.ByproductsDatabase.crops[key].primary || key);
+                        } else if (productType === 'livestock' && window.ByproductsDatabase.livestock) {
+                            suggestions = Object.keys(window.ByproductsDatabase.livestock)
+                                .filter(key => key.toLowerCase().includes(productName))
+                                .map(key => window.ByproductsDatabase.livestock[key].primary || key);
+                        }
+                    }
+                    
+                    suggestionsList.innerHTML = suggestions.map(s => `<option value="${s}">`).join('');
+                },
+                
+                loadByproductsForRawProduct() {
+                    const productType = document.getElementById('rawProductType')?.value;
+                    const productName = document.getElementById('rawProductName')?.value;
+                    const container = document.getElementById('rawProductByproducts');
+                    
+                    if (!productType || !productName || !container) {
+                        alert('Please select a product type and enter a product name');
+                        return;
+                    }
+                    
+                    if (!window.ByproductsDatabase) {
+                        container.innerHTML = '<div class="alert alert-warning">Byproducts database not loaded. Please refresh the page.</div>';
+                        return;
+                    }
+                    
+                    // Normalize product name
+                    const normalizedName = productName.toLowerCase().trim().replace(/\s+/g, '_');
+                    
+                    let byproducts = [];
+                    let primaryProduct = '';
+                    
+                    if (productType === 'crop' && window.ByproductsDatabase.crops) {
+                        const cropData = window.ByproductsDatabase.crops[normalizedName] ||
+                                        Object.values(window.ByproductsDatabase.crops).find(c => 
+                                            c.primary?.toLowerCase().includes(productName.toLowerCase())
+                                        );
+                        if (cropData) {
+                            byproducts = cropData.byproducts || [];
+                            primaryProduct = cropData.primary || productName;
+                        }
+                    } else if (productType === 'livestock' && window.ByproductsDatabase.livestock) {
+                        const livestockData = window.ByproductsDatabase.livestock[normalizedName] ||
+                                            Object.values(window.ByproductsDatabase.livestock).find(l => 
+                                                l.primary?.toLowerCase().includes(productName.toLowerCase())
+                                            );
+                        if (livestockData) {
+                            byproducts = livestockData.byproducts || [];
+                            primaryProduct = livestockData.primary || productName;
+                        }
+                    }
+                    
+                    if (byproducts.length === 0) {
+                        container.innerHTML = `
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                No byproducts found for "${productName}". Try a different product name.
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    container.innerHTML = `
+                        <div class="card">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-boxes me-2"></i>Byproducts for ${primaryProduct}
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    ${byproducts.map(byproduct => `
+                                        <div class="col-md-6 mb-3">
+                                            <div class="card h-100">
+                                                <div class="card-body">
+                                                    <h6 class="card-title">${byproduct.name}</h6>
+                                                    <p class="card-text small text-muted">${byproduct.description || ''}</p>
+                                                    <div class="small">
+                                                        ${byproduct.shelfLife ? `<div><i class="fas fa-clock text-primary"></i> ${byproduct.shelfLife}</div>` : ''}
+                                                        ${byproduct.marketValue ? `<div><i class="fas fa-dollar-sign text-success"></i> FJD ${byproduct.marketValue.toFixed(2)}/kg</div>` : ''}
+                                                        ${byproduct.category ? `<div><i class="fas fa-tag text-info"></i> ${byproduct.category}</div>` : ''}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            };
+        }
         
         // Global variables for processing plan
         let selectedByproduct = null;
