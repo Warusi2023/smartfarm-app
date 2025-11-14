@@ -1720,79 +1720,120 @@
         }
         
         async function createProcessingPlan() {
-            const form = document.getElementById('createPlanForm');
-            if (!form) {
-                alert('Form not found');
-                return;
-            }
-            
-            // Validate form
-            if (!form.checkValidity()) {
-                form.reportValidity();
-                return;
-            }
-            
-            // Get form values
-            const sourceType = document.getElementById('planSourceType').value;
-            const sourceId = document.getElementById('planSourceId').value;
-            const byproductName = document.getElementById('planByproductName').value;
-            const quantity = parseFloat(document.getElementById('planQuantity').value);
-            const processingMethod = document.getElementById('planProcessingMethod').value;
-            const equipment = document.getElementById('planEquipment').value;
-            const targetMarket = document.getElementById('planTargetMarket').value;
-            const expectedRevenue = parseFloat(document.getElementById('planExpectedRevenue').value) || 0;
-            const processingDate = document.getElementById('planProcessingDate').value || new Date().toISOString().split('T')[0];
-            const notes = document.getElementById('planNotes').value;
-            
-            // Validate required fields
-            if (!sourceType || !sourceId || !byproductName || !quantity || !processingMethod) {
-                alert('Please fill in all required fields');
-                return;
-            }
+            console.log('🔄 createProcessingPlan() called');
             
             try {
+                const form = document.getElementById('createPlanForm');
+                if (!form) {
+                    console.error('❌ Form not found');
+                    alert('Form not found. Please refresh the page and try again.');
+                    return;
+                }
+                
+                // Validate form
+                if (!form.checkValidity()) {
+                    console.warn('⚠️ Form validation failed');
+                    form.reportValidity();
+                    return;
+                }
+                
+                // Get form values
+                const sourceType = document.getElementById('planSourceType')?.value;
+                const sourceId = document.getElementById('planSourceId')?.value;
+                const byproductName = document.getElementById('planByproductName')?.value;
+                const quantity = parseFloat(document.getElementById('planQuantity')?.value);
+                const processingMethod = document.getElementById('planProcessingMethod')?.value;
+                const equipment = document.getElementById('planEquipment')?.value;
+                const targetMarket = document.getElementById('planTargetMarket')?.value;
+                const expectedRevenue = parseFloat(document.getElementById('planExpectedRevenue')?.value) || 0;
+                const processingDate = document.getElementById('planProcessingDate')?.value || new Date().toISOString().split('T')[0];
+                const notes = document.getElementById('planNotes')?.value;
+                
+                console.log('📋 Form values:', {
+                    sourceType,
+                    sourceId,
+                    byproductName,
+                    quantity,
+                    processingMethod: processingMethod?.substring(0, 50) + '...'
+                });
+                
+                // Validate required fields
+                if (!sourceType || !sourceId || !byproductName || !quantity || !processingMethod) {
+                    const missing = [];
+                    if (!sourceType) missing.push('Source Type');
+                    if (!sourceId) missing.push('Source');
+                    if (!byproductName) missing.push('Byproduct Name');
+                    if (!quantity) missing.push('Quantity');
+                    if (!processingMethod) missing.push('Processing Method');
+                    
+                    alert(`Please fill in all required fields:\n- ${missing.join('\n- ')}`);
+                    return;
+                }
+                
+                // Get shelf life from selected byproduct if available
+                const shelfLife = selectedByproduct?.shelfLife || '';
+                const processingSteps = selectedByproduct?.processingSteps || [];
+                const processingTime = document.getElementById('planProcessingTime')?.value || selectedByproduct?.projectedOutput?.processingTime || '';
+                
                 // Create product using recommendation service if available
-                if (recommendationService) {
+                if (typeof recommendationService !== 'undefined' && recommendationService) {
+                    console.log('✅ Using recommendation service');
+                    // Get market value per kg from selected byproduct or calculate from revenue
+                    const marketValuePerKg = selectedByproduct?.marketValue || (expectedRevenue > 0 && quantity > 0 ? expectedRevenue / quantity : 0);
+                    const expectedOutput = parseFloat(document.getElementById('planExpectedOutput')?.value) || quantity;
+                    
                     const productData = {
                         name: byproductName,
-                        category: 'Food Processing',
-                        description: `Processing plan for ${byproductName}`,
+                        category: selectedByproduct?.category || 'Food Processing',
+                        description: selectedByproduct?.description || `Processing plan for ${byproductName}`,
                         sourceType: sourceType,
                         sourceIds: [sourceId],
                         sourceNames: [],
-                        marketValue: expectedRevenue,
+                        marketValue: marketValuePerKg,
                         processingMethod: processingMethod,
-                        equipment: equipment ? equipment.split(',').map(e => e.trim()) : [],
-                        shelfLife: '',
+                        equipment: equipment ? equipment.split(',').map(e => e.trim()).filter(e => e) : [],
+                        shelfLife: shelfLife,
                         targetMarket: targetMarket,
-                        processingSteps: [],
+                        processingSteps: processingSteps,
                         projectedOutput: {
-                            quantity: quantity,
-                            unit: 'kg'
+                            quantity: expectedOutput,
+                            unit: 'kg',
+                            yieldPercentage: selectedByproduct?.projectedOutput?.yieldPercentage || 100,
+                            processingTime: processingTime
                         },
                         status: 'planned'
                     };
+                    
+                    console.log('📦 Product data:', productData);
                     
                     const product = recommendationService.createManualProduct(productData);
                     console.log('✅ Processing plan created:', product);
                     
                     // Show success message
-                    alert('Processing plan created successfully!');
+                    alert(`Processing plan created successfully!\n\nProduct: ${byproductName}\nQuantity: ${quantity} kg\nExpected Output: ${expectedOutput} kg\nEstimated Revenue: FJD ${expectedRevenue.toFixed(2)}`);
                     
                     // Close modal
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('createPlanModal'));
+                    const modalElement = document.getElementById('createPlanModal');
+                    const modal = bootstrap.Modal.getInstance(modalElement);
                     if (modal) {
                         modal.hide();
+                    } else {
+                        // If modal instance doesn't exist, try to hide it directly
+                        const bsModal = new bootstrap.Modal(modalElement);
+                        bsModal.hide();
                     }
                     
                     // Refresh recommendations if on that tab
-                    const recommendationsTab = document.getElementById('recommendations-tab');
-                    if (recommendationsTab && recommendationsTab.classList.contains('active')) {
-                        if (recommendationService) {
-                            const products = recommendationService.getActiveProducts();
-                            displayRecommendations(products);
+                    setTimeout(() => {
+                        const recommendationsTab = document.getElementById('recommendations-tab');
+                        if (recommendationsTab && recommendationsTab.classList.contains('active')) {
+                            if (recommendationService) {
+                                const products = recommendationService.getActiveProducts();
+                                displayRecommendations(products);
+                                updateRecommendationsBadge(products.length);
+                            }
                         }
-                    }
+                    }, 500);
                 } else {
                     // Fallback: save to localStorage
                     const plan = {
@@ -1830,10 +1871,14 @@
                     }
                 }
             } catch (error) {
-                console.error('Error creating processing plan:', error);
-                alert('Error creating processing plan: ' + error.message);
+                console.error('❌ Error creating processing plan:', error);
+                console.error('Error stack:', error.stack);
+                alert(`Error creating processing plan:\n\n${error.message}\n\nPlease check the browser console for more details.`);
             }
         }
+        
+        // Make function globally accessible
+        window.createProcessingPlan = createProcessingPlan;
     </script>
 </body>
 </html>
