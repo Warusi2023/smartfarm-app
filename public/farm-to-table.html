@@ -1525,47 +1525,98 @@
         
         // Select byproduct suggestion
         function selectByproductSuggestion(index) {
-            if (!currentByproducts || !currentByproducts[index]) return;
+            console.log('🔍 Selecting byproduct suggestion:', index);
+            if (!currentByproducts || !currentByproducts[index]) {
+                console.warn('⚠️ No byproduct at index:', index);
+                return;
+            }
             const byproduct = currentByproducts[index];
             selectedByproduct = byproduct;
+            console.log('✅ Selected byproduct:', byproduct);
             
             // Fill form fields
-            document.getElementById('planByproductName').value = byproduct.name || '';
-            document.getElementById('planProcessingMethod').value = byproduct.processingMethod || '';
-            document.getElementById('planEquipment').value = byproduct.equipment ? byproduct.equipment.join(', ') : '';
-            document.getElementById('planTargetMarket').value = byproduct.targetMarket || '';
-            document.getElementById('planProcessingTime').value = byproduct.projectedOutput?.processingTime || '';
+            const byproductNameField = document.getElementById('planByproductName');
+            const processingMethodField = document.getElementById('planProcessingMethod');
+            const equipmentField = document.getElementById('planEquipment');
+            const targetMarketField = document.getElementById('planTargetMarket');
+            const processingTimeField = document.getElementById('planProcessingTime');
             
-            // Update displays
-            document.getElementById('shelfLifeDisplay').textContent = byproduct.shelfLife || '-';
-            document.getElementById('shelfLifeInfo').textContent = parseShelfLife(byproduct.shelfLife) >= 6 ? 
-                '✅ Good for export' : '⚠️ Consider extending shelf life for export';
-            document.getElementById('marketValueDisplay').textContent = byproduct.marketValue ? 
-                `FJD ${byproduct.marketValue.toFixed(2)}` : '-';
+            if (byproductNameField) byproductNameField.value = byproduct.name || '';
+            if (processingMethodField) processingMethodField.value = byproduct.processingMethod || '';
+            if (equipmentField) equipmentField.value = byproduct.equipment ? byproduct.equipment.join(', ') : '';
+            if (targetMarketField) targetMarketField.value = byproduct.targetMarket || '';
+            if (processingTimeField) {
+                processingTimeField.value = byproduct.projectedOutput?.processingTime || 
+                                          byproduct.processingTime || 
+                                          '';
+            }
+            
+            // Update Step 4 displays
+            const shelfLifeDisplay = document.getElementById('shelfLifeDisplay');
+            const shelfLifeInfo = document.getElementById('shelfLifeInfo');
+            const marketValueDisplay = document.getElementById('marketValueDisplay');
+            const estimatedRevenueDisplay = document.getElementById('estimatedRevenueDisplay');
+            const revenueInfo = document.getElementById('revenueInfo');
+            
+            if (shelfLifeDisplay) {
+                shelfLifeDisplay.textContent = byproduct.shelfLife || '-';
+            }
+            if (shelfLifeInfo) {
+                const shelfLifeMonths = parseShelfLife(byproduct.shelfLife);
+                shelfLifeInfo.textContent = shelfLifeMonths >= 6 ? 
+                    '✅ Good for export' : '⚠️ Consider extending shelf life for export';
+            }
+            if (marketValueDisplay) {
+                marketValueDisplay.textContent = byproduct.marketValue ? 
+                    `FJD ${byproduct.marketValue.toFixed(2)}` : '-';
+            }
+            if (estimatedRevenueDisplay) {
+                estimatedRevenueDisplay.textContent = '-';
+            }
+            if (revenueInfo) {
+                revenueInfo.textContent = 'Enter quantity to calculate';
+            }
             
             // Display processing steps
             const stepsContainer = document.getElementById('processingStepsContainer');
-            if (stepsContainer && byproduct.processingSteps && byproduct.processingSteps.length > 0) {
-                stepsContainer.innerHTML = '<ol class="mb-0">' + 
-                    byproduct.processingSteps.map((step, i) => 
-                        `<li class="mb-2">${step}</li>`
-                    ).join('') + 
-                    '</ol>';
+            if (stepsContainer) {
+                if (byproduct.processingSteps && byproduct.processingSteps.length > 0) {
+                    stepsContainer.innerHTML = '<ol class="mb-0">' + 
+                        byproduct.processingSteps.map((step, i) => 
+                            `<li class="mb-2">${step}</li>`
+                        ).join('') + 
+                        '</ol>';
+                    console.log('✅ Displayed', byproduct.processingSteps.length, 'processing steps');
+                } else {
+                    stepsContainer.innerHTML = '<p class="text-muted"><i class="fas fa-info-circle me-1"></i>No detailed steps available. Enter manually in Processing Method field above.</p>';
+                    console.log('⚠️ No processing steps available');
+                }
             } else {
-                stepsContainer.innerHTML = '<p class="text-muted">No detailed steps available. Enter manually above.</p>';
+                console.error('❌ processingStepsContainer not found');
             }
             
             // Update export check 1 if shelf life is good
             const exportCheck1 = document.getElementById('exportCheck1');
-            if (exportCheck1 && parseShelfLife(byproduct.shelfLife) >= 6) {
-                exportCheck1.checked = true;
+            if (exportCheck1) {
+                const shelfLifeMonths = parseShelfLife(byproduct.shelfLife);
+                exportCheck1.checked = shelfLifeMonths >= 6;
             }
             
-            // Calculate revenue when quantity changes
+            // Set up quantity input listener and calculate if quantity exists
             const quantityInput = document.getElementById('planQuantity');
             if (quantityInput) {
-                quantityInput.oninput = calculateRevenue;
-                calculateRevenue();
+                // Remove existing listeners to avoid duplicates
+                const newQuantityInput = quantityInput.cloneNode(true);
+                quantityInput.parentNode.replaceChild(newQuantityInput, quantityInput);
+                
+                // Add new listener
+                newQuantityInput.addEventListener('input', calculateRevenue);
+                newQuantityInput.addEventListener('change', calculateRevenue);
+                
+                // Calculate if there's already a value
+                if (newQuantityInput.value) {
+                    calculateRevenue();
+                }
             }
             
             updateExportReadiness();
@@ -1578,19 +1629,48 @@
                     card.classList.remove('border-primary', 'border-3');
                 }
             });
+            
+            console.log('✅ Byproduct suggestion applied successfully');
         }
         
         // Calculate revenue and output
         function calculateRevenue() {
-            if (!selectedByproduct) return;
+            console.log('💰 Calculating revenue...');
+            if (!selectedByproduct) {
+                console.warn('⚠️ No byproduct selected');
+                return;
+            }
             
-            const quantity = parseFloat(document.getElementById('planQuantity').value) || 0;
+            const quantityInput = document.getElementById('planQuantity');
+            const quantity = parseFloat(quantityInput?.value) || 0;
             const marketValue = selectedByproduct.marketValue || 0;
             const yieldPercentage = selectedByproduct.projectedOutput?.yieldPercentage || 100;
             
+            console.log('📊 Calculation inputs:', { quantity, marketValue, yieldPercentage });
+            
+            if (quantity <= 0) {
+                // Clear outputs if no quantity
+                const expectedOutputField = document.getElementById('planExpectedOutput');
+                const expectedRevenueField = document.getElementById('planExpectedRevenue');
+                const estimatedRevenueDisplay = document.getElementById('estimatedRevenueDisplay');
+                const revenueInfo = document.getElementById('revenueInfo');
+                
+                if (expectedOutputField) expectedOutputField.value = '';
+                if (expectedRevenueField) expectedRevenueField.value = '';
+                if (estimatedRevenueDisplay) estimatedRevenueDisplay.textContent = '-';
+                if (revenueInfo) revenueInfo.textContent = 'Enter quantity to calculate';
+                return;
+            }
+            
             // Calculate expected output
             const expectedOutput = (quantity * yieldPercentage) / 100;
-            document.getElementById('planExpectedOutput').value = expectedOutput.toFixed(2);
+            const expectedOutputField = document.getElementById('planExpectedOutput');
+            if (expectedOutputField) {
+                expectedOutputField.value = expectedOutput.toFixed(2);
+                console.log('✅ Expected output:', expectedOutput.toFixed(2), 'kg');
+            } else {
+                console.error('❌ planExpectedOutput field not found');
+            }
             
             // Update yield info
             const yieldInfo = document.getElementById('yieldInfo');
@@ -1600,9 +1680,26 @@
             
             // Calculate revenue
             const revenue = expectedOutput * marketValue;
-            document.getElementById('planExpectedRevenue').value = revenue.toFixed(2);
-            document.getElementById('estimatedRevenueDisplay').textContent = `FJD ${revenue.toFixed(2)}`;
-            document.getElementById('revenueInfo').textContent = `From ${expectedOutput.toFixed(2)} kg output`;
+            const expectedRevenueField = document.getElementById('planExpectedRevenue');
+            const estimatedRevenueDisplay = document.getElementById('estimatedRevenueDisplay');
+            const revenueInfo = document.getElementById('revenueInfo');
+            
+            if (expectedRevenueField) {
+                expectedRevenueField.value = revenue.toFixed(2);
+                console.log('✅ Expected revenue:', revenue.toFixed(2), 'FJD');
+            } else {
+                console.error('❌ planExpectedRevenue field not found');
+            }
+            
+            if (estimatedRevenueDisplay) {
+                estimatedRevenueDisplay.textContent = `FJD ${revenue.toFixed(2)}`;
+            }
+            
+            if (revenueInfo) {
+                revenueInfo.textContent = `From ${expectedOutput.toFixed(2)} kg output`;
+            }
+            
+            console.log('✅ Revenue calculation complete');
         }
         
         async function loadPlanSources() {
@@ -1877,8 +1974,10 @@
             }
         }
         
-        // Make function globally accessible
+        // Make functions globally accessible
         window.createProcessingPlan = createProcessingPlan;
+        window.selectByproductSuggestion = selectByproductSuggestion;
+        window.calculateRevenue = calculateRevenue;
     </script>
 </body>
 </html>
