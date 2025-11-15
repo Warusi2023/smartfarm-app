@@ -16371,20 +16371,135 @@ INVENTORY SUMMARY:
 
             try {
                 const response = await fetch('/api/recommend?goal=high-yield&limit=3');
-                if (!response.ok) throw new Error(`Request failed with status ${response.status}`);
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(`Request failed with status ${response.status}: ${errorData.error || 'Unknown error'}`);
+                }
                 const data = await response.json();
                 const items = data.results || [];
 
                 if (!items.length) {
-                    insightsContainer.innerHTML = '<div class="col-12 text-center text-muted">No personalized insights available. Try updating your farm profile or goals.</div>';
+                    // Fallback to local insights when API returns no results
+                    showLocalInsights(insightsContainer);
                     return;
                 }
 
                 insightsContainer.innerHTML = items.slice(0, 3).map(result => createInsightCard(result)).join('');
             } catch (error) {
-                console.error('Failed to fetch SmartFarm insights:', error);
-                insightsContainer.innerHTML = '<div class="col-12 text-center text-danger">Unable to load insights at the moment.</div>';
+                console.warn('API unavailable, showing local insights:', error.message);
+                // Fallback to local insights when API fails
+                showLocalInsights(insightsContainer);
             }
+        }
+
+        function showLocalInsights(container) {
+            // Get existing farm data from localStorage or global variables
+            const savedCrops = localStorage.getItem('crops') || '[]';
+            const savedLivestock = localStorage.getItem('livestockData') || '[]';
+            
+            let crops = [];
+            let livestock = [];
+            
+            try {
+                crops = JSON.parse(savedCrops);
+            } catch (e) {
+                // Try using global crops variable if available
+                if (typeof window.crops !== 'undefined' && Array.isArray(window.crops)) {
+                    crops = window.crops;
+                }
+            }
+            
+            try {
+                livestock = JSON.parse(savedLivestock);
+            } catch (e) {
+                // Try using global livestock variable if available
+                if (typeof window.livestock !== 'undefined' && Array.isArray(window.livestock)) {
+                    livestock = window.livestock;
+                }
+            }
+
+            const insights = [];
+
+            // Insight 1: Crop recommendations based on existing crops
+            if (crops.length > 0) {
+                const activeCrops = crops.filter(c => c.status === 'growing' || c.status === 'planted' || !c.status);
+                if (activeCrops.length > 0) {
+                    const crop = activeCrops[0];
+                    const daysSincePlanted = crop.plantedDate ? 
+                        Math.floor((new Date() - new Date(crop.plantedDate)) / (1000 * 60 * 60 * 24)) : 0;
+                    
+                    insights.push({
+                        type: 'crop',
+                        title: `${crop.name} Growth Update`,
+                        message: `Your ${crop.name} ${daysSincePlanted > 0 ? `has been growing for ${daysSincePlanted} days` : 'is growing'}. Monitor soil moisture and check for pests regularly.`,
+                        icon: 'fas fa-seedling',
+                        color: 'success'
+                    });
+                }
+            }
+
+            // Insight 2: Livestock health
+            if (livestock.length > 0) {
+                const healthyCount = livestock.filter(l => !l.healthIssues || l.healthIssues.length === 0).length;
+                const healthPercentage = Math.round((healthyCount / livestock.length) * 100);
+                
+                insights.push({
+                    type: 'livestock',
+                    title: `Livestock Health: ${healthPercentage}% Healthy`,
+                    message: `${healthyCount} out of ${livestock.length} animals are healthy. ${healthPercentage >= 80 ? 'Excellent!' : 'Consider scheduling health checks.'}`,
+                    icon: 'fas fa-heart',
+                    color: healthPercentage >= 80 ? 'success' : 'warning'
+                });
+            }
+
+            // Insight 3: Farm-to-Table opportunity
+            if (crops.length > 0 || livestock.length > 0) {
+                insights.push({
+                    type: 'processing',
+                    title: 'Farm-to-Table Opportunity',
+                    message: `You have ${crops.length} crops and ${livestock.length} livestock. Consider processing raw products into value-added items for export.`,
+                    icon: 'fas fa-industry',
+                    color: 'info',
+                    action: '<a href="farm-to-table.html" class="btn btn-sm btn-info mt-2">Explore Processing Plans</a>'
+                });
+            }
+
+            // If no insights available, show helpful message
+            if (insights.length === 0) {
+                container.innerHTML = `
+                    <div class="col-12">
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-info-circle me-2"></i>Get Started with SmartFarm</h6>
+                            <p class="mb-2">Start by adding crops or livestock to your farm to receive personalized insights and recommendations.</p>
+                            <div class="mt-3">
+                                <a href="crop-management.html" class="btn btn-sm btn-success me-2">
+                                    <i class="fas fa-seedling me-1"></i>Add Crops
+                                </a>
+                                <a href="livestock-management.html" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-cow me-1"></i>Add Livestock
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            // Display insights
+            container.innerHTML = insights.slice(0, 3).map(insight => `
+                <div class="col-md-4">
+                    <div class="card border-${insight.color} h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="${insight.icon} text-${insight.color} fa-2x me-3"></i>
+                                <h6 class="mb-0">${insight.title}</h6>
+                            </div>
+                            <p class="text-muted mb-2">${insight.message}</p>
+                            ${insight.action || ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
         }
 
         function createInsightCard(result) {
