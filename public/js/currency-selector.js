@@ -15,7 +15,7 @@ class CurrencySelector {
     createSelector() {
         // Create currency selector dropdown
         const selectorHTML = `
-            <div class="currency-selector" style="position: fixed; top: 20px; right: 20px; z-index: 1000;">
+            <div class="currency-selector" style="display: flex; justify-content: center; margin-bottom: 20px; padding-top: 20px;">
                 <div class="dropdown">
                     <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" id="currencyDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="fas fa-coins"></i> <span id="currentCurrencyDisplay">Loading...</span>
@@ -23,10 +23,10 @@ class CurrencySelector {
                     <ul class="dropdown-menu" aria-labelledby="currencyDropdown">
                         <li><h6 class="dropdown-header">Select Currency</h6></li>
                         <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#" data-country="United States">🇺🇸 United States - USD ($)</a></li>
                         <li><a class="dropdown-item" href="#" data-country="Fiji">🇫🇯 Fiji - FJD (F$)</a></li>
                         <li><a class="dropdown-item" href="#" data-country="Australia">🇦🇺 Australia - AUD (A$)</a></li>
                         <li><a class="dropdown-item" href="#" data-country="New Zealand">🇳🇿 New Zealand - NZD (NZ$)</a></li>
-                        <li><a class="dropdown-item" href="#" data-country="United States">🇺🇸 United States - USD ($)</a></li>
                         <li><a class="dropdown-item" href="#" data-country="Canada">🇨🇦 Canada - CAD (C$)</a></li>
                         <li><a class="dropdown-item" href="#" data-country="United Kingdom">🇬🇧 United Kingdom - GBP (£)</a></li>
                         <li><a class="dropdown-item" href="#" data-country="Germany">🇩🇪 Germany - EUR (€)</a></li>
@@ -45,8 +45,14 @@ class CurrencySelector {
             </div>
         `;
 
-        // Add to page
-        document.body.insertAdjacentHTML('beforeend', selectorHTML);
+        // Add to top of main content area instead of body end
+        const mainContent = document.getElementById('mainContent') || document.getElementById('dashboardView');
+        if (mainContent) {
+            mainContent.insertAdjacentHTML('afterbegin', selectorHTML);
+        } else {
+            // Fallback to body if main content not found
+            document.body.insertAdjacentHTML('afterbegin', selectorHTML);
+        }
         this.selector = document.querySelector('.currency-selector');
     }
 
@@ -94,7 +100,8 @@ class CurrencySelector {
         messageDiv.className = 'alert alert-success alert-dismissible fade show';
         messageDiv.style.position = 'fixed';
         messageDiv.style.top = '70px';
-        messageDiv.style.right = '20px';
+        messageDiv.style.left = '50%';
+        messageDiv.style.transform = 'translateX(-50%)';
         messageDiv.style.zIndex = '1001';
         messageDiv.innerHTML = `
             ${message}
@@ -114,15 +121,15 @@ class CurrencySelector {
 
 // Initialize currency selector when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-    // Wait for currency manager to be ready
-    if (window.currencyManager) {
-        new CurrencySelector();
-    } else {
-        // Wait a bit for currency manager to load
-        setTimeout(() => {
-            if (window.currencyManager) {
-                new CurrencySelector();
-            }
-        }, 1000);
+    // Wait for currency manager and main content to be ready
+    function initCurrencySelector() {
+        const mainContent = document.getElementById('mainContent') || document.getElementById('dashboardView');
+        if (window.currencyManager && mainContent) {
+            new CurrencySelector();
+        } else {
+            // Wait a bit for currency manager and main content to load
+            setTimeout(initCurrencySelector, 100);
+        }
     }
+    initCurrencySelector();
 });
