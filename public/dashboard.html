@@ -4017,6 +4017,28 @@
             }
         }
 
+        function downloadAllQRCodes() {
+            if (typeof smartFarm !== 'undefined' && smartFarm && typeof smartFarm.downloadAllQRCodes === 'function') {
+                smartFarm.downloadAllQRCodes();
+            } else if (typeof qrTraceability !== 'undefined' && qrTraceability) {
+                // Fallback: try to use qrTraceability if available
+                showErrorDialog('Download Feature', 'Download all QR codes feature is not available. Please use the individual product download option.');
+            } else {
+                showErrorDialog('Feature Not Available', 'The download all QR codes feature is not loaded. Please refresh the page and try again.');
+            }
+        }
+
+        function printAllQRCodes() {
+            if (typeof smartFarm !== 'undefined' && smartFarm && typeof smartFarm.printAllQRCodes === 'function') {
+                smartFarm.printAllQRCodes();
+            } else if (typeof qrTraceability !== 'undefined' && qrTraceability) {
+                // Fallback: try to use qrTraceability if available
+                showErrorDialog('Print Feature', 'Print all QR codes feature is not available. Please use the individual product print option.');
+            } else {
+                showErrorDialog('Feature Not Available', 'The print all QR codes feature is not loaded. Please refresh the page and try again.');
+            }
+        }
+
         // Auto-generate QR code for newly created product
         function autoGenerateQRCode(productData) {
             if (typeof qrTraceability !== 'undefined' && qrTraceability) {

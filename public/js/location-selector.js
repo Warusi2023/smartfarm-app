@@ -572,6 +572,20 @@ class LocationSelector {
         }
     }
 
+    async checkPermissionStatus() {
+        // Check if Permissions API is available
+        if ('permissions' in navigator && 'query' in navigator.permissions) {
+            try {
+                const result = await navigator.permissions.query({ name: 'geolocation' });
+                return result.state; // 'granted', 'denied', or 'prompt'
+            } catch (error) {
+                console.warn('Permissions API not fully supported:', error);
+                return 'unknown';
+            }
+        }
+        return 'unknown';
+    }
+
     async useCurrentLocation() {
         try {
             // Check if geolocation is supported
@@ -585,6 +599,13 @@ class LocationSelector {
             if (!isSecure) {
                 this.showSearchError('Location detection requires HTTPS. Please search for your location manually using the search bar - you can search for any city worldwide.');
                 console.warn('Geolocation requires HTTPS. Current protocol:', window.location.protocol);
+                return;
+            }
+
+            // Check permission status first
+            const permissionStatus = await this.checkPermissionStatus();
+            if (permissionStatus === 'denied') {
+                this.showPermissionInstructions();
                 return;
             }
 
@@ -605,10 +626,12 @@ class LocationSelector {
                     (error) => {
                         console.error('❌ Geolocation error:', error);
                         let errorMessage = 'Unable to get your location.';
+                        let showInstructions = false;
                         
                         switch(error.code) {
                             case error.PERMISSION_DENIED:
-                                errorMessage = 'Location access denied. Please enable location permissions in your browser settings, or search for your city manually using the search bar above.';
+                                errorMessage = 'Location access denied. Please enable location permissions in your browser settings.';
+                                showInstructions = true;
                                 break;
                             case error.POSITION_UNAVAILABLE:
                                 errorMessage = 'Location information unavailable. Please search for your city manually using the search bar above.';
@@ -620,6 +643,11 @@ class LocationSelector {
                                 errorMessage = 'Unable to get your location. Please search for your city manually using the search bar above - you can search for any city worldwide.';
                                 break;
                         }
+                        
+                        if (showInstructions) {
+                            setTimeout(() => this.showPermissionInstructions(), 500);
+                        }
+                        
                         reject(new Error(errorMessage));
                     },
                     {
@@ -657,8 +685,133 @@ class LocationSelector {
         } catch (error) {
             console.error('Error getting current location:', error);
             // The error message from the Promise rejection handler will be shown
-            this.showSearchError(error.message || 'Unable to get your location. Please try again or search manually.');
+            if (error.message && error.message.includes('denied')) {
+                // Don't show duplicate error if instructions are already showing
+                setTimeout(() => {
+                    if (!document.getElementById('permissionInstructions')) {
+                        this.showSearchError(error.message);
+                    }
+                }, 100);
+            } else {
+                this.showSearchError(error.message || 'Unable to get your location. Please try again or search manually.');
+            }
         }
+    }
+
+    showPermissionInstructions() {
+        const resultsContainer = document.getElementById('locationSearchResults');
+        if (!resultsContainer) return;
+
+        // Check browser type
+        const userAgent = navigator.userAgent.toLowerCase();
+        let browserInstructions = '';
+        
+        if (userAgent.includes('chrome')) {
+            browserInstructions = `
+                <div class="permission-instructions">
+                    <h6><i class="fas fa-info-circle text-primary me-2"></i>Enable Location Access in Chrome:</h6>
+                    <ol class="small">
+                        <li>Click the <strong>lock icon</strong> or <strong>information icon</strong> in the address bar (left side)</li>
+                        <li>Find <strong>"Location"</strong> in the permissions list</li>
+                        <li>Change it from <strong>"Block"</strong> to <strong>"Allow"</strong></li>
+                        <li>Refresh the page and try again</li>
+                    </ol>
+                    <p class="small mb-0"><strong>Alternative:</strong> Go to Chrome Settings → Privacy and security → Site Settings → Location, then allow this site.</p>
+                </div>
+            `;
+        } else if (userAgent.includes('firefox')) {
+            browserInstructions = `
+                <div class="permission-instructions">
+                    <h6><i class="fas fa-info-circle text-primary me-2"></i>Enable Location Access in Firefox:</h6>
+                    <ol class="small">
+                        <li>Click the <strong>shield icon</strong> or <strong>information icon</strong> in the address bar</li>
+                        <li>Click <strong>"Permissions"</strong> or <strong>"More Information"</strong></li>
+                        <li>Find <strong>"Location"</strong> and change it to <strong>"Allow"</strong></li>
+                        <li>Refresh the page and try again</li>
+                    </ol>
+                    <p class="small mb-0"><strong>Alternative:</strong> Go to Firefox Settings → Privacy & Security → Permissions → Location, then allow this site.</p>
+                </div>
+            `;
+        } else if (userAgent.includes('safari')) {
+            browserInstructions = `
+                <div class="permission-instructions">
+                    <h6><i class="fas fa-info-circle text-primary me-2"></i>Enable Location Access in Safari:</h6>
+                    <ol class="small">
+                        <li>Go to <strong>Safari → Settings → Websites → Location Services</strong></li>
+                        <li>Find this website in the list</li>
+                        <li>Change it to <strong>"Allow"</strong></li>
+                        <li>Refresh the page and try again</li>
+                    </ol>
+                    <p class="small mb-0"><strong>Note:</strong> Make sure Location Services is enabled in System Preferences → Security & Privacy → Privacy → Location Services.</p>
+                </div>
+            `;
+        } else if (userAgent.includes('edge')) {
+            browserInstructions = `
+                <div class="permission-instructions">
+                    <h6><i class="fas fa-info-circle text-primary me-2"></i>Enable Location Access in Edge:</h6>
+                    <ol class="small">
+                        <li>Click the <strong>lock icon</strong> or <strong>information icon</strong> in the address bar</li>
+                        <li>Find <strong>"Location"</strong> in the permissions list</li>
+                        <li>Change it from <strong>"Block"</strong> to <strong>"Allow"</strong></li>
+                        <li>Refresh the page and try again</li>
+                    </ol>
+                    <p class="small mb-0"><strong>Alternative:</strong> Go to Edge Settings → Cookies and site permissions → Location, then allow this site.</p>
+                </div>
+            `;
+        } else {
+            browserInstructions = `
+                <div class="permission-instructions">
+                    <h6><i class="fas fa-info-circle text-primary me-2"></i>Enable Location Access:</h6>
+                    <ol class="small">
+                        <li>Look for a <strong>lock icon</strong> or <strong>information icon</strong> in your browser's address bar</li>
+                        <li>Click it to view site permissions</li>
+                        <li>Find <strong>"Location"</strong> and change it to <strong>"Allow"</strong></li>
+                        <li>Refresh the page and try again</li>
+                    </ol>
+                    <p class="small mb-0">You can also check your browser's privacy/security settings for location permissions.</p>
+                </div>
+            `;
+        }
+
+        const instructionsHTML = `
+            <div id="permissionInstructions" class="permission-instructions-container">
+                <div class="alert alert-warning mb-3">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Location Access Required</strong>
+                </div>
+                ${browserInstructions}
+                <div class="text-center mt-3">
+                    <button class="btn btn-primary btn-sm me-2" onclick="locationSelector.retryLocationAccess()">
+                        <i class="fas fa-redo me-1"></i>Try Again
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="locationSelector.hidePermissionInstructions()">
+                        <i class="fas fa-times me-1"></i>Close
+                    </button>
+                </div>
+                <div class="text-center mt-2">
+                    <small class="text-muted">Or search for your city manually using the search bar above</small>
+                </div>
+            </div>
+        `;
+
+        resultsContainer.innerHTML = instructionsHTML;
+        resultsContainer.style.display = 'block';
+    }
+
+    hidePermissionInstructions() {
+        const resultsContainer = document.getElementById('locationSearchResults');
+        if (resultsContainer) {
+            resultsContainer.style.display = 'none';
+            resultsContainer.innerHTML = '';
+        }
+    }
+
+    async retryLocationAccess() {
+        this.hidePermissionInstructions();
+        // Wait a moment for the UI to update
+        await new Promise(resolve => setTimeout(resolve, 300));
+        // Try again
+        await this.useCurrentLocation();
     }
 
     async getLocationName(lat, lng) {
@@ -944,6 +1097,35 @@ const locationSelectorStyles = `
     display: flex;
     align-items: center;
     justify-content: space-between;
+}
+
+.permission-instructions-container {
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    margin-top: 10px;
+}
+
+.permission-instructions {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 10px;
+}
+
+.permission-instructions h6 {
+    color: #495057;
+    margin-bottom: 10px;
+}
+
+.permission-instructions ol {
+    margin-bottom: 10px;
+    padding-left: 20px;
+}
+
+.permission-instructions li {
+    margin-bottom: 5px;
+    color: #6c757d;
 }
 
 @media (max-width: 576px) {
