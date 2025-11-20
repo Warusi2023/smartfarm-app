@@ -1573,13 +1573,25 @@
 
                 // Get AI recommendations
                 let apiUrl;
-                if (window.SmartFarmApiConfig && window.SmartFarmApiConfig.url) {
-                    apiUrl = window.SmartFarmApiConfig.url(`/api/ai-advisory/crop-nutrition/${cropId}`);
-                } else if (window.SmartFarmConfig && window.SmartFarmConfig.getApiUrl) {
-                    apiUrl = window.SmartFarmConfig.getApiUrl(`/api/ai-advisory/crop-nutrition/${cropId}`);
+                
+                // Build API URL correctly - try multiple methods
+                let baseUrl = null;
+                
+                if (window.SmartFarmApiConfig && window.SmartFarmApiConfig.baseUrl) {
+                    baseUrl = window.SmartFarmApiConfig.baseUrl;
+                } else if (window.SmartFarmConfig && window.SmartFarmConfig.API_BASE_URL) {
+                    baseUrl = window.SmartFarmConfig.API_BASE_URL;
+                } else if (window.VITE_API_BASE_URL) {
+                    baseUrl = window.VITE_API_BASE_URL;
+                } else if (window.VITE_API_URL) {
+                    baseUrl = window.VITE_API_URL;
                 } else {
-                    apiUrl = `https://smartfarm-app-production.up.railway.app/api/ai-advisory/crop-nutrition/${cropId}`;
+                    baseUrl = 'https://smartfarm-app-production.up.railway.app';
                 }
+                
+                // Clean base URL and build full endpoint URL
+                baseUrl = baseUrl.replace(/\/$/, ''); // Remove trailing slash
+                apiUrl = `${baseUrl}/api/ai-advisory/crop-nutrition/${cropId}`;
 
                 // Add crop data as query parameters
                 const params = new URLSearchParams({
@@ -1591,19 +1603,54 @@
                 });
                 apiUrl += '?' + params.toString();
 
-                const response = await fetch(apiUrl);
+                console.log('🔍 Fetching AI advice from:', apiUrl);
+
+                const response = await fetch(apiUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    mode: 'cors'
+                });
+
                 if (!response.ok) {
-                    throw new Error('Failed to get AI recommendations');
+                    const errorText = await response.text();
+                    console.error('❌ API Error:', response.status, errorText);
+                    throw new Error(`Failed to get AI recommendations: ${response.status} ${errorText}`);
                 }
 
                 const data = await response.json();
+                console.log('✅ AI Advice received:', data);
+                
+                if (!data.success) {
+                    throw new Error(data.error || 'Failed to generate AI advice');
+                }
+
                 const recommendations = data.data || data;
+
+                if (!recommendations) {
+                    throw new Error('No recommendations received from API');
+                }
 
                 // Show AI advice modal
                 showAIAdviceModal(crop, recommendations);
             } catch (error) {
-                console.error('Error getting AI crop advice:', error);
-                showAlert('Failed to get AI advice. Please try again.', 'error');
+                console.error('❌ Error getting AI crop advice:', error);
+                console.error('Error details:', {
+                    message: error.message,
+                    stack: error.stack,
+                    cropId: cropId
+                });
+                
+                // Show detailed error message
+                const errorMsg = error.message || 'Failed to get AI advice. Please check your connection and try again.';
+                showAlert(`AI Advice Error: ${errorMsg}`, 'error');
+                
+                // If it's a network error, suggest checking backend
+                if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                    showAlert('Cannot connect to AI service. Please ensure the backend is running.', 'error');
+                }
             }
         }
 

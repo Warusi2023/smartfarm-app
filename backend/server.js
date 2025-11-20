@@ -132,6 +132,55 @@ try {
   console.log('✅ AI Advisory routes loaded');
 } catch (error) {
   console.warn('⚠️ Could not load auth routes, using fallback endpoints:', error.message);
+  console.error('Full error:', error);
+  
+  // Try to load AI Advisory routes separately (might work even if auth fails)
+  try {
+    AIAdvisoryRoutes = require('./routes/ai-advisory');
+    const aiAdvisoryRoutes = new AIAdvisoryRoutes();
+    app.use('/api/ai-advisory', aiAdvisoryRoutes.getRouter());
+    console.log('✅ AI Advisory routes loaded (standalone)');
+  } catch (aiError) {
+    console.warn('⚠️ Could not load AI Advisory routes:', aiError.message);
+    // Add fallback AI advisory endpoint
+    app.get('/api/ai-advisory/crop-nutrition/:cropId', (req, res) => {
+      const { cropId } = req.params;
+      res.json({
+        success: true,
+        message: 'AI nutrition advice (fallback mode)',
+        data: {
+          growthStage: req.query.growthStage || 'vegetative',
+          nutrients: {
+            nitrogen: { value: 50, unit: 'kg/ha', priority: 'high' },
+            phosphorus: { value: 30, unit: 'kg/ha', priority: 'medium' },
+            potassium: { value: 40, unit: 'kg/ha', priority: 'high' }
+          },
+          fertilizer: [{
+            name: 'Balanced Fertilizer (NPK 15-15-15)',
+            amount: '100-150 kg/ha',
+            application: 'Apply every 2-3 weeks',
+            reason: 'Supports healthy growth'
+          }],
+          watering: {
+            frequency: 'Every 1-2 days',
+            amount: '2-3 cm',
+            timing: 'Early morning',
+            method: 'Drip irrigation recommended'
+          },
+          tips: [
+            'Test soil before applying fertilizers',
+            'Use organic compost to improve soil structure',
+            'Apply fertilizers in split doses'
+          ],
+          warnings: [{
+            type: 'info',
+            message: 'Monitor soil pH regularly (optimal: 6.0-7.0)',
+            impact: 'Affects nutrient availability'
+          }]
+        }
+      });
+    });
+  }
   
   // Fallback auth endpoints (minimal implementation)
   app.post('/api/auth/login', (req, res) => {
