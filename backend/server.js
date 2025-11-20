@@ -99,6 +99,7 @@ app.get('/', (req, res) => {
 
 // Import auth routes with email verification
 let AuthRoutes;
+let AIAdvisoryRoutes;
 let dbPool = null;
 
 try {
@@ -123,6 +124,12 @@ try {
   const authRoutes = new AuthRoutes(dbPool);
   app.use('/api/auth', authRoutes.getRouter());
   console.log('✅ Auth routes with email verification loaded');
+  
+  // Load AI Advisory routes
+  AIAdvisoryRoutes = require('./routes/ai-advisory');
+  const aiAdvisoryRoutes = new AIAdvisoryRoutes();
+  app.use('/api/ai-advisory', aiAdvisoryRoutes.getRouter());
+  console.log('✅ AI Advisory routes loaded');
 } catch (error) {
   console.warn('⚠️ Could not load auth routes, using fallback endpoints:', error.message);
   

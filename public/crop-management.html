@@ -1572,13 +1572,32 @@
                 showAlert('Getting AI nutrition advice...', 'info');
 
                 // Get AI recommendations
-                const response = await fetch(window.SmartFarmConfig.getApiUrl(`/api/ai-advisory/crop-nutrition/${cropId}`));
+                let apiUrl;
+                if (window.SmartFarmApiConfig && window.SmartFarmApiConfig.url) {
+                    apiUrl = window.SmartFarmApiConfig.url(`/api/ai-advisory/crop-nutrition/${cropId}`);
+                } else if (window.SmartFarmConfig && window.SmartFarmConfig.getApiUrl) {
+                    apiUrl = window.SmartFarmConfig.getApiUrl(`/api/ai-advisory/crop-nutrition/${cropId}`);
+                } else {
+                    apiUrl = `https://smartfarm-app-production.up.railway.app/api/ai-advisory/crop-nutrition/${cropId}`;
+                }
+
+                // Add crop data as query parameters
+                const params = new URLSearchParams({
+                    name: crop.name || '',
+                    variety: crop.variety || '',
+                    growthStage: crop.growthStage || crop.status || 'vegetative',
+                    plantingDate: crop.plantingDate || '',
+                    field: crop.field || ''
+                });
+                apiUrl += '?' + params.toString();
+
+                const response = await fetch(apiUrl);
                 if (!response.ok) {
                     throw new Error('Failed to get AI recommendations');
                 }
 
                 const data = await response.json();
-                const recommendations = data.data;
+                const recommendations = data.data || data;
 
                 // Show AI advice modal
                 showAIAdviceModal(crop, recommendations);
@@ -1610,20 +1629,84 @@
                                     </div>
                                     <div class="col-md-6">
                                         <h6>AI Recommendations</h6>
-                                        ${Object.entries(recommendations.recommendations).map(([type, details]) => `
+                                        
+                                        ${recommendations.nutrients ? `
                                             <div class="card mb-3">
-                                                <div class="card-header">
-                                                    <h6 class="mb-0">${type.toUpperCase()}</h6>
+                                                <div class="card-header bg-primary text-white">
+                                                    <h6 class="mb-0"><i class="fas fa-flask me-2"></i>Nutrient Requirements</h6>
                                                 </div>
                                                 <div class="card-body">
-                                                    <p><strong>Timing:</strong> ${details.timing}</p>
-                                                    <p><strong>Amount:</strong> ${details.amount}</p>
-                                                    <p><strong>Method:</strong> ${details.method}</p>
-                                                    <p><strong>Conditions:</strong> ${details.conditions}</p>
-                                                    <p><strong>Notes:</strong> ${details.notes}</p>
+                                                    ${Object.entries(recommendations.nutrients).map(([nutrient, info]) => `
+                                                        <div class="mb-2">
+                                                            <strong>${nutrient.charAt(0).toUpperCase() + nutrient.slice(1)}:</strong> 
+                                                            ${info.value} ${info.unit} 
+                                                            <span class="badge bg-${info.priority === 'high' ? 'danger' : info.priority === 'medium' ? 'warning' : 'info'}">${info.priority}</span>
+                                                        </div>
+                                                    `).join('')}
                                                 </div>
                                             </div>
-                                        `).join('')}
+                                        ` : ''}
+                                        
+                                        ${recommendations.fertilizer && recommendations.fertilizer.length > 0 ? `
+                                            <div class="card mb-3">
+                                                <div class="card-header bg-success text-white">
+                                                    <h6 class="mb-0"><i class="fas fa-seedling me-2"></i>Fertilizer Recommendations</h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    ${recommendations.fertilizer.map(fert => `
+                                                        <div class="mb-3">
+                                                            <strong>${fert.name}</strong><br>
+                                                            <small>Amount: ${fert.amount}</small><br>
+                                                            <small>Application: ${fert.application}</small><br>
+                                                            <small class="text-muted">${fert.reason}</small>
+                                                        </div>
+                                                    `).join('')}
+                                                </div>
+                                            </div>
+                                        ` : ''}
+                                        
+                                        ${recommendations.watering ? `
+                                            <div class="card mb-3">
+                                                <div class="card-header bg-info text-white">
+                                                    <h6 class="mb-0"><i class="fas fa-tint me-2"></i>Watering Schedule</h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    <p><strong>Frequency:</strong> ${recommendations.watering.frequency}</p>
+                                                    <p><strong>Amount:</strong> ${recommendations.watering.amount}</p>
+                                                    <p><strong>Timing:</strong> ${recommendations.watering.timing}</p>
+                                                    <p><strong>Method:</strong> ${recommendations.watering.method}</p>
+                                                </div>
+                                            </div>
+                                        ` : ''}
+                                        
+                                        ${recommendations.tips && recommendations.tips.length > 0 ? `
+                                            <div class="card mb-3">
+                                                <div class="card-header bg-warning text-dark">
+                                                    <h6 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Tips</h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    <ul class="mb-0">
+                                                        ${recommendations.tips.map(tip => `<li>${tip}</li>`).join('')}
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        ` : ''}
+                                        
+                                        ${recommendations.warnings && recommendations.warnings.length > 0 ? `
+                                            <div class="card mb-3">
+                                                <div class="card-header bg-danger text-white">
+                                                    <h6 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Important Warnings</h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    ${recommendations.warnings.map(warning => `
+                                                        <div class="alert alert-${warning.type === 'critical' ? 'danger' : warning.type === 'warning' ? 'warning' : 'info'} mb-2">
+                                                            <strong>${warning.message}</strong><br>
+                                                            <small>${warning.impact}</small>
+                                                        </div>
+                                                    `).join('')}
+                                                </div>
+                                            </div>
+                                        ` : ''}
                                     </div>
                                 </div>
                             </div>
