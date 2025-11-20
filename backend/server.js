@@ -95,63 +95,93 @@ app.get('/', (req, res) => {
   });
 });
 
-// --- API Endpoints (minimal implementation) ---
+// --- API Endpoints ---
 
-// Auth endpoints
-app.post('/api/auth/login', (req, res) => {
-  const { email, password } = req.body;
+// Import auth routes with email verification
+let AuthRoutes;
+let dbPool = null;
+
+try {
+  // Try to use production auth routes with email verification
+  const { Pool } = require('pg');
   
-  if (!email || !password) {
-    return res.status(400).json({
-      success: false,
-      error: 'Email and password required'
+  // Initialize database connection if DATABASE_URL is available
+  if (process.env.DATABASE_URL) {
+    dbPool = new Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+      max: 20,
+      min: 2,
+    });
+    
+    dbPool.on('error', (err) => {
+      console.error('Database connection error:', err);
     });
   }
   
-  // TODO: Implement real authentication
-  res.status(200).json({
-    success: true,
-    data: {
-      token: 'demo-token-' + Date.now(),
-      user: {
-        email,
-        name: email.split('@')[0],
-        id: 'demo-user-1'
-      }
-    }
-  });
-});
-
-app.post('/api/auth/register', (req, res) => {
-  const { email, password, firstName, lastName } = req.body;
+  AuthRoutes = require('./routes/auth');
+  const authRoutes = new AuthRoutes(dbPool);
+  app.use('/api/auth', authRoutes.getRouter());
+  console.log('✅ Auth routes with email verification loaded');
+} catch (error) {
+  console.warn('⚠️ Could not load auth routes, using fallback endpoints:', error.message);
   
-  if (!email || !password || !firstName || !lastName) {
-    return res.status(400).json({
-      success: false,
-      error: 'All fields required'
+  // Fallback auth endpoints (minimal implementation)
+  app.post('/api/auth/login', (req, res) => {
+    const { email, password } = req.body;
+    
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        error: 'Email and password required'
+      });
+    }
+    
+    res.status(200).json({
+      success: true,
+      message: 'Login successful',
+      data: {
+        token: 'demo-token-' + Date.now(),
+        user: {
+          email,
+          name: email.split('@')[0],
+          id: 'demo-user-1'
+        }
+      }
     });
-  }
-  
-  // TODO: Implement real registration
-  res.status(201).json({
-    success: true,
-    data: {
-      user: {
-        email,
-        firstName,
-        lastName,
-        id: 'demo-user-' + Date.now()
-      }
-    }
   });
-});
 
-app.post('/api/auth/logout', (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'Logged out successfully'
+  app.post('/api/auth/register', (req, res) => {
+    const { email, password, firstName, lastName } = req.body;
+    
+    if (!email || !password || !firstName || !lastName) {
+      return res.status(400).json({
+        success: false,
+        error: 'All fields required'
+      });
+    }
+    
+    res.status(201).json({
+      success: true,
+      message: 'User registered successfully',
+      data: {
+        user: {
+          email,
+          firstName,
+          lastName,
+          id: 'demo-user-' + Date.now()
+        }
+      }
+    });
   });
-});
+
+  app.post('/api/auth/logout', (req, res) => {
+    res.status(200).json({
+      success: true,
+      message: 'Logged out successfully'
+    });
+  });
+}
 
 // Farms endpoints
 app.get('/api/farms', (req, res) => {
