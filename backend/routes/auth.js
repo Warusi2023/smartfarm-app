@@ -6,12 +6,16 @@
 const express = require('express');
 const AuthService = require('../auth/auth');
 const AuthMiddleware = require('../middleware/auth');
+const EmailService = require('../utils/emailService');
+const DatabaseHelpers = require('../utils/db-helpers');
 
 class AuthRoutes {
-    constructor() {
+    constructor(dbPool = null) {
         this.router = express.Router();
         this.authService = new AuthService();
         this.authMiddleware = new AuthMiddleware();
+        this.emailService = new EmailService();
+        this.dbHelpers = new DatabaseHelpers(dbPool);
         
         this.setupRoutes();
     }
@@ -28,7 +32,8 @@ class AuthRoutes {
         this.router.post('/refresh', this.refresh.bind(this));
         this.router.post('/forgot-password', this.forgotPassword.bind(this));
         this.router.post('/reset-password', this.resetPassword.bind(this));
-        this.router.post('/verify-email', this.verifyEmail.bind(this));
+        this.router.post('/verify-email/:token', this.verifyEmail.bind(this));
+        this.router.post('/resend-verification', this.resendVerification.bind(this));
 
         // Protected routes
         this.router.get('/me', this.authMiddleware.authenticate(), this.getProfile.bind(this));
@@ -73,8 +78,9 @@ class AuthRoutes {
                 });
             }
 
-            // Check if user already exists (mock database check)
-            const existingUser = await this.checkUserExists(email);
+            // Check if user already exists
+            const userExists = await this.dbHelpers.userExists(email);
+            const existingUser = userExists ? await this.dbHelpers.findUserByEmail(email) : null;
             if (existingUser) {
                 return res.status(409).json({
                     success: false,
@@ -86,34 +92,52 @@ class AuthRoutes {
             // Hash password
             const passwordHash = await this.authService.hashPassword(password);
 
-            // Create user (mock database operation)
-            const user = await this.createUser({
+            // Generate verification token
+            const verificationToken = this.emailService.generateVerificationToken();
+            const verificationExpires = new Date();
+            verificationExpires.setHours(verificationExpires.getHours() + 24); // 24 hours expiration
+
+            // Create user with verification token
+            const user = await this.dbHelpers.createUserWithVerification({
                 email: this.authService.sanitizeInput(email),
                 passwordHash,
                 firstName: this.authService.sanitizeInput(firstName),
                 lastName: this.authService.sanitizeInput(lastName),
                 phone: phone ? this.authService.sanitizeInput(phone) : null,
-                country: country || 'Fiji'
+                country: country || 'Fiji',
+                verificationToken: verificationToken,
+                verificationExpires: verificationExpires
             });
 
-            // Generate token
-            const token = this.authService.generateToken(user);
+            // Send verification email
+            const emailSent = await this.emailService.sendVerificationEmail(
+                email,
+                verificationToken,
+                firstName
+            );
 
-            // Create session
-            await this.authService.createSession(user.id, token);
+            if (!emailSent && this.emailService.isEmailConfigured()) {
+                // If email service is configured but sending failed, still create user but warn
+                console.warn(`⚠️ Failed to send verification email to ${email}, but user created`);
+            }
 
+            // Do NOT create session or return token - user must verify email first
             res.status(201).json({
                 success: true,
-                message: 'User registered successfully',
+                message: emailSent 
+                    ? 'Registration successful! Please check your email to verify your account.'
+                    : 'Registration successful! Please verify your email to activate your account.',
                 data: {
                     user: {
                         id: user.id,
                         email: user.email,
                         firstName: user.firstName,
                         lastName: user.lastName,
-                        role: user.role
+                        role: user.role,
+                        isVerified: false
                     },
-                    token
+                    emailSent: emailSent,
+                    requiresVerification: true
                 }
             });
 
@@ -143,8 +167,8 @@ class AuthRoutes {
                 });
             }
 
-            // Find user by email (mock database operation)
-            const user = await this.findUserByEmail(email);
+            // Find user by email
+            const user = await this.dbHelpers.findUserByEmail(email);
             if (!user) {
                 return res.status(401).json({
                     success: false,
@@ -169,6 +193,16 @@ class AuthRoutes {
                     success: false,
                     error: 'Account is deactivated',
                     code: 'ACCOUNT_DEACTIVATED'
+                });
+            }
+
+            // Check if email is verified
+            if (!user.isVerified) {
+                return res.status(403).json({
+                    success: false,
+                    error: 'Email not verified. Please check your inbox or resend verification.',
+                    code: 'EMAIL_NOT_VERIFIED',
+                    message: 'Please verify your email address before logging in. Check your inbox for the verification email or request a new one.'
                 });
             }
 
@@ -449,6 +483,7 @@ class AuthRoutes {
 
     async createUser(userData) {
         // Mock: Create user in database
+        // In production, this should insert into PostgreSQL database
         return {
             id: 'user_' + Date.now(),
             email: userData.email,
@@ -458,10 +493,13 @@ class AuthRoutes {
             country: userData.country,
             role: 'farmer',
             isActive: true,
-            isVerified: false,
+            isVerified: userData.isVerified || false,
+            verificationToken: userData.verificationToken,
+            verificationExpires: userData.verificationExpires,
             createdAt: new Date()
         };
     }
+
 
     async findUserByEmail(email) {
         // Mock: Find user by email in database
@@ -520,12 +558,148 @@ class AuthRoutes {
         });
     }
 
+    /**
+     * Email verification endpoint
+     * POST /api/auth/verify-email/:token
+     */
     async verifyEmail(req, res) {
-        res.status(501).json({
-            success: false,
-            error: 'Email verification not implemented yet',
-            code: 'NOT_IMPLEMENTED'
-        });
+        try {
+            const { token } = req.params;
+
+            if (!token) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Verification token is required',
+                    code: 'MISSING_TOKEN'
+                });
+            }
+
+            // Find user by verification token
+            const user = await this.dbHelpers.findUserByVerificationToken(token);
+
+            if (!user) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Invalid verification token',
+                    code: 'INVALID_TOKEN',
+                    message: 'The verification token is invalid or has already been used.'
+                });
+            }
+
+            // Check if token is expired
+            if (new Date() > new Date(user.verificationExpires)) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Verification token has expired',
+                    code: 'TOKEN_EXPIRED',
+                    message: 'The verification token has expired. Please request a new verification email.'
+                });
+            }
+
+            // Verify user email
+            await this.dbHelpers.verifyUserEmail(user.id);
+
+            // Send welcome email (non-blocking)
+            this.emailService.sendWelcomeEmail(user.email, user.firstName)
+                .catch(err => console.error('Failed to send welcome email:', err));
+
+            res.json({
+                success: true,
+                message: 'Email verified successfully! You can now log in to your account.',
+                data: {
+                    userId: user.id,
+                    email: user.email,
+                    isVerified: true
+                }
+            });
+
+        } catch (error) {
+            console.error('Email verification error:', error);
+            res.status(500).json({
+                success: false,
+                error: 'Email verification failed',
+                code: 'VERIFICATION_ERROR'
+            });
+        }
+    }
+
+    /**
+     * Resend verification email endpoint
+     * POST /api/auth/resend-verification
+     */
+    async resendVerification(req, res) {
+        try {
+            const { email } = req.body;
+
+            if (!email) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Email address is required',
+                    code: 'MISSING_EMAIL'
+                });
+            }
+
+            // Find user by email
+            const user = await this.dbHelpers.findUserByEmail(email);
+
+            if (!user) {
+                // Don't reveal if user exists or not (security best practice)
+                return res.json({
+                    success: true,
+                    message: 'If an account exists with this email, a verification email has been sent.'
+                });
+            }
+
+            // Check if already verified
+            if (user.isVerified) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Email already verified',
+                    code: 'ALREADY_VERIFIED',
+                    message: 'This email address has already been verified. You can log in now.'
+                });
+            }
+
+            // Generate new verification token
+            const verificationToken = this.emailService.generateVerificationToken();
+            const verificationExpires = new Date();
+            verificationExpires.setHours(verificationExpires.getHours() + 24); // 24 hours expiration
+
+            // Update user with new token
+            await this.dbHelpers.updateVerificationToken(user.id, verificationToken, verificationExpires);
+
+            // Send verification email
+            const emailSent = await this.emailService.sendVerificationEmail(
+                email,
+                verificationToken,
+                user.firstName
+            );
+
+            if (!emailSent && this.emailService.isEmailConfigured()) {
+                return res.status(500).json({
+                    success: false,
+                    error: 'Failed to send verification email',
+                    code: 'EMAIL_SEND_FAILED',
+                    message: 'Please try again later or contact support.'
+                });
+            }
+
+            res.json({
+                success: true,
+                message: 'Verification email sent successfully. Please check your inbox.',
+                data: {
+                    emailSent: emailSent
+                }
+            });
+
+        } catch (error) {
+            console.error('Resend verification error:', error);
+            res.status(500).json({
+                success: false,
+                error: 'Failed to resend verification email',
+                code: 'RESEND_ERROR'
+            });
+        }
     }
 
     async deleteAccount(req, res) {

@@ -164,8 +164,8 @@ app.get('/api/health', async (req, res) => {
     }
 });
 
-// API routes
-const authRoutes = new AuthRoutes();
+// API routes - Pass database pool to auth routes for email verification
+const authRoutes = new AuthRoutes(dbPool);
 app.use('/api/auth', authRoutes.getRouter());
 
 // Protected API routes (require authentication)
