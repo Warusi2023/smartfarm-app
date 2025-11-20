@@ -1,0 +1,57 @@
+{
+  "name": "smartfarm-backend",
+  "version": "1.0.0",
+  "description": "SmartFarm Production Backend API with Security Hardening",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server-production.cjs",
+    "dev": "nodemon server-production.cjs",
+    "build": "echo \"(backend) nothing to build\"",
+    "health": "node -e \"fetch('http://127.0.0.1:'+(process.env.PORT||3000)+'/api/health').then(r=>r.text()).then(console.log).catch(console.error)\"",
+    "backup": "node scripts/backup-automation.js create",
+    "backup:list": "node scripts/backup-automation.js list",
+    "backup:cleanup": "node scripts/backup-automation.js cleanup",
+    "security:audit": "npm audit --audit-level=moderate",
+    "security:check": "npm audit && npm outdated"
+  },
+  "engines": { 
+    "node": ">=18 <=22",
+    "npm": ">=8.0.0"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.1.0",
+    "compression": "^1.7.4",
+    "morgan": "^1.10.1",
+    "express-rate-limit": "^7.1.5",
+    "rate-limiter-flexible": "^5.0.3",
+    "pg": "^8.11.3",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "zod": "^3.22.4",
+    "validator": "^13.11.0",
+    "speakeasy": "^2.0.0",
+    "qrcode": "^1.5.3",
+    "dotenv": "^16.3.1",
+    "@sentry/node": "^7.91.0",
+    "@sentry/profiling-node": "^7.91.0",
+    "redis": "^4.6.12"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2",
+    "eslint": "^8.56.0",
+    "eslint-plugin-security": "^2.1.0"
+  },
+  "keywords": [
+    "smartfarm",
+    "agriculture",
+    "farming",
+    "api",
+    "security"
+  ],
+  "author": "SmartFarm Team",
+  "license": "MIT"
+}
+

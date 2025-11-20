@@ -15,19 +15,26 @@ const { Pool } = require('pg');
 // Import routes and middleware
 const AuthRoutes = require('./routes/auth');
 const AuthMiddleware = require('./middleware/auth');
+const PaginationMiddleware = require('./middleware/pagination');
+const CacheMiddleware = require('./middleware/cache');
+const MonitoringConfig = require('./config/monitoring');
 
 // Initialize Express app
 const app = express();
 const PORT = process.env.PORT || 3000;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 
-// Initialize database connection
+// Initialize database connection with improved pool settings
 const dbPool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-    max: 20,
+    max: parseInt(process.env.DB_POOL_MAX || '50', 10), // Increased from 20 to 50
+    min: parseInt(process.env.DB_POOL_MIN || '10', 10), // Minimum connections
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 2000,
+    // Additional performance settings
+    statement_timeout: 30000, // 30 seconds query timeout
+    query_timeout: 30000,
 });
 
 // Test database connection
@@ -41,6 +48,16 @@ dbPool.on('error', (err) => {
 
 // Initialize middleware
 const authMiddleware = new AuthMiddleware();
+const paginationMiddleware = new PaginationMiddleware();
+const cacheMiddleware = new CacheMiddleware();
+const monitoring = new MonitoringConfig();
+
+// Apply pagination middleware to all API routes
+app.use('/api/', paginationMiddleware.parsePagination.bind(paginationMiddleware));
+app.use('/api/', paginationMiddleware.responseHelper.bind(paginationMiddleware));
+
+// Apply monitoring middleware
+app.use(monitoring.requestTracking());
 
 // Security middleware
 app.use(helmet({
@@ -73,10 +90,11 @@ if (NODE_ENV === 'production') {
     app.use(morgan('dev'));
 }
 
-// Rate limiting
-const limiter = rateLimit({
+// Tiered rate limiting - Different limits for authenticated vs unauthenticated users
+// Unauthenticated users - stricter limits
+const unauthenticatedLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // limit each IP to 100 requests per windowMs
+    max: parseInt(process.env.RATE_LIMIT_UNAUTH || '100', 10), // 100 requests per 15 min
     message: {
         success: false,
         error: 'Too many requests from this IP, please try again later.',
@@ -84,9 +102,36 @@ const limiter = rateLimit({
     },
     standardHeaders: true,
     legacyHeaders: false,
+    skip: (req) => {
+        // Skip if user is authenticated (they'll use authenticated limiter)
+        return !!req.headers.authorization;
+    }
 });
 
-app.use('/api/', limiter);
+// Authenticated users - more generous limits
+const authenticatedLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: parseInt(process.env.RATE_LIMIT_AUTH || '300', 10), // 300 requests per 15 min
+    message: {
+        success: false,
+        error: 'Too many requests, please try again later.',
+        code: 'RATE_LIMIT_EXCEEDED'
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+    skip: (req) => {
+        // Only apply to authenticated requests
+        return !req.headers.authorization;
+    },
+    keyGenerator: (req) => {
+        // Use user ID if available, otherwise fall back to IP
+        return req.user?.id || req.ip;
+    }
+});
+
+// Apply rate limiting to API routes
+app.use('/api/', unauthenticatedLimiter);
+app.use('/api/', authenticatedLimiter);
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
@@ -228,9 +273,13 @@ app.use('/api/*', (req, res) => {
     });
 });
 
-// Global error handler
+// Global error handler with monitoring
+app.use(monitoring.errorHandler());
 app.use((err, req, res, next) => {
     console.error('Global error handler:', err);
+
+    // Capture error with monitoring (already done by errorHandler middleware)
+    // This is a fallback if errorHandler didn't catch it
 
     // Don't leak error details in production
     const errorMessage = NODE_ENV === 'production' 
