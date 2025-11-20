@@ -82,7 +82,21 @@ app.get('/api/health', (req, res) => {
     ok: true,
     service: 'SmartFarm',
     ts: Date.now(),
-    env: process.env.NODE_ENV || 'development'
+    env: process.env.NODE_ENV || 'development',
+    version: '1.0.0',
+    endpoints: {
+      aiAdvisory: '/api/ai-advisory/crop-nutrition/:cropId'
+    }
+  });
+});
+
+// Test endpoint to verify AI advisory is available
+app.get('/api/ai-advisory/test', (req, res) => {
+  res.json({
+    success: true,
+    message: 'AI Advisory endpoint is working!',
+    timestamp: new Date().toISOString(),
+    endpoint: '/api/ai-advisory/crop-nutrition/:cropId'
   });
 });
 
@@ -99,6 +113,10 @@ app.get('/', (req, res) => {
 
 // Add AI Advisory endpoint directly (always available, even if routes fail)
 app.get('/api/ai-advisory/crop-nutrition/:cropId', (req, res) => {
+  console.log(`[AI Advisory] Request received: ${req.method} ${req.path}`);
+  console.log(`[AI Advisory] Params:`, req.params);
+  console.log(`[AI Advisory] Query:`, req.query);
+  
   try {
     const { cropId } = req.params;
     const cropName = req.query.name || 'Crop';
