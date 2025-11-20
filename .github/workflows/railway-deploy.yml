@@ -17,7 +17,7 @@ jobs:
           set -e
           BACKEND="backend"
           test -f "$BACKEND/package.json" || (echo "❌ $BACKEND/package.json missing" && exit 2)
-          test -f "$BACKEND/server.cjs"     || (echo "❌ $BACKEND/server.cjs missing" && exit 3)
+          test -f "$BACKEND/server.js"     || (echo "❌ $BACKEND/server.js missing" && exit 3)
           test -f "$BACKEND/package-lock.json" || (echo "❌ $BACKEND/package-lock.json missing (run npm install in backend and commit lockfile)" && exit 4)
           echo "✅ Preflight OK"
 
@@ -34,12 +34,12 @@ jobs:
       - name: Check lockfile and entry
         run: |
           test -f package-lock.json || (echo "❌ package-lock.json missing in backend" && exit 10)
-          test -f server.cjs || (echo "❌ server.cjs missing in backend" && exit 11)
+          test -f server.js || (echo "❌ server.js missing in backend" && exit 11)
       - name: Install
         run: npm ci
       - name: Sanity-run (local)
         run: |
-          node server.cjs &
+          node server.js &
           S=$!
           sleep 1
           curl -sf http://localhost:3000/api/health || (echo "❌ Local healthcheck failed" && kill $S && exit 12)
@@ -63,12 +63,12 @@ jobs:
       - name: Check lockfile and entry
         run: |
           test -f package-lock.json || (echo "❌ package-lock.json missing in backend" && exit 10)
-          test -f server.cjs || (echo "❌ server.cjs missing in backend" && exit 11)
+          test -f server.js || (echo "❌ server.js missing in backend" && exit 11)
       - name: Install
         run: npm ci
       - name: Sanity-run (local)
         run: |
-          node server.cjs &
+          node server.js &
           S=$!
           sleep 1
           curl -sf http://localhost:3000/api/health || (echo "❌ Local healthcheck failed" && kill $S && exit 12)
