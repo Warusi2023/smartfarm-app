@@ -41,8 +41,22 @@
      */
     function buildApiUrl(path) {
         const base = getApiBaseUrl();
-        const cleanPath = path.startsWith('/') ? path : `/${path}`;
-        return `${base}${cleanPath}`;
+        // Remove trailing slash from base
+        const cleanBase = base.replace(/\/$/, '');
+        // Remove leading slash from path
+        const cleanPath = path.replace(/^\//, '');
+        
+        // Check if base already includes /api, if so don't add it again
+        if (cleanBase.endsWith('/api')) {
+            return `${cleanBase}/${cleanPath}`;
+        } else {
+            // If path already starts with /api, use it as-is
+            if (cleanPath.startsWith('api/')) {
+                return `${cleanBase}/${cleanPath}`;
+            }
+            // Otherwise add /api prefix
+            return `${cleanBase}/api/${cleanPath}`;
+        }
     }
     
     /**

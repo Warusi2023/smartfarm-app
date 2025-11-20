@@ -1590,8 +1590,15 @@
                 }
                 
                 // Clean base URL and build full endpoint URL
+                // Remove trailing slash and check if baseUrl already includes /api
                 baseUrl = baseUrl.replace(/\/$/, ''); // Remove trailing slash
-                apiUrl = `${baseUrl}/api/ai-advisory/crop-nutrition/${cropId}`;
+                
+                // Check if baseUrl already ends with /api, if so don't add it again
+                if (baseUrl.endsWith('/api')) {
+                    apiUrl = `${baseUrl}/ai-advisory/crop-nutrition/${cropId}`;
+                } else {
+                    apiUrl = `${baseUrl}/api/ai-advisory/crop-nutrition/${cropId}`;
+                }
 
                 // Add crop data as query parameters
                 const params = new URLSearchParams({
