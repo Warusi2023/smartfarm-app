@@ -1621,23 +1621,85 @@
                     mode: 'cors'
                 });
 
+                // Handle 404 specifically with helpful message
+                if (response.status === 404) {
+                    console.error('❌ API 404 Error: Endpoint not found.', apiUrl);
+                    console.error('This usually means the backend hasn\'t deployed the latest code yet.');
+                    
+                    // Show user-friendly error message
+                    showAlert(
+                        'AI advisory service is not available yet. The backend needs to be updated. ' +
+                        'Please try again in a few minutes or contact support if the issue persists.',
+                        'warning'
+                    );
+                    
+                    // Log for developers/audit
+                    console.warn('🔧 Troubleshooting steps:', {
+                        step1: 'Verify Railway has deployed latest code',
+                        step2: 'Check backend logs for route registration',
+                        step3: 'Ensure endpoint path matches: /api/ai-advisory/crop-nutrition/:cropId',
+                        step4: 'Verify crop parameters are correct',
+                        apiUrl: apiUrl,
+                        cropId: cropId,
+                        cropName: crop.name
+                    });
+                    
+                    // Optionally show fallback manual input
+                    showFallbackNutritionAdvice(crop);
+                    return;
+                }
+
                 if (!response.ok) {
                     const errorText = await response.text();
-                    console.error('❌ API Error:', response.status, errorText);
-                    throw new Error(`Failed to get AI recommendations: ${response.status} ${errorText}`);
+                    let errorData;
+                    try {
+                        errorData = JSON.parse(errorText);
+                    } catch (e) {
+                        errorData = { error: errorText };
+                    }
+                    
+                    console.error('❌ API Error:', response.status, errorData);
+                    
+                    // Show user-friendly error based on status code
+                    if (response.status === 500) {
+                        showAlert(
+                            'The AI service encountered an error. Please try again later or contact support.',
+                            'error'
+                        );
+                    } else if (response.status === 503) {
+                        showAlert(
+                            'The AI service is temporarily unavailable. Please try again in a few moments.',
+                            'warning'
+                        );
+                    } else {
+                        showAlert(
+                            `Unable to retrieve AI advice (Error ${response.status}). Please check your connection and try again.`,
+                            'error'
+                        );
+                    }
+                    
+                    throw new Error(`API Error ${response.status}: ${errorData.error || errorText}`);
                 }
 
                 const data = await response.json();
                 console.log('✅ AI Advice received:', data);
                 
                 if (!data.success) {
-                    throw new Error(data.error || 'Failed to generate AI advice');
+                    const errorMsg = data.error || data.message || 'Failed to generate AI advice';
+                    console.error('❌ API returned unsuccessful response:', data);
+                    showAlert(
+                        `AI advisory service returned an error: ${errorMsg}. Please try again or contact support.`,
+                        'error'
+                    );
+                    throw new Error(errorMsg);
                 }
 
                 const recommendations = data.data || data;
 
                 if (!recommendations) {
-                    throw new Error('No recommendations received from API');
+                    console.warn('⚠️ No recommendations in response, using fallback');
+                    showFallbackNutritionAdvice(crop);
+                    return;
                 }
 
                 // Show AI advice modal
@@ -1647,17 +1709,27 @@
                 console.error('Error details:', {
                     message: error.message,
                     stack: error.stack,
-                    cropId: cropId
+                    cropId: cropId,
+                    cropName: crop.name,
+                    apiUrl: apiUrl
                 });
                 
-                // Show detailed error message
-                const errorMsg = error.message || 'Failed to get AI advice. Please check your connection and try again.';
-                showAlert(`AI Advice Error: ${errorMsg}`, 'error');
-                
-                // If it's a network error, suggest checking backend
-                if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-                    showAlert('Cannot connect to AI service. Please ensure the backend is running.', 'error');
+                // Handle network errors specifically
+                if (error.message.includes('Failed to fetch') || 
+                    error.message.includes('NetworkError') || 
+                    error.name === 'TypeError') {
+                    showAlert(
+                        'Cannot connect to AI service. Please check your internet connection and ensure the backend is running.',
+                        'error'
+                    );
+                } else if (!error.message.includes('API Error')) {
+                    // Only show generic error if we haven't already shown a specific one
+                    const errorMsg = error.message || 'An unexpected error occurred while fetching crop advice.';
+                    showAlert(`AI Advice Error: ${errorMsg}`, 'error');
                 }
+                
+                // Show fallback option
+                showFallbackNutritionAdvice(crop);
             }
         }
 
@@ -1794,6 +1866,87 @@
             if (modal) {
                 modal.hide();
             }
+        }
+
+        /**
+         * Show fallback nutrition advice when API is unavailable
+         * Provides basic recommendations based on crop data
+         */
+        function showFallbackNutritionAdvice(crop) {
+            const growthStage = crop.growthStage || crop.status || 'vegetative';
+            
+            // Generate basic fallback recommendations
+            const fallbackRecommendations = {
+                growthStage: growthStage,
+                nutrients: {
+                    nitrogen: { value: 50, unit: 'kg/ha', priority: 'high' },
+                    phosphorus: { value: 30, unit: 'kg/ha', priority: 'medium' },
+                    potassium: { value: 40, unit: 'kg/ha', priority: 'high' },
+                    calcium: { value: 20, unit: 'kg/ha', priority: 'low' },
+                    magnesium: { value: 15, unit: 'kg/ha', priority: 'low' }
+                },
+                fertilizer: [{
+                    name: 'Balanced Fertilizer (NPK 15-15-15)',
+                    amount: '100-150 kg/ha',
+                    application: 'Apply every 2-3 weeks',
+                    reason: 'Supports healthy growth'
+                }],
+                watering: {
+                    frequency: 'Every 1-2 days',
+                    amount: '2-3 cm',
+                    timing: 'Early morning',
+                    method: 'Drip irrigation recommended'
+                },
+                timing: {
+                    nextFertilization: 'In 2 weeks',
+                    nextWatering: 'Today',
+                    criticalPeriod: 'Current stage'
+                },
+                tips: [
+                    'Test soil before applying fertilizers to avoid over-fertilization',
+                    'Use organic compost to improve soil structure',
+                    'Apply fertilizers in split doses rather than all at once',
+                    'Water deeply but less frequently to encourage deep root growth',
+                    'Note: This is basic advice. For AI-powered recommendations, ensure backend is deployed.'
+                ],
+                warnings: [{
+                    type: 'warning',
+                    message: 'AI service unavailable - showing basic recommendations',
+                    impact: 'These are general guidelines. For crop-specific advice, contact support.'
+                }]
+            };
+
+            // Adjust based on growth stage
+            if (growthStage === 'seedling' || growthStage === 'early') {
+                fallbackRecommendations.nutrients.phosphorus.value = 40;
+                fallbackRecommendations.fertilizer[0].name = 'Starter Fertilizer (NPK 10-20-10)';
+                fallbackRecommendations.fertilizer[0].amount = '50-75 kg/ha';
+            } else if (growthStage === 'flowering' || growthStage === 'bloom') {
+                fallbackRecommendations.nutrients.phosphorus.value = 50;
+                fallbackRecommendations.nutrients.potassium.value = 60;
+                fallbackRecommendations.fertilizer[0].name = 'High Phosphorus Fertilizer (NPK 10-30-20)';
+            } else if (growthStage === 'fruiting' || growthStage === 'fruit' || growthStage === 'completed') {
+                fallbackRecommendations.nutrients.potassium.value = 70;
+                fallbackRecommendations.fertilizer[0].name = 'High Potassium Fertilizer (NPK 5-15-30)';
+            }
+
+            // Show modal with fallback data
+            showAIAdviceModal(crop, fallbackRecommendations);
+            
+            // Add a notice that this is fallback data
+            setTimeout(() => {
+                const modalBody = document.querySelector('#aiAdviceModal .modal-body');
+                if (modalBody) {
+                    const notice = document.createElement('div');
+                    notice.className = 'alert alert-warning mt-3';
+                    notice.innerHTML = `
+                        <strong>⚠️ Note:</strong> AI service is currently unavailable. 
+                        Showing basic recommendations. For AI-powered crop-specific advice, 
+                        please ensure the backend service is deployed and try again.
+                    `;
+                    modalBody.insertBefore(notice, modalBody.firstChild);
+                }
+            }, 100);
         }
 
         function applyFilters() {
