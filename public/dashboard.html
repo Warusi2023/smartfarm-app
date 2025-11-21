@@ -4235,18 +4235,28 @@
         }
 
         function downloadQRCode(productId) {
-            if (typeof qrTraceability !== 'undefined' && qrTraceability) {
-                qrTraceability.downloadQRCode(productId);
-            } else {
-                showErrorDialog('Download Failed', 'QR Code system not available for download.');
+            try {
+                if (typeof qrTraceability !== 'undefined' && qrTraceability && typeof qrTraceability.downloadQRCode === 'function') {
+                    qrTraceability.downloadQRCode(productId);
+                } else {
+                    showErrorDialog('Download Failed', 'QR Code system not available for download. Please refresh the page and try again.');
+                }
+            } catch (error) {
+                console.error('Error downloading QR code:', error);
+                showErrorDialog('Download Error', `Failed to download QR code: ${error.message}. Please try again.`);
             }
         }
 
         function printQRCode(productId) {
-            if (typeof qrTraceability !== 'undefined' && qrTraceability) {
-                qrTraceability.printQRCode(productId);
-            } else {
-                showErrorDialog('Print Failed', 'QR Code system not available for printing.');
+            try {
+                if (typeof qrTraceability !== 'undefined' && qrTraceability && typeof qrTraceability.printQRCode === 'function') {
+                    qrTraceability.printQRCode(productId);
+                } else {
+                    showErrorDialog('Print Failed', 'QR Code system not available for printing. Please refresh the page and try again.');
+                }
+            } catch (error) {
+                console.error('Error printing QR code:', error);
+                showErrorDialog('Print Error', `Failed to print QR code: ${error.message}. Please try again.`);
             }
         }
 
