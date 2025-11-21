@@ -80,6 +80,98 @@
         })();
     </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- QR Code Library - Load early to ensure availability -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js" 
+            onerror="console.warn('Primary QR code library failed, will try fallback'); loadQRCodeFallback();"></script>
+    <script>
+        // QR Code Library Loading and Fallback System
+        let qrCodeLibraryLoaded = false;
+        let qrCodeLoadAttempts = 0;
+        const maxQRCodeLoadAttempts = 3;
+        
+        // Check if QRCode is available
+        function checkQRCodeLibrary() {
+            if (typeof QRCode !== 'undefined') {
+                qrCodeLibraryLoaded = true;
+                console.log('✅ QR Code library loaded successfully');
+                return true;
+            }
+            return false;
+        }
+        
+        // Fallback loader for QR code library
+        function loadQRCodeFallback() {
+            if (qrCodeLibraryLoaded || qrCodeLoadAttempts >= maxQRCodeLoadAttempts) {
+                return;
+            }
+            
+            qrCodeLoadAttempts++;
+            console.log(`🔄 Attempting to load QR code library (attempt ${qrCodeLoadAttempts}/${maxQRCodeLoadAttempts})...`);
+            
+            const fallbackSources = [
+                'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js',
+                'https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js'
+            ];
+            
+            const source = fallbackSources[qrCodeLoadAttempts - 1] || fallbackSources[fallbackSources.length - 1];
+            
+            const script = document.createElement('script');
+            script.src = source;
+            script.async = true;
+            
+            script.onload = function() {
+                setTimeout(() => {
+                    if (checkQRCodeLibrary()) {
+                        console.log(`✅ QR Code library loaded from fallback source ${qrCodeLoadAttempts}`);
+                    } else {
+                        if (qrCodeLoadAttempts < maxQRCodeLoadAttempts) {
+                            loadQRCodeFallback();
+                        } else {
+                            console.error('❌ Failed to load QR Code library from all sources');
+                        }
+                    }
+                }, 100);
+            };
+            
+            script.onerror = function() {
+                console.warn(`⚠️ Failed to load QR Code library from: ${source}`);
+                if (qrCodeLoadAttempts < maxQRCodeLoadAttempts) {
+                    setTimeout(() => loadQRCodeFallback(), 500);
+                } else {
+                    console.error('❌ All QR Code library sources failed');
+                }
+            };
+            
+            document.head.appendChild(script);
+        }
+        
+        // Wait for DOM and check library
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if library is already loaded
+            if (!checkQRCodeLibrary()) {
+                // Wait a bit for initial script to load
+                setTimeout(() => {
+                    if (!checkQRCodeLibrary()) {
+                        console.warn('⚠️ QR Code library not detected, loading fallback...');
+                        loadQRCodeFallback();
+                    }
+                }, 1000);
+            }
+        });
+        
+        // Also check immediately (in case DOMContentLoaded already fired)
+        if (document.readyState === 'loading') {
+            // DOMContentLoaded hasn't fired yet, wait for it
+        } else {
+            // DOMContentLoaded already fired, check now
+            setTimeout(() => {
+                if (!checkQRCodeLibrary()) {
+                    loadQRCodeFallback();
+                }
+            }, 500);
+        }
+    </script>
     <script src="js/aggressive-server-fix.js"></script>
     <script src="js/emergency-error-disable.js"></script>
     <script src="js/continuous-error-suppression.js"></script>
@@ -128,8 +220,6 @@
     <script src="js/performance-optimizer.js"></script>
     <script src="js/accessibility-enhancer.js"></script>
     <script src="js/modal-accessibility.js"></script>
-    <!-- QR Code Library - Required for QR code generation -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js"></script>
     <script src="js/ai-seed-predictor.js"></script>
     <script src="js/intelligent-weeding.js"></script>
     <script src="js/competitive-features.js"></script>
@@ -4010,9 +4100,56 @@
         // Initialize Weeding Task Synchronization
         initializeWeedingTaskSync();
         
+        // QR Code Library Helper Functions
+        /**
+         * Wait for QR Code library to load
+         * @param {number} maxWaitTime - Maximum time to wait in milliseconds
+         * @returns {Promise<boolean>} - True if library loaded, false if timeout
+         */
+        async function waitForQRCodeLibrary(maxWaitTime = 5000) {
+            // If already loaded, return immediately
+            if (typeof QRCode !== 'undefined') {
+                return true;
+            }
+            
+            const startTime = Date.now();
+            
+            return new Promise((resolve) => {
+                const checkInterval = setInterval(() => {
+                    if (typeof QRCode !== 'undefined') {
+                        clearInterval(checkInterval);
+                        console.log('✅ QR Code library loaded');
+                        resolve(true);
+                    } else if (Date.now() - startTime >= maxWaitTime) {
+                        clearInterval(checkInterval);
+                        console.warn('⚠️ QR Code library load timeout');
+                        resolve(false);
+                    }
+                }, 100);
+            });
+        }
+        
         // QR Code Generator Functions
-        function generateQRCode() {
+        async function generateQRCode() {
             try {
+                // First, ensure QR Code library is loaded
+                if (typeof QRCode === 'undefined') {
+                    console.warn('⚠️ QR Code library not loaded, attempting to load...');
+                    showAlert('Loading QR Code library...', 'info', 2000);
+                    
+                    // Try to load library
+                    await waitForQRCodeLibrary(5000);
+                    
+                    if (typeof QRCode === 'undefined') {
+                        showErrorDialog(
+                            'QR Code Library Not Available', 
+                            'The QR Code library failed to load. Please check your internet connection and refresh the page. ' +
+                            'If the problem persists, the CDN may be temporarily unavailable.'
+                        );
+                        return;
+                    }
+                }
+                
                 // Check if QR Traceability system is available
                 if (typeof qrTraceability !== 'undefined' && qrTraceability && typeof qrTraceability.generateQRCode === 'function') {
                     qrTraceability.generateQRCode();
@@ -4194,13 +4331,18 @@
             });
         }
 
-        function generateQRCodePreview(productData, modal) {
+        async function generateQRCodePreview(productData, modal) {
             const traceabilityURL = `https://smartfarm-app.com/traceability?product=${productData.id}&batch=${productData.batchNumber}`;
             
             // Update traceability URL
             const urlElement = modal.querySelector('#traceabilityUrl');
             if (urlElement) {
                 urlElement.textContent = traceabilityURL;
+            }
+            
+            // Ensure QR Code library is loaded
+            if (typeof QRCode === 'undefined') {
+                await waitForQRCodeLibrary(3000);
             }
             
             // Generate QR code
