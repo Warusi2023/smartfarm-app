@@ -3562,38 +3562,166 @@
                 // Show loading message
                 showAlert('Getting AI health advice...', 'info');
 
-                // Get AI recommendations using SmartFarmAPI
+                // Build API URL correctly - prevent double /api
                 let apiUrl;
-                if (window.SmartFarmAPI && window.SmartFarmAPI.baseURL) {
-                    apiUrl = `${window.SmartFarmAPI.baseURL}/api/ai-advisory/livestock-health/${animalId}`;
+                let baseUrl = null;
+                
+                if (window.SmartFarmApiConfig && window.SmartFarmApiConfig.baseUrl) {
+                    baseUrl = window.SmartFarmApiConfig.baseUrl;
+                } else if (window.SmartFarmAPI && window.SmartFarmAPI.baseURL) {
+                    baseUrl = window.SmartFarmAPI.baseURL;
                 } else if (window.SmartFarmEnvironment && window.SmartFarmEnvironment.getApiUrl) {
-                    apiUrl = window.SmartFarmEnvironment.getApiUrl(`/ai-advisory/livestock-health/${animalId}`);
+                    // This method already handles /api, so use it directly
+                    apiUrl = window.SmartFarmEnvironment.getApiUrl(`ai-advisory/livestock-health/${animalId}`);
+                } else if (window.SmartFarmConfig && window.SmartFarmConfig.API_BASE_URL) {
+                    baseUrl = window.SmartFarmConfig.API_BASE_URL;
+                } else if (window.VITE_API_BASE_URL) {
+                    baseUrl = window.VITE_API_BASE_URL;
                 } else {
-                    // Fallback to default API URL
-                    apiUrl = `https://smartfarm-app-production.up.railway.app/api/ai-advisory/livestock-health/${animalId}`;
+                    baseUrl = 'https://smartfarm-app-production.up.railway.app';
                 }
+                
+                // Build URL if not already built
+                if (!apiUrl && baseUrl) {
+                    baseUrl = baseUrl.replace(/\/$/, ''); // Remove trailing slash
+                    if (baseUrl.endsWith('/api')) {
+                        apiUrl = `${baseUrl}/ai-advisory/livestock-health/${animalId}`;
+                    } else {
+                        apiUrl = `${baseUrl}/api/ai-advisory/livestock-health/${animalId}`;
+                    }
+                }
+                
+                // Add animal data as query parameters
+                const params = new URLSearchParams({
+                    type: animal.animalType || '',
+                    breed: animal.breed || '',
+                    age: animal.age || 0,
+                    healthStatus: animal.healthStatus || 'healthy'
+                });
+                apiUrl += '?' + params.toString();
+
+                console.log('🔍 Fetching AI livestock health advice from:', apiUrl);
 
                 const response = await fetch(apiUrl, {
                     method: 'GET',
-                    credentials: 'include',
-                    mode: 'cors',
                     headers: {
-                        'Content-Type': 'application/json'
-                    }
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    mode: 'cors'
                 });
 
+                // Handle 404 specifically with helpful message
+                if (response.status === 404) {
+                    console.error('❌ API 404 Error: Livestock health endpoint not found.', apiUrl);
+                    console.warn('🔧 Troubleshooting steps:', {
+                        step1: 'Verify Railway has deployed latest code',
+                        step2: 'Check backend logs for route registration',
+                        step3: 'Ensure endpoint path matches: /api/ai-advisory/livestock-health/:animalId',
+                        step4: 'Verify animal parameters are correct',
+                        apiUrl: apiUrl,
+                        animalId: animalId,
+                        animalType: animal.animalType
+                    });
+                    
+                    showAlert(
+                        'AI health advisory service is not available yet. The backend needs to be updated. ' +
+                        'Showing basic health recommendations instead.',
+                        'warning'
+                    );
+                    
+                    // Show fallback health advice
+                    showFallbackLivestockHealthAdvice(animal);
+                    return;
+                }
+
                 if (!response.ok) {
-                    throw new Error('Failed to get AI recommendations');
+                    const errorText = await response.text();
+                    let errorData;
+                    try {
+                        errorData = JSON.parse(errorText);
+                    } catch (e) {
+                        errorData = { error: errorText };
+                    }
+                    
+                    console.error('❌ API Error:', response.status, errorData);
+                    
+                    // Show user-friendly error based on status code
+                    if (response.status === 500) {
+                        showAlert(
+                            'The AI health service encountered an error. Please try again later or contact support.',
+                            'error'
+                        );
+                    } else if (response.status === 503) {
+                        showAlert(
+                            'The AI health service is temporarily unavailable. Showing basic recommendations instead.',
+                            'warning'
+                        );
+                        showFallbackLivestockHealthAdvice(animal);
+                        return;
+                    } else {
+                        showAlert(
+                            `Unable to retrieve AI health advice (Error ${response.status}). Showing basic recommendations instead.`,
+                            'warning'
+                        );
+                        showFallbackLivestockHealthAdvice(animal);
+                        return;
+                    }
+                    
+                    throw new Error(`API Error ${response.status}: ${errorData.error || errorText}`);
                 }
 
                 const data = await response.json();
+                console.log('✅ AI Health Advice received:', data);
+                
+                if (!data.success) {
+                    const errorMsg = data.error || data.message || 'Failed to generate health advice';
+                    console.error('❌ API returned unsuccessful response:', data);
+                    showAlert(
+                        `AI health service returned an error: ${errorMsg}. Showing basic recommendations instead.`,
+                        'warning'
+                    );
+                    showFallbackLivestockHealthAdvice(animal);
+                    return;
+                }
+
                 const recommendations = data.data || data;
+
+                if (!recommendations) {
+                    console.warn('⚠️ No recommendations in response, using fallback');
+                    showFallbackLivestockHealthAdvice(animal);
+                    return;
+                }
 
                 // Show AI advice modal
                 showAILivestockAdviceModal(animal, recommendations);
             } catch (error) {
-                console.error('Error getting AI livestock advice:', error);
-                showAlert('Failed to get AI advice. This feature may not be available yet. Please try again later.', 'error');
+                console.error('❌ Error getting AI livestock advice:', error);
+                console.error('Error details:', {
+                    message: error.message,
+                    stack: error.stack,
+                    animalId: animalId,
+                    animalType: animal.animalType,
+                    apiUrl: apiUrl
+                });
+                
+                // Handle network errors specifically
+                if (error.message.includes('Failed to fetch') || 
+                    error.message.includes('NetworkError') || 
+                    error.name === 'TypeError') {
+                    showAlert(
+                        'Cannot connect to AI health service. Please check your internet connection. Showing basic recommendations instead.',
+                        'warning'
+                    );
+                } else if (!error.message.includes('API Error')) {
+                    showAlert(
+                        'An unexpected error occurred while fetching health advice. Showing basic recommendations instead.',
+                        'warning'
+                    );
+                }
+                
+                // Show fallback option
+                showFallbackLivestockHealthAdvice(animal);
             }
         }
 
@@ -3604,7 +3732,7 @@
                         <div class="modal-content">
                             <div class="modal-header">
                                 <h5 class="modal-title">
-                                    <i class="fas fa-robot me-2"></i>AI Health Advice for ${animal.animalType}
+                                    <i class="fas fa-robot me-2"></i>AI Health Advice for ${animal.animalType || animal.type || 'Animal'}
                                 </h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                             </div>
@@ -3612,32 +3740,89 @@
                                 <div class="row">
                                     <div class="col-md-6">
                                         <h6>Animal Information</h6>
+                                        <p><strong>Tag:</strong> ${animal.tag || 'N/A'}</p>
                                         <p><strong>Breed:</strong> ${animal.breed || 'Mixed'}</p>
-                                        <p><strong>Age Group:</strong> ${recommendations.ageGroup.toUpperCase()}</p>
                                         <p><strong>Age:</strong> ${animal.age || 0} months</p>
-                                        <p><strong>Health Status:</strong> ${animal.healthStatus || 'Healthy'}</p>
+                                        <p><strong>Health Status:</strong> <span class="badge bg-${animal.healthStatus === 'healthy' ? 'success' : 'warning'}">${animal.healthStatus || 'Healthy'}</span></p>
                                     </div>
                                     <div class="col-md-6">
                                         <h6>AI Health Recommendations</h6>
-                                        ${Object.entries(recommendations.schedule).map(([type, items]) => `
+                                        
+                                        ${recommendations.nutrition ? `
                                             <div class="card mb-3">
-                                                <div class="card-header">
-                                                    <h6 class="mb-0">${type.toUpperCase()}</h6>
+                                                <div class="card-header bg-primary text-white">
+                                                    <h6 class="mb-0"><i class="fas fa-seedling me-2"></i>Nutrition</h6>
                                                 </div>
                                                 <div class="card-body">
-                                                    ${items.map(item => `
-                                                        <div class="mb-3">
-                                                            <h6>${item.vaccine || item.treatment || item.supplement}</h6>
-                                                            <p><strong>Timing:</strong> ${item.timing}</p>
-                                                            <p><strong>Method:</strong> ${item.method}</p>
-                                                            <p><strong>Frequency:</strong> ${item.frequency || 'N/A'}</p>
-                                                            <p><strong>Conditions:</strong> ${item.conditions || 'N/A'}</p>
-                                                            <p><strong>Notes:</strong> ${item.notes}</p>
+                                                    <p><strong>Feed Type:</strong> ${recommendations.nutrition.feedType}</p>
+                                                    <p><strong>Daily Amount:</strong> ${recommendations.nutrition.dailyAmount}</p>
+                                                    <p><strong>Frequency:</strong> ${recommendations.nutrition.frequency}</p>
+                                                    <p><strong>Supplements:</strong> ${recommendations.nutrition.supplements ? recommendations.nutrition.supplements.join(', ') : 'None'}</p>
+                                                    <p><small class="text-muted">${recommendations.nutrition.notes}</small></p>
+                                                </div>
+                                            </div>
+                                        ` : ''}
+                                        
+                                        ${recommendations.vaccinations ? `
+                                            <div class="card mb-3">
+                                                <div class="card-header bg-success text-white">
+                                                    <h6 class="mb-0"><i class="fas fa-syringe me-2"></i>Vaccinations</h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    <p><strong>Next Vaccination:</strong> ${recommendations.vaccinations.nextVaccination}</p>
+                                                    <p><strong>Recommended:</strong></p>
+                                                    <ul>
+                                                        ${recommendations.vaccinations.recommended ? recommendations.vaccinations.recommended.map(item => `<li>${item}</li>`).join('') : ''}
+                                                    </ul>
+                                                    <p><small class="text-muted">${recommendations.vaccinations.critical}</small></p>
+                                                </div>
+                                            </div>
+                                        ` : ''}
+                                        
+                                        ${recommendations.healthChecks ? `
+                                            <div class="card mb-3">
+                                                <div class="card-header bg-info text-white">
+                                                    <h6 class="mb-0"><i class="fas fa-heartbeat me-2"></i>Health Checks</h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    <p><strong>Frequency:</strong> ${recommendations.healthChecks.frequency}</p>
+                                                    <p><strong>Checks to Perform:</strong></p>
+                                                    <ul>
+                                                        ${recommendations.healthChecks.checks ? recommendations.healthChecks.checks.map(check => `<li>${check}</li>`).join('') : ''}
+                                                    </ul>
+                                                    <p><small class="text-muted">${recommendations.healthChecks.signs}</small></p>
+                                                </div>
+                                            </div>
+                                        ` : ''}
+                                        
+                                        ${recommendations.tips && recommendations.tips.length > 0 ? `
+                                            <div class="card mb-3">
+                                                <div class="card-header bg-warning text-dark">
+                                                    <h6 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Tips</h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    <ul class="mb-0">
+                                                        ${recommendations.tips.map(tip => `<li>${tip}</li>`).join('')}
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        ` : ''}
+                                        
+                                        ${recommendations.warnings && recommendations.warnings.length > 0 ? `
+                                            <div class="card mb-3">
+                                                <div class="card-header bg-danger text-white">
+                                                    <h6 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Important Warnings</h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    ${recommendations.warnings.map(warning => `
+                                                        <div class="alert alert-${warning.type === 'critical' ? 'danger' : warning.type === 'warning' ? 'warning' : 'info'} mb-2">
+                                                            <strong>${warning.message}</strong><br>
+                                                            <small>${warning.impact}</small>
                                                         </div>
                                                     `).join('')}
                                                 </div>
                                             </div>
-                                        `).join('')}
+                                        ` : ''}
                                     </div>
                                 </div>
                             </div>
@@ -3671,6 +3856,103 @@
             if (modal) {
                 modal.hide();
             }
+        }
+
+        /**
+         * Show fallback livestock health advice when API is unavailable
+         * Provides basic recommendations based on animal data
+         */
+        function showFallbackLivestockHealthAdvice(animal) {
+            const animalType = animal.animalType || animal.type || 'Cattle';
+            const age = parseInt(animal.age) || 12;
+            const healthStatus = animal.healthStatus || 'healthy';
+            
+            // Generate basic fallback recommendations
+            const fallbackRecommendations = {
+                healthStatus: healthStatus,
+                nutrition: {
+                    feedType: 'Balanced feed mix',
+                    dailyAmount: '2-3% of body weight',
+                    frequency: '2-3 times daily',
+                    supplements: ['Mineral salt', 'Calcium supplement'],
+                    notes: 'Ensure access to clean water at all times'
+                },
+                vaccinations: {
+                    nextVaccination: 'In 3 months',
+                    recommended: ['Annual health check', 'Deworming every 6 months'],
+                    critical: 'Keep vaccination records up to date'
+                },
+                healthChecks: {
+                    frequency: 'Monthly',
+                    checks: ['Body condition score', 'Hoof health', 'Coat condition', 'Appetite'],
+                    signs: 'Watch for changes in behavior, appetite, or appearance'
+                },
+                warnings: [],
+                tips: [
+                    'Provide adequate shelter from extreme weather',
+                    'Ensure proper ventilation in housing',
+                    'Monitor feed quality and storage',
+                    'Keep detailed health records',
+                    'Quarantine new animals before introducing to herd',
+                    'Note: This is basic advice. For AI-powered recommendations, ensure backend is deployed.'
+                ]
+            };
+
+            // Add warnings based on health status
+            if (healthStatus !== 'healthy') {
+                fallbackRecommendations.warnings.push({
+                    type: 'critical',
+                    message: 'Animal requires immediate veterinary attention',
+                    impact: 'Delayed treatment can worsen condition'
+                });
+            }
+
+            fallbackRecommendations.warnings.push({
+                type: 'warning',
+                message: 'AI service unavailable - showing basic recommendations',
+                impact: 'These are general guidelines. For animal-specific advice, contact a veterinarian.'
+            });
+
+            // Adjust based on animal type
+            if (animalType.toLowerCase().includes('cattle') || animalType.toLowerCase().includes('cow')) {
+                fallbackRecommendations.nutrition.feedType = 'Cattle feed mix with hay';
+                fallbackRecommendations.nutrition.supplements.push('Salt lick', 'Mineral block');
+            } else if (animalType.toLowerCase().includes('pig') || animalType.toLowerCase().includes('swine')) {
+                fallbackRecommendations.nutrition.feedType = 'Swine feed mix';
+                fallbackRecommendations.nutrition.supplements.push('Vitamin D supplement');
+            } else if (animalType.toLowerCase().includes('chicken') || animalType.toLowerCase().includes('poultry')) {
+                fallbackRecommendations.nutrition.feedType = 'Poultry feed';
+                fallbackRecommendations.nutrition.dailyAmount = '100-150g per bird';
+                fallbackRecommendations.healthChecks.frequency = 'Weekly';
+            }
+
+            // Age-specific recommendations
+            if (age < 6) {
+                fallbackRecommendations.nutrition.notes = 'Young animal - requires higher protein feed';
+                fallbackRecommendations.vaccinations.recommended.push('Age-appropriate vaccinations');
+            } else if (age > 60) {
+                fallbackRecommendations.nutrition.notes = 'Senior animal - may require specialized diet';
+                fallbackRecommendations.healthChecks.frequency = 'Bi-weekly';
+                fallbackRecommendations.healthChecks.checks.push('Joint health', 'Dental check');
+            }
+
+            // Show modal with fallback data
+            showAILivestockAdviceModal(animal, fallbackRecommendations);
+            
+            // Add a notice that this is fallback data
+            setTimeout(() => {
+                const modalBody = document.querySelector('#aiLivestockAdviceModal .modal-body');
+                if (modalBody) {
+                    const notice = document.createElement('div');
+                    notice.className = 'alert alert-warning mt-3';
+                    notice.innerHTML = `
+                        <strong>⚠️ Note:</strong> AI health service is currently unavailable. 
+                        Showing basic recommendations. For AI-powered animal-specific health advice, 
+                        please ensure the backend service is deployed and try again.
+                    `;
+                    modalBody.insertBefore(notice, modalBody.firstChild);
+                }
+            }, 100);
         }
 
         // Filter management with URL persistence
