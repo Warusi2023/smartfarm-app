@@ -76,9 +76,9 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // --- Health & root endpoints ---
 
-// Health check (required by Railway)
-app.get('/api/health', (req, res) => {
-  res.status(200).json({
+// Health check (required by Railway) - includes database status
+app.get('/api/health', async (req, res) => {
+  const health = {
     ok: true,
     service: 'SmartFarm',
     ts: Date.now(),
@@ -86,8 +86,32 @@ app.get('/api/health', (req, res) => {
     version: '1.0.0',
     endpoints: {
       aiAdvisory: '/api/ai-advisory/crop-nutrition/:cropId'
+    },
+    database: {
+      connected: false,
+      poolSize: 0,
+      hasEnvVar: !!process.env.DATABASE_URL
     }
-  });
+  };
+
+  // Check database connection if pool exists
+  if (dbPool) {
+    try {
+      const result = await dbPool.query('SELECT NOW(), version()');
+      health.database.connected = true;
+      health.database.poolSize = dbPool.totalCount || 0;
+      health.database.timestamp = result.rows[0].now;
+      health.database.version = result.rows[0].version.split(' ')[0] + ' ' + result.rows[0].version.split(' ')[1];
+    } catch (error) {
+      health.database.error = error.message;
+      health.ok = false; // Mark as unhealthy if DB fails
+    }
+  } else {
+    health.database.error = 'Database pool not initialized';
+  }
+
+  const statusCode = health.ok ? 200 : 503;
+  res.status(statusCode).json(health);
 });
 
 // Test endpoint to verify AI advisory is available
