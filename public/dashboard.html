@@ -128,6 +128,8 @@
     <script src="js/performance-optimizer.js"></script>
     <script src="js/accessibility-enhancer.js"></script>
     <script src="js/modal-accessibility.js"></script>
+    <!-- QR Code Library - Required for QR code generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js"></script>
     <script src="js/ai-seed-predictor.js"></script>
     <script src="js/intelligent-weeding.js"></script>
     <script src="js/competitive-features.js"></script>
@@ -4010,10 +4012,72 @@
         
         // QR Code Generator Functions
         function generateQRCode() {
-            if (typeof qrTraceability !== 'undefined' && qrTraceability) {
-                qrTraceability.generateQRCode();
-            } else {
-                showErrorDialog('QR System Not Available', 'The QR Code system is not loaded. Please refresh the page and try again.');
+            try {
+                // Check if QR Traceability system is available
+                if (typeof qrTraceability !== 'undefined' && qrTraceability && typeof qrTraceability.generateQRCode === 'function') {
+                    qrTraceability.generateQRCode();
+                } else {
+                    // Fallback: Try to generate QR code directly if QRCode library is available
+                    if (typeof QRCode !== 'undefined') {
+                        const productSelect = document.getElementById('productSelect');
+                        const qrCodeDisplay = document.getElementById('qrCodeDisplay');
+                        
+                        if (!productSelect || !qrCodeDisplay) {
+                            showErrorDialog('QR Code Generator', 'Product selector or QR code display area not found. Please refresh the page.');
+                            return;
+                        }
+                        
+                        const selectedProductId = productSelect.value;
+                        if (!selectedProductId) {
+                            showErrorDialog('No Product Selected', 'Please select a product first before generating a QR code.');
+                            return;
+                        }
+                        
+                        // Get product data
+                        const selectedOption = productSelect.options[productSelect.selectedIndex];
+                        const productName = selectedOption.text || 'Product';
+                        
+                        // Generate traceability URL
+                        const traceabilityURL = `${window.location.origin}/traceability.html?product=${selectedProductId}`;
+                        
+                        // Clear previous QR code
+                        qrCodeDisplay.innerHTML = '';
+                        
+                        // Generate QR code using QRCode library
+                        QRCode.toCanvas(qrCodeDisplay, traceabilityURL, {
+                            width: 200,
+                            height: 200,
+                            color: {
+                                dark: '#000000',
+                                light: '#FFFFFF'
+                            },
+                            margin: 2
+                        }, (error) => {
+                            if (error) {
+                                console.error('QR Code generation error:', error);
+                                showErrorDialog('QR Code Generation Failed', `Failed to generate QR code: ${error.message}. Please try again.`);
+                                qrCodeDisplay.innerHTML = '<p class="text-danger">Error generating QR code</p>';
+                            } else {
+                                // Add product info below QR code
+                                const infoDiv = document.createElement('div');
+                                infoDiv.className = 'mt-3';
+                                infoDiv.innerHTML = `
+                                    <p class="mb-1"><strong>Product:</strong> ${productName}</p>
+                                    <p class="mb-1"><strong>Traceability URL:</strong></p>
+                                    <p class="small text-break"><a href="${traceabilityURL}" target="_blank">${traceabilityURL}</a></p>
+                                `;
+                                qrCodeDisplay.appendChild(infoDiv);
+                                showAlert('QR Code generated successfully!', 'success');
+                            }
+                        });
+                    } else {
+                        // QR Code library not loaded
+                        showErrorDialog('QR System Not Available', 'The QR Code library is not loaded. Please refresh the page and try again.');
+                    }
+                }
+            } catch (error) {
+                console.error('Error in generateQRCode:', error);
+                showErrorDialog('QR Code Generation Error', `An error occurred while generating the QR code: ${error.message}. Please try again.`);
             }
         }
 
@@ -15462,6 +15526,74 @@ INVENTORY SUMMARY:
 
         function showSuccessMessage(message, duration = 3000) {
             showAlert(message, 'success', duration);
+        }
+
+        /**
+         * Show error dialog modal
+         * @param {string} title - Dialog title
+         * @param {string} message - Error message
+         * @param {Function} callback - Optional callback after dialog closes
+         */
+        function showErrorDialog(title, message, callback = null) {
+            // Fallback to alert if Bootstrap is not available
+            if (typeof bootstrap === 'undefined') {
+                alert(`${title}\n\n${message}`);
+                if (callback && typeof callback === 'function') {
+                    callback();
+                }
+                return;
+            }
+
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.setAttribute('tabindex', '-1');
+            modal.setAttribute('aria-labelledby', 'errorDialogLabel');
+            modal.setAttribute('aria-hidden', 'true');
+            modal.innerHTML = `
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-danger text-white">
+                            <h5 class="modal-title" id="errorDialogLabel">
+                                <i class="fas fa-exclamation-triangle me-2"></i>${title}
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="mb-0">${message}</p>
+                        </div>
+                        <div class="modal-footer border-top">
+                            <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
+                                <i class="fas fa-times me-2"></i>Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Set up modal with accessibility helper if available
+            if (window.ModalAccessibility) {
+                window.ModalAccessibility.setupDynamicModal(modal);
+            }
+            
+            const bsModal = new bootstrap.Modal(modal);
+            
+            // Handle callback when modal is hidden
+            if (callback && typeof callback === 'function') {
+                modal.addEventListener('hidden.bs.modal', () => {
+                    callback();
+                });
+            }
+            
+            // Clean up modal when hidden
+            modal.addEventListener('hidden.bs.modal', () => {
+                if (modal.parentNode) {
+                    document.body.removeChild(modal);
+                }
+            });
+            
+            bsModal.show();
         }
 
         function showConfirmDialog(title, message, confirmText = 'Yes', cancelText = 'No', confirmCallback, cancelCallback = null) {
