@@ -89,9 +89,8 @@
             navElement.appendChild(navItem);
         });
         
-        // Add quick actions section
-        const quickActionsSection = createQuickActionsSection();
-        navElement.appendChild(quickActionsSection);
+        // Quick Actions section removed - already exists in sidebar HTML to avoid duplication
+        // The static Quick Actions in dashboard.html (Add Crop, Add Livestock, Feed Mix, Create Task) is kept
         
         console.log('✅ Dropdown navigation added to sidebar');
     }
@@ -205,26 +204,11 @@
     }
     
     // Create quick actions section
+    // DISABLED: Quick Actions already exist in sidebar HTML to avoid duplication
+    // The static Quick Actions section in dashboard.html is kept (Add Crop, Add Livestock, Feed Mix, Create Task)
     function createQuickActionsSection() {
-        const li = document.createElement('li');
-        li.className = 'nav-item mt-3';
-        
-        li.innerHTML = `
-            <div class="nav-link">
-                <i class="fas fa-bolt me-2"></i>
-                Quick Actions
-            </div>
-            <div class="ms-3">
-                ${navigationConfig.quickActions.map(action => `
-                    <a href="${action.href}" class="btn btn-sm btn-outline-light mb-1 me-1">
-                        <i class="${action.icon} me-1"></i>
-                        ${action.title}
-                    </a>
-                `).join('')}
-            </div>
-        `;
-        
-        return li;
+        // Function disabled to prevent duplicate Quick Actions sections
+        return null;
     }
     
     // Add keyboard shortcuts
