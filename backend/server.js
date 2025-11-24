@@ -345,6 +345,12 @@ try {
   app.use('/api/auth', authRoutes.getRouter());
   console.log('✅ Auth routes with email verification loaded');
   
+  // Load Subscription routes
+  const SubscriptionRoutes = require('./routes/subscriptions');
+  const subscriptionRoutes = new SubscriptionRoutes(dbPool);
+  app.use('/api/subscriptions', subscriptionRoutes.router);
+  console.log('✅ Subscription routes loaded');
+  
   // Load AI Advisory routes
   AIAdvisoryRoutes = require('./routes/ai-advisory');
   const aiAdvisoryRoutes = new AIAdvisoryRoutes();
