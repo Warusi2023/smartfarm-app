@@ -11,6 +11,7 @@ class SubscriptionRoutes {
     constructor(dbPool = null) {
         this.router = express.Router();
         this.dbHelpers = new DatabaseHelpers(dbPool);
+        this.authMiddleware = new AuthMiddleware(); // Instantiate AuthMiddleware
         this.setupRoutes();
     }
 
@@ -19,19 +20,19 @@ class SubscriptionRoutes {
         this.router.get('/plans', this.getPlans.bind(this));
         
         // Get user subscription (protected)
-        this.router.get('/current', AuthMiddleware.authenticate(), this.getCurrentSubscription.bind(this));
+        this.router.get('/current', this.authMiddleware.authenticate(), this.getCurrentSubscription.bind(this));
         
         // Subscribe to a plan (protected)
-        this.router.post('/subscribe', AuthMiddleware.authenticate(), this.subscribe.bind(this));
+        this.router.post('/subscribe', this.authMiddleware.authenticate(), this.subscribe.bind(this));
         
         // Cancel subscription (protected)
-        this.router.post('/cancel', AuthMiddleware.authenticate(), this.cancelSubscription.bind(this));
+        this.router.post('/cancel', this.authMiddleware.authenticate(), this.cancelSubscription.bind(this));
         
         // Update subscription (protected)
-        this.router.put('/update', AuthMiddleware.authenticate(), this.updateSubscription.bind(this));
+        this.router.put('/update', this.authMiddleware.authenticate(), this.updateSubscription.bind(this));
         
         // Get subscription history (protected)
-        this.router.get('/history', AuthMiddleware.authenticate(), this.getHistory.bind(this));
+        this.router.get('/history', this.authMiddleware.authenticate(), this.getHistory.bind(this));
     }
 
     /**

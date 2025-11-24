@@ -761,6 +761,25 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 3000;
 
 const server = app.listen(PORT, '0.0.0.0', () => {
+  console.log(`[SmartFarm] ✅ Server running on http://0.0.0.0:${PORT}`);
+  console.log(`[SmartFarm] 🌐 Local: http://localhost:${PORT}`);
+  console.log(`[SmartFarm] 📊 Health: http://localhost:${PORT}/api/health`);
+}).on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`\n❌ Port ${PORT} is already in use!`);
+    console.error('\n📋 Solutions:');
+    console.error(`1. Stop the other process using port ${PORT}`);
+    console.error(`2. Use a different port: PORT=3001 npm run dev`);
+    console.error(`3. Find and kill the process:`);
+    console.error(`   Windows: netstat -ano | findstr :${PORT}`);
+    console.error(`   Then: taskkill /PID <PID> /F`);
+    console.error(`   Mac/Linux: lsof -ti:${PORT} | xargs kill -9\n`);
+    process.exit(1);
+  } else {
+    console.error('❌ Server error:', err);
+    process.exit(1);
+  }
+});
   console.log('========================================');
   console.log(`[SmartFarm] 🚀 API Server Started`);
   console.log('========================================');
