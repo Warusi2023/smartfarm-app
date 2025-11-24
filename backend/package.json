@@ -6,6 +6,7 @@
   "type": "commonjs",
   "scripts": {
     "start": "node server.js",
+    "dev": "node server.js",
     "build": "echo \"(backend) nothing to build\"",
     "health": "node -e \"fetch('http://127.0.0.1:'+(process.env.PORT||3000)+'/api/health').then(r=>r.text()).then(console.log).catch(console.error)\"",
     "test:db": "node scripts/test-db-connection.js"
