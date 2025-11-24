@@ -17,6 +17,89 @@ class DatabaseHelpers {
     }
 
     /**
+     * Get user subscription
+     */
+    async getUserSubscription(userId) {
+        if (!this.dbPool) {
+            return null;
+        }
+        try {
+            const result = await this.dbPool.query(
+                'SELECT * FROM subscriptions WHERE user_id = $1 ORDER BY created_at DESC LIMIT 1',
+                [userId]
+            );
+            return result.rows.length > 0 ? result.rows[0] : null;
+        } catch (error) {
+            console.error('Database error getting subscription:', error);
+            return null;
+        }
+    }
+
+    /**
+     * Create or update subscription
+     */
+    async createOrUpdateSubscription(subscription) {
+        if (!this.dbPool) {
+            return subscription;
+        }
+        try {
+            const { userId, plan, status, startDate, nextBillingDate, autoRenew, paymentMethod } = subscription;
+            const result = await this.dbPool.query(
+                `INSERT INTO subscriptions (user_id, plan, status, start_date, next_billing_date, auto_renew, payment_method)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7)
+                 ON CONFLICT (user_id) 
+                 DO UPDATE SET plan = $2, status = $3, start_date = $4, next_billing_date = $5, auto_renew = $6, payment_method = $7, updated_at = NOW()
+                 RETURNING *`,
+                [userId, plan, status, startDate, nextBillingDate, autoRenew, paymentMethod]
+            );
+            return result.rows[0];
+        } catch (error) {
+            console.error('Database error creating/updating subscription:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Update subscription
+     */
+    async updateSubscription(userId, updates) {
+        if (!this.dbPool) {
+            return true;
+        }
+        try {
+            const fields = Object.keys(updates).map((key, index) => `${key} = $${index + 2}`).join(', ');
+            const values = [userId, ...Object.values(updates)];
+            await this.dbPool.query(
+                `UPDATE subscriptions SET ${fields}, updated_at = NOW() WHERE user_id = $1`,
+                values
+            );
+            return true;
+        } catch (error) {
+            console.error('Database error updating subscription:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Get subscription history
+     */
+    async getSubscriptionHistory(userId) {
+        if (!this.dbPool) {
+            return [];
+        }
+        try {
+            const result = await this.dbPool.query(
+                'SELECT * FROM subscriptions WHERE user_id = $1 ORDER BY created_at DESC',
+                [userId]
+            );
+            return result.rows;
+        } catch (error) {
+            console.error('Database error getting subscription history:', error);
+            return [];
+        }
+    }
+
+    /**
      * Find user by verification token
      */
     async findUserByVerificationToken(token) {

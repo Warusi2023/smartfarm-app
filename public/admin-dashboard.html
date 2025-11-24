@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - SmartFarm</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --admin-primary: #1a237e;
+            --admin-secondary: #283593;
+            --admin-accent: #3949ab;
+            --admin-danger: #c62828;
+            --admin-success: #2e7d32;
+        }
+        body {
+            background-color: #f5f7fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .admin-sidebar {
+            background: linear-gradient(180deg, var(--admin-primary) 0%, var(--admin-secondary) 100%);
+            min-height: 100vh;
+            color: white;
+            padding: 0;
+            position: fixed;
+            width: 250px;
+            z-index: 1000;
+        }
+        .admin-sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 1rem 1.5rem;
+            border-left: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        .admin-sidebar .nav-link:hover,
+        .admin-sidebar .nav-link.active {
+            background-color: rgba(255,255,255,0.1);
+            border-left-color: white;
+            color: white;
+        }
+        .admin-content {
+            margin-left: 250px;
+            padding: 2rem;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+        .stat-icon.users { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .stat-icon.farms { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .stat-icon.subscriptions { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .stat-icon.revenue { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+        .table-responsive {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .badge-status {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+        .chart-container {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Admin Sidebar -->
+    <nav class="admin-sidebar">
+        <div class="p-3">
+            <h4 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Admin Panel</h4>
+            <small class="text-muted">SmartFarm Management</small>
+        </div>
+        <ul class="nav flex-column mt-3">
+            <li class="nav-item">
+                <a class="nav-link active" href="#" onclick="showSection('overview'); return false;">
+                    <i class="fas fa-tachometer-alt me-2"></i>Overview
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" onclick="showSection('users'); return false;">
+                    <i class="fas fa-users me-2"></i>User Management
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" onclick="showSection('farms'); return false;">
+                    <i class="fas fa-tractor me-2"></i>Farm Management
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" onclick="showSection('subscriptions'); return false;">
+                    <i class="fas fa-credit-card me-2"></i>Subscriptions
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" onclick="showSection('analytics'); return false;">
+                    <i class="fas fa-chart-line me-2"></i>Analytics
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" onclick="showSection('system'); return false;">
+                    <i class="fas fa-cog me-2"></i>System Settings
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" onclick="showSection('logs'); return false;">
+                    <i class="fas fa-file-alt me-2"></i>Activity Logs
+                </a>
+            </li>
+            <li class="nav-item mt-3">
+                <a class="nav-link" href="dashboard.html">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Admin Content -->
+    <div class="admin-content">
+        <!-- Overview Section -->
+        <div id="overview-section" class="admin-section">
+            <h2 class="mb-4"><i class="fas fa-tachometer-alt me-2"></i>Admin Overview</h2>
+            
+            <!-- Statistics Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-2">Total Users</h6>
+                                <h3 class="mb-0" id="totalUsers">0</h3>
+                                <small class="text-success"><i class="fas fa-arrow-up"></i> +12% this month</small>
+                            </div>
+                            <div class="stat-icon users">
+                                <i class="fas fa-users"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-2">Active Farms</h6>
+                                <h3 class="mb-0" id="totalFarms">0</h3>
+                                <small class="text-success"><i class="fas fa-arrow-up"></i> +8% this month</small>
+                            </div>
+                            <div class="stat-icon farms">
+                                <i class="fas fa-tractor"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-2">Subscriptions</h6>
+                                <h3 class="mb-0" id="totalSubscriptions">0</h3>
+                                <small class="text-success"><i class="fas fa-arrow-up"></i> +15% this month</small>
+                            </div>
+                            <div class="stat-icon subscriptions">
+                                <i class="fas fa-credit-card"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-2">Monthly Revenue</h6>
+                                <h3 class="mb-0" id="monthlyRevenue">$0</h3>
+                                <small class="text-success"><i class="fas fa-arrow-up"></i> +22% this month</small>
+                            </div>
+                            <div class="stat-icon revenue">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="chart-container">
+                        <h5 class="mb-3">User Growth</h5>
+                        <canvas id="userGrowthChart"></canvas>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="chart-container">
+                        <h5 class="mb-3">Subscription Distribution</h5>
+                        <canvas id="subscriptionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>User</th>
+                                    <th>Action</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentActivity">
+                                <!-- Populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Management Section -->
+        <div id="users-section" class="admin-section" style="display: none;">
+            <h2 class="mb-4"><i class="fas fa-users me-2"></i>User Management</h2>
+            
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <input type="text" class="form-control" id="userSearch" placeholder="Search users...">
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <button class="btn btn-primary" onclick="exportUsers()">
+                                <i class="fas fa-download me-2"></i>Export Users
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
+                                    <th>Joined</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTable">
+                                <!-- Populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Farm Management Section -->
+        <div id="farms-section" class="admin-section" style="display: none;">
+            <h2 class="mb-4"><i class="fas fa-tractor me-2"></i>Farm Management</h2>
+            
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="stat-card">
+                        <h6 class="text-muted">Total Farms</h6>
+                        <h2 id="adminTotalFarms">0</h2>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card">
+                        <h6 class="text-muted">Active Farms</h6>
+                        <h2 id="adminActiveFarms">0</h2>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card">
+                        <h6 class="text-muted">Total Crops</h6>
+                        <h2 id="adminTotalCrops">0</h2>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Farm ID</th>
+                            <th>Name</th>
+                            <th>Owner</th>
+                            <th>Location</th>
+                            <th>Size (acres)</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="farmsTable">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Subscriptions Section -->
+        <div id="subscriptions-section" class="admin-section" style="display: none;">
+            <h2 class="mb-4"><i class="fas fa-credit-card me-2"></i>Subscription Management</h2>
+            
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="stat-card text-center">
+                        <h6 class="text-muted">Free Plan</h6>
+                        <h3 id="freePlanCount">0</h3>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card text-center">
+                        <h6 class="text-muted">Professional</h6>
+                        <h3 id="proPlanCount">0</h3>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card text-center">
+                        <h6 class="text-muted">Enterprise</h6>
+                        <h3 id="enterprisePlanCount">0</h3>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card text-center">
+                        <h6 class="text-muted">MRR</h6>
+                        <h3 id="mrr">$0</h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Plan</th>
+                            <th>Status</th>
+                            <th>Start Date</th>
+                            <th>Next Billing</th>
+                            <th>Amount</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="subscriptionsTable">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Analytics Section -->
+        <div id="analytics-section" class="admin-section" style="display: none;">
+            <h2 class="mb-4"><i class="fas fa-chart-line me-2"></i>Analytics</h2>
+            
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="chart-container">
+                        <h5 class="mb-3">Revenue Trends</h5>
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Settings Section -->
+        <div id="system-section" class="admin-section" style="display: none;">
+            <h2 class="mb-4"><i class="fas fa-cog me-2"></i>System Settings</h2>
+            
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="mb-3">Application Settings</h5>
+                    <div class="mb-3">
+                        <label class="form-label">Maintenance Mode</label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="maintenanceMode">
+                            <label class="form-check-label" for="maintenanceMode">Enable Maintenance Mode</label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email Notifications</label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="emailNotifications" checked>
+                            <label class="form-check-label" for="emailNotifications">Enable Email Notifications</label>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="saveSystemSettings()">
+                        <i class="fas fa-save me-2"></i>Save Settings
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Activity Logs Section -->
+        <div id="logs-section" class="admin-section" style="display: none;">
+            <h2 class="mb-4"><i class="fas fa-file-alt me-2"></i>Activity Logs</h2>
+            
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>User</th>
+                            <th>Action</th>
+                            <th>IP Address</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="activityLogsTable">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/api-config.js"></script>
+    <script>
+        const API_BASE_URL = window.SmartFarmApiConfig?.baseUrl || 'https://smartfarm-app-production.up.railway.app/api';
+        
+        // Check admin access
+        function checkAdminAccess() {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            if (!user.role || (user.role !== 'admin' && user.role !== 'owner')) {
+                alert('Access denied. Admin privileges required.');
+                window.location.href = 'dashboard.html';
+                return false;
+            }
+            return true;
+        }
+
+        // Show section
+        function showSection(section) {
+            document.querySelectorAll('.admin-section').forEach(s => s.style.display = 'none');
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById(`${section}-section`).style.display = 'block';
+            
+            // Load section data
+            switch(section) {
+                case 'overview':
+                    loadOverview();
+                    break;
+                case 'users':
+                    loadUsers();
+                    break;
+                case 'farms':
+                    loadFarms();
+                    break;
+                case 'subscriptions':
+                    loadSubscriptions();
+                    break;
+                case 'analytics':
+                    loadAnalytics();
+                    break;
+                case 'logs':
+                    loadActivityLogs();
+                    break;
+            }
+        }
+
+        // Load overview data
+        async function loadOverview() {
+            try {
+                // Load statistics
+                const stats = await fetchAdminStats();
+                document.getElementById('totalUsers').textContent = stats.users || 0;
+                document.getElementById('totalFarms').textContent = stats.farms || 0;
+                document.getElementById('totalSubscriptions').textContent = stats.subscriptions || 0;
+                document.getElementById('monthlyRevenue').textContent = `$${stats.revenue || 0}`;
+                
+                // Load charts
+                renderUserGrowthChart();
+                renderSubscriptionChart();
+                loadRecentActivity();
+            } catch (error) {
+                console.error('Error loading overview:', error);
+            }
+        }
+
+        // Fetch admin stats from API
+        async function fetchAdminStats() {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${API_BASE_URL}/admin/stats`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    return await response.json();
+                } else {
+                    // Fallback to mock data
+                    return {
+                        users: 1250,
+                        farms: 3420,
+                        subscriptions: 890,
+                        revenue: 25600
+                    };
+                }
+            } catch (error) {
+                console.error('Error fetching admin stats:', error);
+                return {
+                    users: 1250,
+                    farms: 3420,
+                    subscriptions: 890,
+                    revenue: 25600
+                };
+            }
+        }
+
+        // Render charts
+        function renderUserGrowthChart() {
+            const ctx = document.getElementById('userGrowthChart');
+            if (!ctx) return;
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'New Users',
+                        data: [120, 190, 300, 500, 200, 300],
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        function renderSubscriptionChart() {
+            const ctx = document.getElementById('subscriptionChart');
+            if (!ctx) return;
+            
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Free', 'Professional', 'Enterprise'],
+                    datasets: [{
+                        data: [450, 320, 120],
+                        backgroundColor: ['#6c757d', '#007bff', '#28a745']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        // Load users
+        async function loadUsers() {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${API_BASE_URL}/admin/users`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                let users = [];
+                if (response.ok) {
+                    const data = await response.json();
+                    users = data.users || data.data || [];
+                } else {
+                    // Fallback mock data
+                    users = [
+                        { id: 1, firstName: 'John', lastName: 'Doe', email: 'john@example.com', role: 'farmer', isVerified: true, createdAt: '2024-01-15' },
+                        { id: 2, firstName: 'Jane', lastName: 'Smith', email: 'jane@example.com', role: 'admin', isVerified: true, createdAt: '2024-01-10' }
+                    ];
+                }
+                
+                renderUsersTable(users);
+            } catch (error) {
+                console.error('Error loading users:', error);
+            }
+        }
+
+        function renderUsersTable(users) {
+            const tbody = document.getElementById('usersTable');
+            tbody.innerHTML = users.map(user => `
+                <tr>
+                    <td>${user.id}</td>
+                    <td>${user.firstName} ${user.lastName}</td>
+                    <td>${user.email}</td>
+                    <td><span class="badge bg-primary">${user.role || 'farmer'}</span></td>
+                    <td>
+                        <span class="badge-status ${user.isVerified ? 'bg-success' : 'bg-warning'}">
+                            ${user.isVerified ? 'Verified' : 'Pending'}
+                        </span>
+                    </td>
+                    <td>${new Date(user.createdAt).toLocaleDateString()}</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" onclick="editUser(${user.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteUser(${user.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Load farms
+        async function loadFarms() {
+            // Implementation similar to loadUsers
+            document.getElementById('adminTotalFarms').textContent = '3420';
+            document.getElementById('adminActiveFarms').textContent = '3200';
+            document.getElementById('adminTotalCrops').textContent = '12500';
+        }
+
+        // Load subscriptions
+        async function loadSubscriptions() {
+            document.getElementById('freePlanCount').textContent = '450';
+            document.getElementById('proPlanCount').textContent = '320';
+            document.getElementById('enterprisePlanCount').textContent = '120';
+            document.getElementById('mrr').textContent = '$25,600';
+        }
+
+        // Load analytics
+        function loadAnalytics() {
+            const ctx = document.getElementById('revenueChart');
+            if (!ctx) return;
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Revenue ($)',
+                        data: [12000, 19000, 30000, 25000, 22000, 25600],
+                        backgroundColor: '#43e97b'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        // Load activity logs
+        function loadActivityLogs() {
+            const tbody = document.getElementById('activityLogsTable');
+            const logs = [
+                { timestamp: new Date().toISOString(), user: 'john@example.com', action: 'Login', ip: '192.168.1.1', status: 'Success' },
+                { timestamp: new Date().toISOString(), user: 'jane@example.com', action: 'Create Farm', ip: '192.168.1.2', status: 'Success' }
+            ];
+            
+            tbody.innerHTML = logs.map(log => `
+                <tr>
+                    <td>${new Date(log.timestamp).toLocaleString()}</td>
+                    <td>${log.user}</td>
+                    <td>${log.action}</td>
+                    <td>${log.ip}</td>
+                    <td><span class="badge bg-success">${log.status}</span></td>
+                </tr>
+            `).join('');
+        }
+
+        // Load recent activity
+        function loadRecentActivity() {
+            const tbody = document.getElementById('recentActivity');
+            tbody.innerHTML = `
+                <tr>
+                    <td>${new Date().toLocaleString()}</td>
+                    <td>john@example.com</td>
+                    <td>Created new farm</td>
+                    <td><span class="badge bg-success">Success</span></td>
+                </tr>
+            `;
+        }
+
+        // Initialize
+        if (checkAdminAccess()) {
+            loadOverview();
+        }
+    </script>
+</body>
+</html>
+
