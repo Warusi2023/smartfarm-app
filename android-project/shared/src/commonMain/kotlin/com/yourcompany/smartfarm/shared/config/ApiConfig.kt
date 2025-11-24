@@ -16,9 +16,12 @@ object ApiConfig {
     
     // Base URLs for different environments
     private val baseUrls = mapOf(
-        Environment.DEVELOPMENT to "http://localhost:3000/api",
-        Environment.STAGING to "https://staging-api.smartfarm.com/api",
-        Environment.PRODUCTION to "https://api.smartfarm.com/api" // Production endpoint
+        // Development: Use 10.0.2.2 for Android Emulator to access localhost
+        Environment.DEVELOPMENT to "http://10.0.2.2:3000/api", // Android Emulator localhost
+        // Staging: Use Railway staging URL if you have one
+        Environment.STAGING to "https://smartfarm-app-production.up.railway.app/api",
+        // Production: Shared Railway backend (same as Web app)
+        Environment.PRODUCTION to "https://smartfarm-app-production.up.railway.app/api"
     )
     
     // Get the current base URL
