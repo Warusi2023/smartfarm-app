@@ -8908,7 +8908,9 @@
         }
 
         function displayFeedMixResults(result) {
-            if (!result || !result.requirements || !result.feedMix) {
+            console.log('Displaying feed mix results:', result);
+            
+            if (!result || !result.feedMix) {
                 console.error('Invalid result data for displayFeedMixResults:', result);
                 showAlert('Error displaying results: Invalid data', 'error');
                 return;
@@ -8917,46 +8919,112 @@
             // Display nutritional requirements
             const requirementsDiv = document.getElementById('nutritionalRequirements');
             if (requirementsDiv) {
-                if (result.requirements.dailyRequirements) {
-                    // New format with ranges
-                    requirementsDiv.innerHTML = `
-                        <div class="col-md-6">
-                            <div class="mb-2">
-                                <strong>Protein:</strong> ${result.requirements.dailyRequirements.protein.min}-${result.requirements.dailyRequirements.protein.max}%
-                            </div>
-                            <div class="mb-2">
-                                <strong>Energy:</strong> ${result.requirements.dailyRequirements.energy.min}-${result.requirements.dailyRequirements.energy.max} Mcal/kg
-                            </div>
-                            <div class="mb-2">
-                                <strong>Fiber:</strong> ${result.requirements.dailyRequirements.fiber.min}-${result.requirements.dailyRequirements.fiber.max}%
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-2">
-                                <strong>Calcium:</strong> ${result.requirements.dailyRequirements.calcium.min}-${result.requirements.dailyRequirements.calcium.max}%
-                            </div>
-                            <div class="mb-2">
-                                <strong>Phosphorus:</strong> ${result.requirements.dailyRequirements.phosphorus.min}-${result.requirements.dailyRequirements.phosphorus.max}%
-                            </div>
-                            <div class="mb-2">
-                                <strong>Daily Intake:</strong> ${result.requirements.dailyRequirements.dailyIntake.min}-${result.requirements.dailyRequirements.dailyIntake.max}% of body weight
-                            </div>
+                const reqs = result.requirements || {};
+                
+                // Check if requirements have nested dailyRequirements or are already normalized
+                const protein = reqs.dailyRequirements?.protein || reqs.protein;
+                const energy = reqs.dailyRequirements?.energy || reqs.energy;
+                const fiber = reqs.dailyRequirements?.fiber || reqs.fiber;
+                const calcium = reqs.dailyRequirements?.calcium || reqs.calcium;
+                const phosphorus = reqs.dailyRequirements?.phosphorus || reqs.phosphorus;
+                const dailyIntake = reqs.dailyRequirements?.dailyIntake || reqs.dailyIntake;
+                
+                // Format requirements display
+                let requirementsHTML = '<div class="col-md-6">';
+                
+                if (protein && typeof protein === 'object' && protein.min !== undefined) {
+                    requirementsHTML += `
+                        <div class="mb-2">
+                            <strong>Protein:</strong> ${protein.min}-${protein.max}%
                         </div>
                     `;
-                } else {
-                    // Fallback format
-                    requirementsDiv.innerHTML = `
-                        <div class="col-md-6">
-                            <p><strong>Daily Energy:</strong> ${result.requirements.energy ? result.requirements.energy.toFixed(2) : 'N/A'} MCal</p>
-                            <p><strong>Daily Protein:</strong> ${result.requirements.protein ? result.requirements.protein.toFixed(2) : 'N/A'} kg</p>
-                            <p><strong>Daily Fiber:</strong> ${result.requirements.fiber ? result.requirements.fiber.toFixed(2) : 'N/A'} kg</p>
-                        </div>
-                        <div class="col-md-6">
-                            <p><strong>Daily Calcium:</strong> ${result.requirements.calcium ? result.requirements.calcium.toFixed(2) : 'N/A'} g</p>
-                            <p><strong>Daily Phosphorus:</strong> ${result.requirements.phosphorus ? result.requirements.phosphorus.toFixed(2) : 'N/A'} g</p>
+                } else if (protein !== undefined) {
+                    requirementsHTML += `
+                        <div class="mb-2">
+                            <strong>Protein:</strong> ${typeof protein === 'number' ? protein.toFixed(2) : protein}%
                         </div>
                     `;
                 }
+                
+                if (energy && typeof energy === 'object' && energy.min !== undefined) {
+                    requirementsHTML += `
+                        <div class="mb-2">
+                            <strong>Energy:</strong> ${energy.min}-${energy.max} Mcal/kg
+                        </div>
+                    `;
+                } else if (energy !== undefined) {
+                    requirementsHTML += `
+                        <div class="mb-2">
+                            <strong>Energy:</strong> ${typeof energy === 'number' ? energy.toFixed(2) : energy} Mcal/kg
+                        </div>
+                    `;
+                }
+                
+                if (fiber && typeof fiber === 'object' && fiber.min !== undefined) {
+                    requirementsHTML += `
+                        <div class="mb-2">
+                            <strong>Fiber:</strong> ${fiber.min}-${fiber.max}%
+                        </div>
+                    `;
+                } else if (fiber !== undefined) {
+                    requirementsHTML += `
+                        <div class="mb-2">
+                            <strong>Fiber:</strong> ${typeof fiber === 'number' ? fiber.toFixed(2) : fiber}%
+                        </div>
+                    `;
+                }
+                
+                requirementsHTML += '</div><div class="col-md-6">';
+                
+                if (calcium && typeof calcium === 'object' && calcium.min !== undefined) {
+                    requirementsHTML += `
+                        <div class="mb-2">
+                            <strong>Calcium:</strong> ${calcium.min}-${calcium.max}%
+                        </div>
+                    `;
+                } else if (calcium !== undefined) {
+                    requirementsHTML += `
+                        <div class="mb-2">
+                            <strong>Calcium:</strong> ${typeof calcium === 'number' ? calcium.toFixed(2) : calcium}%
+                        </div>
+                    `;
+                }
+                
+                if (phosphorus && typeof phosphorus === 'object' && phosphorus.min !== undefined) {
+                    requirementsHTML += `
+                        <div class="mb-2">
+                            <strong>Phosphorus:</strong> ${phosphorus.min}-${phosphorus.max}%
+                        </div>
+                    `;
+                } else if (phosphorus !== undefined) {
+                    requirementsHTML += `
+                        <div class="mb-2">
+                            <strong>Phosphorus:</strong> ${typeof phosphorus === 'number' ? phosphorus.toFixed(2) : phosphorus}%
+                        </div>
+                    `;
+                }
+                
+                if (dailyIntake && typeof dailyIntake === 'object' && dailyIntake.min !== undefined) {
+                    requirementsHTML += `
+                        <div class="mb-2">
+                            <strong>Daily Intake:</strong> ${dailyIntake.min}-${dailyIntake.max}% of body weight
+                        </div>
+                    `;
+                } else if (dailyIntake !== undefined) {
+                    requirementsHTML += `
+                        <div class="mb-2">
+                            <strong>Daily Intake:</strong> ${typeof dailyIntake === 'number' ? dailyIntake.toFixed(2) : dailyIntake}% of body weight
+                        </div>
+                    `;
+                }
+                
+                requirementsHTML += '</div>';
+                
+                if (requirementsHTML === '<div class="col-md-6"></div><div class="col-md-6"></div>') {
+                    requirementsHTML = '<div class="col-12"><p class="text-muted">Nutritional requirements data not available.</p></div>';
+                }
+                
+                requirementsDiv.innerHTML = requirementsHTML;
             }
 
             // Display feed mix composition
