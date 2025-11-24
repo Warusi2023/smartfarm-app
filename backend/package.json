@@ -12,6 +12,7 @@
     "setup:db": "node scripts/setup-database.js",
     "setup:env": "node scripts/create-env-file.js",
     "test:db": "node scripts/test-db-connection.js",
+    "test:email": "node scripts/test-email-service.js",
     "test:email-verification": "node scripts/test-email-verification.js"
   },
   "engines": {
