@@ -16981,5 +16981,144 @@ INVENTORY SUMMARY:
 
         document.addEventListener('DOMContentLoaded', refreshSmartFarmInsights);
     </script>
+
+    <!-- Feed Mix Calculator Modal -->
+    <div class="modal fade modal-custom" id="feedMixCalculatorModal" tabindex="-1" aria-labelledby="feedMixCalculatorModalLabel" aria-modal="true" role="dialog">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="feedMixCalculatorModalLabel">
+                        <i class="fas fa-calculator me-2"></i>Feed Mix Calculator
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <!-- Animal Selection -->
+                        <div class="col-md-4">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h6><i class="fas fa-paw me-2"></i>Animal Information</h6>
+                                </div>
+                                <div class="card-body">
+                                    <form id="feedMixForm">
+                                        <div class="mb-3">
+                                            <label for="feedMixSpecies" class="form-label">Species</label>
+                                            <select class="form-select" id="feedMixSpecies" required onchange="updateFeedMixLifecycleOptions()">
+                                                <option value="">Select Species</option>
+                                                <option value="cattle">Cattle</option>
+                                                <option value="pigs">Pigs</option>
+                                                <option value="chickens">Chickens</option>
+                                                <option value="sheep">Sheep</option>
+                                                <option value="goats">Goats</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="feedMixLifecycle" class="form-label">Lifecycle Stage</label>
+                                            <select class="form-select" id="feedMixLifecycle" required>
+                                                <option value="">Select Lifecycle Stage</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="feedMixWeight" class="form-label">Current Weight (kg)</label>
+                                            <input type="number" class="form-control" id="feedMixWeight" step="0.1" required placeholder="Enter weight">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="feedMixAge" class="form-label">Age (months)</label>
+                                            <input type="number" class="form-control" id="feedMixAge" step="0.1" placeholder="Enter age (optional)">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="feedMixPurpose" class="form-label">Production Purpose</label>
+                                            <select class="form-select" id="feedMixPurpose">
+                                                <option value="">Select Purpose (Optional)</option>
+                                                <option value="dairy">Dairy</option>
+                                                <option value="beef">Beef</option>
+                                                <option value="breeding">Breeding</option>
+                                                <option value="meat">Meat</option>
+                                                <option value="eggs">Eggs</option>
+                                                <option value="wool">Wool</option>
+                                            </select>
+                                        </div>
+                                        <button type="button" class="btn btn-success w-100" onclick="calculateFeedMix()">
+                                            <i class="fas fa-calculator me-2"></i>Calculate Feed Mix
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Results -->
+                        <div class="col-md-8">
+                            <div id="feedMixResults" style="display: none;">
+                                <!-- Nutritional Requirements -->
+                                <div class="card mb-3">
+                                    <div class="card-header">
+                                        <h6><i class="fas fa-chart-bar me-2"></i>Nutritional Requirements</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row" id="nutritionalRequirements">
+                                            <!-- Requirements will be populated here -->
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Feed Mix Composition -->
+                                <div class="card mb-3">
+                                    <div class="card-header">
+                                        <h6><i class="fas fa-seedling me-2"></i>Recommended Feed Mix</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <h6>Composition (%)</h6>
+                                                <div id="feedMixComposition">
+                                                    <!-- Feed mix will be populated here -->
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <h6>Daily Intake & Costs</h6>
+                                                <div id="feedMixCosts">
+                                                    <!-- Costs will be populated here -->
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Recommendations -->
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6><i class="fas fa-lightbulb me-2"></i>Recommendations</h6>
+                                    </div>
+                                    <div class="card-body" id="feedMixRecommendations">
+                                        <!-- Recommendations will be populated here -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Instructions -->
+                            <div id="feedMixInstructions" class="text-center text-muted">
+                                <i class="fas fa-info-circle fa-3x mb-3"></i>
+                                <h5>Feed Mix Calculator</h5>
+                                <p>Enter your animal's information to get personalized feed mix recommendations based on:</p>
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-weight me-2"></i>Weight and age</li>
+                                    <li><i class="fas fa-leaf me-2"></i>Nutritional requirements</li>
+                                    <li><i class="fas fa-chart-line me-2"></i>Production purpose</li>
+                                    <li><i class="fas fa-dollar-sign me-2"></i>Cost optimization</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-success" onclick="printFeedMixReport()">
+                        <i class="fas fa-print me-2"></i>Print Report
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
