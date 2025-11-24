@@ -8780,8 +8780,203 @@
 
         // Dashboard Feed Mix Calculator Functions
         function showDashboardFeedMixCalculator() {
-            // Redirect to livestock management page with feed mix calculator
-            window.location.href = 'livestock-management.html#feedMix';
+            const modalElement = document.getElementById('feedMixCalculatorModal');
+            if (!modalElement) {
+                showAlert('Feed Mix Calculator modal not found. Please refresh the page.', 'error');
+                console.error('feedMixCalculatorModal not found');
+                return;
+            }
+            
+            try {
+                let modal = bootstrap.Modal.getInstance(modalElement);
+                if (!modal) {
+                    modal = new bootstrap.Modal(modalElement);
+                }
+                modal.show();
+            } catch (error) {
+                console.error('Error showing feed mix calculator modal:', error);
+                showAlert('Error opening Feed Mix Calculator. Please try again.', 'error');
+            }
+        }
+
+        function updateFeedMixLifecycleOptions() {
+            const species = document.getElementById('feedMixSpecies').value;
+            const lifecycleSelect = document.getElementById('feedMixLifecycle');
+            
+            if (!lifecycleSelect) {
+                console.error('feedMixLifecycle select not found');
+                return;
+            }
+            
+            // Clear existing options
+            lifecycleSelect.innerHTML = '<option value="">Select Lifecycle Stage</option>';
+            
+            if (species) {
+                if (window.FeedMixCalculator && typeof window.FeedMixCalculator.getLifecycleStages === 'function') {
+                    try {
+                        const stages = window.FeedMixCalculator.getLifecycleStages(species);
+                        if (stages && Array.isArray(stages)) {
+                            stages.forEach(stage => {
+                                const option = document.createElement('option');
+                                option.value = stage.value;
+                                option.textContent = stage.label;
+                                lifecycleSelect.appendChild(option);
+                            });
+                        }
+                    } catch (error) {
+                        console.error('Error getting lifecycle stages:', error);
+                    }
+                } else {
+                    console.warn('FeedMixCalculator not available or getLifecycleStages method not found');
+                    // Fallback: Add common lifecycle stages
+                    const commonStages = [
+                        { value: 'calf', label: 'Calf' },
+                        { value: 'heifer', label: 'Heifer' },
+                        { value: 'cow', label: 'Cow' },
+                        { value: 'bull', label: 'Bull' }
+                    ];
+                    commonStages.forEach(stage => {
+                        const option = document.createElement('option');
+                        option.value = stage.value;
+                        option.textContent = stage.label;
+                        lifecycleSelect.appendChild(option);
+                    });
+                }
+            }
+        }
+
+        async function calculateFeedMix() {
+            try {
+                // Get form values
+                const species = document.getElementById('feedMixSpecies').value;
+                const lifecycle = document.getElementById('feedMixLifecycle').value;
+                const weight = parseFloat(document.getElementById('feedMixWeight').value);
+                const age = document.getElementById('feedMixAge').value ? parseFloat(document.getElementById('feedMixAge').value) : null;
+                const purpose = document.getElementById('feedMixPurpose').value;
+
+                // Validate required fields
+                if (!species || !lifecycle || !weight) {
+                    showAlert('Please fill in Species, Lifecycle Stage, and Weight', 'error');
+                    return;
+                }
+
+                // Prepare animal data
+                const animalData = {
+                    species: species,
+                    weight: weight,
+                    age: age,
+                    lifecycle: lifecycle,
+                    purpose: purpose,
+                    productionStage: purpose
+                };
+
+                // Check if FeedMixCalculator is available
+                if (!window.FeedMixCalculator || typeof window.FeedMixCalculator.calculateFeedMix !== 'function') {
+                    showAlert('Feed Mix Calculator is not available. Please refresh the page.', 'error');
+                    console.error('FeedMixCalculator not available');
+                    return;
+                }
+
+                // Calculate feed mix
+                let result;
+                try {
+                    result = window.FeedMixCalculator.calculateFeedMix(animalData);
+                    if (!result || !result.feedMix) {
+                        throw new Error('Invalid result from FeedMixCalculator');
+                    }
+                } catch (calcError) {
+                    console.error('Error calculating feed mix:', calcError);
+                    showAlert('Error calculating feed mix: ' + calcError.message, 'error');
+                    return;
+                }
+                
+                // Display results
+                displayFeedMixResults(result);
+                
+                // Show results section
+                const resultsDiv = document.getElementById('feedMixResults');
+                const instructionsDiv = document.getElementById('feedMixInstructions');
+                if (resultsDiv) resultsDiv.style.display = 'block';
+                if (instructionsDiv) instructionsDiv.style.display = 'none';
+                
+                showAlert('Feed mix calculated successfully!', 'success');
+                
+            } catch (error) {
+                console.error('Error calculating feed mix:', error);
+                showAlert('Error calculating feed mix: ' + error.message, 'error');
+            }
+        }
+
+        function displayFeedMixResults(result) {
+            if (!result || !result.requirements || !result.feedMix) {
+                console.error('Invalid result data for displayFeedMixResults:', result);
+                showAlert('Error displaying results: Invalid data', 'error');
+                return;
+            }
+
+            // Display nutritional requirements
+            const requirementsDiv = document.getElementById('nutritionalRequirements');
+            if (requirementsDiv) {
+                requirementsDiv.innerHTML = `
+                    <div class="col-md-6">
+                        <p><strong>Daily Energy:</strong> ${result.requirements.energy.toFixed(2)} MCal</p>
+                        <p><strong>Daily Protein:</strong> ${result.requirements.protein.toFixed(2)} kg</p>
+                        <p><strong>Daily Fiber:</strong> ${result.requirements.fiber.toFixed(2)} kg</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Daily Calcium:</strong> ${result.requirements.calcium.toFixed(2)} g</p>
+                        <p><strong>Daily Phosphorus:</strong> ${result.requirements.phosphorus.toFixed(2)} g</p>
+                        <p><strong>Daily Vitamins:</strong> ${result.requirements.vitamins || 'As per standard'}</p>
+                    </div>
+                `;
+            }
+
+            // Display feed mix composition
+            const compositionDiv = document.getElementById('feedMixComposition');
+            if (compositionDiv && result.feedMix) {
+                compositionDiv.innerHTML = Object.entries(result.feedMix).map(([ingredient, percentage]) => `
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between">
+                            <span>${ingredient}</span>
+                            <strong>${percentage.toFixed(1)}%</strong>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-success" style="width: ${percentage}%"></div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // Display costs
+            const costsDiv = document.getElementById('feedMixCosts');
+            if (costsDiv && result.totalCost) {
+                costsDiv.innerHTML = `
+                    <p><strong>Daily Intake:</strong> ${result.dailyIntake.recommended.toFixed(2)} kg</p>
+                    <p><strong>Daily Cost:</strong> $${result.totalCost.dailyCost.toFixed(2)}</p>
+                    <p><strong>Monthly Cost:</strong> $${result.totalCost.monthlyCost.toFixed(2)}</p>
+                    <p><strong>Annual Cost:</strong> $${result.totalCost.annualCost.toFixed(2)}</p>
+                `;
+            }
+
+            // Display recommendations
+            const recommendationsDiv = document.getElementById('feedMixRecommendations');
+            if (recommendationsDiv && result.recommendations) {
+                recommendationsDiv.innerHTML = `
+                    <ul class="list-unstyled">
+                        ${result.recommendations.map(rec => `<li><i class="fas fa-check-circle text-success me-2"></i>${rec}</li>`).join('')}
+                    </ul>
+                `;
+            }
+        }
+
+        function printFeedMixReport() {
+            const resultsDiv = document.getElementById('feedMixResults');
+            if (!resultsDiv || resultsDiv.style.display === 'none') {
+                showAlert('Please calculate a feed mix first before printing.', 'warning');
+                return;
+            }
+
+            window.print();
         }
 
         function editLivestock(id) {
