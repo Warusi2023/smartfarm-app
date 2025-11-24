@@ -1,0 +1,27 @@
+# Gitleaks configuration for SmartFarm
+title = "SmartFarm Secret Detection"
+
+[extend]
+# Use default Gitleaks rules
+useDefault = true
+
+[allowlist]
+description = "Allowlist for SmartFarm"
+paths = [
+  '''\.git/''',
+  '''node_modules/''',
+  '''\.env\.example''',
+  '''\.env\.local''',
+  '''public/''',
+  '''android-project/''',
+  '''\.github/workflows/.*\.yml''',
+]
+
+[[allowlist.regexes]]
+regex = '''^[A-Z_]+=.*'''
+description = "Allow environment variable declarations"
+
+[[allowlist.regexes]]
+regex = '''example|sample|test|demo'''
+description = "Allow example/test values"
+
