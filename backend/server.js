@@ -761,9 +761,14 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 3000;
 
 const server = app.listen(PORT, '0.0.0.0', () => {
-  console.log(`[SmartFarm] ✅ Server running on http://0.0.0.0:${PORT}`);
-  console.log(`[SmartFarm] 🌐 Local: http://localhost:${PORT}`);
-  console.log(`[SmartFarm] 📊 Health: http://localhost:${PORT}/api/health`);
+  console.log('========================================');
+  console.log(`[SmartFarm] 🚀 API Server Started`);
+  console.log('========================================');
+  console.log(`[SmartFarm] 📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`[SmartFarm] 🌐 Listening on: 0.0.0.0:${PORT}`);
+  console.log(`[SmartFarm] 🔗 Health check: http://localhost:${PORT}/api/health`);
+  console.log(`[SmartFarm] 🛡️  Allowed origins (${ALL_ALLOWED_ORIGINS.length}):`, ALL_ALLOWED_ORIGINS);
+  console.log('========================================');
 }).on('error', (err) => {
   if (err.code === 'EADDRINUSE') {
     console.error(`\n❌ Port ${PORT} is already in use!`);
@@ -779,15 +784,6 @@ const server = app.listen(PORT, '0.0.0.0', () => {
     console.error('❌ Server error:', err);
     process.exit(1);
   }
-});
-  console.log('========================================');
-  console.log(`[SmartFarm] 🚀 API Server Started`);
-  console.log('========================================');
-  console.log(`[SmartFarm] 📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`[SmartFarm] 🌐 Listening on: 0.0.0.0:${PORT}`);
-  console.log(`[SmartFarm] 🔗 Health check: http://localhost:${PORT}/api/health`);
-  console.log(`[SmartFarm] 🛡️  Allowed origins (${ALL_ALLOWED_ORIGINS.length}):`, ALL_ALLOWED_ORIGINS);
-  console.log('========================================');
 });
 
 // Graceful shutdown
