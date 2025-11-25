@@ -1273,18 +1273,27 @@
                 </div>
             </div>
 
-            <div class="row mt-4">
+            <div class="row mt-2">
                 <div class="col-12">
                     <div class="card shadow-sm">
-                        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
-                            <span><i class="fas fa-lightbulb me-2"></i>SmartFarm Insights</span>
-                            <button class="btn btn-sm btn-light" onclick="refreshSmartFarmInsights()">
-                                <i class="fas fa-sync-alt me-1"></i>Refresh
-                            </button>
+                        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center py-2">
+                            <span class="d-flex align-items-center">
+                                <i class="fas fa-lightbulb me-2"></i>SmartFarm Insights
+                            </span>
+                            <div>
+                                <button class="btn btn-sm btn-light me-2" onclick="refreshSmartFarmInsights()" title="Refresh Insights">
+                                    <i class="fas fa-sync-alt"></i>
+                                </button>
+                                <button class="btn btn-sm btn-light" type="button" data-bs-toggle="collapse" data-bs-target="#insightsCollapse" aria-expanded="false" aria-controls="insightsCollapse" id="insightsToggleBtn" title="Toggle Insights">
+                                    <i class="fas fa-chevron-down" id="insightsToggleIcon"></i>
+                                </button>
+                            </div>
                         </div>
-                        <div class="card-body">
-                            <p class="text-muted mb-3">Personalized recommendations based on your farm profile and current goals.</p>
-                            <div id="smartFarmInsights" class="row gy-3"></div>
+                        <div class="collapse" id="insightsCollapse">
+                            <div class="card-body py-2">
+                                <p class="text-muted mb-2 small">Personalized recommendations based on your farm profile and current goals.</p>
+                                <div id="smartFarmInsights" class="row gy-2"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -17103,7 +17112,25 @@ INVENTORY SUMMARY:
             `;
         }
 
-        document.addEventListener('DOMContentLoaded', refreshSmartFarmInsights);
+        // Handle insights panel collapse toggle icon
+        document.addEventListener('DOMContentLoaded', function() {
+            refreshSmartFarmInsights();
+            
+            const insightsCollapse = document.getElementById('insightsCollapse');
+            const toggleIcon = document.getElementById('insightsToggleIcon');
+            
+            if (insightsCollapse && toggleIcon) {
+                insightsCollapse.addEventListener('show.bs.collapse', function() {
+                    toggleIcon.classList.remove('fa-chevron-down');
+                    toggleIcon.classList.add('fa-chevron-up');
+                });
+                
+                insightsCollapse.addEventListener('hide.bs.collapse', function() {
+                    toggleIcon.classList.remove('fa-chevron-up');
+                    toggleIcon.classList.add('fa-chevron-down');
+                });
+            }
+        });
     </script>
 
     <!-- Feed Mix Calculator Modal -->
