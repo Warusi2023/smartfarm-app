@@ -228,24 +228,32 @@
     <!-- Pricing Plans -->
     <div class="container py-5">
         <div class="row g-4">
-            <!-- Free Plan -->
+            <!-- Free Trial Plan -->
             <div class="col-lg-4 col-md-6">
                 <div class="pricing-card h-100">
                     <div class="card-body text-center p-4">
-                        <h3 class="card-title">Free</h3>
-                        <p class="text-muted">Perfect for getting started</p>
-                        <div class="pricing-price">$0<span class="pricing-period">/month</span></div>
+                        <h3 class="card-title">30-Day Free Trial</h3>
+                        <p class="text-muted">Try all Professional features</p>
+                        <div class="pricing-price">$0<span class="pricing-period">/30 days</span></div>
+                        <div class="alert alert-info mt-3 mb-3">
+                            <small><strong>No credit card required</strong><br>Full access to all Professional features</small>
+                        </div>
                         <ul class="feature-list text-start">
-                            <li><i class="fas fa-check"></i> Up to 2 farms</li>
-                            <li><i class="fas fa-check"></i> Basic crop management</li>
-                            <li><i class="fas fa-check"></i> Simple livestock tracking</li>
-                            <li><i class="fas fa-check"></i> Basic weather data</li>
-                            <li><i class="fas fa-check"></i> Email support</li>
-                            <li><i class="fas fa-check"></i> Mobile app access</li>
+                            <li><i class="fas fa-check"></i> <strong>All Professional features unlocked</strong></li>
+                            <li><i class="fas fa-check"></i> No farm limitations</li>
+                            <li><i class="fas fa-check"></i> AI-powered insights</li>
+                            <li><i class="fas fa-check"></i> Complete crop & livestock management</li>
+                            <li><i class="fas fa-check"></i> Weather forecasting</li>
+                            <li><i class="fas fa-check"></i> Geofencing & GPS tracking</li>
+                            <li><i class="fas fa-check"></i> Financial management</li>
+                            <li><i class="fas fa-check"></i> Inventory management</li>
+                            <li><i class="fas fa-check"></i> Priority support</li>
+                            <li><i class="fas fa-check"></i> API access</li>
                         </ul>
-                        <button class="btn btn-outline-primary pricing-btn" onclick="selectPlan('free')">
-                            Get Started Free
+                        <button class="btn btn-outline-primary pricing-btn" onclick="selectPlan('trial')">
+                            Start Free Trial
                         </button>
+                        <p class="text-muted mt-2 small">After 30 days, subscription required</p>
                     </div>
                 </div>
             </div>
@@ -270,7 +278,7 @@
                             <li><i class="fas fa-check"></i> API access</li>
                         </ul>
                         <button class="btn btn-success pricing-btn" onclick="selectPlan('professional')">
-                            Start Professional
+                            Subscribe Now
                         </button>
                     </div>
                 </div>
@@ -423,8 +431,9 @@
             localStorage.setItem('selectedPlan', plan);
             
             // Redirect to checkout or registration
-            if (plan === 'free') {
-                window.location.href = 'register.html?plan=free';
+            if (plan === 'trial') {
+                // Start free trial - redirect to registration
+                window.location.href = 'register.html?plan=trial';
             } else if (plan === 'professional') {
                 window.location.href = 'checkout.html?plan=professional';
             } else if (plan === 'enterprise') {

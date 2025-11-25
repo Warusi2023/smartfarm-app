@@ -16,6 +16,7 @@ class AuthRoutes {
         this.authMiddleware = new AuthMiddleware();
         this.emailService = new EmailService();
         this.dbHelpers = new DatabaseHelpers(dbPool);
+        this.dbPool = dbPool; // Store for subscription service
         
         this.setupRoutes();
     }
@@ -109,6 +110,23 @@ class AuthRoutes {
                 verificationExpires: verificationExpires
             });
 
+            // Create 30-day trial subscription
+            let trialInfo = null;
+            try {
+                const { SubscriptionService } = require('../services/subscriptionService');
+                const subscriptionService = new SubscriptionService(this.dbPool);
+                const trialResult = await subscriptionService.createTrialSubscription(user.id);
+                trialInfo = {
+                    active: true,
+                    endsAt: trialResult.trialEnd.toISOString(),
+                    daysRemaining: 30
+                };
+                console.log(`✅ Trial subscription created for user ${user.id}`);
+            } catch (trialError) {
+                console.error('⚠️ Failed to create trial subscription:', trialError);
+                // Don't fail registration if trial creation fails, but log it
+            }
+
             // Send verification email
             const emailSent = await this.emailService.sendVerificationEmail(
                 email,
@@ -137,7 +155,8 @@ class AuthRoutes {
                         isVerified: false
                     },
                     emailSent: emailSent,
-                    requiresVerification: true
+                    requiresVerification: true,
+                    trial: trialInfo
                 }
             });
 
@@ -206,6 +225,40 @@ class AuthRoutes {
                 });
             }
 
+            // Check subscription/trial status using subscription service
+            const { SubscriptionService } = require('../services/subscriptionService');
+            const subscriptionService = new SubscriptionService(this.dbPool);
+            const accessStatus = await subscriptionService.getUserAccessStatus(user.id);
+            
+            if (!accessStatus.valid) {
+                if (accessStatus.reason === 'TRIAL_EXPIRED') {
+                    return res.status(403).json({
+                        success: false,
+                        error: 'Your free trial has ended. Please subscribe to continue using SmartFarm.',
+                        code: 'TRIAL_EXPIRED',
+                        message: 'Your 30-day free trial has expired. Please subscribe to Professional ($29/month) or Enterprise ($99/month) to continue.',
+                        requiresSubscription: true,
+                        trialEnd: accessStatus.trialEnd
+                    });
+                } else if (accessStatus.reason === 'NO_SUBSCRIPTION') {
+                    // This shouldn't happen for new users (trial is set on registration)
+                    // But handle it gracefully - create trial if missing
+                    try {
+                        await subscriptionService.createTrialSubscription(user.id);
+                        console.log(`✅ Created missing trial subscription for user ${user.id}`);
+                    } catch (trialError) {
+                        console.error('Failed to create missing trial:', trialError);
+                    }
+                } else {
+                    return res.status(403).json({
+                        success: false,
+                        error: 'Active subscription or trial required',
+                        code: accessStatus.reason,
+                        requiresSubscription: true
+                    });
+                }
+            }
+
             // Update last login
             await this.updateLastLogin(user.id);
 
@@ -214,6 +267,21 @@ class AuthRoutes {
 
             // Create session
             await this.authService.createSession(user.id, token);
+
+            // Include subscription/trial info in response
+            let subscriptionData = null;
+            if (accessStatus.valid) {
+                subscriptionData = {
+                    plan: accessStatus.planKey,
+                    planName: accessStatus.planName,
+                    status: accessStatus.isTrial ? 'trialing' : 'active',
+                    type: accessStatus.isTrial ? 'trial' : 'subscription',
+                    level: accessStatus.level,
+                    maxFarms: accessStatus.maxFarms,
+                    daysRemaining: accessStatus.daysRemaining,
+                    trialEnd: accessStatus.trialEnd
+                };
+            }
 
             res.json({
                 success: true,
@@ -226,7 +294,8 @@ class AuthRoutes {
                         lastName: user.lastName,
                         role: user.role
                     },
-                    token
+                    token,
+                    subscription: subscriptionData
                 }
             });
 

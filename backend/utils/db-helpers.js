@@ -177,7 +177,7 @@ class DatabaseHelpers {
     }
 
     /**
-     * Create user with verification token
+     * Create user with verification token and initialize 30-day trial
      */
     async createUserWithVerification(userData) {
         if (!this.dbPool) {
@@ -190,11 +190,15 @@ class DatabaseHelpers {
         }
 
         try {
+            // Calculate trial end date (30 days from now)
+            const trialEnd = new Date();
+            trialEnd.setDate(trialEnd.getDate() + 30);
+
             const result = await this.dbPool.query(
                 `INSERT INTO users (
                     email, password_hash, first_name, last_name, phone, country,
-                    verification_token, verification_expires, is_verified, role
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+                    verification_token, verification_expires, is_verified, role, trial_end
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
                 RETURNING *`,
                 [
                     userData.email,
@@ -206,7 +210,8 @@ class DatabaseHelpers {
                     userData.verificationToken,
                     userData.verificationExpires,
                     false, // is_verified
-                    userData.role || 'farmer'
+                    userData.role || 'farmer',
+                    trialEnd // Set trial_end to 30 days from now
                 ]
             );
 

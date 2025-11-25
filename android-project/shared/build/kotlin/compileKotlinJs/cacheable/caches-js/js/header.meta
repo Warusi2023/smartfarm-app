@@ -1,2 +1,0 @@
-
-<SmartFarm:shared>:com.smartfarm.shared.di:!com.smartfarm.shared.domain.model:&com.smartfarm.shared.domain.repository:#com.smartfarm.shared.domain.usecase:'com.yourcompany.smartfarm.shared.config:'com.yourcompany.smartfarm.shared.models:)com.yourcompany.smartfarm.shared.services:#com.yourcompany.smartfarm.shared.ui:+com.yourcompany.smartfarm.shared.ui.screens:&com.yourcompany.smartfarm.shared.utils

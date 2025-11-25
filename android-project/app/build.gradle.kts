@@ -75,7 +75,14 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("debug")
+            // Use release signing config if keystore is configured, otherwise fallback to debug
+            val releaseSigningConfig = signingConfigs.getByName("release")
+            if (releaseSigningConfig.storeFile != null && releaseSigningConfig.storeFile!!.exists()) {
+                signingConfig = releaseSigningConfig
+            } else {
+                println("⚠️  WARNING: Release signing config not found. Using debug signing.")
+                signingConfig = signingConfigs.getByName("debug")
+            }
         }
         create("internal") {
             isDebuggable = true

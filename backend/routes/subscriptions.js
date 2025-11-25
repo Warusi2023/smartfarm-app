@@ -41,24 +41,30 @@ class SubscriptionRoutes {
     async getPlans(req, res) {
         try {
             const plans = {
-                free: {
-                    id: 'free',
-                    name: 'Free Plan',
+                trial: {
+                    id: 'trial',
+                    name: '30-Day Free Trial',
                     price: 0,
-                    billingCycle: 'monthly',
+                    duration: 30,
+                    billingCycle: 'trial',
                     features: [
-                        'Up to 2 farms',
-                        'Basic crop management',
-                        'Simple livestock tracking',
-                        'Basic weather data',
-                        'Email support',
-                        'Mobile app access'
+                        'All Professional features unlocked',
+                        'No farm limitations',
+                        'AI-powered insights',
+                        'Complete crop & livestock management',
+                        'Weather forecasting',
+                        'Geofencing & GPS tracking',
+                        'Financial management',
+                        'Inventory management',
+                        'Priority support',
+                        'API access'
                     ],
                     limits: {
-                        maxFarms: 2,
-                        maxUsers: 1,
-                        apiCallsPerMonth: 1000
-                    }
+                        maxFarms: -1, // Unlimited during trial
+                        maxUsers: 5,
+                        apiCallsPerMonth: 10000
+                    },
+                    note: 'After 30 days, subscription required to continue'
                 },
                 professional: {
                     id: 'professional',
@@ -132,16 +138,55 @@ class SubscriptionRoutes {
             // Get subscription from database
             const subscription = await this.dbHelpers.getUserSubscription(userId);
             
+            // Get user's trial_end from users table
+            const userTrialInfo = await this.dbHelpers.getUserTrialInfo(userId);
+            
             if (!subscription) {
-                // Default to free plan
+                // Check if user is in trial period
+                if (userTrialInfo && userTrialInfo.trial_end) {
+                    const trialEnd = new Date(userTrialInfo.trial_end);
+                    const now = new Date();
+                    
+                    if (trialEnd > now) {
+                        // Still in trial
+                        const daysRemaining = Math.ceil((trialEnd - now) / (1000 * 60 * 60 * 24));
+                        return res.json({
+                            success: true,
+                            data: {
+                                plan: 'trial',
+                                status: 'active',
+                                trialEnd: trialEnd.toISOString(),
+                                daysRemaining: daysRemaining,
+                                startDate: userTrialInfo.created_at || new Date().toISOString(),
+                                nextBillingDate: null,
+                                autoRenew: false,
+                                requiresSubscription: true
+                            }
+                        });
+                    } else {
+                        // Trial expired
+                        return res.json({
+                            success: true,
+                            data: {
+                                plan: null,
+                                status: 'trial_expired',
+                                trialEnd: trialEnd.toISOString(),
+                                daysRemaining: 0,
+                                requiresSubscription: true,
+                                message: 'Your free trial has ended. Please subscribe to continue using SmartFarm.'
+                            }
+                        });
+                    }
+                }
+                
+                // No trial info - likely new user, should start trial
                 return res.json({
                     success: true,
                     data: {
-                        plan: 'free',
-                        status: 'active',
-                        startDate: new Date().toISOString(),
-                        nextBillingDate: null,
-                        autoRenew: false
+                        plan: null,
+                        status: 'no_subscription',
+                        requiresSubscription: true,
+                        message: 'Please start your free trial or subscribe to a plan.'
                     }
                 });
             }
@@ -216,7 +261,7 @@ class SubscriptionRoutes {
             
             const subscription = await this.dbHelpers.getUserSubscription(userId);
             
-            if (!subscription || subscription.plan === 'free') {
+            if (!subscription || !['professional', 'enterprise'].includes(subscription.plan)) {
                 return res.status(400).json({
                     success: false,
                     error: 'No active paid subscription to cancel',
@@ -235,8 +280,9 @@ class SubscriptionRoutes {
                 success: true,
                 message: 'Subscription cancelled successfully',
                 data: {
-                    plan: 'free',
-                    status: 'cancelled'
+                    plan: null,
+                    status: 'cancelled',
+                    message: 'Your subscription has been cancelled. You will retain access until the end of your current billing period.'
                 }
             });
         } catch (error) {
@@ -257,10 +303,10 @@ class SubscriptionRoutes {
             const userId = req.user.id;
             const { planId, autoRenew } = req.body;
 
-            if (!planId || !['free', 'professional', 'enterprise'].includes(planId)) {
+            if (!planId || !['professional', 'enterprise'].includes(planId)) {
                 return res.status(400).json({
                     success: false,
-                    error: 'Invalid plan ID',
+                    error: 'Invalid plan ID. Must subscribe to Professional or Enterprise plan.',
                     code: 'INVALID_PLAN'
                 });
             }
