@@ -304,6 +304,12 @@ composer.lock
 .local/
 local/
 
+# SSH keys (should never be committed)
+.ssh/
+*.pem
+*.key
+id_*
+
 # Kotlin/Android project (not part of JS/TS app)
 web-project/web/
 web-project/kotlin-js-store/

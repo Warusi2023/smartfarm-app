@@ -80,31 +80,126 @@
         })();
     </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- QR Code Library - Hosted locally for reliability -->
-    <script src="js/qrcode.min.js"></script>
+    <!-- QR Code Library - Load from CDN with local fallback check -->
     <script>
-        // Verify QR Code library loaded successfully
-        document.addEventListener('DOMContentLoaded', function() {
-            if (typeof QRCode !== 'undefined') {
-                console.log('✅ QR Code library loaded successfully from local file');
-            } else {
-                console.error('❌ QR Code library failed to load from local file');
-                // Show user-friendly error
+        (function() {
+            // Function to load QR Code library from CDN
+            function loadQRCodeFromCDN() {
+                console.warn('Local QR code library not found, loading from CDN...');
+                // Try multiple CDN sources for node-qrcode library
+                const cdnSources = [
+                    'https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js',
+                    'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js',
+                    'https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js'
+                ];
+                
+                let currentIndex = 0;
+                let errorShown = false;
+                
+                function tryNextCDN() {
+                    if (currentIndex >= cdnSources.length) {
+                        if (!errorShown) {
+                            console.error('❌ All QR Code library CDN sources failed');
+                            showQRCodeError();
+                            errorShown = true;
+                        }
+                        return;
+                    }
+                    
+                    const script = document.createElement('script');
+                    script.src = cdnSources[currentIndex];
+                    script.onload = function() {
+                        console.log('✅ QR Code library loaded successfully from CDN:', cdnSources[currentIndex]);
+                        // Hide error if it was shown
+                        const existingError = document.querySelector('.alert-warning');
+                        if (existingError && existingError.textContent.includes('QR Code Library Missing')) {
+                            existingError.remove();
+                        }
+                    };
+                    script.onerror = function() {
+                        console.warn('CDN source failed:', cdnSources[currentIndex]);
+                        currentIndex++;
+                        tryNextCDN();
+                    };
+                    document.head.appendChild(script);
+                }
+                
+                tryNextCDN();
+            }
+            
+            function showQRCodeError() {
+                // Check if error already exists
+                const existingError = document.querySelector('.alert-warning');
+                if (existingError && existingError.textContent.includes('QR Code Library Missing')) {
+                    return; // Error already shown
+                }
+                
+                // Only show error after giving CDN time to load (3 seconds)
                 setTimeout(() => {
+                    // Check one more time if QRCode is now available
+                    if (typeof QRCode !== 'undefined') {
+                        console.log('✅ QR Code library loaded, error not needed');
+                        return;
+                    }
+                    
                     const errorMsg = document.createElement('div');
                     errorMsg.className = 'alert alert-warning alert-dismissible fade show';
                     errorMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
                     errorMsg.innerHTML = `
-                        <strong>⚠️ QR Code Library Missing</strong><br>
-                        The QR code library file (js/qrcode.min.js) is missing or not accessible.<br>
-                        Please ensure the file exists in the /js/ directory.
+                        <strong>⚠️ QR Code Library Loading...</strong><br>
+                        The QR code library is being loaded from CDN. Please wait a moment.
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     `;
                     document.body.appendChild(errorMsg);
-                }, 1000);
+                    
+                    // Check again after 2 more seconds and update message if still not loaded
+                    setTimeout(() => {
+                        if (typeof QRCode === 'undefined') {
+                            errorMsg.innerHTML = `
+                                <strong>⚠️ QR Code Library Issue</strong><br>
+                                Unable to load QR code library. Some features may not work.<br>
+                                <small>You can manually download qrcode.min.js and place it in /js/ directory.</small>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            `;
+                        } else {
+                            errorMsg.remove();
+                        }
+                    }, 2000);
+                }, 3000);
             }
-        });
+            
+            // Try to load local file first
+            const localScript = document.createElement('script');
+            localScript.src = 'js/qrcode.min.js';
+            localScript.onload = function() {
+                if (typeof QRCode !== 'undefined') {
+                    console.log('✅ QR Code library loaded successfully from local file');
+                } else {
+                    console.warn('Local file loaded but QRCode not defined, trying CDN...');
+                    loadQRCodeFromCDN();
+                }
+            };
+            localScript.onerror = function() {
+                console.warn('Local QR code file not found, loading from CDN...');
+                loadQRCodeFromCDN();
+            };
+            document.head.appendChild(localScript);
+            
+            // Also check after DOM loads in case the above didn't work
+            document.addEventListener('DOMContentLoaded', function() {
+                setTimeout(function() {
+                    if (typeof QRCode === 'undefined') {
+                        console.warn('QRCode not found after initial load, attempting to load from CDN...');
+                        loadQRCodeFromCDN();
+                    } else {
+                        console.log('✅ QR Code library verified');
+                    }
+                }, 1000);
+            });
+        })();
     </script>
+    <!-- Direct CDN fallback for QR Code library (backup if dynamic loading fails) -->
+    <script src="https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js" async defer onerror="console.warn('Primary CDN failed, using dynamic loader')"></script>
     <script src="js/aggressive-server-fix.js"></script>
     <script src="js/emergency-error-disable.js"></script>
     <script src="js/continuous-error-suppression.js"></script>
@@ -1307,14 +1402,20 @@
             <nav class="col-lg-2 col-md-3 sidebar" id="sidebar">
                 <div class="position-sticky pt-3">
                     <ul class="nav flex-column">
+                        <!-- Main Dashboard -->
                         <li class="nav-item">
                             <a class="nav-link active" href="#" onclick="showDashboard()">
                                 <i class="fas fa-tachometer-alt me-2"></i>Dashboard
                             </a>
                         </li>
+                        
+                        <!-- Farm Management Section -->
+                        <li class="nav-item mt-3">
+                            <small class="text-white-50 px-3">FARM MANAGEMENT</small>
+                        </li>
                         <li class="nav-item">
                             <a class="nav-link" href="#" onclick="showFarmManagement()">
-                                <i class="fas fa-tractor me-2"></i>Farm Management
+                                <i class="fas fa-tractor me-2"></i>Farm Overview
                             </a>
                         </li>
                         <li class="nav-item">
@@ -1323,9 +1424,44 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showLivestockManagement(); return false;">
+                                <i class="fas fa-cow me-2"></i>Livestock
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showInventoryManagement(); return false;">
+                                <i class="fas fa-boxes me-2"></i>Inventory
+                            </a>
+                        </li>
+                        
+                        <!-- Operations Section -->
+                        <li class="nav-item mt-3">
+                            <small class="text-white-50 px-3">OPERATIONS</small>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" href="watering-management.html">
                                 <i class="fas fa-tint me-2"></i>Watering Management
                             </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="weeding-management.html">
+                                <i class="fas fa-hands-praying me-2"></i>Weeding
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="pesticide-management.html">
+                                <i class="fas fa-bug me-2"></i>Pesticides
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showTasks()">
+                                <i class="fas fa-tasks me-2"></i>Tasks
+                            </a>
+                        </li>
+                        
+                        <!-- Location & Mapping Section -->
+                        <li class="nav-item mt-3">
+                            <small class="text-white-50 px-3">LOCATION & MAPPING</small>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="farm-locator.html">
@@ -1337,54 +1473,14 @@
                                 <i class="fas fa-map-marked-alt me-2"></i>Geofencing Setup
                             </a>
                         </li>
+                        
+                        <!-- AI & Intelligence Section -->
+                        <li class="nav-item mt-3">
+                            <small class="text-white-50 px-3">AI & INTELLIGENCE</small>
+                        </li>
                         <li class="nav-item">
                             <a class="nav-link" href="ai-advisory.html">
                                 <i class="fas fa-robot me-2"></i>AI Advisory
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="farm-to-table.html">
-                                <i class="fas fa-store me-2"></i>Farm to Table
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="subscription-management.html">
-                                <i class="fas fa-credit-card me-2"></i>Subscription
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#" onclick="showLivestockManagement(); return false;">
-                                <i class="fas fa-cow me-2"></i>Livestock
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#" onclick="showPetsManagement(); return false;">
-                                <i class="fas fa-paw me-2"></i>Pets
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#" onclick="showInventoryManagement(); return false;">
-                                <i class="fas fa-boxes me-2"></i>Inventory
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#" onclick="showAnalytics(); return false;">
-                                <i class="fas fa-chart-line me-2"></i>Analytics
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#" onclick="showTasks()">
-                                <i class="fas fa-tasks me-2"></i>Tasks
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#" onclick="showReports()">
-                                <i class="fas fa-file-alt me-2"></i>Reports
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="user-management.html">
-                                <i class="fas fa-users-cog me-2"></i>User Management
                             </a>
                         </li>
                         <li class="nav-item">
@@ -1392,14 +1488,29 @@
                                 <i class="fas fa-brain me-2"></i>AI Predictions
                             </a>
                         </li>
+                        
+                        <!-- Analytics & Reports Section -->
+                        <li class="nav-item mt-3">
+                            <small class="text-white-50 px-3">ANALYTICS & REPORTS</small>
+                        </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="weeding-management.html">
-                                <i class="fas fa-seedling me-2"></i>Weeding
+                            <a class="nav-link" href="#" onclick="showAnalytics(); return false;">
+                                <i class="fas fa-chart-line me-2"></i>Analytics
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="pesticide-management.html">
-                                <i class="fas fa-bug me-2"></i>Pesticides
+                            <a class="nav-link" href="#" onclick="showReports()">
+                                <i class="fas fa-file-alt me-2"></i>Reports
+                            </a>
+                        </li>
+                        
+                        <!-- Business Section -->
+                        <li class="nav-item mt-3">
+                            <small class="text-white-50 px-3">BUSINESS</small>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="farm-to-table.html">
+                                <i class="fas fa-store me-2"></i>Farm to Table
                             </a>
                         </li>
                         <li class="nav-item">
@@ -1407,27 +1518,47 @@
                                 <i class="fas fa-truck me-2"></i>Supply Chain
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="subscription-management.html">
+                                <i class="fas fa-credit-card me-2"></i>Subscription
+                            </a>
+                        </li>
+                        
+                        <!-- Administration Section -->
+                        <li class="nav-item mt-3">
+                            <small class="text-white-50 px-3">ADMINISTRATION</small>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="user-management.html">
+                                <i class="fas fa-users-cog me-2"></i>User Management
+                            </a>
+                        </li>
+                        <li class="nav-item debug-features">
+                            <a class="nav-link" href="role-management.html">
+                                <i class="fas fa-shield-alt me-2"></i>Role Management
+                                <span class="role-badge badge bg-warning text-dark">Owner Only</span>
+                            </a>
+                        </li>
+                        
+                        <!-- Debug & Testing Section (Owner/Admin Only) -->
+                        <li class="nav-item mt-3 debug-features">
+                            <small class="text-white-50 px-3">DEBUG & TESTING</small>
+                        </li>
                         <li class="nav-item debug-features">
                             <a class="nav-link" href="ads-testing.html">
-                                <i class="fas fa-bug me-2"></i>Ads Testing
+                                <i class="fas fa-ad me-2"></i>Ads Testing
                                 <span class="role-badge badge bg-warning text-dark">Owner Only</span>
                             </a>
                         </li>
                         <li class="nav-item analytics-features">
                             <a class="nav-link" href="ads-analytics.html">
-                                <i class="fas fa-chart-line me-2"></i>Ads Analytics
+                                <i class="fas fa-chart-bar me-2"></i>Ads Analytics
                                 <span class="role-badge badge bg-danger">Admin+</span>
                             </a>
                         </li>
                         <li class="nav-item debug-features">
                             <a class="nav-link" href="button-debugger.html">
                                 <i class="fas fa-bug me-2"></i>Button Debugger
-                                <span class="role-badge badge bg-warning text-dark">Owner Only</span>
-                            </a>
-                        </li>
-                        <li class="nav-item debug-features">
-                            <a class="nav-link" href="role-management.html">
-                                <i class="fas fa-shield-alt me-2"></i>Role Management
                                 <span class="role-badge badge bg-warning text-dark">Owner Only</span>
                             </a>
                         </li>
