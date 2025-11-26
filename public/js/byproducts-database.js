@@ -2338,7 +2338,33 @@ window.ByproductsDatabase = {
                     processingMethod: "Fermentation",
                     equipment: ["Fermentation vessels"],
                     shelfLife: "24 months",
-                    targetMarket: "Specialty food stores, restaurants"
+                    targetMarket: "Specialty food stores, restaurants",
+                    processingSteps: [
+                        "Select overripe bananas (fully yellow with brown spots)",
+                        "Peel and mash bananas thoroughly to create pulp",
+                        "Add water and sugar to create mash (ratio: 1 part banana to 2 parts water)",
+                        "Transfer mash to fermentation vessel",
+                        "Add yeast or vinegar starter culture",
+                        "Cover vessel with breathable cloth or lid with airlock",
+                        "Allow primary fermentation for 7-14 days at room temperature (20-25°C)",
+                        "Stir daily to prevent mold and ensure even fermentation",
+                        "Strain liquid from solids using cheesecloth or fine mesh",
+                        "Transfer liquid to clean fermentation vessel for secondary fermentation",
+                        "Age for 2-3 months, stirring occasionally",
+                        "Test acidity level (should reach 4-6% acetic acid)",
+                        "Filter to remove sediment and any remaining solids",
+                        "Bottle in sterilized glass bottles",
+                        "Label with production date and batch number",
+                        "Store in cool, dark place away from direct sunlight"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 60,
+                        unit: "liters",
+                        outputPer100kg: 60,
+                        estimatedRevenuePer100kg: 210.00,
+                        processingTime: "3-4 months",
+                        laborRequired: "1-2 workers"
+                    }
                 },
                 {
                     name: "Banana Leaves",
