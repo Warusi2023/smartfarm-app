@@ -139,7 +139,26 @@ window.ByproductsDatabase = {
                     processingMethod: "Slicing, frying, seasoning",
                     equipment: ["Slicer", "Deep fryer", "Seasoning mixer"],
                     shelfLife: "6 months",
-                    targetMarket: "Specialty food stores, online retailers"
+                    targetMarket: "Specialty food stores, online retailers",
+                    processingSteps: [
+                        "Wash and peel taro corms thoroughly",
+                        "Slice uniformly (2-3mm thickness) using slicer",
+                        "Rinse slices to remove excess starch",
+                        "Deep fry at 180°C until golden and crisp",
+                        "Drain excess oil on paper towels",
+                        "Season with salt or desired spices while still warm",
+                        "Cool completely to room temperature",
+                        "Package in airtight bags with proper labeling",
+                        "Store in cool, dry place"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 40,
+                        unit: "kg",
+                        outputPer100kg: 40,
+                        estimatedRevenuePer100kg: 180.00,
+                        processingTime: "4-6 hours",
+                        laborRequired: "2-3 workers"
+                    }
                 },
                 {
                     name: "Taro Leaves",
@@ -149,7 +168,25 @@ window.ByproductsDatabase = {
                     processingMethod: "Harvesting, cleaning, packaging",
                     equipment: ["Harvesting tools", "Washing station"],
                     shelfLife: "1 week",
-                    targetMarket: "Local markets, restaurants"
+                    targetMarket: "Local markets, restaurants",
+                    processingSteps: [
+                        "Harvest young, tender taro leaves",
+                        "Wash thoroughly to remove dirt and debris",
+                        "Inspect and remove damaged or discolored leaves",
+                        "Bundle leaves in uniform sizes",
+                        "Package in breathable containers or bags",
+                        "Label with harvest date and storage instructions",
+                        "Store in cool, humid environment",
+                        "Distribute to market within 24-48 hours"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 85,
+                        unit: "kg",
+                        outputPer100kg: 85,
+                        estimatedRevenuePer100kg: 170.00,
+                        processingTime: "2-3 hours",
+                        laborRequired: "2 workers"
+                    }
                 }
             ]
         },
@@ -165,7 +202,24 @@ window.ByproductsDatabase = {
                     processingMethod: "Washing, drying, grinding",
                     equipment: ["Washing station", "Drying racks", "Grinding mill"],
                     shelfLife: "12 months",
-                    targetMarket: "Baking industry, health food stores"
+                    targetMarket: "Baking industry, health food stores",
+                    processingSteps: [
+                        "Wash sweet potatoes thoroughly to remove dirt",
+                        "Peel and cut into small uniform pieces",
+                        "Dry in sunlight for 5-7 days or use mechanical dehydrator at 60°C",
+                        "Grind dried pieces into fine powder using grinding mill",
+                        "Sift through fine mesh to remove impurities and ensure uniform texture",
+                        "Package in moisture-proof containers with proper labeling",
+                        "Store in cool, dry place away from direct sunlight"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 30,
+                        unit: "kg",
+                        outputPer100kg: 30,
+                        estimatedRevenuePer100kg: 90.00,
+                        processingTime: "7-10 days",
+                        laborRequired: "2-3 workers"
+                    }
                 },
                 {
                     name: "Sweet Potato Chips",
@@ -175,7 +229,26 @@ window.ByproductsDatabase = {
                     processingMethod: "Slicing, frying, seasoning",
                     equipment: ["Slicer", "Deep fryer", "Seasoning mixer"],
                     shelfLife: "6 months",
-                    targetMarket: "Retail stores, snack distributors"
+                    targetMarket: "Retail stores, snack distributors",
+                    processingSteps: [
+                        "Wash and peel sweet potatoes",
+                        "Slice uniformly (2-3mm thickness) using slicer",
+                        "Rinse slices to remove excess starch",
+                        "Deep fry at 180°C until golden and crisp (or bake at 200°C for healthier option)",
+                        "Drain excess oil on paper towels",
+                        "Season with salt or desired spices while still warm",
+                        "Cool completely to room temperature",
+                        "Package in airtight bags with proper labeling",
+                        "Store in cool, dry place"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 40,
+                        unit: "kg",
+                        outputPer100kg: 40,
+                        estimatedRevenuePer100kg: 152.00,
+                        processingTime: "4-6 hours",
+                        laborRequired: "2-3 workers"
+                    }
                 },
                 {
                     name: "Sweet Potato Vine",
@@ -202,7 +275,27 @@ window.ByproductsDatabase = {
                     processingMethod: "Washing, drying, grinding",
                     equipment: ["Washing station", "Dehydrator", "Grinding mill"],
                     shelfLife: "24 months",
-                    targetMarket: "Health food stores, supplement companies"
+                    targetMarket: "Health food stores, supplement companies",
+                    processingSteps: [
+                        "Harvest fresh spinach leaves at peak quality",
+                        "Wash thoroughly to remove dirt and debris",
+                        "Blanch in boiling water for 30 seconds",
+                        "Immediately transfer to ice water bath",
+                        "Drain excess water completely",
+                        "Dry in dehydrator at 50°C for 8-12 hours until crisp",
+                        "Grind dried leaves into fine powder",
+                        "Sift through fine mesh to ensure uniform texture",
+                        "Package in moisture-proof containers",
+                        "Store in cool, dry place away from light"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 8,
+                        unit: "kg",
+                        outputPer100kg: 8,
+                        estimatedRevenuePer100kg: 64.00,
+                        processingTime: "1-2 days",
+                        laborRequired: "2 workers"
+                    }
                 },
                 {
                     name: "Frozen Spinach",
@@ -212,7 +305,28 @@ window.ByproductsDatabase = {
                     processingMethod: "Blanching, freezing, packaging",
                     equipment: ["Blanching pot", "Freezer", "Packaging machine"],
                     shelfLife: "12 months",
-                    targetMarket: "Grocery stores, restaurants"
+                    targetMarket: "Grocery stores, restaurants",
+                    processingSteps: [
+                        "Harvest fresh spinach leaves",
+                        "Wash thoroughly to remove dirt and debris",
+                        "Inspect and remove damaged leaves",
+                        "Blanch in boiling water for 2-3 minutes",
+                        "Immediately transfer to ice water bath to stop cooking",
+                        "Drain excess water completely",
+                        "Portion into freezer-safe containers or bags",
+                        "Remove air from bags (vacuum seal if possible)",
+                        "Label with date and contents",
+                        "Freeze at -18°C or below",
+                        "Store frozen until ready to use"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 85,
+                        unit: "kg",
+                        outputPer100kg: 85,
+                        estimatedRevenuePer100kg: 212.50,
+                        processingTime: "3-4 hours",
+                        laborRequired: "2-3 workers"
+                    }
                 }
             ]
         },
@@ -228,7 +342,27 @@ window.ByproductsDatabase = {
                     processingMethod: "Cleaning, cutting, packaging",
                     equipment: ["Washing station", "Cutting board", "Packaging machine"],
                     shelfLife: "3 days",
-                    targetMarket: "Restaurants, convenience stores"
+                    targetMarket: "Restaurants, convenience stores",
+                    processingSteps: [
+                        "Select fresh, crisp lettuce heads",
+                        "Wash thoroughly in cold water",
+                        "Remove outer damaged leaves",
+                        "Cut into uniform wrap-sized pieces",
+                        "Dry leaves completely using salad spinner or paper towels",
+                        "Inspect for quality and consistency",
+                        "Package in food-safe containers with proper ventilation",
+                        "Label with preparation date, ingredients, and storage instructions",
+                        "Refrigerate at 4°C or below",
+                        "Follow food safety guidelines throughout processing"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 75,
+                        unit: "kg",
+                        outputPer100kg: 75,
+                        estimatedRevenuePer100kg: 375.00,
+                        processingTime: "2-3 hours",
+                        laborRequired: "2-3 workers"
+                    }
                 }
             ]
         },
@@ -297,7 +431,29 @@ window.ByproductsDatabase = {
                     processingMethod: "Fermentation, aging",
                     equipment: ["Fermentation tanks", "Aging barrels"],
                     shelfLife: "24 months",
-                    targetMarket: "Specialty food stores, restaurants"
+                    targetMarket: "Specialty food stores, restaurants",
+                    processingSteps: [
+                        "Select overripe bananas",
+                        "Peel and mash bananas thoroughly",
+                        "Add water and sugar to create mash",
+                        "Transfer to fermentation tank",
+                        "Add yeast or starter culture",
+                        "Cover and allow primary fermentation for 7-14 days",
+                        "Strain liquid from solids",
+                        "Transfer to aging barrel for secondary fermentation",
+                        "Age for 2-3 months, stirring occasionally",
+                        "Filter to remove sediment",
+                        "Bottle and label with production date",
+                        "Store in cool, dark place"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 60,
+                        unit: "liters",
+                        outputPer100kg: 60,
+                        estimatedRevenuePer100kg: 210.00,
+                        processingTime: "3-4 months",
+                        laborRequired: "1-2 workers"
+                    }
                 },
                 {
                     name: "Banana Leaves",
@@ -307,7 +463,26 @@ window.ByproductsDatabase = {
                     processingMethod: "Harvesting, cleaning, drying",
                     equipment: ["Harvesting tools", "Washing station"],
                     shelfLife: "6 months",
-                    targetMarket: "Food vendors, restaurants"
+                    targetMarket: "Food vendors, restaurants",
+                    processingSteps: [
+                        "Harvest mature banana leaves",
+                        "Cut leaves into desired sizes",
+                        "Wash thoroughly to remove dirt and debris",
+                        "Dry in sunlight for 2-3 days",
+                        "Press flat to remove wrinkles",
+                        "Bundle leaves in uniform sizes",
+                        "Package in breathable containers",
+                        "Label with harvest date",
+                        "Store in dry, well-ventilated area"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 90,
+                        unit: "bundles",
+                        outputPer100kg: 90,
+                        estimatedRevenuePer100kg: 135.00,
+                        processingTime: "3-4 days",
+                        laborRequired: "1-2 workers"
+                    }
                 }
             ]
         },
@@ -323,7 +498,30 @@ window.ByproductsDatabase = {
                     processingMethod: "Cooking, canning",
                     equipment: ["Cooking pot", "Canning equipment"],
                     shelfLife: "12 months",
-                    targetMarket: "Grocery stores, specialty food shops"
+                    targetMarket: "Grocery stores, specialty food shops",
+                    processingSteps: [
+                        "Select ripe papayas",
+                        "Wash and peel papayas",
+                        "Remove seeds and cut into small pieces",
+                        "Cook papaya pieces with sugar and lemon juice",
+                        "Add pectin and continue cooking until soft",
+                        "Mash or blend to desired consistency",
+                        "Continue cooking until mixture reaches gel point (105°C)",
+                        "Test for proper set using cold plate test",
+                        "Skim off any foam",
+                        "Fill sterilized jars while hot, leaving 1/4 inch headspace",
+                        "Process in water bath for 10-15 minutes",
+                        "Cool jars completely and check seals",
+                        "Label and store in cool, dark place"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 65,
+                        unit: "kg",
+                        outputPer100kg: 65,
+                        estimatedRevenuePer100kg: 260.00,
+                        processingTime: "3-4 hours",
+                        laborRequired: "2-3 workers"
+                    }
                 },
                 {
                     name: "Dried Papaya",
@@ -333,7 +531,27 @@ window.ByproductsDatabase = {
                     processingMethod: "Slicing, drying",
                     equipment: ["Slicer", "Dehydrator"],
                     shelfLife: "12 months",
-                    targetMarket: "Health food stores, snack distributors"
+                    targetMarket: "Health food stores, snack distributors",
+                    processingSteps: [
+                        "Select ripe but firm papayas",
+                        "Wash and peel papayas",
+                        "Remove seeds and cut into uniform strips (1-2cm wide)",
+                        "Pre-treat with lemon juice to prevent browning",
+                        "Arrange strips on dehydrator trays",
+                        "Dry in dehydrator at 60°C for 12-18 hours",
+                        "Check for proper moisture content (should be chewy, not brittle)",
+                        "Cool completely before packaging",
+                        "Package in airtight containers or vacuum seal",
+                        "Store in cool, dry place"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 20,
+                        unit: "kg",
+                        outputPer100kg: 20,
+                        estimatedRevenuePer100kg: 110.00,
+                        processingTime: "2-3 days",
+                        laborRequired: "1-2 workers"
+                    }
                 },
                 {
                     name: "Papaya Seeds",
@@ -343,7 +561,24 @@ window.ByproductsDatabase = {
                     processingMethod: "Extraction, drying",
                     equipment: ["Seed extractor", "Drying racks"],
                     shelfLife: "24 months",
-                    targetMarket: "Spice companies, restaurants"
+                    targetMarket: "Spice companies, restaurants",
+                    processingSteps: [
+                        "Extract seeds from ripe papayas",
+                        "Wash seeds thoroughly to remove pulp",
+                        "Dry seeds in sunlight for 3-5 days or use dehydrator",
+                        "Grind seeds to desired consistency (coarse or fine)",
+                        "Package in airtight containers",
+                        "Label with extraction date and usage instructions",
+                        "Store in cool, dry place away from light"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 2,
+                        unit: "kg",
+                        outputPer100kg: 2,
+                        estimatedRevenuePer100kg: 16.00,
+                        processingTime: "5-7 days",
+                        laborRequired: "1 worker"
+                    }
                 }
             ]
         },
@@ -360,7 +595,26 @@ window.ByproductsDatabase = {
                     processingMethod: "Drying, grinding",
                     equipment: ["Drying racks", "Grinding mill"],
                     shelfLife: "24 months",
-                    targetMarket: "Traditional medicine stores, cultural centers"
+                    targetMarket: "Traditional medicine stores, cultural centers",
+                    processingSteps: [
+                        "Harvest mature kava roots",
+                        "Wash roots thoroughly to remove soil",
+                        "Cut roots into small pieces",
+                        "Dry in sunlight for 7-10 days or use mechanical dryer",
+                        "Grind dried roots into fine powder using grinding mill",
+                        "Sift to ensure uniform texture",
+                        "Package in moisture-proof containers",
+                        "Label with harvest date and preparation instructions",
+                        "Store in cool, dry place away from light"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 25,
+                        unit: "kg",
+                        outputPer100kg: 25,
+                        estimatedRevenuePer100kg: 300.00,
+                        processingTime: "10-14 days",
+                        laborRequired: "2-3 workers"
+                    }
                 },
                 {
                     name: "Kava Extract",
@@ -396,7 +650,27 @@ window.ByproductsDatabase = {
                     processingMethod: "Drying, grinding",
                     equipment: ["Drying racks", "Grinding mill"],
                     shelfLife: "24 months",
-                    targetMarket: "Spice companies, grocery stores"
+                    targetMarket: "Spice companies, grocery stores",
+                    processingSteps: [
+                        "Select mature ginger rhizomes",
+                        "Wash and clean thoroughly",
+                        "Peel ginger to remove skin",
+                        "Cut into thin slices or small pieces",
+                        "Dry in sunlight for 5-7 days or use dehydrator at 50°C",
+                        "Grind dried ginger into fine powder",
+                        "Sift to ensure uniform texture",
+                        "Package in airtight containers",
+                        "Label with production date",
+                        "Store in cool, dry place away from light"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 20,
+                        unit: "kg",
+                        outputPer100kg: 20,
+                        estimatedRevenuePer100kg: 120.00,
+                        processingTime: "7-10 days",
+                        laborRequired: "2 workers"
+                    }
                 },
                 {
                     name: "Ginger Tea",
@@ -406,7 +680,25 @@ window.ByproductsDatabase = {
                     processingMethod: "Slicing, drying, packaging",
                     equipment: ["Slicer", "Dehydrator", "Packaging machine"],
                     shelfLife: "18 months",
-                    targetMarket: "Tea shops, health food stores"
+                    targetMarket: "Tea shops, health food stores",
+                    processingSteps: [
+                        "Select fresh ginger rhizomes",
+                        "Wash and clean thoroughly",
+                        "Peel and slice into thin pieces (2-3mm)",
+                        "Dry in dehydrator at 50-60°C for 12-18 hours",
+                        "Check for proper dryness (should be brittle)",
+                        "Package in airtight containers or tea bags",
+                        "Label with brewing instructions",
+                        "Store away from light, moisture, and strong odors"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 18,
+                        unit: "kg",
+                        outputPer100kg: 18,
+                        estimatedRevenuePer100kg: 81.00,
+                        processingTime: "2-3 days",
+                        laborRequired: "1-2 workers"
+                    }
                 },
                 {
                     name: "Ginger Oil",
@@ -416,7 +708,28 @@ window.ByproductsDatabase = {
                     processingMethod: "Steam distillation",
                     equipment: ["Distillation equipment"],
                     shelfLife: "36 months",
-                    targetMarket: "Essential oil companies, aromatherapy stores"
+                    targetMarket: "Essential oil companies, aromatherapy stores",
+                    processingSteps: [
+                        "Prepare fresh ginger rhizomes",
+                        "Wash and clean thoroughly",
+                        "Chop or grate ginger into small pieces",
+                        "Load into steam distillation equipment",
+                        "Distill at appropriate temperature and pressure",
+                        "Collect essential oil from condenser",
+                        "Separate oil from water",
+                        "Filter to remove any sediment",
+                        "Store in dark glass bottles",
+                        "Label with extraction date, method, and usage instructions",
+                        "Store in cool, dark place"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 2,
+                        unit: "liters",
+                        outputPer100kg: 2,
+                        estimatedRevenuePer100kg: 30.00,
+                        processingTime: "4-6 hours",
+                        laborRequired: "2 workers"
+                    }
                 }
             ]
         },
