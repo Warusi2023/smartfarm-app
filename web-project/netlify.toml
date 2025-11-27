@@ -54,15 +54,16 @@
 [functions]
   directory = "netlify/functions"
 
-# Plugins
-[[plugins]]
-  package = "@netlify/plugin-lighthouse"
-
-  [plugins.inputs.thresholds]
-    performance = 0.8
-    accessibility = 0.9
-    best-practices = 0.8
-    seo = 0.8
+# Plugins - commented out to prevent plugin errors
+# Uncomment and install @netlify/plugin-lighthouse if you want Lighthouse audits
+# [[plugins]]
+#   package = "@netlify/plugin-lighthouse"
+#
+#   [plugins.inputs.thresholds]
+#     performance = 0.8
+#     accessibility = 0.9
+#     best-practices = 0.8
+#     seo = 0.8
 
 # Form handling (if needed)
 [forms]
