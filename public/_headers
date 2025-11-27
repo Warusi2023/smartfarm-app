@@ -1,11 +1,10 @@
 /*
-  Access-Control-Allow-Origin: https://smartfarm-app-production.up.railway.app
-  Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS
-  Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With
-  Access-Control-Allow-Credentials: true
+  X-Robots-Tag: index, follow
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
 
 /api/*
-  Access-Control-Allow-Origin: https://smartfarm-app-production.up.railway.app
+  Access-Control-Allow-Origin: *
   Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS
   Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With
-  Access-Control-Allow-Credentials: true
+  Access-Control-Allow-Credentials: false

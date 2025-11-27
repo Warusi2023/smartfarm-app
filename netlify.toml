@@ -49,6 +49,13 @@
   status = 200
   force = false
 
+# Ensure root path is accessible without redirect (for external tools)
+[[redirects]]
+  from = "/"
+  to = "/index.html"
+  status = 200
+  force = false
+
 # SPA fallback - redirect all other routes to index.html
 [[redirects]]
   from = "/*"
