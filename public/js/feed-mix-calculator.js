@@ -286,13 +286,35 @@ class FeedMixCalculator {
         
         console.log('Nutritional requirements found:', requirements);
         
-        if (!requirements) {
-            throw new Error(`No nutritional requirements found for ${species} ${lifecycle}`);
+        if (!requirements || typeof requirements !== 'object') {
+            const errorMsg = `No nutritional requirements found for ${species} ${lifecycle ? lifecycle : 'unknown lifecycle'}. Please check your selections.`;
+            console.error(errorMsg, { species, lifecycle, purpose, weight });
+            throw new Error(errorMsg);
         }
 
         // Some requirement entries store nutrients under `dailyRequirements`
         // Normalize to a flat shape so downstream code can use requirements.protein.min, etc.
-        const normalizedReq = requirements.dailyRequirements ? requirements.dailyRequirements : requirements;
+        let normalizedReq = requirements.dailyRequirements ? requirements.dailyRequirements : requirements;
+        
+        console.log('Normalized requirements:', normalizedReq);
+
+        // Validate normalizedReq has required structure
+        if (!normalizedReq || typeof normalizedReq !== 'object') {
+            throw new Error(`Invalid nutritional requirements structure for ${species} ${lifecycle}`);
+        }
+
+        // Ensure normalizedReq has all required properties with proper structure
+        if (!normalizedReq.protein || typeof normalizedReq.protein !== 'object' || 
+            typeof normalizedReq.protein.min === 'undefined' || typeof normalizedReq.protein.max === 'undefined') {
+            console.error('Invalid protein structure in requirements:', normalizedReq);
+            throw new Error(`Missing or invalid protein requirements for ${species} ${lifecycle}`);
+        }
+
+        if (!normalizedReq.energy || typeof normalizedReq.energy !== 'object' || 
+            typeof normalizedReq.energy.min === 'undefined' || typeof normalizedReq.energy.max === 'undefined') {
+            console.error('Invalid energy structure in requirements:', normalizedReq);
+            throw new Error(`Missing or invalid energy requirements for ${species} ${lifecycle}`);
+        }
 
         // Calculate daily intake based on weight
         console.log('Calculating daily intake with weight:', weight, 'and intake range:', normalizedReq.dailyIntake);
@@ -479,6 +501,34 @@ class FeedMixCalculator {
     generateRecommendations(feedMix, requirements) {
         const recommendations = [];
 
+        // Validate requirements structure
+        if (!requirements || typeof requirements !== 'object') {
+            console.error('Invalid requirements passed to generateRecommendations:', requirements);
+            return [{
+                type: 'error',
+                message: 'Unable to generate recommendations: Invalid requirements data.'
+            }];
+        }
+
+        // Ensure requirements have required properties
+        if (!requirements.protein || typeof requirements.protein !== 'object' || 
+            typeof requirements.protein.min === 'undefined' || typeof requirements.protein.max === 'undefined') {
+            console.error('Missing protein requirements:', requirements);
+            return [{
+                type: 'error',
+                message: 'Unable to generate recommendations: Missing protein requirements.'
+            }];
+        }
+
+        if (!requirements.energy || typeof requirements.energy !== 'object' || 
+            typeof requirements.energy.min === 'undefined' || typeof requirements.energy.max === 'undefined') {
+            console.error('Missing energy requirements:', requirements);
+            return [{
+                type: 'error',
+                message: 'Unable to generate recommendations: Missing energy requirements.'
+            }];
+        }
+
         // Check protein levels
         const totalProtein = this.calculateNutrientContent(feedMix, 'protein');
         if (totalProtein < requirements.protein.min) {
@@ -502,22 +552,28 @@ class FeedMixCalculator {
             });
         }
 
-        // Check calcium levels
-        const totalCalcium = this.calculateNutrientContent(feedMix, 'calcium');
-        if (totalCalcium < requirements.calcium.min) {
-            recommendations.push({
-                type: 'warning',
-                message: `Calcium content (${totalCalcium.toFixed(2)}%) is below minimum requirement (${requirements.calcium.min}%). Consider increasing limestone or calcium sources.`
-            });
+        // Check calcium levels (optional - only if requirements exist)
+        if (requirements.calcium && typeof requirements.calcium === 'object' && 
+            typeof requirements.calcium.min !== 'undefined') {
+            const totalCalcium = this.calculateNutrientContent(feedMix, 'calcium');
+            if (totalCalcium < requirements.calcium.min) {
+                recommendations.push({
+                    type: 'warning',
+                    message: `Calcium content (${totalCalcium.toFixed(2)}%) is below minimum requirement (${requirements.calcium.min}%). Consider increasing limestone or calcium sources.`
+                });
+            }
         }
 
-        // Check phosphorus levels
-        const totalPhosphorus = this.calculateNutrientContent(feedMix, 'phosphorus');
-        if (totalPhosphorus < requirements.phosphorus.min) {
-            recommendations.push({
-                type: 'warning',
-                message: `Phosphorus content (${totalPhosphorus.toFixed(2)}%) is below minimum requirement (${requirements.phosphorus.min}%). Consider increasing phosphorus sources.`
-            });
+        // Check phosphorus levels (optional - only if requirements exist)
+        if (requirements.phosphorus && typeof requirements.phosphorus === 'object' && 
+            typeof requirements.phosphorus.min !== 'undefined') {
+            const totalPhosphorus = this.calculateNutrientContent(feedMix, 'phosphorus');
+            if (totalPhosphorus < requirements.phosphorus.min) {
+                recommendations.push({
+                    type: 'warning',
+                    message: `Phosphorus content (${totalPhosphorus.toFixed(2)}%) is below minimum requirement (${requirements.phosphorus.min}%). Consider increasing phosphorus sources.`
+                });
+            }
         }
 
         if (recommendations.length === 0) {
