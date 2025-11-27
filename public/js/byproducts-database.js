@@ -2360,42 +2360,6 @@ window.ByproductsDatabase = {
                     targetMarket: "Local farmers, feed suppliers"
                 }
             ]
-        },
-        
-        ginger: {
-            primary: "Fresh Ginger",
-            byproducts: [
-                {
-                    name: "Ginger Powder",
-                    category: "Spice",
-                    description: "Ground ginger for cooking and baking",
-                    marketValue: 6.00,
-                    processingMethod: "Drying, grinding",
-                    equipment: ["Dehydrator", "Grinding mill"],
-                    shelfLife: "24 months",
-                    targetMarket: "Spice companies, grocery stores"
-                },
-                {
-                    name: "Ginger Tea",
-                    category: "Beverage",
-                    description: "Dried ginger for tea preparation",
-                    marketValue: 4.50,
-                    processingMethod: "Slicing, drying",
-                    equipment: ["Slicer", "Dehydrator"],
-                    shelfLife: "18 months",
-                    targetMarket: "Tea shops, health food stores"
-                },
-                {
-                    name: "Ginger Oil",
-                    category: "Essential Oil",
-                    description: "Aromatherapy and culinary oil",
-                    marketValue: 15.00,
-                    processingMethod: "Steam distillation",
-                    equipment: ["Distillation equipment"],
-                    shelfLife: "36 months",
-                    targetMarket: "Essential oil companies, aromatherapy stores"
-                }
-            ]
         }
     },
     
