@@ -96,7 +96,27 @@ window.ByproductsDatabase = {
                     processingMethod: "Harvesting, drying",
                     equipment: ["Harvesting tools", "Drying racks"],
                     shelfLife: "3 months",
-                    targetMarket: "Local farmers, feed mills"
+                    targetMarket: "Local farmers, feed mills",
+                    processingSteps: [
+                        "Harvest young, tender cassava leaves at optimal maturity",
+                        "Remove damaged or discolored leaves",
+                        "Wash thoroughly to remove dirt and debris",
+                        "Chop leaves into appropriate sizes for feed (2-3cm pieces)",
+                        "Dry in sunlight for 3-5 days or use mechanical dryer at 50°C",
+                        "Ensure leaves are completely dry (should crumble easily)",
+                        "Grind to desired particle size if making feed pellets",
+                        "Package in moisture-proof bags",
+                        "Store in dry, well-ventilated area",
+                        "Label with harvest date and nutritional information"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 85,
+                        unit: "kg",
+                        outputPer100kg: 85,
+                        estimatedRevenuePer100kg: 68.00,
+                        processingTime: "3-5 days",
+                        laborRequired: "1-2 workers"
+                    }
                 }
             ]
         },
@@ -628,7 +648,30 @@ window.ByproductsDatabase = {
                     processingMethod: "Extraction, concentration",
                     equipment: ["Extraction equipment", "Concentrator"],
                     shelfLife: "36 months",
-                    targetMarket: "Health supplement stores, online retailers"
+                    targetMarket: "Health supplement stores, online retailers",
+                    processingSteps: [
+                        "Harvest mature kava roots (at least 3-4 years old)",
+                        "Wash roots thoroughly to remove soil",
+                        "Cut roots into small pieces to increase surface area",
+                        "Dry roots partially (reduce moisture to 10-15%)",
+                        "Extract active compounds using water or ethanol extraction method",
+                        "Filter extract to remove solid particles",
+                        "Concentrate extract using vacuum evaporation or freeze-drying",
+                        "Test for kavalactone content (should be 30-70%)",
+                        "Dilute to standardized concentration if needed",
+                        "Filter again to ensure clarity",
+                        "Bottle in dark glass bottles to protect from light",
+                        "Label with extraction date, batch number, and kavalactone content",
+                        "Store in cool, dark place away from direct sunlight"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 15,
+                        unit: "liters",
+                        outputPer100kg: 15,
+                        estimatedRevenuePer100kg: 375.00,
+                        processingTime: "7-10 days",
+                        laborRequired: "2-3 workers"
+                    }
                 },
                 {
                     name: "Kava Tea Bags",
@@ -638,7 +681,29 @@ window.ByproductsDatabase = {
                     processingMethod: "Grinding, bagging",
                     equipment: ["Grinding mill", "Tea bag machine"],
                     shelfLife: "18 months",
-                    targetMarket: "Tea shops, health food stores"
+                    targetMarket: "Tea shops, health food stores",
+                    processingSteps: [
+                        "Harvest mature kava roots",
+                        "Wash roots thoroughly to remove soil",
+                        "Cut roots into small pieces",
+                        "Dry in sunlight for 7-10 days or use mechanical dryer at 50°C",
+                        "Grind dried roots to medium-coarse consistency (not too fine)",
+                        "Sift to ensure uniform particle size",
+                        "Measure appropriate amount per tea bag (typically 2-3g)",
+                        "Fill tea bags using tea bag machine or manually",
+                        "Seal tea bags securely",
+                        "Package tea bags in airtight containers or individual wrappers",
+                        "Label with brewing instructions and kavalactone content",
+                        "Store in cool, dry place away from light and moisture"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 25,
+                        unit: "tea bags",
+                        outputPer100kg: 25000,
+                        estimatedRevenuePer100kg: 200000.00,
+                        processingTime: "10-14 days",
+                        laborRequired: "2-3 workers"
+                    }
                 }
             ]
         },
@@ -1815,7 +1880,30 @@ window.ByproductsDatabase = {
                     processingMethod: "Extraction, bottling",
                     equipment: ["Grating equipment", "Press", "Bottling"],
                     shelfLife: "1 week (fresh) or 6 months (canned)",
-                    targetMarket: "Grocery stores, food manufacturers"
+                    targetMarket: "Grocery stores, food manufacturers",
+                    processingSteps: [
+                        "Select mature coconuts",
+                        "Crack open coconuts and remove meat",
+                        "Grate coconut meat finely",
+                        "Add warm water to grated coconut (1:1 ratio)",
+                        "Squeeze and press to extract milk",
+                        "Strain milk through fine mesh or cheesecloth",
+                        "For fresh milk: Bottle immediately and refrigerate",
+                        "For canned milk: Heat to 85°C for pasteurization",
+                        "Fill sterilized cans or bottles while hot",
+                        "Seal containers securely",
+                        "Process in water bath if canning (15 minutes)",
+                        "Cool and label with production date",
+                        "Store fresh milk refrigerated, canned milk at room temperature"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 60,
+                        unit: "liters",
+                        outputPer100kg: 60,
+                        estimatedRevenuePer100kg: 270.00,
+                        processingTime: "2-3 hours",
+                        laborRequired: "2-3 workers"
+                    }
                 },
                 {
                     name: "Coconut Water",
@@ -2429,7 +2517,29 @@ window.ByproductsDatabase = {
                     processingMethod: "Grinding, processing",
                     equipment: ["Grinding mill", "Processing equipment"],
                     shelfLife: "24 months",
-                    targetMarket: "Garden centers, organic farms"
+                    targetMarket: "Garden centers, organic farms",
+                    processingSteps: [
+                        "Collect bones from slaughterhouse or butchering",
+                        "Remove any remaining meat or tissue",
+                        "Clean bones thoroughly with water",
+                        "Boil bones to remove remaining fat and tissue",
+                        "Dry bones completely (sun dry for 3-5 days or use oven at low heat)",
+                        "Crush or break bones into smaller pieces",
+                        "Grind bones into fine powder using grinding mill",
+                        "Sift to ensure uniform particle size",
+                        "Test for nutrient content (phosphorus and calcium)",
+                        "Package in moisture-proof bags",
+                        "Label with nutrient analysis and application instructions",
+                        "Store in dry, well-ventilated area"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 60,
+                        unit: "kg",
+                        outputPer100kg: 60,
+                        estimatedRevenuePer100kg: 120.00,
+                        processingTime: "5-7 days",
+                        laborRequired: "1-2 workers"
+                    }
                 },
                 {
                     name: "Tallow",
@@ -2439,7 +2549,31 @@ window.ByproductsDatabase = {
                     processingMethod: "Rendering, filtering",
                     equipment: ["Rendering equipment", "Filtering system"],
                     shelfLife: "12 months",
-                    targetMarket: "Soap manufacturers, candle makers"
+                    targetMarket: "Soap manufacturers, candle makers",
+                    processingSteps: [
+                        "Collect fat trimmings and suet from butchering",
+                        "Cut fat into small pieces (1-2 inch cubes)",
+                        "Heat fat slowly in rendering pot or equipment at 120-150°C",
+                        "Stir occasionally to prevent burning",
+                        "Continue heating until fat is completely melted",
+                        "Strain liquid fat through fine mesh or cheesecloth",
+                        "Filter again to remove any remaining particles",
+                        "Allow tallow to cool and solidify",
+                        "Reheat and filter one more time for purity",
+                        "Pour into molds or containers while still liquid",
+                        "Allow to cool completely and solidify",
+                        "Package in airtight containers",
+                        "Label with production date and batch number",
+                        "Store in cool, dark place"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 70,
+                        unit: "kg",
+                        outputPer100kg: 70,
+                        estimatedRevenuePer100kg: 245.00,
+                        processingTime: "4-6 hours",
+                        laborRequired: "1-2 workers"
+                    }
                 },
                 {
                     name: "Gelatin",
@@ -2449,7 +2583,32 @@ window.ByproductsDatabase = {
                     processingMethod: "Extraction, purification",
                     equipment: ["Extraction equipment", "Purification system"],
                     shelfLife: "24 months",
-                    targetMarket: "Food industry, pharmaceutical companies"
+                    targetMarket: "Food industry, pharmaceutical companies",
+                    processingSteps: [
+                        "Collect bones, cartilage, and connective tissues",
+                        "Clean thoroughly to remove meat and fat",
+                        "Crush bones into small pieces",
+                        "Soak in acid solution (hydrochloric acid) for 24-48 hours",
+                        "Neutralize acid solution",
+                        "Extract collagen by boiling in water at 60-80°C for several hours",
+                        "Filter extract to remove solids",
+                        "Concentrate solution by evaporation",
+                        "Cool and allow to gel",
+                        "Cut gel into sheets or grind into powder",
+                        "Dry gelatin sheets or powder",
+                        "Test for bloom strength and quality",
+                        "Package in moisture-proof containers",
+                        "Label with grade, bloom strength, and production date",
+                        "Store in cool, dry place"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 5,
+                        unit: "kg",
+                        outputPer100kg: 5,
+                        estimatedRevenuePer100kg: 40.00,
+                        processingTime: "3-5 days",
+                        laborRequired: "2-3 specialized workers"
+                    }
                 }
             ]
         },
@@ -2492,7 +2651,31 @@ window.ByproductsDatabase = {
                     processingMethod: "Soap making, curing",
                     equipment: ["Soap making equipment", "Curing racks"],
                     shelfLife: "24 months",
-                    targetMarket: "Cosmetic stores, online retailers"
+                    targetMarket: "Cosmetic stores, online retailers",
+                    processingSteps: [
+                        "Collect fresh goat milk and filter",
+                        "Prepare lye solution (sodium hydroxide) carefully",
+                        "Heat oils (coconut, olive, palm) to 100-110°F",
+                        "Slowly add lye solution to oils while stirring",
+                        "Add goat milk when mixture reaches trace (thickens)",
+                        "Add essential oils or fragrances if desired",
+                        "Pour soap mixture into molds",
+                        "Cover and insulate molds for 24-48 hours",
+                        "Unmold and cut soap into bars",
+                        "Cure soap on racks for 4-6 weeks in well-ventilated area",
+                        "Turn bars weekly to ensure even curing",
+                        "Package in breathable wrapping or boxes",
+                        "Label with ingredients, production date, and usage instructions",
+                        "Store in cool, dry place"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 95,
+                        unit: "bars",
+                        outputPer100Liters: 95,
+                        estimatedRevenuePer100Liters: 570.00,
+                        processingTime: "4-6 weeks",
+                        laborRequired: "1-2 soap makers"
+                    }
                 },
                 {
                     name: "Goat Hair",
@@ -2502,7 +2685,29 @@ window.ByproductsDatabase = {
                     processingMethod: "Shearing, cleaning, sorting",
                     equipment: ["Shearing equipment", "Cleaning facility"],
                     shelfLife: "Indefinite",
-                    targetMarket: "Textile manufacturers, fashion industry"
+                    targetMarket: "Textile manufacturers, fashion industry",
+                    processingSteps: [
+                        "Shear goats during appropriate season (spring or fall)",
+                        "Sort hair by quality and fiber length",
+                        "Remove coarse guard hairs if separating cashmere",
+                        "Wash hair in warm water with mild detergent",
+                        "Rinse thoroughly to remove all soap",
+                        "Dry hair completely in well-ventilated area",
+                        "Card hair to align fibers and remove tangles",
+                        "Sort by color (white, gray, brown)",
+                        "Grade by fineness and length",
+                        "Package in clean, breathable bags",
+                        "Label with fiber type, grade, and shearing date",
+                        "Store in dry, pest-free environment"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 100,
+                        unit: "kg",
+                        outputPerAnimal: "0.5-2",
+                        estimatedRevenuePerAnimal: 7.50,
+                        processingTime: "2-3 days",
+                        laborRequired: "1-2 workers"
+                    }
                 }
             ]
         },
@@ -2518,7 +2723,30 @@ window.ByproductsDatabase = {
                     processingMethod: "Cleaning, sorting, processing",
                     equipment: ["Cleaning equipment", "Sorting machine"],
                     shelfLife: "Indefinite",
-                    targetMarket: "Bedding manufacturers, craft suppliers"
+                    targetMarket: "Bedding manufacturers, craft suppliers",
+                    processingSteps: [
+                        "Collect feathers during plucking or after slaughter",
+                        "Sort feathers by type (down, flight, body feathers)",
+                        "Remove any debris, dirt, or foreign materials",
+                        "Wash feathers in warm water with mild detergent",
+                        "Rinse thoroughly to remove all soap residue",
+                        "Sanitize feathers using appropriate method (steam or chemical)",
+                        "Dry feathers completely using low heat or air drying",
+                        "Fluff feathers to restore loft",
+                        "Sort by quality grade (premium down, standard down, etc.)",
+                        "Remove quills and hard parts if processing down",
+                        "Package in breathable bags",
+                        "Label with feather type, grade, and processing date",
+                        "Store in dry, well-ventilated area"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 100,
+                        unit: "kg",
+                        outputPer100kg: 100,
+                        estimatedRevenuePer100kg: 250.00,
+                        processingTime: "2-3 days",
+                        laborRequired: "1-2 workers"
+                    }
                 },
                 {
                     name: "Chicken Manure",
@@ -2556,7 +2784,27 @@ window.ByproductsDatabase = {
                     processingMethod: "Drying, grinding",
                     equipment: ["Drying racks", "Grinding mill"],
                     shelfLife: "12 months",
-                    targetMarket: "Garden centers, organic farms"
+                    targetMarket: "Garden centers, organic farms",
+                    processingSteps: [
+                        "Collect eggshells from egg processing or consumption",
+                        "Rinse shells to remove any remaining egg white or yolk",
+                        "Dry shells completely (sun dry for 2-3 days or bake at 200°F for 10 minutes)",
+                        "Crush shells into smaller pieces",
+                        "Grind shells into fine powder using grinding mill",
+                        "Sift to ensure uniform particle size",
+                        "Test for calcium content (typically 35-40% calcium carbonate)",
+                        "Package in moisture-proof bags",
+                        "Label with calcium content and application instructions",
+                        "Store in dry, well-ventilated area"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 95,
+                        unit: "kg",
+                        outputPer100kg: 95,
+                        estimatedRevenuePer100kg: 47.50,
+                        processingTime: "2-3 days",
+                        laborRequired: "1 worker"
+                    }
                 }
             ]
         },
@@ -2572,7 +2820,30 @@ window.ByproductsDatabase = {
                     processingMethod: "Cleaning, frying, seasoning",
                     equipment: ["Cleaning equipment", "Deep fryer", "Seasoning mixer"],
                     shelfLife: "6 months",
-                    targetMarket: "Snack distributors, convenience stores"
+                    targetMarket: "Snack distributors, convenience stores",
+                    processingSteps: [
+                        "Collect pork skin from butchering",
+                        "Remove any remaining fat or meat",
+                        "Clean skin thoroughly with water",
+                        "Cut skin into uniform pieces (2-3 inch squares)",
+                        "Boil skin in water for 1-2 hours until tender",
+                        "Drain and pat dry completely",
+                        "Score skin with knife to create texture",
+                        "Deep fry at 180-200°C until puffed and crispy",
+                        "Drain excess oil on paper towels",
+                        "Season with salt or desired spices while still hot",
+                        "Cool completely to room temperature",
+                        "Package in airtight bags with proper labeling",
+                        "Store in cool, dry place"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 80,
+                        unit: "kg",
+                        outputPer100kg: 80,
+                        estimatedRevenuePer100kg: 360.00,
+                        processingTime: "3-4 hours",
+                        laborRequired: "2 workers"
+                    }
                 },
                 {
                     name: "Lard",
@@ -2582,7 +2853,30 @@ window.ByproductsDatabase = {
                     processingMethod: "Rendering, filtering",
                     equipment: ["Rendering equipment", "Filtering system"],
                     shelfLife: "12 months",
-                    targetMarket: "Restaurants, specialty food stores"
+                    targetMarket: "Restaurants, specialty food stores",
+                    processingSteps: [
+                        "Collect fat trimmings and leaf fat from pork",
+                        "Cut fat into small pieces (1-2 inch cubes)",
+                        "Heat fat slowly in rendering pot at 120-150°C",
+                        "Stir occasionally to prevent burning",
+                        "Continue heating until fat is completely melted and cracklings form",
+                        "Strain liquid lard through fine mesh or cheesecloth",
+                        "Filter again to remove any remaining particles",
+                        "Allow lard to cool slightly",
+                        "Pour into clean containers while still liquid",
+                        "Allow to cool completely and solidify",
+                        "Package in airtight containers",
+                        "Label with production date and batch number",
+                        "Store in cool, dark place or refrigerate"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 75,
+                        unit: "kg",
+                        outputPer100kg: 75,
+                        estimatedRevenuePer100kg: 225.00,
+                        processingTime: "3-4 hours",
+                        laborRequired: "1-2 workers"
+                    }
                 },
                 {
                     name: "Pig Bristles",
@@ -2592,7 +2886,30 @@ window.ByproductsDatabase = {
                     processingMethod: "Cleaning, sorting, packaging",
                     equipment: ["Cleaning equipment", "Sorting machine"],
                     shelfLife: "Indefinite",
-                    targetMarket: "Brush manufacturers, art supply stores"
+                    targetMarket: "Brush manufacturers, art supply stores",
+                    processingSteps: [
+                        "Collect bristles from pig hide during processing",
+                        "Remove bristles from hide using appropriate method",
+                        "Sort bristles by length and quality",
+                        "Wash bristles thoroughly in warm water with detergent",
+                        "Rinse to remove all soap residue",
+                        "Sanitize bristles using appropriate method",
+                        "Dry bristles completely",
+                        "Sort by length and stiffness",
+                        "Remove any damaged or broken bristles",
+                        "Bundle bristles by size and quality",
+                        "Package in clean, dry containers",
+                        "Label with bristle type, length, and grade",
+                        "Store in dry, pest-free environment"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 100,
+                        unit: "kg",
+                        outputPer100kg: 100,
+                        estimatedRevenuePer100kg: 500.00,
+                        processingTime: "2-3 days",
+                        laborRequired: "1-2 workers"
+                    }
                 }
             ]
         },
@@ -2661,7 +2978,28 @@ window.ByproductsDatabase = {
                     processingMethod: "Extraction, purification",
                     equipment: ["Extraction equipment", "Purification system"],
                     shelfLife: "36 months",
-                    targetMarket: "Cosmetic manufacturers, pharmaceutical companies"
+                    targetMarket: "Cosmetic manufacturers, pharmaceutical companies",
+                    processingSteps: [
+                        "Collect raw wool grease from sheep wool during washing",
+                        "Separate grease from wash water using centrifuge or settling",
+                        "Heat grease to remove excess water",
+                        "Filter to remove dirt and debris",
+                        "Refine grease using chemical or physical methods",
+                        "Bleach lanolin if needed for cosmetic grade",
+                        "Deodorize to remove strong odor",
+                        "Test for purity and quality",
+                        "Package in airtight containers",
+                        "Label with grade, purity percentage, and production date",
+                        "Store in cool, dark place"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 15,
+                        unit: "kg",
+                        outputPer100kg: 15,
+                        estimatedRevenuePer100kg: 180.00,
+                        processingTime: "3-5 days",
+                        laborRequired: "2 workers"
+                    }
                 }
             ]
         },
@@ -2726,7 +3064,27 @@ window.ByproductsDatabase = {
                     processingMethod: "Composting",
                     equipment: ["Composting facility"],
                     shelfLife: "12 months",
-                    targetMarket: "Garden centers, organic farms"
+                    targetMarket: "Garden centers, organic farms",
+                    processingSteps: [
+                        "Collect fresh manure from duck housing",
+                        "Mix with carbon materials (straw, sawdust, leaves) in 3:1 ratio",
+                        "Maintain proper moisture level (40-60%)",
+                        "Turn compost pile every 1-2 weeks",
+                        "Monitor temperature (should reach 130-150°F)",
+                        "Cure for 2-4 months until fully composted",
+                        "Screen to remove large particles",
+                        "Test for nutrient content",
+                        "Package in bags or bulk containers",
+                        "Label with nutrient analysis and application instructions"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 70,
+                        unit: "kg",
+                        outputPer100kg: 70,
+                        estimatedRevenuePer100kg: 126.00,
+                        processingTime: "2-4 months",
+                        laborRequired: "1 worker (part-time)"
+                    }
                 }
             ]
         },
@@ -2766,7 +3124,27 @@ window.ByproductsDatabase = {
                     processingMethod: "Rendering, grinding",
                     equipment: ["Rendering equipment", "Grinding mill"],
                     shelfLife: "12 months",
-                    targetMarket: "Feed mills, pet food manufacturers"
+                    targetMarket: "Feed mills, pet food manufacturers",
+                    processingSteps: [
+                        "Collect turkey byproducts (heads, feet, necks, organs)",
+                        "Grind byproducts into small pieces",
+                        "Cook/render at high temperature (120-150°C) to kill pathogens",
+                        "Press to separate fat from protein meal",
+                        "Dry meal to reduce moisture content to below 10%",
+                        "Grind dried meal into fine powder",
+                        "Test for protein content (typically 55-65%)",
+                        "Package in moisture-proof bags",
+                        "Label with protein content, fat content, and production date",
+                        "Store in dry, well-ventilated area"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 50,
+                        unit: "kg",
+                        outputPer100kg: 50,
+                        estimatedRevenuePer100kg: 125.00,
+                        processingTime: "1-2 days",
+                        laborRequired: "1-2 workers"
+                    }
                 }
             ]
         },
