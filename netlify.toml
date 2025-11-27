@@ -1,15 +1,28 @@
 # Netlify configuration for SmartFarm
-# This file tells Netlify to build from the web-project/ directory
+# This file configures Netlify to build from the web-project/ subdirectory
+#
+# Directory Structure:
+#   SmartFarm/                    (repository root)
+#   ├── netlify.toml            (this file - root level)
+#   └── web-project/            (web application directory)
+#       ├── package.json        (npm dependencies and scripts)
+#       ├── netlify.toml        (web-project specific config)
+#       ├── vite.config.ts      (Vite build configuration)
+#       ├── dist/               (build output - created by npm run build)
+#       └── public/             (static assets)
 
 [build]
-  # Base directory: This tells Netlify to change into web-project/ before building
-  # IMPORTANT: This must match the UI setting in Netlify dashboard
+  # Base directory: Netlify will change into this directory before building
+  # This tells Netlify: "The project lives in web-project/, not at the root"
   base = "web-project"
   
-  # Build command (runs from web-project/ directory after base directory change)
+  # Build command: Runs from web-project/ directory (after base directory change)
+  # This will find package.json in web-project/package.json
   command = "npm install && npm run build"
   
-  # Publish directory (relative to base directory, so web-project/dist)
+  # Publish directory: Relative to base directory
+  # Since base = "web-project", this resolves to web-project/dist
+  # This is where Vite outputs the built files
   publish = "dist"
 
 # Environment variables (can be overridden in Netlify dashboard)
