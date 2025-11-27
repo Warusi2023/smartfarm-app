@@ -190,7 +190,7 @@ class WateringTimingSystem {
                 ]
             },
             season: this.getCurrentSeason(),
-            location: 'Fiji',
+            location: 'Australia',
             isRealData: false
         };
     }

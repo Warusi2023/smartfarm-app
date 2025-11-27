@@ -1,0 +1,43 @@
+CREATE TABLE FinancialRecord (
+    id TEXT NOT NULL PRIMARY KEY,
+    farmId TEXT NOT NULL,
+    type TEXT NOT NULL,
+    category TEXT NOT NULL,
+    amount REAL NOT NULL,
+    description TEXT,
+    date TEXT NOT NULL,
+    createdAt TEXT,
+    updatedAt TEXT,
+    FOREIGN KEY (farmId) REFERENCES Farm(id) ON DELETE CASCADE
+);
+
+getAllFinancialRecords:
+SELECT * FROM FinancialRecord ORDER BY date DESC;
+
+getFinancialRecordById:
+SELECT * FROM FinancialRecord WHERE id = ?;
+
+getFinancialRecordsByFarmId:
+SELECT * FROM FinancialRecord WHERE farmId = ? ORDER BY date DESC;
+
+getFinancialRecordsByType:
+SELECT * FROM FinancialRecord WHERE type = ? ORDER BY date DESC;
+
+getFinancialRecordsByTypeAndFarmId:
+SELECT * FROM FinancialRecord WHERE type = ? AND farmId = ? ORDER BY date DESC;
+
+searchFinancialRecords:
+SELECT * FROM FinancialRecord WHERE description LIKE '%' || ? || '%' OR category LIKE '%' || ? || '%' ORDER BY date DESC;
+
+insertFinancialRecord:
+INSERT INTO FinancialRecord(id, farmId, type, category, amount, description, date, createdAt, updatedAt)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+updateFinancialRecord:
+UPDATE FinancialRecord
+SET farmId = ?, type = ?, category = ?, amount = ?, description = ?, date = ?, updatedAt = ?
+WHERE id = ?;
+
+deleteFinancialRecord:
+DELETE FROM FinancialRecord WHERE id = ?;
+

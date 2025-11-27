@@ -1,34 +1,38 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 plugins {
-    id("com.android.application") version "8.0.2" apply false
-    id("org.jetbrains.kotlin.android") version "1.9.20" apply false
-    id("org.jetbrains.kotlin.kapt") version "1.9.20" apply false
-    id("org.jetbrains.kotlin.plugin.parcelize") version "1.9.20" apply false
+    id("com.android.application") version "8.9.2" apply false
+    id("org.jetbrains.kotlin.android") version "1.9.24" apply false
+    id("org.jetbrains.kotlin.kapt") version "1.9.24" apply false
+    id("org.jetbrains.kotlin.plugin.parcelize") version "1.9.24" apply false
     id("com.google.gms.google-services") version "4.4.3" apply false
     id("com.google.firebase.crashlytics") version "2.9.9" apply false
+    id("com.google.dagger.hilt.android") version "2.48" apply false
     
     // Kotlin Multiplatform
-    kotlin("multiplatform") version "1.9.20" apply false
-    kotlin("plugin.serialization") version "1.9.20" apply false
+    kotlin("multiplatform") version "1.9.24" apply false
+    kotlin("plugin.serialization") version "1.9.24" apply false
     
     // Compose Multiplatform
     id("org.jetbrains.compose") version "1.5.11" apply false
     
     // iOS Support
-    id("org.jetbrains.kotlin.native.cocoapods") version "1.9.20" apply false
+    id("org.jetbrains.kotlin.native.cocoapods") version "1.9.24" apply false
     
     // Web Support
-    id("org.jetbrains.kotlin.js") version "1.9.20" apply false
+    id("org.jetbrains.kotlin.js") version "1.9.24" apply false
     
     // Desktop Support
-    id("org.jetbrains.kotlin.jvm") version "1.9.20" apply false
+    id("org.jetbrains.kotlin.jvm") version "1.9.24" apply false
+    
+    // SQLDelight
+    id("app.cash.sqldelight") version "2.0.0" apply false
 }
 
 // Project-wide configuration removed - repositories are now managed in settings.gradle.kts
 
 // Cross-platform dependencies versions
 extra["compose.version"] = "1.5.11"
-extra["kotlin.version"] = "1.9.20"
+extra["kotlin.version"] = "1.9.24"
 extra["coroutines.version"] = "1.7.3"
 extra["serialization.version"] = "1.6.0"
 extra["ktor.version"] = "2.3.7"

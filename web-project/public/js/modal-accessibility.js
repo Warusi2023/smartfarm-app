@@ -78,6 +78,62 @@ class ModalAccessibility {
                 }
             }
         });
+
+        // Ensure all modal close buttons actually close, even if attributes are missing
+        document.addEventListener('click', (event) => {
+            const closeBtn = event.target.closest('[data-bs-dismiss="modal"], .btn-close');
+            if (!closeBtn) return;
+            const modal = closeBtn.closest('.modal');
+            if (!modal) return;
+
+            // Proactively stop propagation to avoid other interceptors
+            event.preventDefault();
+            event.stopPropagation();
+
+            // Clean up observers to avoid aria-hidden loops during hide
+            if (modal._ariaHiddenObserver) {
+                modal._ariaHiddenObserver.disconnect();
+                delete modal._ariaHiddenObserver;
+                delete modal._ariaHiddenExpected;
+            }
+
+            try {
+                const instance = bootstrap?.Modal?.getInstance(modal);
+
+                if (instance) {
+                    instance.hide();
+                } else {
+                    // Fallback for non-Bootstrap or manually toggled dialogs
+                    if (typeof bootstrap?.Modal?.getOrCreateInstance === 'function') {
+                        const createdInstance = bootstrap.Modal.getOrCreateInstance(modal);
+                        if (createdInstance) {
+                            createdInstance.hide();
+                            return;
+                        }
+                    }
+
+                    // Manual hide fallback: remove visibility classes / restore scrolling
+                    modal.classList.remove('show');
+                    modal.setAttribute('aria-hidden', 'true');
+                    modal.style.display = 'none';
+
+                    // Clean up any leftover backdrop
+                    const backdrop = document.querySelector('.modal-backdrop');
+                    if (backdrop) {
+                        backdrop.remove();
+                    }
+
+                    document.body.classList.remove('modal-open');
+                    document.body.style.removeProperty('overflow');
+                    document.body.style.removeProperty('paddingRight');
+
+                    // Ensure accessibility state resets even if Bootstrap events don't fire
+                    this.toggleModalAccessibility(modal, false);
+                }
+            } catch (error) {
+                console.error('❌ ModalAccessibility: Failed to hide modal via close button:', error);
+            }
+        }, true);
     }
 
     setupStaticModals() {
@@ -109,21 +165,91 @@ class ModalAccessibility {
     preventBootstrapAriaHidden(modal, shouldBeHidden) {
         if (!modal) return;
         
+        // If an observer already exists and is watching for the same expected value, reuse it
+        if (modal._ariaHiddenObserver && modal._ariaHiddenExpected === shouldBeHidden) {
+            return; // Already watching for this expected value, no need to create another observer
+        }
+        
+        // Clean up any existing observer with different expected value
+        if (modal._ariaHiddenObserver) {
+            modal._ariaHiddenObserver.disconnect();
+            delete modal._ariaHiddenObserver;
+        }
+        
+        // Store expected value for this observer
+        modal._ariaHiddenExpected = shouldBeHidden;
+        
+        // Track if we're making a change to prevent recursion
+        let isCorrecting = false;
+        let lastCorrectedValue = null;
+        let correctionCount = 0;
+        const MAX_CORRECTIONS = 3; // Prevent infinite loops
+        
         // Use a MutationObserver to watch for aria-hidden changes
         const observer = new MutationObserver((mutations) => {
+            // If we're already correcting, ignore to prevent recursion
+            if (isCorrecting) {
+                return;
+            }
+            
             mutations.forEach((mutation) => {
                 if (mutation.type === 'attributes' && mutation.attributeName === 'aria-hidden') {
                     const currentValue = modal.getAttribute('aria-hidden');
                     const expectedValue = shouldBeHidden ? 'true' : null;
                     
-                    // If Bootstrap set an incorrect value, fix it
+                    // Prevent correcting the same value repeatedly
+                    if (currentValue === lastCorrectedValue) {
+                        return;
+                    }
+                    
+                    // Prevent infinite loops
+                    if (correctionCount >= MAX_CORRECTIONS) {
+                        console.warn('⚠️ ModalAccessibility: Max corrections reached, disconnecting observer');
+                        observer.disconnect();
+                        delete modal._ariaHiddenObserver;
+                        return;
+                    }
+                    
+                    // If Bootstrap set an incorrect value, fix it (but only if it's different)
                     if (currentValue !== expectedValue) {
-                        console.log(`🔧 ModalAccessibility: Correcting aria-hidden from "${currentValue}" to "${expectedValue}"`);
-                        if (shouldBeHidden) {
-                            modal.setAttribute('aria-hidden', 'true');
+                        // Only correct if we haven't already corrected this value (prevent rapid corrections)
+                        if (currentValue !== lastCorrectedValue) {
+                            isCorrecting = true;
+                            correctionCount++;
+                            
+                            // Disconnect observer temporarily to prevent recursion
+                            observer.disconnect();
+                            
+                            if (shouldBeHidden) {
+                                modal.setAttribute('aria-hidden', 'true');
+                                lastCorrectedValue = 'true';
+                            } else {
+                                modal.removeAttribute('aria-hidden');
+                                lastCorrectedValue = null;
+                            }
+                            
+                            // Reconnect observer after a delay to prevent immediate recursion
+                            // Use a longer delay to ensure Bootstrap is done making changes
+                            setTimeout(() => {
+                                isCorrecting = false;
+                                // Only reconnect if modal still exists and observer still exists and expected value hasn't changed
+                                if (modal._ariaHiddenObserver && document.body.contains(modal) && modal._ariaHiddenExpected === shouldBeHidden) {
+                                    observer.observe(modal, { attributes: true, attributeFilter: ['aria-hidden'] });
+                                }
+                            }, 200); // Longer delay to prevent recursion
                         } else {
-                            modal.removeAttribute('aria-hidden');
+                            // If we already corrected this value, something is wrong - disconnect to prevent infinite loop
+                            if (correctionCount >= 2) {
+                                console.warn('⚠️ ModalAccessibility: Multiple corrections detected, disconnecting observer to prevent loop');
+                                observer.disconnect();
+                                delete modal._ariaHiddenObserver;
+                                delete modal._ariaHiddenExpected;
+                            }
                         }
+                    } else {
+                        // Reset correction count if value is correct
+                        correctionCount = 0;
+                        lastCorrectedValue = null;
                     }
                 }
             });
@@ -133,13 +259,22 @@ class ModalAccessibility {
         modal._ariaHiddenObserver = observer;
         observer.observe(modal, { attributes: true, attributeFilter: ['aria-hidden'] });
         
-        // Clean up observer after 5 seconds to prevent memory leaks
-        setTimeout(() => {
+        // Clean up observer after modal is closed or 10 seconds
+        const cleanupTimeout = setTimeout(() => {
             if (modal._ariaHiddenObserver) {
                 modal._ariaHiddenObserver.disconnect();
                 delete modal._ariaHiddenObserver;
             }
-        }, 5000);
+            clearTimeout(cleanupTimeout);
+        }, 10000);
+        
+        // Also cleanup when modal is hidden
+        modal.addEventListener('hidden.bs.modal', () => {
+            if (modal._ariaHiddenObserver) {
+                modal._ariaHiddenObserver.disconnect();
+                delete modal._ariaHiddenObserver;
+            }
+        }, { once: true });
     }
 
     // Reusable function to toggle modal accessibility
@@ -210,10 +345,15 @@ class ModalAccessibility {
                 console.log('🔧 ModalAccessibility: Removed focus from:', focusedElement);
             }
 
-            // CRITICAL: Prevent Bootstrap from interfering with aria-hidden
-            this.preventBootstrapAriaHidden(modalEl, true);
+            // CRITICAL: Clean up observer FIRST before setting aria-hidden to prevent conflicts
+            if (modalEl._ariaHiddenObserver) {
+                modalEl._ariaHiddenObserver.disconnect();
+                delete modalEl._ariaHiddenObserver;
+                delete modalEl._ariaHiddenExpected;
+            }
 
-            // Set aria-hidden
+            // Now it's safe to set aria-hidden - Bootstrap will set it correctly
+            // We don't need to prevent Bootstrap anymore since modal is closing
             modalEl.setAttribute('aria-hidden', 'true');
             
             // Remove aria-modal
@@ -246,6 +386,14 @@ class ModalAccessibility {
 
     handleModalHide(modal) {
         console.log('🔧 ModalAccessibility: Modal hiding:', modal.id || 'unnamed modal');
+        
+        // CRITICAL: Clean up observer immediately to prevent conflicts during hide
+        if (modal._ariaHiddenObserver) {
+            modal._ariaHiddenObserver.disconnect();
+            delete modal._ariaHiddenObserver;
+            delete modal._ariaHiddenExpected;
+        }
+        
         this.toggleModalAccessibility(modal, false);
     }
 

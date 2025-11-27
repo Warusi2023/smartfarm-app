@@ -1,0 +1,44 @@
+CREATE TABLE Task (
+    id TEXT NOT NULL PRIMARY KEY,
+    farmId TEXT NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT,
+    status TEXT NOT NULL,
+    priority TEXT,
+    dueDate TEXT,
+    assignedTo TEXT,
+    createdAt TEXT,
+    updatedAt TEXT,
+    FOREIGN KEY (farmId) REFERENCES Farm(id) ON DELETE CASCADE
+);
+
+getAllTasks:
+SELECT * FROM Task ORDER BY dueDate ASC, priority DESC;
+
+getTaskById:
+SELECT * FROM Task WHERE id = ?;
+
+getTasksByFarmId:
+SELECT * FROM Task WHERE farmId = ? ORDER BY dueDate ASC, priority DESC;
+
+getTasksByStatus:
+SELECT * FROM Task WHERE status = ? ORDER BY dueDate ASC, priority DESC;
+
+getTasksByStatusAndFarmId:
+SELECT * FROM Task WHERE status = ? AND farmId = ? ORDER BY dueDate ASC, priority DESC;
+
+searchTasks:
+SELECT * FROM Task WHERE title LIKE '%' || ? || '%' OR description LIKE '%' || ? || '%' ORDER BY dueDate ASC;
+
+insertTask:
+INSERT INTO Task(id, farmId, title, description, status, priority, dueDate, assignedTo, createdAt, updatedAt)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+updateTask:
+UPDATE Task
+SET farmId = ?, title = ?, description = ?, status = ?, priority = ?, dueDate = ?, assignedTo = ?, updatedAt = ?
+WHERE id = ?;
+
+deleteTask:
+DELETE FROM Task WHERE id = ?;
+

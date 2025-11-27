@@ -4,8 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - SmartFarm</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="images/favicon/favicon.ico">
+    <link rel="icon" type="image/png" sizes="16x16" href="images/favicon/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="images/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="64x64" href="images/favicon/favicon-64x64.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="images/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="images/favicon/android-chrome-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="images/favicon/android-chrome-512x512.png">
+    <link rel="manifest" href="images/favicon/site.webmanifest">
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Google Sign-In SDK -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    
+    <!-- Facebook SDK -->
+    <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>
     <style>
         :root {
             --primary-color: #4CAF50;
@@ -400,16 +417,18 @@
                         <!-- Login Form -->
                         <form id="loginForm" novalidate>
                             <div class="form-group">
+                                <label for="email" class="visually-hidden">Email Address</label>
                                 <i class="fas fa-envelope input-icon"></i>
-                                <input type="email" class="form-control input-with-icon" id="email" placeholder="Email address" required>
+                                <input type="email" class="form-control input-with-icon" id="email" name="email" placeholder="Email address" required aria-label="Email Address" autocomplete="email">
                                 <div class="invalid-feedback">
                                     Please enter a valid email address.
                                 </div>
                             </div>
 
                             <div class="form-group">
+                                <label for="password" class="visually-hidden">Password</label>
                                 <i class="fas fa-lock input-icon"></i>
-                                <input type="password" class="form-control input-with-icon" id="password" placeholder="Password" required>
+                                <input type="password" class="form-control input-with-icon" id="password" name="password" placeholder="Password" required aria-label="Password" autocomplete="current-password">
                                 <button type="button" class="password-toggle" onclick="togglePassword()">
                                     <i class="fas fa-eye" id="passwordIcon"></i>
                                 </button>
@@ -457,6 +476,9 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/api-url-fix.js"></script>
+    <script src="js/login-fix.js"></script>
+    <script src="js/navigation-dropdown.js"></script>
     <script>
         // Form validation and submission
         document.getElementById('loginForm').addEventListener('submit', function(e) {
@@ -518,7 +540,10 @@
             btnText.style.display = 'none';
             loading.classList.add('show');
 
-            // API call to backend
+            // API call to backend with timeout
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+            
             fetch('https://smartfarm-app-production.up.railway.app/api/auth/login', {
                 method: 'POST',
                 headers: {
@@ -527,12 +552,14 @@
                 body: JSON.stringify({
                     email: email,
                     password: password
-                })
+                }),
+                signal: controller.signal
             })
             .then(response => {
+                clearTimeout(timeoutId);
                 if (!response.ok) {
                     // If backend is not available, try fallback authentication
-                    console.log('Backend not available, trying fallback authentication...');
+                    console.log('Backend not available (status:', response.status, '), trying fallback authentication...');
                     return handleFallbackLogin(email, password, rememberMe);
                 }
                 return response.json();
@@ -549,17 +576,21 @@
                     showAlert('Login successful! Redirecting to dashboard...', 'success');
                     
                     // Store login state and token
+                    const loginTime = new Date().toISOString();
                     if (rememberMe) {
                         localStorage.setItem('smartfarm_remember', 'true');
-                        localStorage.setItem('smartfarm_user', email);
+                        localStorage.setItem('smartfarm_user', JSON.stringify(data.data.user));
                         if (data.token) {
                             localStorage.setItem('smartfarm_token', data.token);
                         }
+                        localStorage.setItem('smartfarm_loginTime', loginTime);
                     } else {
-                        sessionStorage.setItem('smartfarm_user', email);
+                        sessionStorage.setItem('smartfarm_remember', 'false');
+                        sessionStorage.setItem('smartfarm_user', JSON.stringify(data.data.user));
                         if (data.token) {
                             sessionStorage.setItem('smartfarm_token', data.token);
                         }
+                        sessionStorage.setItem('smartfarm_loginTime', loginTime);
                     }
 
                     // Store user data with country for currency
@@ -577,8 +608,7 @@
                         storage.setItem('smartfarm_userData', JSON.stringify(userData));
                     }
 
-                    // Store login timestamp
-                    const loginTime = new Date().toISOString();
+                    // Store login timestamp (reusing existing loginTime variable)
                     if (rememberMe) {
                         localStorage.setItem('smartfarm_loginTime', loginTime);
                     } else {
@@ -597,10 +627,10 @@
                     if (storedUser && storedToken) {
                         console.log('✅ Authentication data stored successfully');
                         console.log('=== LOGIN SUCCESS DEBUG END ===');
-                        // Redirect to dashboard
+                        // Redirect to dashboard with success parameter
                         setTimeout(() => {
                             console.log('Redirecting to dashboard...');
-                            window.location.href = 'dashboard.html';
+                            window.location.href = 'dashboard.html?login=success';
                         }, 1500);
                     } else {
                         console.log('❌ Error storing authentication data');
@@ -616,10 +646,11 @@
                 }
             })
             .catch(error => {
+                clearTimeout(timeoutId);
                 console.error('Login error:', error);
-                console.log('Network error, trying fallback authentication...');
+                console.log('Network error or timeout, trying fallback authentication...');
                 
-                // Try fallback authentication on network errors
+                // Try fallback authentication on network errors or timeouts
                 handleFallbackLogin(email, password, rememberMe)
                     .then(data => {
                         if (data.status === 'success') {
@@ -632,21 +663,24 @@
                             showAlert('Login successful (Demo Mode)! Redirecting to dashboard...', 'success');
                             
                             // Store login state and token
+                            const loginTime = new Date().toISOString();
                             if (rememberMe) {
                                 localStorage.setItem('smartfarm_remember', 'true');
-                                localStorage.setItem('smartfarm_user', email);
+                                localStorage.setItem('smartfarm_user', JSON.stringify(data.data));
                                 localStorage.setItem('smartfarm_token', data.token);
+                                localStorage.setItem('smartfarm_loginTime', loginTime);
                             } else {
-                                sessionStorage.setItem('smartfarm_user', email);
+                                sessionStorage.setItem('smartfarm_remember', 'false');
+                                sessionStorage.setItem('smartfarm_user', JSON.stringify(data.data));
                                 sessionStorage.setItem('smartfarm_token', data.token);
+                                sessionStorage.setItem('smartfarm_loginTime', loginTime);
                             }
 
                             // Store user data
                             const storage = rememberMe ? localStorage : sessionStorage;
                             storage.setItem('smartfarm_userData', JSON.stringify(data.data));
 
-                            // Store login timestamp
-                            const loginTime = new Date().toISOString();
+                            // Store login timestamp (reusing existing loginTime variable)
                             if (rememberMe) {
                                 localStorage.setItem('smartfarm_loginTime', loginTime);
                             } else {
@@ -659,10 +693,10 @@
                             
                             if (storedUser && storedToken) {
                                 console.log('✅ Fallback authentication data stored successfully');
-                                // Redirect to dashboard
+                                // Redirect to dashboard with success parameter
                                 setTimeout(() => {
                                     console.log('Redirecting to dashboard...');
-                                    window.location.href = 'dashboard.html';
+                                    window.location.href = 'dashboard.html?login=success';
                                 }, 1500);
                             } else {
                                 showAlert('Error storing authentication data. Please try again.', 'danger');
@@ -771,12 +805,8 @@
                 });
             }
             
-            if (password.length < 6) {
-                return Promise.resolve({
-                    status: 'error',
-                    message: 'Password must be at least 6 characters long'
-                });
-            }
+            // Remove password length restriction for demo mode
+            console.log('Demo mode: accepting any password length');
             
             // For demo purposes, accept any valid email/password combination
             // In production, this would be replaced with proper authentication
@@ -1051,6 +1081,197 @@
                 this.classList.remove('is-invalid');
                 this.classList.add('is-valid');
             }
+        });
+
+        // Social Login Configuration and Implementation
+        window.socialLoginConfig = {
+            google: {
+                clientId: 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com',
+                // For demo purposes, we'll use a mock implementation
+                demo: true
+            },
+            facebook: {
+                appId: 'YOUR_FACEBOOK_APP_ID',
+                // For demo purposes, we'll use a mock implementation
+                demo: true
+            }
+        };
+
+        // Initialize social login providers
+        function initializeSocialLogin() {
+            console.log('Initializing social login providers...');
+            
+            // Initialize Google Sign-In
+            if (window.socialLoginConfig.google.demo) {
+                console.log('Google Sign-In initialized (Demo Mode)');
+            } else {
+                // Real Google Sign-In initialization
+                if (typeof google !== 'undefined') {
+                    google.accounts.id.initialize({
+                        client_id: window.socialLoginConfig.google.clientId,
+                        callback: handleGoogleSignIn
+                    });
+                }
+            }
+
+            // Initialize Facebook Login
+            if (window.socialLoginConfig.facebook.demo) {
+                console.log('Facebook Login initialized (Demo Mode)');
+            } else {
+                // Real Facebook Login initialization
+                if (typeof FB !== 'undefined') {
+                    FB.init({
+                        appId: window.socialLoginConfig.facebook.appId,
+                        cookie: true,
+                        xfbml: true,
+                        version: 'v18.0'
+                    });
+                }
+            }
+        }
+
+        // Social login handler
+        function socialLogin(provider) {
+            console.log('Social login initiated for:', provider);
+            
+            if (provider === 'google') {
+                if (window.socialLoginConfig.google.demo) {
+                    handleDemoGoogleSignIn();
+                } else {
+                    google.accounts.id.prompt();
+                }
+            } else if (provider === 'facebook') {
+                if (window.socialLoginConfig.facebook.demo) {
+                    handleDemoFacebookSignIn();
+                } else {
+                    FB.login(handleFacebookSignIn, {scope: 'email,public_profile'});
+                }
+            }
+        }
+
+        // Demo Google Sign-In (for testing without real credentials)
+        function handleDemoGoogleSignIn() {
+            console.log('Demo Google Sign-In triggered');
+            
+            const demoUser = {
+                email: 'demo@gmail.com',
+                firstName: 'Demo',
+                lastName: 'User',
+                picture: 'https://via.placeholder.com/100x100/4285f4/ffffff?text=G',
+                provider: 'google'
+            };
+
+            processSocialLogin(demoUser);
+        }
+
+        // Demo Facebook Sign-In (for testing without real credentials)
+        function handleDemoFacebookSignIn() {
+            console.log('Demo Facebook Sign-In triggered');
+            
+            const demoUser = {
+                email: 'demo@facebook.com',
+                firstName: 'Demo',
+                lastName: 'User',
+                picture: 'https://via.placeholder.com/100x100/1877f2/ffffff?text=F',
+                provider: 'facebook'
+            };
+
+            processSocialLogin(demoUser);
+        }
+
+        // Real Google Sign-In callback
+        function handleGoogleSignIn(response) {
+            console.log('Google Sign-In response:', response);
+            
+            // Decode the JWT token to get user info
+            const payload = JSON.parse(atob(response.credential.split('.')[1]));
+            
+            const user = {
+                email: payload.email,
+                firstName: payload.given_name,
+                lastName: payload.family_name,
+                picture: payload.picture,
+                provider: 'google',
+                googleId: payload.sub
+            };
+
+            processSocialLogin(user);
+        }
+
+        // Real Facebook Sign-In callback
+        function handleFacebookSignIn(response) {
+            console.log('Facebook Login response:', response);
+            
+            if (response.authResponse) {
+                FB.api('/me', {fields: 'email,first_name,last_name,picture'}, function(userInfo) {
+                    const user = {
+                        email: userInfo.email,
+                        firstName: userInfo.first_name,
+                        lastName: userInfo.last_name,
+                        picture: userInfo.picture?.data?.url,
+                        provider: 'facebook',
+                        facebookId: userInfo.id
+                    };
+
+                    processSocialLogin(user);
+                });
+            } else {
+                console.log('Facebook login cancelled or failed');
+                showAlert('Facebook login was cancelled or failed. Please try again.', 'danger');
+            }
+        }
+
+        // Process social login (common handler)
+        function processSocialLogin(user) {
+            console.log('Processing social login for:', user);
+            
+            // Show loading state
+            const btnText = document.querySelector('.btn-text');
+            const loading = document.querySelector('.loading');
+            btnText.style.display = 'none';
+            loading.classList.add('show');
+            
+            // Clear any existing authentication data
+            clearAllAuthData();
+            
+            // Generate a demo token
+            const token = 'social-token-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+            
+            // Store authentication data
+            const rememberMe = document.getElementById('rememberMe').checked;
+            const loginTime = new Date().toISOString();
+            
+            if (rememberMe) {
+                localStorage.setItem('smartfarm_remember', 'true');
+                localStorage.setItem('smartfarm_user', JSON.stringify(user));
+                localStorage.setItem('smartfarm_token', token);
+                localStorage.setItem('smartfarm_loginTime', loginTime);
+            } else {
+                sessionStorage.setItem('smartfarm_remember', 'false');
+                sessionStorage.setItem('smartfarm_user', JSON.stringify(user));
+                sessionStorage.setItem('smartfarm_token', token);
+                sessionStorage.setItem('smartfarm_loginTime', loginTime);
+            }
+
+            // Store additional user data
+            const storage = rememberMe ? localStorage : sessionStorage;
+            storage.setItem('smartfarm_userData', JSON.stringify(user));
+            storage.setItem('smartfarm_socialProvider', user.provider);
+
+            // Show success message
+            showAlert(`Login successful with ${user.provider.charAt(0).toUpperCase() + user.provider.slice(1)}! Redirecting to dashboard...`, 'success');
+
+            // Redirect to dashboard
+            setTimeout(() => {
+                console.log('Redirecting to dashboard after social login...');
+                window.location.href = 'dashboard.html?login=success&provider=' + user.provider;
+            }, 1500);
+        }
+
+        // Initialize social login when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize social login after a short delay to ensure SDKs are loaded
+            setTimeout(initializeSocialLogin, 1000);
         });
     </script>
 </body>

@@ -68,11 +68,25 @@ class WeatherService {
                 // Fallback to saved location or default
                 const savedLocation = this.getSavedLocation();
                 if (savedLocation) {
-                    this.currentLocation = savedLocation;
-                    await this.fetchWeatherData(savedLocation);
+                    // Migrate old Fiji locations to Australia
+                    if (savedLocation.name && (savedLocation.name.includes('Fiji') || savedLocation.name.includes('Suva'))) {
+                        console.log('Migrating saved Fiji location to Australia');
+                        this.currentLocation = { lat: -33.8688, lng: 151.2093, name: 'Sydney, NSW, Australia' };
+                        this.saveLocationPreference(this.currentLocation);
+                        await this.fetchWeatherData(this.currentLocation);
+                    } else if (savedLocation.lat && savedLocation.lat === -18.1248 && savedLocation.lng === 178.4501) {
+                        // Check coordinates for Fiji
+                        console.log('Migrating saved Fiji coordinates to Australia');
+                        this.currentLocation = { lat: -33.8688, lng: 151.2093, name: 'Sydney, NSW, Australia' };
+                        this.saveLocationPreference(this.currentLocation);
+                        await this.fetchWeatherData(this.currentLocation);
+                    } else {
+                        this.currentLocation = savedLocation;
+                        await this.fetchWeatherData(savedLocation);
+                    }
                 } else {
-                    // Default to Fiji
-                    this.currentLocation = { lat: -18.1248, lng: 178.4501, name: 'Fiji' };
+                    // Default to Australia
+                    this.currentLocation = { lat: -33.8688, lng: 151.2093, name: 'Sydney, NSW, Australia' };
                     await this.fetchWeatherData(this.currentLocation);
                 }
             }
@@ -325,7 +339,7 @@ class WeatherService {
     getSeason(lat, date) {
         const month = date.getMonth() + 1;
         
-        // For Southern Hemisphere (Fiji)
+        // For Southern Hemisphere (Australia)
         if (lat < 0) {
             if (month >= 12 || month <= 2) return 'Summer';
             if (month >= 3 && month <= 5) return 'Autumn';
@@ -368,22 +382,22 @@ class WeatherService {
         };
         
         this.weatherData = {
-            location: { lat: -18.1248, lng: 178.4501, name: 'Fiji' },
+            location: { lat: -33.8688, lng: 151.2093, name: 'Australia' },
             current: {
-                temperature: 28,
-                humidity: 75,
-                rainfall: 85,
-                windSpeed: 12,
-                pressure: 1013,
-                uvIndex: 8,
-                cloudCover: 30,
+                temperature: 22,
+                humidity: 65,
+                rainfall: 45,
+                windSpeed: 15,
+                pressure: 1015,
+                uvIndex: 6,
+                cloudCover: 40,
                 description: 'Partly Cloudy',
                 icon: '02d',
                 visibility: 10,
-                feelsLike: 30
+                feelsLike: 24
             },
             forecast: generateDemoForecast(),
-            season: this.getSeason(-18.1248, new Date()),
+            season: this.getSeason(-33.8688, new Date()),
             lastUpdate: new Date(),
             source: 'Demo Data'
         };

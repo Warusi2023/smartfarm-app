@@ -36,16 +36,35 @@ web-project/
 
 ## Getting Started
 
-### 1. Local Development
+### Standard Development Workflow
+
 ```bash
 # Navigate to web project directory
 cd web-project
 
-# Open index.html in your browser
-# Or use a local server for development
+# Install dependencies
+npm install
+
+# Start development server (Vite dev server with HMR)
+npm run dev
+# Server runs on http://localhost:5173
+
+# Build for production
+npm run build
+# Output: dist/
+
+# Preview production build locally
+npm run preview
+# Server runs on http://localhost:4173
 ```
 
-### 2. Using Local Server
+### Quick Start
+
+```bash
+cd web-project && npm install && npm run dev
+```
+
+### Using Local Server (Alternative)
 ```bash
 # Python 3
 python -m http.server 8000

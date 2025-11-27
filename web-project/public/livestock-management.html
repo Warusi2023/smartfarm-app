@@ -4,6 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Livestock Management - SmartFarm</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="images/favicon/favicon.ico">
+    <link rel="icon" type="image/png" sizes="16x16" href="images/favicon/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="images/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="64x64" href="images/favicon/favicon-64x64.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="images/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="images/favicon/android-chrome-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="images/favicon/android-chrome-512x512.png">
+    <link rel="manifest" href="images/favicon/site.webmanifest">
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -310,6 +321,17 @@
         .health-good { background-color: #17a2b8; }
         .health-fair { background-color: #ffc107; }
         .health-poor { background-color: #dc3545; }
+        .health-record-entry {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 12px;
+            background: #fdfdfd;
+            margin-bottom: 12px;
+        }
+        .health-record-entry .record-meta {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
 
         .weight-chart {
             height: 250px;
@@ -486,8 +508,11 @@
                     <p class="mb-0 mt-2">Manage your livestock, track health, and monitor breeding</p>
                 </div>
                 <div class="col-md-4 text-end">
-                    <button class="btn btn-light btn-lg" data-bs-toggle="modal" data-bs-target="#addLivestockModal">
+                    <button class="btn btn-light btn-lg me-2" data-bs-toggle="modal" data-bs-target="#addLivestockModal">
                         <i class="fas fa-plus me-2"></i>Add New Animal
+                    </button>
+                    <button class="btn btn-success btn-lg" onclick="showFeedMixCalculator()">
+                        <i class="fas fa-calculator me-2"></i>Feed Mix Calculator
                     </button>
                 </div>
             </div>
@@ -533,7 +558,7 @@
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <select class="form-select" id="speciesFilter">
+                    <select class="form-select" id="speciesFilter" data-catalog-group="pets">
                         <option value="">All Species</option>
                         <option value="cattle">Cattle</option>
                         <option value="pigs">Pigs</option>
@@ -552,7 +577,7 @@
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <button class="btn btn-custom w-100" onclick="applyFilters()">
+                    <button class="btn btn-custom w-100" onclick="applyFilters()" title="Filters are applied automatically">
                         <i class="fas fa-filter me-2"></i>Filter
                     </button>
                 </div>
@@ -778,11 +803,11 @@
                 </div>
                 <div class="modal-body">
                     <form id="addLivestockForm">
-                        <div class="row">
+                        <div class="row align-items-center">
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">Species</label>
-                                    <select class="form-select form-control-custom" id="animalSpecies" required>
+                                    <select class="form-select form-control-custom" id="animalSpecies" data-catalog-group="pets" required onchange="updateLifecycleFields()">
                                         <option value="">Select Species</option>
                                         <option value="cattle">Cattle</option>
                                         <option value="pigs">Pigs</option>
@@ -802,6 +827,9 @@
                                         <div id="breedSuggestions" class="breed-suggestions"></div>
                                     </div>
                                 </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div id="animalSpeciesInsights" class="alert alert-success d-none mb-3"></div>
                             </div>
                         </div>
                         <div class="row">
@@ -855,15 +883,8 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">Lifecycle Stage</label>
-                                    <select class="form-select form-control-custom" id="lifecycleStage">
-                                        <option value="">Auto-calculated</option>
-                                        <option value="calf">Calf (0-12 months)</option>
-                                        <option value="heifer">Heifer (12-24 months)</option>
-                                        <option value="cow">Cow (24+ months)</option>
-                                        <option value="bull">Bull (12+ months)</option>
-                                        <option value="steer">Steer (12+ months)</option>
-                                        <option value="bullock">Bullock (12-24 months)</option>
-                                    </select>
+                                    <input type="text" class="form-control form-control-custom" id="lifecycleStage" readonly style="background-color: #e9ecef; cursor: not-allowed;">
+                                    <small class="text-muted"><i class="fas fa-info-circle me-1"></i>Auto-calculated based on birth date, species, and sex</small>
                                 </div>
                             </div>
                         </div>
@@ -922,11 +943,22 @@
                             <label class="form-label">Health Notes</label>
                             <textarea class="form-control form-control-custom" id="healthNotes" rows="3"></textarea>
                         </div>
+                        <div class="mb-3">
+                            <label class="form-label">Animal Photo</label>
+                            <input type="file" class="form-control form-control-custom" id="animalPhoto" accept="image/*" onchange="previewLivestockImage(event)">
+                            <small class="text-muted"><i class="fas fa-info-circle me-1"></i>Upload a photo to help identify the animal (optional)</small>
+                            <div id="imagePreviewContainer" class="mt-2" style="display: none;">
+                                <img id="imagePreview" src="" alt="Preview" class="img-thumbnail" style="max-width: 200px; max-height: 200px; object-fit: cover; border-radius: 8px;">
+                                <button type="button" class="btn btn-sm btn-outline-danger ms-2" onclick="clearImagePreview()">
+                                    <i class="fas fa-times me-1"></i>Remove
+                                </button>
+                            </div>
+                        </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-custom" onclick="saveNewLivestock()">
+                    <button type="button" id="saveLivestockButton" class="btn btn-custom" onclick="console.log('Button clicked'); if(window.saveNewLivestock){window.saveNewLivestock();}else if(saveNewLivestock){saveNewLivestock();}else{alert('Error: Save function not available. Please refresh the page.');}" style="pointer-events: auto; cursor: pointer;">
                         <i class="fas fa-save me-2"></i>Save Animal
                     </button>
                 </div>
@@ -945,11 +977,11 @@
                 <div class="modal-body">
                     <form id="editLivestockForm">
                         <input type="hidden" id="editAnimalId">
-                        <div class="row">
+                        <div class="row align-items-center">
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">Species</label>
-                                    <select class="form-select form-control-custom" id="editAnimalSpecies" required>
+                                    <select class="form-select form-control-custom" id="editAnimalSpecies" data-catalog-group="pets" required>
                                         <option value="">Select Species</option>
                                         <option value="cattle">Cattle</option>
                                         <option value="pigs">Pigs</option>
@@ -969,6 +1001,9 @@
                                         <div id="editBreedSuggestions" class="breed-suggestions"></div>
                                     </div>
                                 </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div id="editAnimalSpeciesInsights" class="alert alert-success d-none mb-3"></div>
                             </div>
                         </div>
                         <div class="row">
@@ -1021,6 +1056,145 @@
         </div>
     </div>
 
+    <!-- Feed Mix Calculator Modal -->
+    <div class="modal fade modal-custom" id="feedMixCalculatorModal" tabindex="-1" aria-labelledby="feedMixCalculatorModalLabel" aria-modal="true" role="dialog">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="feedMixCalculatorModalLabel">
+                        <i class="fas fa-calculator me-2"></i>Feed Mix Calculator
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <!-- Animal Selection -->
+                        <div class="col-md-4">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h6><i class="fas fa-paw me-2"></i>Animal Information</h6>
+                                </div>
+                                <div class="card-body">
+                                    <form id="feedMixForm">
+                                        <div class="mb-3">
+                                            <label for="feedMixSpecies" class="form-label">Species</label>
+                                            <select class="form-select" id="feedMixSpecies" required onchange="updateFeedMixLifecycleOptions()">
+                                                <option value="">Select Species</option>
+                                                <option value="cattle">Cattle</option>
+                                                <option value="pigs">Pigs</option>
+                                                <option value="chickens">Chickens</option>
+                                                <option value="sheep">Sheep</option>
+                                                <option value="goats">Goats</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="feedMixLifecycle" class="form-label">Lifecycle Stage</label>
+                                            <select class="form-select" id="feedMixLifecycle" required>
+                                                <option value="">Select Lifecycle Stage</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="feedMixWeight" class="form-label">Current Weight (kg)</label>
+                                            <input type="number" class="form-control" id="feedMixWeight" step="0.1" required placeholder="Enter weight">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="feedMixAge" class="form-label">Age (months)</label>
+                                            <input type="number" class="form-control" id="feedMixAge" step="0.1" placeholder="Enter age (optional)">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="feedMixPurpose" class="form-label">Production Purpose</label>
+                                            <select class="form-select" id="feedMixPurpose">
+                                                <option value="">Select Purpose (Optional)</option>
+                                                <option value="dairy">Dairy</option>
+                                                <option value="beef">Beef</option>
+                                                <option value="breeding">Breeding</option>
+                                                <option value="meat">Meat</option>
+                                                <option value="eggs">Eggs</option>
+                                                <option value="wool">Wool</option>
+                                            </select>
+                                        </div>
+                                        <button type="button" class="btn btn-success w-100" onclick="calculateFeedMix()">
+                                            <i class="fas fa-calculator me-2"></i>Calculate Feed Mix
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Results -->
+                        <div class="col-md-8">
+                            <div id="feedMixResults" style="display: none;">
+                                <!-- Nutritional Requirements -->
+                                <div class="card mb-3">
+                                    <div class="card-header">
+                                        <h6><i class="fas fa-chart-bar me-2"></i>Nutritional Requirements</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row" id="nutritionalRequirements">
+                                            <!-- Requirements will be populated here -->
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Feed Mix Composition -->
+                                <div class="card mb-3">
+                                    <div class="card-header">
+                                        <h6><i class="fas fa-seedling me-2"></i>Recommended Feed Mix</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <h6>Composition (%)</h6>
+                                                <div id="feedMixComposition">
+                                                    <!-- Feed mix will be populated here -->
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <h6>Daily Intake & Costs</h6>
+                                                <div id="feedMixCosts">
+                                                    <!-- Costs will be populated here -->
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Recommendations -->
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6><i class="fas fa-lightbulb me-2"></i>Recommendations</h6>
+                                    </div>
+                                    <div class="card-body" id="feedMixRecommendations">
+                                        <!-- Recommendations will be populated here -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Instructions -->
+                            <div id="feedMixInstructions" class="text-center text-muted">
+                                <i class="fas fa-info-circle fa-3x mb-3"></i>
+                                <h5>Feed Mix Calculator</h5>
+                                <p>Enter your animal's information to get personalized feed mix recommendations based on:</p>
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-weight me-2"></i>Weight and age</li>
+                                    <li><i class="fas fa-leaf me-2"></i>Nutritional requirements</li>
+                                    <li><i class="fas fa-chart-line me-2"></i>Production purpose</li>
+                                    <li><i class="fas fa-dollar-sign me-2"></i>Cost optimization</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-success" onclick="printFeedMixReport()">
+                        <i class="fas fa-print me-2"></i>Print Report
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Include AI advisory database -->
@@ -1028,6 +1202,10 @@
     <!-- Include config -->
     <script src="js/config.js"></script>
     <script src="js/api-service.js"></script>
+    <!-- Include Feed Mix Calculator -->
+    <script src="js/feed-mix-calculator.js"></script>
+    <!-- Include Modal Validator -->
+    <script src="js/modal-validator.js"></script>
     <!-- Include modal accessibility helper -->
     <script src="js/modal-accessibility.js"></script>
     
@@ -1356,8 +1534,9 @@
             }
         ];
 
-        // Cattle Lifecycle Management Functions
+        // Livestock Lifecycle Management Functions
         function updateLifecycleFields() {
+            const species = document.getElementById('animalSpecies').value;
             const sex = document.getElementById('animalSex').value;
             const birthDate = document.getElementById('birthDate').value;
             const breed = document.getElementById('animalBreed').value;
@@ -1366,51 +1545,124 @@
             const productionPurpose = document.getElementById('productionPurpose');
             
             // Show/hide breeding fields for female cattle
-            if (sex === 'female') {
-                breedingFields.style.display = 'block';
-            } else {
-                breedingFields.style.display = 'none';
+            if (breedingFields) {
+                if (sex === 'female' && (species === 'cattle' || species.toLowerCase() === 'cattle')) {
+                    breedingFields.style.display = 'block';
+                } else {
+                    breedingFields.style.display = 'none';
+                }
             }
             
-            // Auto-calculate lifecycle stage if birth date is provided
-            if (birthDate && sex) {
-                const calculatedStage = calculateLifecycleStage(birthDate, sex);
-                lifecycleStage.value = calculatedStage;
+            // Auto-calculate lifecycle stage if birth date, species, and sex are provided
+            if (birthDate && species && sex && lifecycleStage) {
+                const calculatedStage = calculateLifecycleStage(species, birthDate, sex);
+                lifecycleStage.value = calculatedStage || '';
                 
-                // Auto-suggest production purpose based on breed and sex
-                if (breed) {
+                // Auto-suggest production purpose based on breed and sex (for cattle)
+                if (breed && productionPurpose && (species === 'cattle' || species.toLowerCase() === 'cattle')) {
                     const suggestedPurpose = getRecommendedProductionPurpose(breed, sex);
                     if (suggestedPurpose && !productionPurpose.value) {
                         productionPurpose.value = suggestedPurpose;
                     }
                 }
+            } else if (lifecycleStage) {
+                lifecycleStage.value = '';
             }
         }
         
-        function calculateLifecycleStage(birthDate, sex) {
+        function calculateLifecycleStage(species, birthDate, sex) {
+            if (!birthDate) {
+                return '';
+            }
+            
             const birth = new Date(birthDate);
             const now = new Date();
             const ageInMonths = (now.getFullYear() - birth.getFullYear()) * 12 + (now.getMonth() - birth.getMonth());
             
-            if (ageInMonths < 12) {
-                return 'calf';
-            } else if (sex === 'female') {
-                if (ageInMonths < 24) {
-                    return 'heifer';
-                } else {
-                    return 'cow';
-                }
-            } else if (sex === 'male') {
-                if (ageInMonths < 24) {
-                    return 'bullock';
-                } else {
-                    return 'bull';
-                }
-            } else if (sex === 'neutered') {
-                return 'steer';
+            // Handle missing species parameter (backwards compatibility)
+            if (!species && sex) {
+                species = 'cattle'; // Default to cattle for old calls
             }
             
-            return '';
+            const speciesLower = (species || '').toLowerCase();
+            
+            // Cattle lifecycle stages
+            if (speciesLower === 'cattle') {
+                if (ageInMonths < 12) {
+                    return 'Calf';
+                } else if (sex === 'female') {
+                    if (ageInMonths < 24) {
+                        return 'Heifer';
+                    } else {
+                        return 'Cow';
+                    }
+                } else if (sex === 'male') {
+                    if (ageInMonths < 24) {
+                        return 'Bullock';
+                    } else {
+                        return 'Bull';
+                    }
+                } else if (sex === 'neutered') {
+                    return 'Steer';
+                }
+            }
+            
+            // Pigs lifecycle stages
+            else if (speciesLower === 'pigs' || speciesLower === 'pig') {
+                if (ageInMonths < 2) {
+                    return 'Piglet';
+                } else if (sex === 'female') {
+                    if (ageInMonths < 8) {
+                        return 'Gilt';
+                    } else {
+                        return 'Sow';
+                    }
+                } else if (sex === 'male') {
+                    return 'Boar';
+                }
+            }
+            
+            // Chickens lifecycle stages
+            else if (speciesLower === 'chickens' || speciesLower === 'chicken') {
+                if (ageInMonths < 1) {
+                    return 'Chick';
+                } else if (sex === 'female') {
+                    if (ageInMonths < 5) {
+                        return 'Pullet';
+                    } else {
+                        return 'Hen';
+                    }
+                } else if (sex === 'male') {
+                    return 'Rooster';
+                }
+            }
+            
+            // Sheep lifecycle stages
+            else if (speciesLower === 'sheep') {
+                if (ageInMonths < 12) {
+                    return 'Lamb';
+                } else if (sex === 'female') {
+                    return 'Ewe';
+                } else if (sex === 'male') {
+                    return 'Ram';
+                } else if (sex === 'neutered') {
+                    return 'Wether';
+                }
+            }
+            
+            // Goats lifecycle stages
+            else if (speciesLower === 'goats' || speciesLower === 'goat') {
+                if (ageInMonths < 12) {
+                    return 'Kid';
+                } else if (sex === 'female') {
+                    return 'Doe';
+                } else if (sex === 'male') {
+                    return 'Buck';
+                }
+            }
+            
+            // Default fallback
+            return 'Unknown';
         }
         
         function getRecommendedProductionPurpose(breed, sex) {
@@ -1465,7 +1717,7 @@
             if (!animal) return;
             
             const timeline = getBreedingTimeline(animal.birthDate);
-            const currentStage = calculateLifecycleStage(animal.birthDate, animal.sex);
+            const currentStage = calculateLifecycleStage(animal.species, animal.birthDate, animal.sex);
             
             const modal = document.createElement('div');
             modal.className = 'modal fade';
@@ -1557,7 +1809,137 @@
             await loadLivestock();
             updateStatistics();
             initializeBreedSuggestions();
+            
+            // Add visibility change listener to refetch when tab becomes active
+            document.addEventListener('visibilitychange', function() {
+                if (!document.hidden && !window._justAddedLivestock) {
+                    console.log('📱 Tab became visible, refreshing livestock data...');
+                    loadLivestock(false); // Don't show error banner on auto-refresh
+                }
+            });
+            
+            // Add online/offline listeners to refetch when network returns
+            window.addEventListener('online', function() {
+                if (!window._justAddedLivestock) {
+                    console.log('🌐 Network connection restored, refreshing livestock data...');
+                    loadLivestock();
+                }
+            });
+            
+            window.addEventListener('offline', function() {
+                console.log('📴 Network connection lost');
+                showAlert('Network connection lost. Working in offline mode.', 'warning');
+            });
+            
+            // Ensure Add New Animal button opens modal reliably
+            const addAnimalButtons = document.querySelectorAll('[data-bs-target="#addLivestockModal"]');
+            // Also find buttons by text content
+            document.querySelectorAll('button').forEach(btn => {
+                const text = btn.textContent || btn.innerText;
+                if (text.includes('Add New Animal') || text.includes('Add Your First Animal')) {
+                    if (!btn.hasAttribute('data-bs-target')) {
+                        addAnimalButtons.push(btn);
+                    }
+                }
+            });
+            
+            addAnimalButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    const modal = document.getElementById('addLivestockModal');
+                    if (modal) {
+                        // Ensure Bootstrap modal is initialized
+                        let bsModal = bootstrap.Modal.getInstance(modal);
+                        if (!bsModal) {
+                            bsModal = new bootstrap.Modal(modal);
+                        }
+                        // Show modal (Bootstrap will handle if already triggered)
+                        try {
+                            bsModal.show();
+                            console.log('✅ Add New Animal modal opened');
+                        } catch (err) {
+                            console.warn('Modal show error (may already be showing):', err);
+                        }
+                    } else {
+                        console.error('❌ addLivestockModal not found');
+                        showAlert('Error: Modal not found. Please refresh the page.', 'error');
+                    }
+                });
+            });
+            
+            // Add robust event listener for save button
+            // Set up when modal is shown
+            const addLivestockModal = document.getElementById('addLivestockModal');
+            if (addLivestockModal) {
+                addLivestockModal.addEventListener('shown.bs.modal', function() {
+                    const saveButton = document.getElementById('saveLivestockButton') || 
+                                      this.querySelector('button[onclick*="saveNewLivestock"]');
+                    if (saveButton) {
+                        // Ensure button is enabled and clickable
+                        saveButton.disabled = false;
+                        saveButton.style.pointerEvents = 'auto';
+                        saveButton.style.cursor = 'pointer';
+                        saveButton.style.opacity = '1';
+                        
+                        // Remove any existing event listeners by cloning
+                        if (!saveButton.hasAttribute('data-listener-attached')) {
+                            const newSaveButton = saveButton.cloneNode(true);
+                            saveButton.parentNode.replaceChild(newSaveButton, saveButton);
+                            
+                            // Keep onclick if it exists, but also add event listener
+                            const originalOnclick = newSaveButton.getAttribute('onclick');
+                            
+                            // Mark button as having listener attached
+                            newSaveButton.setAttribute('data-listener-attached', 'true');
+                            
+                            // Add robust event listener
+                            newSaveButton.addEventListener('click', function(e) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                e.stopImmediatePropagation();
+                                console.log('💾 Save button clicked - executing saveNewLivestock');
+                                
+                                if (typeof saveNewLivestock === 'function') {
+                                    saveNewLivestock().catch(err => {
+                                        console.error('❌ Error in saveNewLivestock:', err);
+                                        alert('Error saving animal: ' + err.message);
+                                    });
+                                } else {
+                                    console.error('❌ saveNewLivestock function not found!');
+                                    alert('Error: Save function not available. Please refresh the page.');
+                                }
+                                return false;
+                            }, true); // Use capture phase
+                            
+                            console.log('✅ Save button activated with event listener');
+                        }
+                    } else {
+                        console.warn('⚠️ Save button not found in modal');
+                    }
+                });
+            }
+            
         });
+        
+        // Global backup listener (only if button doesn't have onclick)
+        document.addEventListener('click', function(e) {
+            const button = e.target.closest('button');
+            if (button && 
+                (button.textContent.includes('Save Animal') || 
+                 button.innerHTML.includes('Save Animal')) &&
+                button.closest('#addLivestockModal') &&
+                !button.hasAttribute('data-listener-attached')) {
+                // Only handle if no other listener is working
+                const hasOnclick = button.hasAttribute('onclick');
+                if (!hasOnclick) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('💾 Save button clicked via global backup listener');
+                    if (typeof saveNewLivestock === 'function') {
+                        saveNewLivestock();
+                    }
+                }
+            }
+        }, true);
 
         function checkAuthentication() {
             const user = localStorage.getItem('smartfarm_user') || sessionStorage.getItem('smartfarm_user');
@@ -1588,44 +1970,278 @@
             console.log('User authenticated for livestock management:', user);
         }
 
-        async function loadLivestock() {
-            try {
-                console.log('🐄 Loading livestock data...');
-                
-                // Load from API if available
-                if (window.SmartFarmAPI) {
-                    const response = await window.SmartFarmAPI.getLivestock();
-                    if (response.success) {
-                        console.log('✅ Livestock data loaded from API:', response.data.length, 'animals');
-                        livestock = response.data;
-                    } else {
-                        console.warn('⚠️ API returned unsuccessful response:', response);
-                        // Keep existing livestock data
-                    }
-                } else {
-                    console.warn('⚠️ SmartFarmAPI not available, using local data');
-                }
-            } catch (error) {
-                console.error('❌ Error loading livestock data:', error);
-                // Keep existing livestock data
-            }
-
+        // Keep last good data to prevent UI from clearing on errors
+        let lastGoodLivestock = [];
+        
+        async function loadLivestock(showErrorBanner = true) {
             const container = document.getElementById('livestockContainer');
             const noAnimalsMessage = document.getElementById('noAnimalsMessage');
             
-            if (livestock.length === 0) {
-                container.innerHTML = '';
-                noAnimalsMessage.style.display = 'block';
+            if (!container || !noAnimalsMessage) {
+                console.error('❌ Required DOM elements not found');
                 return;
             }
             
-            noAnimalsMessage.style.display = 'none';
-            container.innerHTML = '';
+            // Remove existing error banner
+            const existingBanner = document.getElementById('livestock-error-banner');
+            if (existingBanner) {
+                existingBanner.remove();
+            }
             
-            livestock.forEach(animal => {
-                const animalCard = createLivestockCard(animal);
-                container.appendChild(animalCard);
-            });
+            let loadError = null;
+            let loadedFromAPI = false;
+            
+            try {
+                console.log('🐄 Loading livestock data...');
+                
+                // FIRST: Load from localStorage to get the most current data including newly added items
+                let localLivestock = [];
+                try {
+                    const savedLivestock = localStorage.getItem('livestock');
+                    if (savedLivestock) {
+                        const parsedLivestock = JSON.parse(savedLivestock);
+                        if (Array.isArray(parsedLivestock) && parsedLivestock.length > 0) {
+                            console.log('✅ Loaded livestock from localStorage:', parsedLivestock.length, 'animals');
+                            localLivestock = parsedLivestock;
+                            // Update the livestock array with localStorage data first
+                            livestock = [...localLivestock];
+                        }
+                    }
+                } catch (storageError) {
+                    console.warn('⚠️ Error loading from localStorage:', storageError);
+                }
+                
+                // THEN: Try to load from API and merge with localStorage data
+                if (window.SmartFarmAPI && typeof window.SmartFarmAPI.isBackendAvailable === 'function') {
+                    try {
+                        const isAvailable = await window.SmartFarmAPI.isBackendAvailable();
+                        if (isAvailable) {
+                            // Get stable filter params (default to 'all')
+                            const filters = getLivestockFilters();
+                            const params = {};
+                            if (filters.species && filters.species !== 'all') {
+                                params.species = filters.species;
+                            }
+                            if (filters.status && filters.status !== 'all') {
+                                params.status = filters.status;
+                            }
+                            
+                            const response = await window.SmartFarmAPI.getLivestock(params);
+                            if (response && response.success && response.data && Array.isArray(response.data)) {
+                                console.log('✅ Livestock data loaded from API:', response.data.length, 'animals');
+                                
+                                // Merge API data with localStorage data to preserve recently added items
+                                // Create a map starting with localStorage data (most current)
+                                const mergedMap = new Map();
+                                
+                                // First, add all localStorage items (preserves newly added items)
+                                localLivestock.forEach(item => {
+                                    const key = item.id || (item.tag ? `tag_${item.tag}` : `temp_${Date.now()}`);
+                                    mergedMap.set(key, item);
+                                });
+                                
+                                // Then, add/update with API data (API data takes precedence for existing items)
+                                const apiData = response.data;
+                                apiData.forEach(item => {
+                                    const key = item.id || (item.tag ? `tag_${item.tag}` : null);
+                                    if (key) {
+                                        // Update existing or add new from API
+                                        mergedMap.set(key, item);
+                                    } else {
+                                        // If no ID or tag, add with a unique key
+                                        mergedMap.set(`api_${Date.now()}_${Math.random()}`, item);
+                                    }
+                                });
+                                
+                                // Convert map back to array
+                                livestock = Array.from(mergedMap.values());
+                                
+                                lastGoodLivestock = [...livestock]; // Keep last good data
+                                // Save merged data to localStorage as backup
+                                localStorage.setItem('livestock', JSON.stringify(livestock));
+                                loadedFromAPI = true;
+                            } else {
+                                console.warn('⚠️ API returned unsuccessful response:', response);
+                                loadError = response?.error || 'API returned unsuccessful response';
+                                // Use localStorage data if API fails
+                                if (localLivestock.length > 0) {
+                                    livestock = localLivestock;
+                                    loadedFromAPI = false; // Will fall through to localStorage handling
+                                }
+                            }
+                        }
+                    } catch (apiError) {
+                        console.warn('⚠️ API error, using localStorage data:', apiError);
+                        loadError = apiError.message || 'Failed to load from API';
+                        // Use localStorage data if API fails
+                        if (localLivestock.length > 0) {
+                            livestock = localLivestock;
+                        }
+                    }
+                }
+                
+                // Load from localStorage if API didn't work or not available
+                if (!loadedFromAPI) {
+                    // If we already loaded from localStorage at the top, use that data
+                    if (localLivestock.length > 0) {
+                        livestock = localLivestock;
+                        lastGoodLivestock = [...livestock];
+                        console.log('✅ Using previously loaded localStorage data:', livestock.length, 'animals');
+                    } else {
+                        // Otherwise, try loading from localStorage again
+                        try {
+                            const savedLivestock = localStorage.getItem('livestock');
+                            if (savedLivestock) {
+                                const parsedLivestock = JSON.parse(savedLivestock);
+                                if (Array.isArray(parsedLivestock) && parsedLivestock.length > 0) {
+                                    console.log('✅ Livestock data loaded from localStorage:', parsedLivestock.length, 'animals');
+                                    livestock = parsedLivestock;
+                                    lastGoodLivestock = [...livestock]; // Keep last good data
+                                } else {
+                                    console.warn('⚠️ localStorage data is empty or invalid');
+                                    // Use last good data if available
+                                    if (lastGoodLivestock.length > 0) {
+                                        livestock = lastGoodLivestock;
+                                        console.log('✅ Using last good livestock data:', livestock.length, 'animals');
+                                    }
+                                }
+                            } else {
+                                console.log('ℹ️ No saved livestock data in localStorage');
+                                // Use last good data if available
+                                if (lastGoodLivestock.length > 0) {
+                                    livestock = lastGoodLivestock;
+                                    console.log('✅ Using last good livestock data:', livestock.length, 'animals');
+                                }
+                            }
+                        } catch (storageError) {
+                            console.error('❌ Error loading from localStorage:', storageError);
+                            loadError = storageError.message || 'Failed to load from storage';
+                            // Use last good data if available
+                            if (lastGoodLivestock.length > 0) {
+                                livestock = lastGoodLivestock;
+                                console.log('✅ Using last good livestock data after storage error:', livestock.length, 'animals');
+                            }
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Error loading livestock data:', error);
+                loadError = error.message || 'Unexpected error loading livestock';
+                // Use last good data if available
+                if (lastGoodLivestock.length > 0) {
+                    livestock = lastGoodLivestock;
+                    console.log('✅ Using last good livestock data after error:', livestock.length, 'animals');
+                }
+            }
+            
+            // Ensure livestock is an array
+            if (!Array.isArray(livestock)) {
+                console.warn('⚠️ livestock is not an array, using last good data or resetting');
+                if (lastGoodLivestock.length > 0) {
+                    livestock = lastGoodLivestock;
+                } else {
+                    livestock = [];
+                }
+            }
+            
+            // Update last good data if we have valid data
+            if (Array.isArray(livestock) && livestock.length > 0) {
+                lastGoodLivestock = [...livestock];
+            }
+            
+            // Show error banner if there was an error and we're showing it
+            if (loadError && showErrorBanner) {
+                showErrorBannerWithRetry(loadError);
+            }
+            
+            // Apply filters and render
+            applyFilters();
+        }
+        
+        function showErrorBannerWithRetry(errorMessage) {
+            // Remove existing banner
+            const existingBanner = document.getElementById('livestock-error-banner');
+            if (existingBanner) {
+                existingBanner.remove();
+            }
+            
+            const banner = document.createElement('div');
+            banner.id = 'livestock-error-banner';
+            banner.className = 'alert alert-warning alert-dismissible fade show';
+            banner.setAttribute('role', 'alert');
+            banner.style.cssText = 'margin-bottom: 20px;';
+            banner.innerHTML = `
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Failed to load animals:</strong> ${errorMessage}
+                <button type="button" class="btn btn-sm btn-primary ms-2" onclick="loadLivestock()">
+                    <i class="fas fa-redo me-1"></i>Retry
+                </button>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            
+            const container = document.querySelector('.container');
+            if (container) {
+                const filterCard = document.querySelector('.card-custom');
+                if (filterCard && filterCard.nextSibling) {
+                    container.insertBefore(banner, filterCard.nextSibling);
+                } else {
+                    container.insertBefore(banner, container.firstChild);
+                }
+            }
+        }
+
+        // Helper function to add a single livestock item to the UI without full reload
+        function addLivestockItemToUI(savedLivestock) {
+            // Convert API response format to UI format
+            const animal = {
+                id: savedLivestock.id,
+                species: savedLivestock.type || savedLivestock.species,
+                breed: savedLivestock.breed,
+                tag: savedLivestock.tag,
+                sex: savedLivestock.sex,
+                birthDate: savedLivestock.birthDate,
+                weight: savedLivestock.weight || 0,
+                productionPurpose: savedLivestock.purpose,
+                lifecycle: savedLivestock.lifecycle,
+                location: savedLivestock.location,
+                value: savedLivestock.value || 0,
+                healthStatus: 'healthy', // Default status
+                sireTag: savedLivestock.sireTag,
+                damTag: savedLivestock.damTag,
+                breedingStatus: savedLivestock.breedingStatus,
+                firstCalvingDate: savedLivestock.firstCalvingDate,
+                healthNotes: savedLivestock.description || '',
+                healthRecords: Array.isArray(savedLivestock.healthRecords) ? savedLivestock.healthRecords : [],
+                photo: savedLivestock.photo || null,
+                createdAt: savedLivestock.createdAt
+            };
+            
+            // Check if animal already exists (prevent duplicates)
+            const exists = livestock.some(item => 
+                (item.id && item.id === animal.id) || 
+                (item.tag && item.tag === animal.tag && item.species === animal.species)
+            );
+            
+            if (!exists) {
+                // Add to livestock array
+                livestock.push(animal);
+                lastGoodLivestock = [...livestock];
+                
+                // Save to localStorage as backup
+                localStorage.setItem('livestock', JSON.stringify(livestock));
+                
+                console.log('✅ Added livestock to array:', animal);
+                console.log('📊 Total livestock count:', livestock.length);
+            } else {
+                console.log('⚠️ Livestock already exists, skipping duplicate:', animal);
+            }
+            
+            // Re-render the entire list with filters applied
+            // This ensures the new item appears if it matches current filters
+            applyFilters();
+            
+            // Update statistics
+            updateStatistics();
         }
 
         function createLivestockCard(animal) {
@@ -1637,21 +2253,23 @@
             const age = calculateAge(animal.birthDate);
             const healthIndicator = getHealthIndicator(animal.healthStatus);
             
-            // Calculate lifecycle stage for cattle
+            // Calculate lifecycle stage for all species
             let lifecycleInfo = '';
             let productionPurposeInfo = '';
             let timelineButton = '';
             
-            if (animal.species === 'cattle') {
-                const lifecycleStage = calculateLifecycleStage(animal.birthDate, animal.sex);
-                const productionPurpose = animal.productionPurpose || getRecommendedProductionPurpose(animal.breed, animal.sex);
-                
+            const lifecycleStage = calculateLifecycleStage(animal.species, animal.birthDate, animal.sex);
+            if (lifecycleStage && lifecycleStage !== 'Unknown') {
                 lifecycleInfo = `
                     <div class="mb-2">
                         <small class="text-muted">Lifecycle Stage:</small>
-                        <span class="lifecycle-badge lifecycle-${lifecycleStage}">${lifecycleStage.charAt(0).toUpperCase() + lifecycleStage.slice(1)}</span>
+                        <span class="lifecycle-badge lifecycle-${lifecycleStage.toLowerCase()}">${lifecycleStage}</span>
                     </div>
                 `;
+            }
+            
+            if (animal.species === 'cattle') {
+                const productionPurpose = animal.productionPurpose || getRecommendedProductionPurpose(animal.breed, animal.sex);
                 
                 productionPurposeInfo = `
                     <div class="mb-2">
@@ -1667,8 +2285,21 @@
                 `;
             }
             
+            // Add image display if available
+            const imageDisplay = animal.photo ? `
+                <div class="mb-3 text-center">
+                    <img src="${animal.photo}" alt="${animal.tag}" class="livestock-image" style="max-height: 200px; width: 100%; object-fit: cover; border-radius: 8px; cursor: pointer;" data-photo="${animal.id}" data-tag="${animal.tag}">
+                </div>
+            ` : `
+                <div class="mb-3 text-center" style="background: #f8f9fa; border-radius: 8px; padding: 40px; color: #6c757d;">
+                    <i class="fas fa-image fa-3x mb-2"></i>
+                    <p class="mb-0 small">No photo available</p>
+                </div>
+            `;
+            
             col.innerHTML = `
                 <div class="livestock-card">
+                    ${imageDisplay}
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div>
                             <h5 class="mb-1">${animal.tag} - ${animal.species.charAt(0).toUpperCase() + animal.species.slice(1)}</h5>
@@ -1728,6 +2359,18 @@
                 </div>
             `;
             
+            // Add click event listener for image if photo exists
+            if (animal.photo) {
+                setTimeout(() => {
+                    const img = col.querySelector('.livestock-image');
+                    if (img) {
+                        img.addEventListener('click', function() {
+                            viewFullImage(animal.photo, animal.tag);
+                        });
+                    }
+                }, 0);
+            }
+            
             return col;
         }
 
@@ -1778,65 +2421,571 @@
             document.getElementById('totalValue').textContent = livestock.reduce((sum, a) => sum + a.value, 0).toFixed(0);
         }
 
-        async function saveNewLivestock() {
-            const animalData = {
-                species: document.getElementById('animalSpecies').value,
-                breed: document.getElementById('animalBreed').value,
-                tag: document.getElementById('animalTag').value,
-                sex: document.getElementById('animalSex').value,
-                birthDate: document.getElementById('birthDate').value,
-                weight: parseFloat(document.getElementById('animalWeight').value),
-                location: document.getElementById('animalLocation').value,
-                value: parseFloat(document.getElementById('animalValue').value) || 0,
-                healthStatus: 'healthy',
-                sireTag: document.getElementById('sireTag').value,
-                damTag: document.getElementById('damTag').value,
-                healthNotes: document.getElementById('healthNotes').value
-            };
+        // Image preview and handling functions
+        function previewLivestockImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                // Validate file type
+                if (!file.type.startsWith('image/')) {
+                    showAlert('Please select a valid image file', 'error');
+                    event.target.value = '';
+                    return;
+                }
+                
+                // Validate file size (max 5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    showAlert('Image size must be less than 5MB. Please compress the image and try again.', 'error');
+                    event.target.value = '';
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('imagePreview');
+                    const container = document.getElementById('imagePreviewContainer');
+                    if (preview && container) {
+                        preview.src = e.target.result;
+                        container.style.display = 'block';
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        }
 
-            // Validate required fields
-            if (!animalData.species || !animalData.breed || !animalData.tag || !animalData.sex || !animalData.birthDate) {
-                showAlert('Please fill in all required fields', 'error');
+        function clearImagePreview() {
+            const fileInput = document.getElementById('animalPhoto');
+            const preview = document.getElementById('imagePreview');
+            const container = document.getElementById('imagePreviewContainer');
+            
+            if (fileInput) fileInput.value = '';
+            if (preview) preview.src = '';
+            if (container) container.style.display = 'none';
+        }
+
+        // Convert image file to base64
+        async function convertImageToBase64(file) {
+            return new Promise((resolve, reject) => {
+                if (!file) {
+                    resolve(null);
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    resolve(e.target.result);
+                };
+                reader.onerror = function(error) {
+                    reject(error);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // View full image in a modal
+        function viewFullImage(imageSrc, animalTag) {
+            // Create modal for full image view
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.id = 'imageViewModal';
+            modal.setAttribute('tabindex', '-1');
+            modal.innerHTML = `
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">${animalTag} - Full Photo</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body text-center">
+                            <img src="${imageSrc}" alt="${animalTag}" class="img-fluid" style="max-height: 70vh; border-radius: 8px;">
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            // Clean up when modal is hidden
+            modal.addEventListener('hidden.bs.modal', function() {
+                document.body.removeChild(modal);
+            });
+        }
+
+        // Ensure function is globally accessible
+        window.saveNewLivestock = async function saveNewLivestock() {
+            console.log('💾 saveNewLivestock function called');
+            const modalId = 'addLivestockModal';
+            
+            // Ensure button is not disabled (safety check)
+            const saveButton = document.getElementById('saveLivestockButton');
+            if (saveButton) {
+                saveButton.disabled = false;
+            }
+            
+            // Prevent multiple simultaneous saves
+            if (window._savingLivestock) {
+                console.warn('⚠️ Save already in progress, ignoring duplicate call');
                 return;
             }
+            window._savingLivestock = true;
+            
+            // Set saving state (non-blocking)
+            try {
+                if (window.ModalValidator && typeof window.ModalValidator.setSaving === 'function') {
+                    window.ModalValidator.setSaving(modalId, true);
+                }
+            } catch (e) {
+                console.warn('Could not set ModalValidator saving state:', e);
+            }
+            
+            // Disable save button to prevent double-clicks
+            if (saveButton) {
+                saveButton.disabled = true;
+                const originalText = saveButton.innerHTML;
+                saveButton.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Saving...';
+                
+                // Store timeout ID so we can clear it on success
+                const timeoutId = setTimeout(() => {
+                    // Only reset if still saving (safety timeout)
+                    if (window._savingLivestock) {
+                        console.warn('⚠️ Save operation timed out after 30 seconds');
+                        if (saveButton) {
+                            saveButton.disabled = false;
+                            saveButton.innerHTML = originalText;
+                        }
+                        window._savingLivestock = false;
+                        if (window.ModalValidator) {
+                            window.ModalValidator.setSaving(modalId, false);
+                        }
+                        showAlert('Save operation timed out. Please try again.', 'error');
+                    }
+                }, 30000); // Increased to 30 seconds
+                
+                // Store timeout ID for cleanup
+                window._saveTimeoutId = timeoutId;
+            }
+            
+            // Get all form values
+            const animalSpecies = document.getElementById('animalSpecies').value;
+            const animalBreed = document.getElementById('animalBreed').value;
+            const animalTag = document.getElementById('animalTag').value;
+            const animalSex = document.getElementById('animalSex').value;
+            const birthDate = document.getElementById('birthDate').value;
+            const animalWeight = document.getElementById('animalWeight').value ? parseFloat(document.getElementById('animalWeight').value) : null;
+            
+            // Get and convert image if provided
+            const photoInput = document.getElementById('animalPhoto');
+            let animalPhoto = null;
+            if (photoInput && photoInput.files && photoInput.files.length > 0) {
+                try {
+                    animalPhoto = await convertImageToBase64(photoInput.files[0]);
+                } catch (error) {
+                    console.warn('⚠️ Failed to convert image:', error);
+                    showAlert('Failed to process image. Saving without photo.', 'warning');
+                }
+            }
+            const productionPurpose = document.getElementById('productionPurpose').value;
+            const lifecycleStage = document.getElementById('lifecycleStage').value;
+            const animalLocation = document.getElementById('animalLocation').value;
+            const animalValue = document.getElementById('animalValue').value ? parseFloat(document.getElementById('animalValue').value) : null;
+            const sireTag = document.getElementById('sireTag').value;
+            const damTag = document.getElementById('damTag').value;
+            const breedingStatus = document.getElementById('breedingStatus').value;
+            const firstCalvingDate = document.getElementById('firstCalvingDate').value;
+            const healthNotes = document.getElementById('healthNotes').value;
+
+            // Auto-calculate lifecycle stage based on birth date, species, and sex
+            let calculatedLifecycle = '';
+            if (birthDate && animalSpecies && animalSex) {
+                calculatedLifecycle = calculateLifecycleStage(animalSpecies, birthDate, animalSex);
+            }
+
+            // Validate required fields
+            if (!animalSpecies || !animalBreed || !animalTag || !animalSex || !birthDate || !animalLocation) {
+                // Reset saving state
+                window._savingLivestock = false;
+                if (window.ModalValidator) {
+                    window.ModalValidator.setSaving(modalId, false);
+                }
+                // Clear timeout if it exists
+                if (window._saveTimeoutId) {
+                    clearTimeout(window._saveTimeoutId);
+                    window._saveTimeoutId = null;
+                }
+                // Re-enable save button
+                if (saveButton) {
+                    saveButton.disabled = false;
+                    saveButton.innerHTML = '<i class="fas fa-save me-1"></i>Save Animal';
+                }
+                console.warn('⚠️ Validation failed - missing required fields');
+                showAlert('Please fill in all required fields (Species, Breed, Tag/ID, Sex, Birth Date, Location)', 'error');
+                return;
+            }
+            
+            console.log('✅ Validation passed, proceeding with save...');
 
             try {
-                console.log('🐄 Saving livestock:', animalData);
+                console.log('🐄 Saving livestock with comprehensive data...');
                 
-                // Save to backend API
+                let savedViaAPI = false;
+                
+                // Try to save via API directly (skip health check for faster response)
                 if (window.SmartFarmAPI) {
-                    const response = await window.SmartFarmAPI.createLivestock(animalData);
-                    if (response.success) {
-                        console.log('✅ Livestock saved successfully:', response.data);
+                    try {
+                        console.log('🌐 Attempting to add livestock via API');
+                    
+                        // Get farm ID - use cached value if available, otherwise fetch with timeout
+                        let farmId = null;
                         
-                        // Add to local array for immediate display
-                        livestock.push(response.data);
-                        await loadLivestock();
-                        updateStatistics();
-                        
-                        // Close modal and reset form
-                        bootstrap.Modal.getInstance(document.getElementById('addLivestockModal')).hide();
-                        document.getElementById('addLivestockForm').reset();
-                        
-                        // Show success message
-                        showAlert('Animal added successfully!', 'success');
-                    } else {
-                        throw new Error(response.error || 'Failed to save livestock');
+                        // Check for cached farm ID first (to avoid unnecessary API call)
+                        const cachedFarmId = sessionStorage.getItem('smartfarm_current_farm_id');
+                        if (cachedFarmId) {
+                            farmId = cachedFarmId;
+                            console.log('✅ Using cached farm ID:', farmId);
+                        } else {
+                            // Fetch farms with timeout to avoid hanging
+                            try {
+                                const farmsPromise = window.SmartFarmAPI.getFarms();
+                                const timeoutPromise = new Promise((_, reject) => 
+                                    setTimeout(() => reject(new Error('Farm fetch timeout')), 2000)
+                                );
+                                
+                                const farmsResponse = await Promise.race([farmsPromise, timeoutPromise]);
+                                
+                                if (farmsResponse && farmsResponse.success && farmsResponse.data && farmsResponse.data.length > 0) {
+                                    farmId = farmsResponse.data[0].id;
+                                    // Cache the farm ID for future use
+                                    sessionStorage.setItem('smartfarm_current_farm_id', farmId);
+                                    console.log('✅ Using farm ID:', farmId);
+                                } else {
+                                    console.log('ℹ️ No farms found, saving without farm ID');
+                                }
+                            } catch (farmError) {
+                                console.warn('⚠️ Error fetching farms, continuing without farm ID:', farmError.message);
+                            }
+                        }
+
+                        // Prepare comprehensive data in correct API format
+                        // farmId is optional - only include if we have one
+                        const livestockData = {
+                            name: `${animalBreed} ${animalTag}`,
+                            type: animalSpecies,
+                                breed: animalBreed,
+                                birthDate: birthDate,
+                                weight: animalWeight,
+                                description: `${animalSex} ${animalSpecies} - ${productionPurpose} - Tag: ${animalTag}${healthNotes ? ' - ' + healthNotes : ''}`,
+                                tag: animalTag,
+                                sex: animalSex,
+                                purpose: productionPurpose,
+                                location: animalLocation,
+                                lifecycle: calculatedLifecycle,
+                                value: animalValue,
+                                sireTag: sireTag,
+                                damTag: damTag,
+                                breedingStatus: breedingStatus,
+                                firstCalvingDate: firstCalvingDate,
+                                photo: animalPhoto
+                            };
+                            
+                            // Only add farmId if we have one
+                            if (farmId) {
+                                livestockData.farmId = farmId;
+                            }
+
+                            console.log('Sending to API:', livestockData);
+                            const response = await window.SmartFarmAPI.createLivestock(livestockData);
+                            
+                            if (response.success) {
+                                console.log('✅ Livestock saved successfully:', response.data);
+                                savedViaAPI = true;
+                                
+                                // Close modal and reset form BEFORE updating UI
+                                const modal = document.getElementById('addLivestockModal');
+                                if (modal) {
+                                    const bsModal = bootstrap.Modal.getInstance(modal);
+                                    if (bsModal) {
+                                        bsModal.hide();
+                                    }
+                                }
+                                
+                                // Reset form
+                                const form = document.getElementById('addLivestockForm');
+                                if (form) {
+                                    form.reset();
+                                    clearImagePreview();
+                                }
+                                
+                                // Re-enable save button
+                                if (saveButton) {
+                                    saveButton.disabled = false;
+                                    saveButton.innerHTML = '<i class="fas fa-save me-1"></i>Save Animal';
+                                }
+                                // Clear timeout if it exists
+                                if (window._saveTimeoutId) {
+                                    clearTimeout(window._saveTimeoutId);
+                                    window._saveTimeoutId = null;
+                                }
+                                window._savingLivestock = false;
+                                
+                                // Mark save success
+                                if (window.ModalValidator) {
+                                    window.ModalValidator.markSaveSuccess(modalId);
+                                }
+                                
+                                // Optimized: Add item directly to UI instead of full reload
+                                // Mark that we just added livestock to prevent auto-refresh
+                                window._justAddedLivestock = true;
+                                setTimeout(() => {
+                                    window._justAddedLivestock = false;
+                                }, 5000); // Prevent auto-refresh for 5 seconds
+                                
+                                console.log('📦 API response data:', response.data);
+                                setTimeout(() => {
+                                    addLivestockItemToUI(response.data);
+                                    showAlert('Animal added successfully!', 'success');
+                                }, 100);
+                            } else {
+                                console.warn('⚠️ API request failed:', response.error);
+                                const errorMsg = response.error || 'Failed to save animal. Please try again.';
+                                showAlert(errorMsg, 'warning');
+                                // Don't reset state here - let it fall through to localStorage fallback
+                                // localStorage save will handle state reset
+                            }
+                    } catch (apiError) {
+                        console.error('⚠️ API error, falling back to localStorage:', apiError);
+                        const errorMsg = apiError.message || 'API error. Data will be saved locally.';
+                        showAlert(errorMsg, 'warning');
+                        // Don't reset state here - let it fall through to localStorage save
+                        // Fall through to localStorage fallback
                     }
-                } else {
-                    throw new Error('SmartFarmAPI not available');
+                }
+                
+                // Use localStorage fallback if API didn't work or is not available
+                if (!savedViaAPI) {
+                    // Fallback to localStorage
+                    console.log('💾 Using localStorage to add livestock');
+                    
+                    const newAnimal = {
+                        id: Date.now(),
+                        species: animalSpecies,
+                        breed: animalBreed,
+                        tag: animalTag,
+                        sex: animalSex,
+                        birthDate: birthDate,
+                        weight: animalWeight,
+                        productionPurpose: productionPurpose,
+                        lifecycle: calculatedLifecycle,
+                        location: animalLocation,
+                        value: animalValue,
+                        healthStatus: 'healthy',
+                        sireTag: sireTag,
+                        damTag: damTag,
+                        breedingStatus: breedingStatus,
+                        firstCalvingDate: firstCalvingDate,
+                        healthNotes: healthNotes,
+                        healthRecords: [],
+                        healthRecords: [],
+                        photo: animalPhoto,
+                        lastUpdated: new Date().toISOString()
+                    };
+                    
+                    // Save to localStorage
+                    livestock.push(newAnimal);
+                    try {
+                        localStorage.setItem('livestock', JSON.stringify(livestock));
+                        console.log('✅ Livestock saved to localStorage:', newAnimal);
+                        console.log('✅ Total livestock in storage:', livestock.length);
+                    } catch (storageError) {
+                        console.error('❌ Error saving to localStorage:', storageError);
+                        throw new Error('Failed to save to local storage: ' + storageError.message);
+                    }
+                    
+                    // Reset save state FIRST
+                    window._savingLivestock = false;
+                    
+                    // Re-enable save button
+                    if (saveButton) {
+                        saveButton.disabled = false;
+                        saveButton.innerHTML = '<i class="fas fa-save me-1"></i>Save Animal';
+                    }
+                    
+                    // Clear timeout if it exists
+                    if (window._saveTimeoutId) {
+                        clearTimeout(window._saveTimeoutId);
+                        window._saveTimeoutId = null;
+                    }
+                    
+                    // Reset form
+                    const form = document.getElementById('addLivestockForm');
+                    if (form) {
+                        form.reset();
+                        clearImagePreview();
+                    }
+                    
+                    // Close modal immediately
+                    try {
+                        const modal = document.getElementById('addLivestockModal');
+                        if (modal) {
+                            const bsModal = bootstrap.Modal.getInstance(modal);
+                            if (bsModal) {
+                                bsModal.hide();
+                            } else {
+                                // Modal might not be initialized, try direct hide
+                                modal.classList.remove('show');
+                                modal.style.display = 'none';
+                                document.body.classList.remove('modal-open');
+                                const backdrop = document.querySelector('.modal-backdrop');
+                                if (backdrop) backdrop.remove();
+                            }
+                        }
+                    } catch (modalError) {
+                        console.warn('⚠️ Error closing modal (continuing anyway):', modalError);
+                    }
+                    
+                    // Sync Farm-to-Table recommendations
+                    if (window.FarmToTableRecommendationService) {
+                        try {
+                            const service = new window.FarmToTableRecommendationService();
+                            await service.syncRecommendations();
+                            console.log('✅ Farm-to-Table recommendations synced after livestock addition');
+                        } catch (error) {
+                            console.warn('⚠️ Error syncing Farm-to-Table recommendations:', error);
+                        }
+                    }
+                    
+                    // Mark that we just added livestock to prevent auto-refresh
+                    window._justAddedLivestock = true;
+                    setTimeout(() => {
+                        window._justAddedLivestock = false;
+                    }, 5000); // Prevent auto-refresh for 5 seconds
+                    
+                    // Show success message immediately
+                    showAlert('Animal added successfully! (Saved locally)', 'success');
+                    
+                    // Update UI after a short delay to ensure modal is closed
+                    setTimeout(() => {
+                        console.log('🔄 Updating UI after save...');
+                        // Re-render the livestock list with the updated array
+                        applyFilters(); // This will re-render with the new animal
+                        updateStatistics();
+                        console.log('✅ UI update completed');
+                    }, 200);
                 }
             } catch (error) {
                 console.error('❌ Error saving livestock:', error);
                 
-                if (error.message.includes('Failed to fetch')) {
-                    showAlert('Unable to connect to server. Please check your internet connection.', 'error');
-                } else if (error.message.includes('SmartFarmAPI not available')) {
-                    showAlert('Backend service unavailable. Please try again later.', 'error');
+                // Re-enable save button on error
+                if (saveButton) {
+                    saveButton.disabled = false;
+                    saveButton.innerHTML = '<i class="fas fa-save me-1"></i>Save Animal';
+                }
+                // Clear timeout if it exists
+                if (window._saveTimeoutId) {
+                    clearTimeout(window._saveTimeoutId);
+                    window._saveTimeoutId = null;
+                }
+                window._savingLivestock = false;
+                
+                // Reset saving state
+                if (window.ModalValidator) {
+                    window.ModalValidator.setSaving(modalId, false);
+                }
+                
+                // Show error message to user
+                const errorMsg = error.message || 'Failed to save animal. Please check your connection and try again.';
+                if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                    showAlert('Unable to connect to server. Data will be saved locally.', 'warning');
+                    
+                    // Fallback to localStorage on network error
+                    const newAnimal = {
+                        id: Date.now(),
+                        species: animalSpecies,
+                        breed: animalBreed,
+                        tag: animalTag,
+                        sex: animalSex,
+                        birthDate: birthDate,
+                        weight: animalWeight,
+                        productionPurpose: productionPurpose,
+                        lifecycle: calculatedLifecycle,
+                        location: animalLocation,
+                        value: animalValue,
+                        healthStatus: 'healthy',
+                        sireTag: sireTag,
+                        damTag: damTag,
+                        breedingStatus: breedingStatus,
+                        firstCalvingDate: firstCalvingDate,
+                        healthNotes: healthNotes,
+                        photo: animalPhoto,
+                        lastUpdated: new Date().toISOString()
+                    };
+                    
+                    livestock.push(newAnimal);
+                    localStorage.setItem('livestock', JSON.stringify(livestock));
+                    
+                    loadLivestock();
+                    updateStatistics();
+                    
+                    // Close modal and reset form
+                    const modal = document.getElementById('addLivestockModal');
+                    if (modal) {
+                        bootstrap.Modal.getInstance(modal).hide();
+                    }
+                    document.getElementById('addLivestockForm').reset();
+                    clearImagePreview();
                 } else {
                     showAlert('Failed to save animal: ' + error.message, 'error');
                 }
+            } finally {
+                // Always reset saving state
+                try {
+                    if (window.ModalValidator && typeof window.ModalValidator.setSaving === 'function') {
+                        window.ModalValidator.setSaving(modalId, false);
+                    }
+                } catch (e) {
+                    console.warn('Could not reset ModalValidator state:', e);
+                }
             }
+        }
+
+        // Calculate lifecycle stage based on species, birth date, and sex
+        function calculateLifecycleStage(species, birthDate, sex) {
+            const birth = new Date(birthDate);
+            const now = new Date();
+            const ageInMonths = Math.floor((now - birth) / (1000 * 60 * 60 * 24 * 30.44)); // Average days per month
+            
+            const speciesLower = species.toLowerCase();
+            
+            if (speciesLower === 'cattle') {
+                if (ageInMonths < 12) return 'calf';
+                if (ageInMonths < 24) return sex === 'female' ? 'heifer' : 'bull';
+                return sex === 'female' ? 'cow' : 'bull';
+            }
+            
+            if (speciesLower === 'pigs') {
+                if (ageInMonths < 6) return 'piglet';
+                if (ageInMonths < 12) return sex === 'female' ? 'gilt' : 'boar';
+                return sex === 'female' ? 'sow' : 'boar';
+            }
+            
+            if (speciesLower === 'chickens') {
+                if (ageInMonths < 4) return 'chick';
+                if (ageInMonths < 6) return sex === 'female' ? 'pullet' : 'cockerel';
+                return sex === 'female' ? 'hen' : 'rooster';
+            }
+            
+            if (speciesLower === 'sheep') {
+                if (ageInMonths < 12) return 'lamb';
+                return sex === 'female' ? 'ewe' : 'ram';
+            }
+            
+            if (speciesLower === 'goats') {
+                if (ageInMonths < 12) return 'kid';
+                return sex === 'female' ? 'doe' : 'buck';
+            }
+            
+            // Default fallback
+            return ageInMonths < 12 ? 'juvenile' : 'adult';
         }
 
         function editLivestock(id) {
@@ -1857,44 +3006,549 @@
             new bootstrap.Modal(document.getElementById('editLivestockModal')).show();
         }
 
-        function updateLivestock() {
+        async function updateLivestock() {
             const id = parseInt(document.getElementById('editAnimalId').value);
             const animalIndex = livestock.findIndex(a => a.id === id);
             
-            if (animalIndex === -1) return;
+            if (animalIndex === -1) {
+                showAlert('Animal not found!', 'error');
+                return;
+            }
             
-            livestock[animalIndex] = {
-                ...livestock[animalIndex],
+            // Get form values
+            const updatedData = {
                 species: document.getElementById('editAnimalSpecies').value,
                 breed: document.getElementById('editAnimalBreed').value,
                 tag: document.getElementById('editAnimalTag').value,
                 healthStatus: document.getElementById('editHealthStatus').value,
-                weight: parseFloat(document.getElementById('editAnimalWeight').value),
+                weight: parseFloat(document.getElementById('editAnimalWeight').value) || 0,
                 value: parseFloat(document.getElementById('editAnimalValue').value) || 0,
                 healthNotes: document.getElementById('editHealthNotes').value
             };
             
-            loadLivestock();
-            updateStatistics();
+            // Disable button to prevent multiple clicks
+            const updateButton = document.querySelector('#editLivestockForm button[type="button"][onclick*="updateLivestock"]');
+            const originalButtonText = updateButton ? updateButton.innerHTML : '';
+            if (updateButton) {
+                updateButton.disabled = true;
+                updateButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Updating...';
+            }
             
-            // Close modal
-            bootstrap.Modal.getInstance(document.getElementById('editLivestockModal')).hide();
-            
-            // Show success message
-            showAlert('Animal updated successfully!', 'success');
+            try {
+                let savedViaAPI = false;
+                
+                // Try to update via API first
+                if (window.SmartFarmAPI) {
+                    try {
+                        // Prepare data in API format
+                        const apiData = {
+                            type: updatedData.species,
+                            breed: updatedData.breed,
+                            tag: updatedData.tag,
+                            weight: updatedData.weight,
+                            value: updatedData.value,
+                            description: updatedData.healthNotes,
+                            healthStatus: updatedData.healthStatus
+                        };
+                        
+                        const response = await window.SmartFarmAPI.updateLivestock(id, apiData);
+                        
+                        if (response.success) {
+                            console.log('✅ Livestock updated via API:', response.data);
+                            savedViaAPI = true;
+                            
+                            // Update local array with API response
+                            const existingAnimal = livestock[animalIndex] || {};
+                            const updatedAnimal = {
+                                ...existingAnimal,
+                                id: response.data.id || id,
+                                species: response.data.type || updatedData.species,
+                                breed: response.data.breed || updatedData.breed,
+                                tag: response.data.tag || updatedData.tag,
+                                healthStatus: response.data.healthStatus || updatedData.healthStatus,
+                                weight: response.data.weight || updatedData.weight,
+                                value: response.data.value || updatedData.value,
+                                healthNotes: response.data.description || updatedData.healthNotes
+                            };
+                            
+                            livestock[animalIndex] = updatedAnimal;
+                            lastGoodLivestock = [...livestock];
+                            localStorage.setItem('livestock', JSON.stringify(livestock));
+                        } else {
+                            console.warn('⚠️ API update failed:', response.error);
+                        }
+                    } catch (apiError) {
+                        console.error('⚠️ API update error:', apiError);
+                    }
+                }
+                
+                // Fallback to local update if API didn't work
+                if (!savedViaAPI) {
+                    livestock[animalIndex] = {
+                        ...livestock[animalIndex],
+                        ...updatedData
+                    };
+                    lastGoodLivestock = [...livestock];
+                    localStorage.setItem('livestock', JSON.stringify(livestock));
+                    console.log('✅ Livestock updated locally');
+                }
+                
+                // Close modal first
+                const modal = document.getElementById('editLivestockModal');
+                if (modal) {
+                    const bsModal = bootstrap.Modal.getInstance(modal);
+                    if (bsModal) {
+                        bsModal.hide();
+                    }
+                }
+                
+                // Sync Farm-to-Table recommendations
+                if (window.FarmToTableRecommendationService) {
+                    try {
+                        const service = new window.FarmToTableRecommendationService();
+                        await service.syncRecommendations();
+                        console.log('✅ Farm-to-Table recommendations synced after livestock update');
+                    } catch (error) {
+                        console.warn('⚠️ Error syncing Farm-to-Table recommendations:', error);
+                    }
+                }
+                
+                // Re-render the list (use applyFilters instead of loadLivestock to avoid API call and freezing)
+                applyFilters();
+                updateStatistics();
+                
+                // Show success message
+                showAlert('Animal updated successfully!', 'success');
+                
+            } catch (error) {
+                console.error('❌ Error updating livestock:', error);
+                showAlert('Error updating animal: ' + error.message, 'error');
+            } finally {
+                // Re-enable button
+                if (updateButton) {
+                    updateButton.disabled = false;
+                    updateButton.innerHTML = originalButtonText;
+                }
+            }
         }
 
-        function deleteLivestock(id) {
-            if (confirm('Are you sure you want to delete this animal? This action cannot be undone.')) {
+        async function deleteLivestock(id) {
+            if (!confirm('Are you sure you want to delete this animal? This action cannot be undone.')) {
+                return;
+            }
+            
+            try {
+                let deletedViaAPI = false;
+                
+                // Try to delete via API first
+                if (window.SmartFarmAPI) {
+                    try {
+                        const response = await window.SmartFarmAPI.deleteLivestock(id);
+                        if (response.success) {
+                            console.log('✅ Livestock deleted via API');
+                            deletedViaAPI = true;
+                        } else {
+                            console.warn('⚠️ API delete failed:', response.error);
+                        }
+                    } catch (apiError) {
+                        console.error('⚠️ API delete error:', apiError);
+                    }
+                }
+                
+                // Clean up Farm-to-Table products that depend on this livestock
+                if (window.FarmToTableRecommendationService) {
+                    try {
+                        const service = new window.FarmToTableRecommendationService();
+                        await service.onLivestockDeleted(id);
+                        console.log('✅ Farm-to-Table products cleaned up after livestock deletion');
+                    } catch (error) {
+                        console.warn('⚠️ Error cleaning up Farm-to-Table products:', error);
+                    }
+                }
+                
+                // Remove from local array
                 livestock = livestock.filter(a => a.id !== id);
-                loadLivestock();
+                lastGoodLivestock = [...livestock];
+                localStorage.setItem('livestock', JSON.stringify(livestock));
+                
+                // Re-render the list (use applyFilters instead of loadLivestock to avoid freezing)
+                applyFilters();
                 updateStatistics();
+                
                 showAlert('Animal deleted successfully!', 'success');
+            } catch (error) {
+                console.error('❌ Error deleting livestock:', error);
+                showAlert('Error deleting animal: ' + error.message, 'error');
             }
         }
 
         function addHealthRecord(id) {
-            alert('Health record functionality will be implemented in the next version');
+            const animalIndex = livestock.findIndex(a => a.id === id);
+            if (animalIndex === -1) {
+                showAlert('Animal not found!', 'error');
+                return;
+            }
+
+            const modal = ensureHealthRecordModal();
+            const animal = livestock[animalIndex];
+            if (!Array.isArray(animal.healthRecords)) {
+                animal.healthRecords = [];
+            }
+
+            modal.dataset.animalId = String(id);
+
+            const headingEl = modal.querySelector('#healthRecordAnimalHeading');
+            if (headingEl) {
+                headingEl.textContent = `${animal.tag || 'Animal'} • ${animal.species ? animal.species.charAt(0).toUpperCase() + animal.species.slice(1) : ''}`;
+            }
+
+            const form = modal.querySelector('#healthRecordForm');
+            if (form) {
+                form.reset();
+                const today = new Date().toISOString().split('T')[0];
+                const dateInput = form.querySelector('#healthRecordDate');
+                if (dateInput) {
+                    dateInput.value = today;
+                }
+                const statusUpdate = form.querySelector('#healthRecordStatusUpdate');
+                if (statusUpdate) {
+                    statusUpdate.value = '';
+                }
+            }
+
+            updateHealthRecordStats(animal);
+            renderHealthRecordList(animal);
+
+            const modalInstance = bootstrap.Modal.getOrCreateInstance(modal);
+            modalInstance.show();
+        }
+
+        function ensureHealthRecordModal() {
+            let modal = document.getElementById('healthRecordModal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.className = 'modal fade';
+                modal.id = 'healthRecordModal';
+                modal.tabIndex = -1;
+                modal.innerHTML = `
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title"><i class="fas fa-notes-medical me-2"></i>Health Records</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <h6 id="healthRecordAnimalHeading" class="mb-1"></h6>
+                                    <div id="healthRecordStats" class="text-muted small"></div>
+                                </div>
+                                <form id="healthRecordForm" class="row g-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label" for="healthRecordDate">Record Date</label>
+                                        <input type="date" class="form-control" id="healthRecordDate" required>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label" for="healthRecordType">Record Type</label>
+                                        <select class="form-select" id="healthRecordType">
+                                            <option value="Check-up">Check-up</option>
+                                            <option value="Vaccination">Vaccination</option>
+                                            <option value="Treatment">Treatment</option>
+                                            <option value="Injury">Injury</option>
+                                            <option value="Observation">Observation</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label" for="healthRecordStatus">Condition</label>
+                                        <select class="form-select" id="healthRecordStatus">
+                                            <option value="">No change</option>
+                                            <option value="healthy">Healthy</option>
+                                            <option value="sick">Sick</option>
+                                            <option value="recovering">Recovering</option>
+                                            <option value="injured">Injured</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="healthRecordPerformedBy">Performed By</label>
+                                        <input type="text" class="form-control" id="healthRecordPerformedBy" placeholder="Veterinarian or staff name">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label" for="healthRecordCost">Cost (FJD)</label>
+                                        <input type="number" class="form-control" id="healthRecordCost" min="0" step="0.01">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label" for="healthRecordFollowUp">Follow-up Date</label>
+                                        <input type="date" class="form-control" id="healthRecordFollowUp">
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label" for="healthRecordNotes">Notes</label>
+                                        <textarea class="form-control" id="healthRecordNotes" rows="3" placeholder="Describe symptoms, medication, or treatment details"></textarea>
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label" for="healthRecordStatusUpdate">Update Overall Health Status</label>
+                                        <select class="form-select" id="healthRecordStatusUpdate">
+                                            <option value="">Keep current status</option>
+                                            <option value="healthy">Healthy</option>
+                                            <option value="sick">Sick</option>
+                                            <option value="pregnant">Pregnant</option>
+                                            <option value="breeding">Breeding</option>
+                                            <option value="sold">Sold</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-12 d-flex justify-content-end">
+                                        <button type="submit" class="btn btn-success">
+                                            <i class="fas fa-plus me-2"></i>Save Record
+                                        </button>
+                                    </div>
+                                </form>
+                                <hr>
+                                <div id="healthRecordList" class="mt-3"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            }
+
+            if (!modal.dataset.initialized) {
+                const form = modal.querySelector('#healthRecordForm');
+                if (form) {
+                    form.addEventListener('submit', saveHealthRecordFromModal);
+                }
+                modal.addEventListener('hidden.bs.modal', () => {
+                    const formEl = modal.querySelector('#healthRecordForm');
+                    if (formEl) {
+                        formEl.reset();
+                        const today = new Date().toISOString().split('T')[0];
+                        const dateInput = formEl.querySelector('#healthRecordDate');
+                        if (dateInput) {
+                            dateInput.value = today;
+                        }
+                        const statusUpdate = formEl.querySelector('#healthRecordStatusUpdate');
+                        if (statusUpdate) {
+                            statusUpdate.value = '';
+                        }
+                    }
+                    modal.dataset.animalId = '';
+                });
+                modal.dataset.initialized = 'true';
+            }
+
+            return modal;
+        }
+
+        function escapeHtml(value) {
+            if (value === null || value === undefined) {
+                return '';
+            }
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function formatHealthRecordDate(value) {
+            if (!value) return 'N/A';
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) {
+                return value;
+            }
+            return date.toLocaleDateString();
+        }
+
+        function updateHealthRecordStats(animal) {
+            const modal = document.getElementById('healthRecordModal');
+            if (!modal) return;
+            const statsEl = modal.querySelector('#healthRecordStats');
+            if (!statsEl) return;
+
+            const records = Array.isArray(animal.healthRecords) ? animal.healthRecords : [];
+            if (!records.length) {
+                statsEl.textContent = 'No health records yet.';
+                return;
+            }
+
+            const latest = records[0];
+            const dateString = formatHealthRecordDate(latest.recordDate || latest.createdAt);
+            statsEl.textContent = `Last record: ${dateString} • Total records: ${records.length}`;
+        }
+
+        function renderHealthRecordList(animal) {
+            const modal = ensureHealthRecordModal();
+            const listContainer = modal.querySelector('#healthRecordList');
+            if (!listContainer) return;
+
+            const records = Array.isArray(animal.healthRecords) ? animal.healthRecords : [];
+            if (!records.length) {
+                listContainer.innerHTML = '<div class="text-muted">No health records yet. Use the form above to add one.</div>';
+                return;
+            }
+
+            const entries = records
+                .map(record => {
+                    const dateLabel = formatHealthRecordDate(record.recordDate || record.createdAt);
+                    const typeBadge = `<span class="badge bg-primary ms-2">${escapeHtml(record.recordType || 'General')}</span>`;
+                    const conditionBadge = record.condition ? `<span class="badge bg-info text-dark ms-2 text-uppercase">${escapeHtml(record.condition)}</span>` : '';
+                    const performedMeta = record.performedBy ? `Performed by: ${escapeHtml(record.performedBy)}` : '';
+                    const costMeta = typeof record.cost === 'number' && !Number.isNaN(record.cost) ? `Cost: FJD ${record.cost.toFixed(2)}` : '';
+                    const metaParts = [performedMeta, costMeta].filter(Boolean).join(' • ');
+                    const followUp = record.followUpDate ? `<div class="record-meta mt-1"><i class="fas fa-calendar-alt me-1"></i>Follow-up: ${formatHealthRecordDate(record.followUpDate)}</div>` : '';
+                    const statusApplied = record.statusApplied ? `<div class="record-meta mt-1"><i class="fas fa-heartbeat me-1"></i>Status updated to ${escapeHtml(record.statusApplied.charAt(0).toUpperCase() + record.statusApplied.slice(1))}</div>` : '';
+                    const notes = record.notes ? `<p class="mb-0 mt-2">${escapeHtml(record.notes)}</p>` : '';
+
+                    return `
+                        <div class="health-record-entry">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>${dateLabel}</strong>
+                                    ${typeBadge}
+                                    ${conditionBadge}
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteHealthRecord(${animal.id}, ${record.id}, event)">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                            ${metaParts ? `<div class="record-meta mt-2">${metaParts}</div>` : ''}
+                            ${notes}
+                            ${followUp}
+                            ${statusApplied}
+                        </div>
+                    `;
+                })
+                .join('');
+
+            listContainer.innerHTML = entries;
+        }
+
+        function saveHealthRecordFromModal(event) {
+            event.preventDefault();
+            const modal = ensureHealthRecordModal();
+            const animalId = Number(modal.dataset.animalId);
+
+            if (!animalId) {
+                showAlert('No animal selected for health record.', 'error');
+                return;
+            }
+
+            const animalIndex = livestock.findIndex(a => a.id === animalId);
+            if (animalIndex === -1) {
+                showAlert('Animal not found!', 'error');
+                return;
+            }
+
+            const form = modal.querySelector('#healthRecordForm');
+            if (!form) {
+                showAlert('Unable to locate health record form.', 'error');
+                return;
+            }
+
+            const dateValue = form.querySelector('#healthRecordDate')?.value;
+            const typeValue = form.querySelector('#healthRecordType')?.value || 'Check-up';
+            const conditionValue = form.querySelector('#healthRecordStatus')?.value || '';
+            const performedBy = form.querySelector('#healthRecordPerformedBy')?.value.trim();
+            const costValueRaw = form.querySelector('#healthRecordCost')?.value;
+            const followUpValue = form.querySelector('#healthRecordFollowUp')?.value;
+            const notesValue = form.querySelector('#healthRecordNotes')?.value.trim();
+            const statusUpdateValue = form.querySelector('#healthRecordStatusUpdate')?.value || '';
+
+            if (!dateValue) {
+                showAlert('Please select a record date.', 'warning');
+                return;
+            }
+
+            const recordId = Date.now() + Math.floor(Math.random() * 1000);
+            const costValue = costValueRaw ? parseFloat(costValueRaw) : null;
+
+            const animal = { ...livestock[animalIndex] };
+            const existingRecords = Array.isArray(animal.healthRecords) ? [...animal.healthRecords] : [];
+
+            const newRecord = {
+                id: recordId,
+                recordDate: dateValue,
+                recordType: typeValue,
+                condition: conditionValue,
+                performedBy: performedBy || '',
+                notes: notesValue || '',
+                cost: typeof costValue === 'number' && !Number.isNaN(costValue) ? costValue : null,
+                followUpDate: followUpValue || null,
+                statusApplied: statusUpdateValue || '',
+                createdAt: new Date().toISOString()
+            };
+
+            existingRecords.unshift(newRecord);
+            animal.healthRecords = existingRecords;
+
+            if (statusUpdateValue) {
+                animal.healthStatus = statusUpdateValue;
+            }
+            if (notesValue) {
+                animal.healthNotes = notesValue;
+            }
+
+            livestock[animalIndex] = animal;
+            lastGoodLivestock = [...livestock];
+            try {
+                localStorage.setItem('livestock', JSON.stringify(livestock));
+            } catch (storageError) {
+                console.warn('Failed to persist livestock health records:', storageError);
+            }
+
+            renderHealthRecordList(animal);
+            updateHealthRecordStats(animal);
+
+            form.reset();
+            const today = new Date().toISOString().split('T')[0];
+            const dateInput = form.querySelector('#healthRecordDate');
+            if (dateInput) {
+                dateInput.value = today;
+            }
+            const statusUpdate = form.querySelector('#healthRecordStatusUpdate');
+            if (statusUpdate) {
+                statusUpdate.value = '';
+            }
+
+            showAlert('Health record saved successfully!', 'success');
+
+            applyFilters();
+            updateStatistics();
+        }
+
+        function deleteHealthRecord(animalId, recordId, event) {
+            if (event) {
+                event.stopPropagation();
+                event.preventDefault();
+            }
+
+            if (!confirm('Delete this health record?')) {
+                return;
+            }
+
+            const animalIndex = livestock.findIndex(a => a.id === animalId);
+            if (animalIndex === -1) {
+                showAlert('Animal not found!', 'error');
+                return;
+            }
+
+            const animal = { ...livestock[animalIndex] };
+            const currentRecords = Array.isArray(animal.healthRecords) ? animal.healthRecords : [];
+            animal.healthRecords = currentRecords.filter(record => record.id !== recordId);
+
+            livestock[animalIndex] = animal;
+            lastGoodLivestock = [...livestock];
+            try {
+                localStorage.setItem('livestock', JSON.stringify(livestock));
+            } catch (storageError) {
+                console.warn('Failed to persist livestock removal:', storageError);
+            }
+
+            renderHealthRecordList(animal);
+            updateHealthRecordStats(animal);
+            applyFilters();
+            updateStatistics();
+
+            showAlert('Health record removed.', 'success');
         }
 
         async function getAILivestockAdvice(animalId) {
@@ -1908,20 +3562,166 @@
                 // Show loading message
                 showAlert('Getting AI health advice...', 'info');
 
-                // Get AI recommendations
-                const response = await fetch(window.SmartFarmConfig.getApiUrl(`/api/ai-advisory/livestock-health/${animalId}`));
+                // Build API URL correctly - prevent double /api
+                let apiUrl;
+                let baseUrl = null;
+                
+                if (window.SmartFarmApiConfig && window.SmartFarmApiConfig.baseUrl) {
+                    baseUrl = window.SmartFarmApiConfig.baseUrl;
+                } else if (window.SmartFarmAPI && window.SmartFarmAPI.baseURL) {
+                    baseUrl = window.SmartFarmAPI.baseURL;
+                } else if (window.SmartFarmEnvironment && window.SmartFarmEnvironment.getApiUrl) {
+                    // This method already handles /api, so use it directly
+                    apiUrl = window.SmartFarmEnvironment.getApiUrl(`ai-advisory/livestock-health/${animalId}`);
+                } else if (window.SmartFarmConfig && window.SmartFarmConfig.API_BASE_URL) {
+                    baseUrl = window.SmartFarmConfig.API_BASE_URL;
+                } else if (window.VITE_API_BASE_URL) {
+                    baseUrl = window.VITE_API_BASE_URL;
+                } else {
+                    baseUrl = 'https://smartfarm-app-production.up.railway.app';
+                }
+                
+                // Build URL if not already built
+                if (!apiUrl && baseUrl) {
+                    baseUrl = baseUrl.replace(/\/$/, ''); // Remove trailing slash
+                    if (baseUrl.endsWith('/api')) {
+                        apiUrl = `${baseUrl}/ai-advisory/livestock-health/${animalId}`;
+                    } else {
+                        apiUrl = `${baseUrl}/api/ai-advisory/livestock-health/${animalId}`;
+                    }
+                }
+                
+                // Add animal data as query parameters
+                const params = new URLSearchParams({
+                    type: animal.animalType || '',
+                    breed: animal.breed || '',
+                    age: animal.age || 0,
+                    healthStatus: animal.healthStatus || 'healthy'
+                });
+                apiUrl += '?' + params.toString();
+
+                console.log('🔍 Fetching AI livestock health advice from:', apiUrl);
+
+                const response = await fetch(apiUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    mode: 'cors'
+                });
+
+                // Handle 404 specifically with helpful message
+                if (response.status === 404) {
+                    console.error('❌ API 404 Error: Livestock health endpoint not found.', apiUrl);
+                    console.warn('🔧 Troubleshooting steps:', {
+                        step1: 'Verify Railway has deployed latest code',
+                        step2: 'Check backend logs for route registration',
+                        step3: 'Ensure endpoint path matches: /api/ai-advisory/livestock-health/:animalId',
+                        step4: 'Verify animal parameters are correct',
+                        apiUrl: apiUrl,
+                        animalId: animalId,
+                        animalType: animal.animalType
+                    });
+                    
+                    showAlert(
+                        'AI health advisory service is not available yet. The backend needs to be updated. ' +
+                        'Showing basic health recommendations instead.',
+                        'warning'
+                    );
+                    
+                    // Show fallback health advice
+                    showFallbackLivestockHealthAdvice(animal);
+                    return;
+                }
+
                 if (!response.ok) {
-                    throw new Error('Failed to get AI recommendations');
+                    const errorText = await response.text();
+                    let errorData;
+                    try {
+                        errorData = JSON.parse(errorText);
+                    } catch (e) {
+                        errorData = { error: errorText };
+                    }
+                    
+                    console.error('❌ API Error:', response.status, errorData);
+                    
+                    // Show user-friendly error based on status code
+                    if (response.status === 500) {
+                        showAlert(
+                            'The AI health service encountered an error. Please try again later or contact support.',
+                            'error'
+                        );
+                    } else if (response.status === 503) {
+                        showAlert(
+                            'The AI health service is temporarily unavailable. Showing basic recommendations instead.',
+                            'warning'
+                        );
+                        showFallbackLivestockHealthAdvice(animal);
+                        return;
+                    } else {
+                        showAlert(
+                            `Unable to retrieve AI health advice (Error ${response.status}). Showing basic recommendations instead.`,
+                            'warning'
+                        );
+                        showFallbackLivestockHealthAdvice(animal);
+                        return;
+                    }
+                    
+                    throw new Error(`API Error ${response.status}: ${errorData.error || errorText}`);
                 }
 
                 const data = await response.json();
-                const recommendations = data.data;
+                console.log('✅ AI Health Advice received:', data);
+                
+                if (!data.success) {
+                    const errorMsg = data.error || data.message || 'Failed to generate health advice';
+                    console.error('❌ API returned unsuccessful response:', data);
+                    showAlert(
+                        `AI health service returned an error: ${errorMsg}. Showing basic recommendations instead.`,
+                        'warning'
+                    );
+                    showFallbackLivestockHealthAdvice(animal);
+                    return;
+                }
+
+                const recommendations = data.data || data;
+
+                if (!recommendations) {
+                    console.warn('⚠️ No recommendations in response, using fallback');
+                    showFallbackLivestockHealthAdvice(animal);
+                    return;
+                }
 
                 // Show AI advice modal
                 showAILivestockAdviceModal(animal, recommendations);
             } catch (error) {
-                console.error('Error getting AI livestock advice:', error);
-                showAlert('Failed to get AI advice. Please try again.', 'error');
+                console.error('❌ Error getting AI livestock advice:', error);
+                console.error('Error details:', {
+                    message: error.message,
+                    stack: error.stack,
+                    animalId: animalId,
+                    animalType: animal.animalType,
+                    apiUrl: apiUrl
+                });
+                
+                // Handle network errors specifically
+                if (error.message.includes('Failed to fetch') || 
+                    error.message.includes('NetworkError') || 
+                    error.name === 'TypeError') {
+                    showAlert(
+                        'Cannot connect to AI health service. Please check your internet connection. Showing basic recommendations instead.',
+                        'warning'
+                    );
+                } else if (!error.message.includes('API Error')) {
+                    showAlert(
+                        'An unexpected error occurred while fetching health advice. Showing basic recommendations instead.',
+                        'warning'
+                    );
+                }
+                
+                // Show fallback option
+                showFallbackLivestockHealthAdvice(animal);
             }
         }
 
@@ -1932,7 +3732,7 @@
                         <div class="modal-content">
                             <div class="modal-header">
                                 <h5 class="modal-title">
-                                    <i class="fas fa-robot me-2"></i>AI Health Advice for ${animal.animalType}
+                                    <i class="fas fa-robot me-2"></i>AI Health Advice for ${animal.animalType || animal.type || 'Animal'}
                                 </h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                             </div>
@@ -1940,32 +3740,89 @@
                                 <div class="row">
                                     <div class="col-md-6">
                                         <h6>Animal Information</h6>
+                                        <p><strong>Tag:</strong> ${animal.tag || 'N/A'}</p>
                                         <p><strong>Breed:</strong> ${animal.breed || 'Mixed'}</p>
-                                        <p><strong>Age Group:</strong> ${recommendations.ageGroup.toUpperCase()}</p>
                                         <p><strong>Age:</strong> ${animal.age || 0} months</p>
-                                        <p><strong>Health Status:</strong> ${animal.healthStatus || 'Healthy'}</p>
+                                        <p><strong>Health Status:</strong> <span class="badge bg-${animal.healthStatus === 'healthy' ? 'success' : 'warning'}">${animal.healthStatus || 'Healthy'}</span></p>
                                     </div>
                                     <div class="col-md-6">
                                         <h6>AI Health Recommendations</h6>
-                                        ${Object.entries(recommendations.schedule).map(([type, items]) => `
+                                        
+                                        ${recommendations.nutrition ? `
                                             <div class="card mb-3">
-                                                <div class="card-header">
-                                                    <h6 class="mb-0">${type.toUpperCase()}</h6>
+                                                <div class="card-header bg-primary text-white">
+                                                    <h6 class="mb-0"><i class="fas fa-seedling me-2"></i>Nutrition</h6>
                                                 </div>
                                                 <div class="card-body">
-                                                    ${items.map(item => `
-                                                        <div class="mb-3">
-                                                            <h6>${item.vaccine || item.treatment || item.supplement}</h6>
-                                                            <p><strong>Timing:</strong> ${item.timing}</p>
-                                                            <p><strong>Method:</strong> ${item.method}</p>
-                                                            <p><strong>Frequency:</strong> ${item.frequency || 'N/A'}</p>
-                                                            <p><strong>Conditions:</strong> ${item.conditions || 'N/A'}</p>
-                                                            <p><strong>Notes:</strong> ${item.notes}</p>
+                                                    <p><strong>Feed Type:</strong> ${recommendations.nutrition.feedType}</p>
+                                                    <p><strong>Daily Amount:</strong> ${recommendations.nutrition.dailyAmount}</p>
+                                                    <p><strong>Frequency:</strong> ${recommendations.nutrition.frequency}</p>
+                                                    <p><strong>Supplements:</strong> ${recommendations.nutrition.supplements ? recommendations.nutrition.supplements.join(', ') : 'None'}</p>
+                                                    <p><small class="text-muted">${recommendations.nutrition.notes}</small></p>
+                                                </div>
+                                            </div>
+                                        ` : ''}
+                                        
+                                        ${recommendations.vaccinations ? `
+                                            <div class="card mb-3">
+                                                <div class="card-header bg-success text-white">
+                                                    <h6 class="mb-0"><i class="fas fa-syringe me-2"></i>Vaccinations</h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    <p><strong>Next Vaccination:</strong> ${recommendations.vaccinations.nextVaccination}</p>
+                                                    <p><strong>Recommended:</strong></p>
+                                                    <ul>
+                                                        ${recommendations.vaccinations.recommended ? recommendations.vaccinations.recommended.map(item => `<li>${item}</li>`).join('') : ''}
+                                                    </ul>
+                                                    <p><small class="text-muted">${recommendations.vaccinations.critical}</small></p>
+                                                </div>
+                                            </div>
+                                        ` : ''}
+                                        
+                                        ${recommendations.healthChecks ? `
+                                            <div class="card mb-3">
+                                                <div class="card-header bg-info text-white">
+                                                    <h6 class="mb-0"><i class="fas fa-heartbeat me-2"></i>Health Checks</h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    <p><strong>Frequency:</strong> ${recommendations.healthChecks.frequency}</p>
+                                                    <p><strong>Checks to Perform:</strong></p>
+                                                    <ul>
+                                                        ${recommendations.healthChecks.checks ? recommendations.healthChecks.checks.map(check => `<li>${check}</li>`).join('') : ''}
+                                                    </ul>
+                                                    <p><small class="text-muted">${recommendations.healthChecks.signs}</small></p>
+                                                </div>
+                                            </div>
+                                        ` : ''}
+                                        
+                                        ${recommendations.tips && recommendations.tips.length > 0 ? `
+                                            <div class="card mb-3">
+                                                <div class="card-header bg-warning text-dark">
+                                                    <h6 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Tips</h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    <ul class="mb-0">
+                                                        ${recommendations.tips.map(tip => `<li>${tip}</li>`).join('')}
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        ` : ''}
+                                        
+                                        ${recommendations.warnings && recommendations.warnings.length > 0 ? `
+                                            <div class="card mb-3">
+                                                <div class="card-header bg-danger text-white">
+                                                    <h6 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Important Warnings</h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    ${recommendations.warnings.map(warning => `
+                                                        <div class="alert alert-${warning.type === 'critical' ? 'danger' : warning.type === 'warning' ? 'warning' : 'info'} mb-2">
+                                                            <strong>${warning.message}</strong><br>
+                                                            <small>${warning.impact}</small>
                                                         </div>
                                                     `).join('')}
                                                 </div>
                                             </div>
-                                        `).join('')}
+                                        ` : ''}
                                     </div>
                                 </div>
                             </div>
@@ -2001,18 +3858,157 @@
             }
         }
 
-        function applyFilters() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const speciesFilter = document.getElementById('speciesFilter').value;
-            const statusFilter = document.getElementById('statusFilter').value;
+        /**
+         * Show fallback livestock health advice when API is unavailable
+         * Provides basic recommendations based on animal data
+         */
+        function showFallbackLivestockHealthAdvice(animal) {
+            const animalType = animal.animalType || animal.type || 'Cattle';
+            const age = parseInt(animal.age) || 12;
+            const healthStatus = animal.healthStatus || 'healthy';
             
-            let filteredLivestock = livestock;
+            // Generate basic fallback recommendations
+            const fallbackRecommendations = {
+                healthStatus: healthStatus,
+                nutrition: {
+                    feedType: 'Balanced feed mix',
+                    dailyAmount: '2-3% of body weight',
+                    frequency: '2-3 times daily',
+                    supplements: ['Mineral salt', 'Calcium supplement'],
+                    notes: 'Ensure access to clean water at all times'
+                },
+                vaccinations: {
+                    nextVaccination: 'In 3 months',
+                    recommended: ['Annual health check', 'Deworming every 6 months'],
+                    critical: 'Keep vaccination records up to date'
+                },
+                healthChecks: {
+                    frequency: 'Monthly',
+                    checks: ['Body condition score', 'Hoof health', 'Coat condition', 'Appetite'],
+                    signs: 'Watch for changes in behavior, appetite, or appearance'
+                },
+                warnings: [],
+                tips: [
+                    'Provide adequate shelter from extreme weather',
+                    'Ensure proper ventilation in housing',
+                    'Monitor feed quality and storage',
+                    'Keep detailed health records',
+                    'Quarantine new animals before introducing to herd',
+                    'Note: This is basic advice. For AI-powered recommendations, ensure backend is deployed.'
+                ]
+            };
+
+            // Add warnings based on health status
+            if (healthStatus !== 'healthy') {
+                fallbackRecommendations.warnings.push({
+                    type: 'critical',
+                    message: 'Animal requires immediate veterinary attention',
+                    impact: 'Delayed treatment can worsen condition'
+                });
+            }
+
+            fallbackRecommendations.warnings.push({
+                type: 'warning',
+                message: 'AI service unavailable - showing basic recommendations',
+                impact: 'These are general guidelines. For animal-specific advice, contact a veterinarian.'
+            });
+
+            // Adjust based on animal type
+            if (animalType.toLowerCase().includes('cattle') || animalType.toLowerCase().includes('cow')) {
+                fallbackRecommendations.nutrition.feedType = 'Cattle feed mix with hay';
+                fallbackRecommendations.nutrition.supplements.push('Salt lick', 'Mineral block');
+            } else if (animalType.toLowerCase().includes('pig') || animalType.toLowerCase().includes('swine')) {
+                fallbackRecommendations.nutrition.feedType = 'Swine feed mix';
+                fallbackRecommendations.nutrition.supplements.push('Vitamin D supplement');
+            } else if (animalType.toLowerCase().includes('chicken') || animalType.toLowerCase().includes('poultry')) {
+                fallbackRecommendations.nutrition.feedType = 'Poultry feed';
+                fallbackRecommendations.nutrition.dailyAmount = '100-150g per bird';
+                fallbackRecommendations.healthChecks.frequency = 'Weekly';
+            }
+
+            // Age-specific recommendations
+            if (age < 6) {
+                fallbackRecommendations.nutrition.notes = 'Young animal - requires higher protein feed';
+                fallbackRecommendations.vaccinations.recommended.push('Age-appropriate vaccinations');
+            } else if (age > 60) {
+                fallbackRecommendations.nutrition.notes = 'Senior animal - may require specialized diet';
+                fallbackRecommendations.healthChecks.frequency = 'Bi-weekly';
+                fallbackRecommendations.healthChecks.checks.push('Joint health', 'Dental check');
+            }
+
+            // Show modal with fallback data
+            showAILivestockAdviceModal(animal, fallbackRecommendations);
+            
+            // Add a notice that this is fallback data
+            setTimeout(() => {
+                const modalBody = document.querySelector('#aiLivestockAdviceModal .modal-body');
+                if (modalBody) {
+                    const notice = document.createElement('div');
+                    notice.className = 'alert alert-warning mt-3';
+                    notice.innerHTML = `
+                        <strong>⚠️ Note:</strong> AI health service is currently unavailable. 
+                        Showing basic recommendations. For AI-powered animal-specific health advice, 
+                        please ensure the backend service is deployed and try again.
+                    `;
+                    modalBody.insertBefore(notice, modalBody.firstChild);
+                }
+            }, 100);
+        }
+
+        // Filter management with URL persistence
+        function getLivestockFilters() {
+            const params = new URLSearchParams(window.location.search);
+            const species = params.get('species') || 'all';
+            const status = params.get('status') || 'all';
+            return { species, status };
+        }
+        
+        function setLivestockFilter(key, value) {
+            const params = new URLSearchParams(window.location.search);
+            if (value && value !== 'all') {
+                params.set(key, value);
+            } else {
+                params.delete(key);
+            }
+            // Update URL without reload
+            window.history.replaceState({}, '', `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`);
+            // Update filter UI
+            updateFilterUI();
+        }
+        
+        function updateFilterUI() {
+            const filters = getLivestockFilters();
+            const speciesSelect = document.getElementById('speciesFilter');
+            const statusSelect = document.getElementById('statusFilter');
+            
+            if (speciesSelect) {
+                speciesSelect.value = filters.species === 'all' ? '' : filters.species;
+            }
+            if (statusSelect) {
+                statusSelect.value = filters.status === 'all' ? '' : filters.status;
+            }
+        }
+        
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
+            const filters = getLivestockFilters();
+            const speciesFilter = filters.species !== 'all' ? filters.species : '';
+            const statusFilter = filters.status !== 'all' ? filters.status : '';
+            
+            let filteredLivestock = livestock || [];
+            
+            console.log('🔍 Applying filters:', { 
+                searchTerm, 
+                speciesFilter, 
+                statusFilter, 
+                totalLivestock: filteredLivestock.length 
+            });
             
             if (searchTerm) {
                 filteredLivestock = filteredLivestock.filter(animal => 
-                    animal.tag.toLowerCase().includes(searchTerm) ||
-                    animal.breed.toLowerCase().includes(searchTerm) ||
-                    animal.species.toLowerCase().includes(searchTerm)
+                    (animal.tag && animal.tag.toLowerCase().includes(searchTerm)) ||
+                    (animal.breed && animal.breed.toLowerCase().includes(searchTerm)) ||
+                    (animal.species && animal.species.toLowerCase().includes(searchTerm))
                 );
             }
             
@@ -2024,9 +4020,15 @@
                 filteredLivestock = filteredLivestock.filter(animal => animal.healthStatus === statusFilter);
             }
             
+            console.log('✅ Filtered livestock count:', filteredLivestock.length);
+            
             // Update display with filtered livestock
             const container = document.getElementById('livestockContainer');
             const noAnimalsMessage = document.getElementById('noAnimalsMessage');
+            
+            if (!container || !noAnimalsMessage) {
+                return;
+            }
             
             if (filteredLivestock.length === 0) {
                 container.innerHTML = '';
@@ -2038,8 +4040,14 @@
             container.innerHTML = '';
             
             filteredLivestock.forEach(animal => {
-                const animalCard = createLivestockCard(animal);
-                container.appendChild(animalCard);
+                try {
+                    const animalCard = createLivestockCard(animal);
+                    if (animalCard) {
+                        container.appendChild(animalCard);
+                    }
+                } catch (cardError) {
+                    console.error('❌ Error creating card for animal:', animal, cardError);
+                }
             });
         }
 
@@ -2123,37 +4131,39 @@
                     }
                 });
                 
-                // CRITICAL: MutationObserver to detect aria-hidden changes and fix focus conflicts
-                const observer = new MutationObserver(function(mutations) {
-                    mutations.forEach(function(mutation) {
-                        if (mutation.type === 'attributes' && mutation.attributeName === 'aria-hidden') {
-                            const modal = mutation.target;
-                            if (modal.classList.contains('modal') && modal.getAttribute('aria-hidden') === 'true') {
-                                console.log('🔧 Detected aria-hidden="true" on modal, checking for focus conflicts');
-                                
-                                // Check if any element inside the modal has focus
-                                const focusedElement = modal.querySelector(':focus');
-                                if (focusedElement) {
-                                    console.warn('⚠️ Focus conflict detected, removing focus from:', focusedElement);
-                                    focusedElement.blur();
-                                }
-                            }
-                        }
-                    });
-                });
-                
-                // Observe the modal for aria-hidden changes
-                observer.observe(addLivestockModal, {
-                    attributes: true,
-                    attributeFilter: ['aria-hidden']
-                });
+                // NOTE: Removed duplicate MutationObserver - modal-accessibility.js handles this
+                // The ModalAccessibility class already manages aria-hidden and focus conflicts
+                // Adding another observer would create conflicts and infinite loops
             }
         });
 
-        // Search functionality
-        document.getElementById('searchInput').addEventListener('input', applyFilters);
-        document.getElementById('speciesFilter').addEventListener('change', applyFilters);
-        document.getElementById('statusFilter').addEventListener('change', applyFilters);
+        // Search functionality with filter persistence
+        const searchInput = document.getElementById('searchInput');
+        const speciesFilter = document.getElementById('speciesFilter');
+        const statusFilter = document.getElementById('statusFilter');
+        
+        if (searchInput) {
+            searchInput.addEventListener('input', applyFilters);
+        }
+        
+        if (speciesFilter) {
+            speciesFilter.addEventListener('change', function() {
+                const value = this.value || 'all';
+                setLivestockFilter('species', value);
+                applyFilters();
+            });
+        }
+        
+        if (statusFilter) {
+            statusFilter.addEventListener('change', function() {
+                const value = this.value || 'all';
+                setLivestockFilter('status', value);
+                applyFilters();
+            });
+        }
+        
+        // Initialize filter UI from URL on load
+        updateFilterUI();
 
         // Authentication functions
         function logout() {
@@ -2167,6 +4177,35 @@
         // Check authentication on page load
         document.addEventListener('DOMContentLoaded', function() {
             checkAuthentication();
+            
+            // Register modals with validator
+            if (window.ModalValidator) {
+                // Register Add Livestock Modal
+                window.ModalValidator.registerModal('addLivestockModal', {
+                    requireValidation: true,
+                    requiredFields: ['animalSpecies', 'animalBreed', 'animalTag', 'animalSex', 'birthDate', 'animalLocation'],
+                    allowEscapeKey: false,
+                    allowBackdropClick: false
+                });
+                
+                // Register Edit Livestock Modal
+                window.ModalValidator.registerModal('editLivestockModal', {
+                    requireValidation: true,
+                    requiredFields: ['editAnimalSpecies', 'editAnimalBreed', 'editAnimalTag', 'editAnimalSex', 'editBirthDate', 'editAnimalLocation'],
+                    allowEscapeKey: false,
+                    allowBackdropClick: false
+                });
+                
+                // Register Feed Mix Calculator Modal
+                window.ModalValidator.registerModal('feedMixCalculatorModal', {
+                    requireValidation: true,
+                    requiredFields: ['feedMixSpecies', 'feedMixLifecycle', 'feedMixWeight'],
+                    allowEscapeKey: false,
+                    allowBackdropClick: false
+                });
+                
+                console.log('✅ All modals registered with validator');
+            }
         });
 
         function checkAuthentication() {
@@ -2181,6 +4220,441 @@
             document.getElementById('userName').textContent = userName;
             document.getElementById('userAvatar').textContent = userName.charAt(0).toUpperCase();
         }
+
+        // Feed Mix Calculator Functions
+        function showFeedMixCalculator() {
+            const modalElement = document.getElementById('feedMixCalculatorModal');
+            if (!modalElement) {
+                showAlert('Feed Mix Calculator modal not found. Please refresh the page.', 'error');
+                console.error('feedMixCalculatorModal not found');
+                return;
+            }
+            
+            try {
+                let modal = bootstrap.Modal.getInstance(modalElement);
+                if (!modal) {
+                    modal = new bootstrap.Modal(modalElement);
+                }
+                modal.show();
+            } catch (error) {
+                console.error('Error showing feed mix calculator modal:', error);
+                showAlert('Error opening Feed Mix Calculator. Please try again.', 'error');
+            }
+        }
+
+        function updateFeedMixLifecycleOptions() {
+            const species = document.getElementById('feedMixSpecies').value;
+            const lifecycleSelect = document.getElementById('feedMixLifecycle');
+            
+            if (!lifecycleSelect) {
+                console.error('feedMixLifecycle select not found');
+                return;
+            }
+            
+            // Clear existing options
+            lifecycleSelect.innerHTML = '<option value="">Select Lifecycle Stage</option>';
+            
+            if (species) {
+                if (window.FeedMixCalculator && typeof window.FeedMixCalculator.getLifecycleStages === 'function') {
+                    try {
+                        const stages = window.FeedMixCalculator.getLifecycleStages(species);
+                        if (stages && Array.isArray(stages)) {
+                            stages.forEach(stage => {
+                                const option = document.createElement('option');
+                                option.value = stage.value;
+                                option.textContent = stage.label;
+                                lifecycleSelect.appendChild(option);
+                            });
+                        }
+                    } catch (error) {
+                        console.error('Error getting lifecycle stages:', error);
+                    }
+                } else {
+                    console.warn('FeedMixCalculator not available or getLifecycleStages method not found');
+                    // Fallback: Add common lifecycle stages
+                    const commonStages = [
+                        { value: 'calf', label: 'Calf' },
+                        { value: 'heifer', label: 'Heifer' },
+                        { value: 'cow', label: 'Cow' },
+                        { value: 'bull', label: 'Bull' }
+                    ];
+                    commonStages.forEach(stage => {
+                        const option = document.createElement('option');
+                        option.value = stage.value;
+                        option.textContent = stage.label;
+                        lifecycleSelect.appendChild(option);
+                    });
+                }
+            }
+        }
+
+        async function calculateFeedMix() {
+            const modalId = 'feedMixCalculatorModal';
+            
+            // Validate modal before proceeding
+            if (window.ModalValidator) {
+                const isValid = await window.ModalValidator.validateModal(modalId);
+                if (!isValid) {
+                    return;
+                }
+            }
+            
+            try {
+                // Get form values
+                const species = document.getElementById('feedMixSpecies').value;
+                const lifecycle = document.getElementById('feedMixLifecycle').value;
+                const weight = parseFloat(document.getElementById('feedMixWeight').value);
+                const age = document.getElementById('feedMixAge').value ? parseFloat(document.getElementById('feedMixAge').value) : null;
+                const purpose = document.getElementById('feedMixPurpose').value;
+
+                // Validate required fields
+                if (!species || !lifecycle || !weight) {
+                    showAlert('Please fill in Species, Lifecycle Stage, and Weight', 'error');
+                    return;
+                }
+
+                // Prepare animal data
+                const animalData = {
+                    species: species,
+                    weight: weight,
+                    age: age,
+                    lifecycle: lifecycle,
+                    purpose: purpose,
+                    productionStage: purpose
+                };
+
+                // Check if FeedMixCalculator is available
+                if (!window.FeedMixCalculator || typeof window.FeedMixCalculator.calculateFeedMix !== 'function') {
+                    showAlert('Feed Mix Calculator is not available. Please refresh the page.', 'error');
+                    console.error('FeedMixCalculator not available');
+                    return;
+                }
+
+                // Calculate feed mix
+                let result;
+                try {
+                    result = window.FeedMixCalculator.calculateFeedMix(animalData);
+                    if (!result || !result.feedMix) {
+                        throw new Error('Invalid result from FeedMixCalculator');
+                    }
+                } catch (calcError) {
+                    console.error('Error calculating feed mix:', calcError);
+                    showAlert('Error calculating feed mix: ' + calcError.message, 'error');
+                    return;
+                }
+                
+                // Save feed mix to API or localStorage
+                await saveFeedMix(result);
+                
+                // Display results
+                displayFeedMixResults(result);
+                
+                // Show results section
+                const resultsDiv = document.getElementById('feedMixResults');
+                const instructionsDiv = document.getElementById('feedMixInstructions');
+                if (resultsDiv) resultsDiv.style.display = 'block';
+                if (instructionsDiv) instructionsDiv.style.display = 'none';
+                
+                showAlert('Feed mix calculated successfully!', 'success');
+                
+            } catch (error) {
+                console.error('Error calculating feed mix:', error);
+                showAlert('Error calculating feed mix: ' + error.message, 'error');
+            }
+        }
+
+        // Save feed mix data
+        async function saveFeedMix(feedMixResult) {
+            try {
+                const feedMixData = {
+                    species: feedMixResult.animal.species,
+                    lifecycle: feedMixResult.animal.lifecycle,
+                    weight: feedMixResult.animal.weight,
+                    age: feedMixResult.animal.age,
+                    purpose: feedMixResult.animal.purpose,
+                    feedMix: feedMixResult.feedMix,
+                    dailyIntake: feedMixResult.dailyIntake.recommended,
+                    dailyCost: feedMixResult.totalCost.dailyCost,
+                    monthlyCost: feedMixResult.totalCost.monthlyCost,
+                    annualCost: feedMixResult.totalCost.annualCost,
+                    recommendations: feedMixResult.recommendations,
+                    createdAt: new Date().toISOString()
+                };
+
+                // Try to save to API
+                if (window.SmartFarmAPI && typeof window.SmartFarmAPI.isBackendAvailable === 'function') {
+                    const isAvailable = await window.SmartFarmAPI.isBackendAvailable();
+                    if (isAvailable) {
+                        const response = await window.SmartFarmAPI.createFeedMix(feedMixData);
+                        if (response.success) {
+                            console.log('✅ Feed mix saved to API:', response.data);
+                            return response.data;
+                        }
+                    }
+                }
+                
+                // Fallback to localStorage
+                const storedFeedMixes = JSON.parse(localStorage.getItem('feedMixes') || '[]');
+                feedMixData.id = Date.now();
+                storedFeedMixes.push(feedMixData);
+                localStorage.setItem('feedMixes', JSON.stringify(storedFeedMixes));
+                console.log('💾 Feed mix saved to localStorage');
+                
+                return feedMixData;
+            } catch (error) {
+                console.error('Error saving feed mix:', error);
+                // Don't throw error - calculation still succeeded
+            }
+        }
+
+        function displayFeedMixResults(result) {
+            if (!result || !result.requirements || !result.feedMix) {
+                console.error('Invalid result data for displayFeedMixResults:', result);
+                showAlert('Error displaying results: Invalid data', 'error');
+                return;
+            }
+
+            // Display nutritional requirements
+            const requirementsDiv = document.getElementById('nutritionalRequirements');
+            if (!requirementsDiv) {
+                console.error('nutritionalRequirements div not found');
+                return;
+            }
+            
+            requirementsDiv.innerHTML = `
+                <div class="col-md-6">
+                    <div class="mb-2">
+                        <strong>Protein:</strong> ${result.requirements.dailyRequirements.protein.min}-${result.requirements.dailyRequirements.protein.max}%
+                    </div>
+                    <div class="mb-2">
+                        <strong>Energy:</strong> ${result.requirements.dailyRequirements.energy.min}-${result.requirements.dailyRequirements.energy.max} Mcal/kg
+                    </div>
+                    <div class="mb-2">
+                        <strong>Fiber:</strong> ${result.requirements.dailyRequirements.fiber.min}-${result.requirements.dailyRequirements.fiber.max}%
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-2">
+                        <strong>Calcium:</strong> ${result.requirements.dailyRequirements.calcium.min}-${result.requirements.dailyRequirements.calcium.max}%
+                    </div>
+                    <div class="mb-2">
+                        <strong>Phosphorus:</strong> ${result.requirements.dailyRequirements.phosphorus.min}-${result.requirements.dailyRequirements.phosphorus.max}%
+                    </div>
+                    <div class="mb-2">
+                        <strong>Daily Intake:</strong> ${result.requirements.dailyRequirements.dailyIntake.min}-${result.requirements.dailyRequirements.dailyIntake.max}% of body weight
+                    </div>
+                </div>
+            `;
+
+            // Display feed mix composition
+            const compositionDiv = document.getElementById('feedMixComposition');
+            if (compositionDiv) {
+                let compositionHTML = '';
+                for (const [ingredient, percentage] of Object.entries(result.feedMix)) {
+                    compositionHTML += `
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>${ingredient}</span>
+                            <span class="badge bg-primary">${percentage}%</span>
+                        </div>
+                    `;
+                }
+                compositionDiv.innerHTML = compositionHTML;
+            } else {
+                console.error('feedMixComposition div not found');
+            }
+
+            // Display costs
+            const costsDiv = document.getElementById('feedMixCosts');
+            if (!costsDiv) {
+                console.error('feedMixCosts div not found');
+                return;
+            }
+            
+            if (!result.totalCost || !result.dailyIntake) {
+                console.error('Missing cost or intake data in result');
+                return;
+            }
+            
+            costsDiv.innerHTML = `
+                <div class="mb-2">
+                    <strong>Daily Intake:</strong> ${result.dailyIntake.recommended ? result.dailyIntake.recommended.toFixed(1) : 'N/A'} kg
+                </div>
+                <div class="mb-2">
+                    <strong>Cost per kg:</strong> $${result.totalCost.costPerKg ? result.totalCost.costPerKg.toFixed(2) : '0.00'}
+                </div>
+                <div class="mb-2">
+                    <strong>Daily Cost:</strong> $${result.totalCost.dailyCost ? result.totalCost.dailyCost.toFixed(2) : '0.00'}
+                </div>
+                <div class="mb-2">
+                    <strong>Monthly Cost:</strong> $${result.totalCost.monthlyCost ? result.totalCost.monthlyCost.toFixed(2) : '0.00'}
+                </div>
+                <div class="mb-2">
+                    <strong>Annual Cost:</strong> $${result.totalCost.annualCost ? result.totalCost.annualCost.toFixed(2) : '0.00'}
+                </div>
+            `;
+
+            // Display recommendations
+            const recommendationsDiv = document.getElementById('feedMixRecommendations');
+            if (recommendationsDiv) {
+                let recommendationsHTML = '';
+                if (result.recommendations && Array.isArray(result.recommendations)) {
+                    result.recommendations.forEach(rec => {
+                        const alertClass = rec.type === 'warning' ? 'alert-warning' : 
+                                         rec.type === 'success' ? 'alert-success' : 'alert-info';
+                        recommendationsHTML += `
+                            <div class="alert ${alertClass} alert-sm">
+                                <i class="fas fa-${rec.type === 'warning' ? 'exclamation-triangle' : 
+                                                   rec.type === 'success' ? 'check-circle' : 'info-circle'} me-2"></i>
+                                ${rec.message}
+                            </div>
+                        `;
+                    });
+                }
+                recommendationsDiv.innerHTML = recommendationsHTML;
+            } else {
+                console.error('feedMixRecommendations div not found');
+            }
+        }
+
+        function printFeedMixReport() {
+            const resultsDiv = document.getElementById('feedMixResults');
+            if (!resultsDiv || resultsDiv.style.display === 'none') {
+                showAlert('Please calculate a feed mix first', 'warning');
+                return;
+            }
+
+            // Create print window
+            const printWindow = window.open('', '_blank');
+            const animalData = {
+                species: document.getElementById('feedMixSpecies').value,
+                lifecycle: document.getElementById('feedMixLifecycle').value,
+                weight: document.getElementById('feedMixWeight').value,
+                age: document.getElementById('feedMixAge').value || 'N/A',
+                purpose: document.getElementById('feedMixPurpose').value || 'N/A'
+            };
+
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Feed Mix Report - SmartFarm</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 20px; }
+                        .header { text-align: center; margin-bottom: 30px; }
+                        .section { margin-bottom: 25px; }
+                        .section h3 { color: #2e7d32; border-bottom: 2px solid #2e7d32; padding-bottom: 5px; }
+                        .animal-info { background: #f5f5f5; padding: 15px; border-radius: 5px; }
+                        .feed-mix { background: #e8f5e8; padding: 15px; border-radius: 5px; }
+                        .costs { background: #fff3e0; padding: 15px; border-radius: 5px; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                        th { background-color: #f2f2f2; }
+                        @media print { body { margin: 0; } }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>SmartFarm Feed Mix Report</h1>
+                        <p>Generated on: ${new Date().toLocaleDateString()}</p>
+                    </div>
+                    
+                    <div class="section">
+                        <h3>Animal Information</h3>
+                        <div class="animal-info">
+                            <p><strong>Species:</strong> ${animalData.species}</p>
+                            <p><strong>Lifecycle Stage:</strong> ${animalData.lifecycle}</p>
+                            <p><strong>Weight:</strong> ${animalData.weight} kg</p>
+                            <p><strong>Age:</strong> ${animalData.age} months</p>
+                            <p><strong>Production Purpose:</strong> ${animalData.purpose}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="section">
+                        <h3>Feed Mix Composition</h3>
+                        <div class="feed-mix">
+                            ${document.getElementById('feedMixComposition').innerHTML}
+                        </div>
+                    </div>
+                    
+                    <div class="section">
+                        <h3>Cost Analysis</h3>
+                        <div class="costs">
+                            ${document.getElementById('feedMixCosts').innerHTML}
+                        </div>
+                    </div>
+                    
+                    <div class="section">
+                        <h3>Recommendations</h3>
+                        ${document.getElementById('feedMixRecommendations').innerHTML}
+                    </div>
+                    
+                    <div class="section">
+                        <p><em>This report was generated by SmartFarm Feed Mix Calculator. For best results, consult with a veterinarian or animal nutritionist.</em></p>
+                    </div>
+                </body>
+                </html>
+            `);
+            
+            printWindow.document.close();
+            printWindow.print();
+        }
+    </script>
+    <script src="/js/catalog-picker.js"></script>
+    <script src="/js/catalog-popovers.js"></script>
+    <script>
+        async function updateSpeciesInsight(selectId, panelId) {
+            const selectEl = document.getElementById(selectId);
+            const panel = document.getElementById(panelId);
+            if (!selectEl || !panel) return;
+
+            const speciesName = selectEl.value;
+            if (!speciesName) {
+                panel.classList.add('d-none');
+                panel.innerHTML = '';
+                return;
+            }
+
+            try {
+                const params = new URLSearchParams({ group: selectEl.dataset.catalogGroup || 'pets', q: speciesName, limit: 1 });
+                const response = await fetch(`/api/catalog?${params.toString()}`);
+                if (!response.ok) throw new Error('Failed to fetch catalog item');
+                const data = await response.json();
+                const item = (data.items || [])[0];
+                if (!item) return;
+
+                const lines = [];
+                if (item.feedRequirements) lines.push(`<div><strong>Feed Guidance:</strong> ${item.feedRequirements}</div>`);
+                if (item.waterQuality) lines.push(`<div><strong>Water:</strong> ${item.waterQuality}</div>`);
+                if (item.commonDiseases && item.commonDiseases.length) lines.push(`<div><strong>Risks:</strong> ${item.commonDiseases.slice(0,2).join(', ')}</div>`);
+                if (item.preventiveActions && item.preventiveActions.length) lines.push(`<div><strong>Prevention:</strong> ${item.preventiveActions.slice(0,2).join(', ')}</div>`);
+
+                if (!lines.length) {
+                    panel.classList.add('d-none');
+                    panel.innerHTML = '';
+                    return;
+                }
+
+                panel.innerHTML = lines.join('');
+                panel.classList.remove('d-none');
+            } catch (error) {
+                console.error('Failed to update species insight panel:', error);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const speciesSelect = document.getElementById('animalSpecies');
+            const editSpeciesSelect = document.getElementById('editAnimalSpecies');
+
+            if (speciesSelect) {
+                speciesSelect.addEventListener('change', () => updateSpeciesInsight('animalSpecies', 'animalSpeciesInsights'));
+            }
+
+            if (editSpeciesSelect) {
+                editSpeciesSelect.addEventListener('change', () => updateSpeciesInsight('editAnimalSpecies', 'editAnimalSpeciesInsights'));
+            }
+        });
     </script>
 </body>
 </html>
+
+

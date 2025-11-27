@@ -1,0 +1,50 @@
+CREATE TABLE Livestock (
+    id TEXT NOT NULL PRIMARY KEY,
+    farmId TEXT NOT NULL,
+    name TEXT NOT NULL,
+    type TEXT NOT NULL,
+    breed TEXT,
+    birthDate TEXT,
+    weight REAL,
+    status TEXT,
+    location TEXT,
+    description TEXT,
+    tag TEXT,
+    sex TEXT,
+    purpose TEXT,
+    value REAL,
+    createdAt TEXT,
+    updatedAt TEXT,
+    FOREIGN KEY (farmId) REFERENCES Farm(id) ON DELETE CASCADE
+);
+
+getAllLivestock:
+SELECT * FROM Livestock ORDER BY name ASC;
+
+getLivestockById:
+SELECT * FROM Livestock WHERE id = ?;
+
+getLivestockByFarmId:
+SELECT * FROM Livestock WHERE farmId = ? ORDER BY name ASC;
+
+getLivestockByType:
+SELECT * FROM Livestock WHERE type = ? ORDER BY name ASC;
+
+getLivestockByStatus:
+SELECT * FROM Livestock WHERE status = ? ORDER BY name ASC;
+
+searchLivestock:
+SELECT * FROM Livestock WHERE name LIKE '%' || ? || '%' OR breed LIKE '%' || ? || '%' ORDER BY name ASC;
+
+insertLivestock:
+INSERT INTO Livestock(id, farmId, name, type, breed, birthDate, weight, status, location, description, tag, sex, purpose, value, createdAt, updatedAt)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+updateLivestock:
+UPDATE Livestock
+SET farmId = ?, name = ?, type = ?, breed = ?, birthDate = ?, weight = ?, status = ?, location = ?, description = ?, tag = ?, sex = ?, purpose = ?, value = ?, updatedAt = ?
+WHERE id = ?;
+
+deleteLivestock:
+DELETE FROM Livestock WHERE id = ?;
+

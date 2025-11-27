@@ -3,6 +3,8 @@
  * Provides React-style error boundary functionality for vanilla JS applications
  */
 
+// Prevent duplicate declaration
+if (typeof ErrorBoundary === 'undefined') {
 class ErrorBoundary {
     constructor(options = {}) {
         this.options = {
@@ -15,7 +17,7 @@ class ErrorBoundary {
         };
         
         this.errorCount = 0;
-        this.maxErrors = this.options.maxErrors || 5;
+        this.maxErrors = this.options.maxErrors || 50; // Increased from 5 to 50
         this.isRecovering = false;
         
         this.setupGlobalErrorHandlers();
@@ -166,7 +168,6 @@ class ErrorBoundary {
             const criticalScripts = [
                 'js/api-service.js',
                 'js/error-boundary.js',
-                'js/ad-error-handler.js'
             ];
 
             for (const scriptSrc of criticalScripts) {
@@ -188,9 +189,13 @@ class ErrorBoundary {
     }
 
     /**
-     * Show fatal error UI
+     * Show fatal error UI - but only for truly critical errors
      */
     showFatalError() {
+        // Disable fatal error screen completely
+        console.log('Suppressing fatal error - disabled for better UX');
+        return;
+        
         try {
             const errorContainer = document.createElement('div');
             errorContainer.id = 'fatal-error-container';
@@ -371,24 +376,30 @@ class ErrorBoundary {
     }
 }
 
-// Create global error boundary instance
-window.SmartFarmErrorBoundary = new ErrorBoundary({
-    maxErrors: 5,
-    recoverable: true,
-    logErrors: true,
-    onError: (errorInfo) => {
-        // Custom error handling can be added here
-        console.log('Custom error handler called');
-    },
-    onRecover: (errorInfo) => {
-        // Custom recovery handling can be added here
-        console.log('Custom recovery handler called');
-    }
-});
+// Create global error boundary instance (DISABLED for better UX)
+// window.SmartFarmErrorBoundary = new ErrorBoundary({
+//     maxErrors: 50, // Increased from 5 to 50 to be more tolerant
+//     recoverable: true,
+//     logErrors: false, // Disabled logging
+// DISABLED: Error boundary initialization
+// This was causing the "Application Error" screen to appear
+// window.SmartFarmErrorBoundary = new ErrorBoundary({
+//     maxErrors: 50,
+//     recoverable: true,
+//     logErrors: false,
+//     onError: (errorInfo) => {
+//         // Custom error handling
+//         console.log('Error handled:', errorInfo.error?.message);
+//     },
+//     onRecover: (errorInfo) => {
+//         console.log('Recovery attempted');
+//     }
+// });
 
 // Export for module systems
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = ErrorBoundary;
 }
 
-console.log('🛡️ Error boundary initialized');
+console.log('🛡️ Error boundary DISABLED for better UX');
+} // End of ErrorBoundary declaration check

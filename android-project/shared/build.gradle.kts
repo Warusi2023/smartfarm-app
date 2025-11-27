@@ -3,6 +3,7 @@ plugins {
     kotlin("plugin.serialization")
     id("org.jetbrains.compose")
     id("com.android.library")
+    id("app.cash.sqldelight")
 }
 
 android {
@@ -86,6 +87,23 @@ kotlin {
                 
                 // Logging
                 implementation("io.github.aakira:napier:2.6.1")
+                
+                // Dependency Injection - Koin
+                implementation("io.insert-koin:koin-core:3.5.0")
+                implementation("io.insert-koin:koin-compose:1.1.0") // For Compose ViewModels
+                
+                // Networking - Ktor
+                val ktorVersion = "2.3.7"
+                implementation("io.ktor:ktor-client-core:$ktorVersion")
+                implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
+                implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
+                implementation("io.ktor:ktor-client-logging:$ktorVersion")
+                
+                // Database - SQLDelight
+                implementation("com.squareup.sqldelight:runtime:2.0.0")
+                
+                // Preferences - Multiplatform Settings
+                implementation("com.russhwolf:multiplatform-settings:1.1.1")
             }
         }
         
@@ -99,7 +117,11 @@ kotlin {
         
         val androidMain by getting {
             dependencies {
-                // Android-specific dependencies can be added here later
+                // Ktor Android engine
+                implementation("io.ktor:ktor-client-android:2.3.7")
+                
+                // SQLDelight Android driver
+                implementation("com.squareup.sqldelight:android-driver:2.0.0")
             }
         }
         
@@ -129,7 +151,11 @@ kotlin {
             iosSimulatorArm64Main.dependsOn(this)
             
             dependencies {
-                // iOS-specific dependencies can be added here later
+                // Ktor iOS engine
+                implementation("io.ktor:ktor-client-darwin:2.3.7")
+                
+                // SQLDelight iOS driver
+                implementation("com.squareup.sqldelight:native-driver:2.0.0")
             }
         }
         
@@ -164,6 +190,15 @@ kotlin {
                 implementation("io.mockk:mockk:1.13.8")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
             }
+        }
+    }
+}
+
+sqldelight {
+    databases {
+        create("FarmDatabase") {
+            packageName.set("com.smartfarm.shared.database")
+            generateAsync.set(true)
         }
     }
 } 

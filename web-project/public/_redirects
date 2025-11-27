@@ -1,4 +1,6 @@
 # Netlify redirects file
 # This ensures all routes are handled by index.html for SPA routing
+# Root path explicitly allowed for external tools
 
+/    /index.html   200
 /*    /index.html   200

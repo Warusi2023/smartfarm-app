@@ -12,11 +12,21 @@ class SmartFarmAPIService {
     }
 
     getApiBaseUrl() {
-        // Try environment variables first, then config, then default
-        return window.VITE_API_BASE_URL || 
-               window.NEXT_PUBLIC_API_BASE_URL || 
-               window.SmartFarmConfig?.API_BASE_URL || 
-               'https://smartfarm-backend.railway.app';
+        // Use single source of truth from api-config.js
+        if (window.SmartFarmApiConfig) {
+            const url = window.SmartFarmApiConfig.baseUrl;
+            console.log('[API Service] Using SmartFarmApiConfig URL:', url);
+            return url;
+        }
+        
+        // Fallback if api-config.js not loaded yet
+        const fallbackUrl = window.VITE_API_BASE_URL || 
+               window.VITE_API_URL || 
+               (window).__SMARTFARM_API_BASE__ ||
+               'https://smartfarm-app-production.up.railway.app';
+        
+        console.log('[API Service] Using fallback URL:', fallbackUrl);
+        return fallbackUrl;
     }
 
     // Authentication token management
@@ -43,9 +53,9 @@ class SmartFarmAPIService {
     }
 
     // Generic API request method with retry logic and error handling
-    async request(endpoint, options = {}, retryCount = 0) {
+    async request(endpoint, options = {}, retryCount = 0, isRetrying401 = false) {
         const url = `${this.baseURL}/api${endpoint}`;
-        const maxRetries = 3;
+        const maxRetries = 1; // Reduced to 1 to minimize error spam
         const config = {
             headers: {
                 'Content-Type': 'application/json',
@@ -62,43 +72,157 @@ class SmartFarmAPIService {
         }
 
         try {
-            console.log(`🌐 API Request: ${config.method || 'GET'} ${url}`);
-            
-            const response = await fetch(url, config);
-            
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            // Silent logging to reduce console spam
+            if (window.location.hostname === 'localhost') {
+                console.log(`🌐 API Request: ${config.method || 'GET'} ${url}`);
             }
             
-            const data = await response.json();
-            console.log(`✅ API Response: ${url}`, data);
+            // Add timeout to prevent hanging requests (30 seconds for save operations, 15 seconds for others)
+            const timeoutMs = config.method === 'POST' || config.method === 'PUT' ? 30000 : 15000;
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
             
-            return {
-                success: true,
-                data: data.data || data,
-                message: data.message || 'Success'
-            };
-            
-        } catch (error) {
-            console.error(`❌ API Error: ${url}`, error);
-            
-            // Retry logic with exponential backoff
-            if (retryCount < maxRetries && this.shouldRetry(error)) {
-                const delay = Math.pow(2, retryCount) * 1000; // 1s, 2s, 4s
-                console.log(`🔄 Retrying in ${delay}ms (attempt ${retryCount + 1}/${maxRetries})`);
+            try {
+                const response = await fetch(url, {
+                    ...config,
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
                 
-                await this.delay(delay);
-                return this.request(endpoint, options, retryCount + 1);
+                // Continue with response handling
+                return await this.handleResponse(response, url, endpoint, options, retryCount, isRetrying401);
+            } catch (fetchError) {
+                clearTimeout(timeoutId);
+                
+                // Check if it's a timeout/abort error
+                if (fetchError.name === 'AbortError' || fetchError.message.includes('aborted')) {
+                    throw new Error(`Request timeout after ${timeoutMs/1000}s. Please check your connection and try again.`);
+                }
+                throw fetchError;
+            }
+        } catch (error) {
+            // Only log errors in development, reduce production noise
+            if (window.location.hostname === 'localhost') {
+                console.error(`❌ API Error: ${url}`, error);
             }
             
-            // Show server unavailable banner after all retries failed
-            this.showServerUnavailableBanner();
+            // Check if it's a 401 error in the error message
+            if (error.message.includes('401') && !isRetrying401) {
+                console.log('🔄 401 detected in error, attempting token refresh...');
+                const refreshed = await this.refreshTokenSafely();
+                if (refreshed) {
+                    // Retry the request with new token
+                    return this.request(endpoint, options, retryCount, true);
+                }
+            }
+            
+            // Retry logic for network errors
+            if (retryCount < maxRetries && (
+                error.message.includes('Failed to fetch') ||
+                error.message.includes('NetworkError') ||
+                error.message.includes('timeout')
+            )) {
+                console.log(`🔄 Retrying request (${retryCount + 1}/${maxRetries})...`);
+                await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1))); // Exponential backoff
+                return this.request(endpoint, options, retryCount + 1, isRetrying401);
+            }
             
             return {
                 success: false,
-                error: error.message,
+                error: error.message || 'Network error. Please check your connection.',
+                statusCode: error.status || 0,
                 retries: retryCount
             };
+        }
+    }
+
+    // Helper method to handle response processing
+    async handleResponse(response, url, endpoint, options, retryCount, isRetrying401) {
+        // Handle 401 Unauthorized - try token refresh once
+        if (response.status === 401 && !isRetrying401) {
+            console.log('🔄 401 Unauthorized, attempting token refresh...');
+            const refreshed = await this.refreshTokenSafely();
+            if (refreshed) {
+                // Retry the request with new token
+                return this.request(endpoint, options, retryCount, true);
+            } else {
+                // Token refresh failed, show error but don't clear UI
+                console.warn('⚠️ Token refresh failed, keeping last good data');
+                return {
+                    success: false,
+                    error: 'Authentication failed. Please login again.',
+                    statusCode: 401,
+                    retries: retryCount
+                };
+            }
+        }
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        // Connection successful - remove any server unavailable banners
+        const banner = document.getElementById('server-unavailable-banner');
+        if (banner) {
+            banner.remove();
+            if (document.body) {
+                document.body.style.paddingTop = '0px';
+            }
+            // Reset dismiss flag since connection is restored
+            sessionStorage.removeItem('serverBannerDismissed');
+        }
+        
+        // Silent logging to reduce console spam
+        if (window.location.hostname === 'localhost') {
+            console.log(`✅ API Response: ${url}`, data);
+        }
+        
+        return {
+            success: true,
+            data: data.data || data,
+            message: data.message || 'Success'
+        };
+    }
+    
+    // Safely attempt to refresh token
+    async refreshTokenSafely() {
+        try {
+            // Check if we have a refresh token
+            const refreshToken = localStorage.getItem('smartfarm_refresh_token') || 
+                                sessionStorage.getItem('smartfarm_refresh_token');
+            
+            if (!refreshToken) {
+                console.warn('No refresh token available');
+                return false;
+            }
+            
+            // Attempt to refresh
+            const response = await fetch(`${this.baseURL}/api/auth/refresh`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ refreshToken }),
+                credentials: 'include',
+                mode: 'cors'
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                if (data.token) {
+                    this.setAuthToken(data.token);
+                    console.log('✅ Token refreshed successfully');
+                    return true;
+                }
+            }
+            
+            console.warn('Token refresh failed');
+            return false;
+        } catch (error) {
+            console.warn('Error during token refresh:', error);
+            return false;
         }
     }
 
@@ -116,15 +240,26 @@ class SmartFarmAPIService {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 
-    // Show server unavailable banner
+    // Show server unavailable banner (but only if not in fallback mode)
     showServerUnavailableBanner() {
+        // Don't show banner if we're in fallback mode
+        if (document.getElementById('dashboard-fallback')) {
+            console.log('In fallback mode, not showing server unavailable banner');
+            return;
+        }
+
+        // Check if user has dismissed banner in this session
+        if (sessionStorage.getItem('serverBannerDismissed') === 'true') {
+            return;
+        }
+
         // Remove existing banner if present
         const existingBanner = document.getElementById('server-unavailable-banner');
         if (existingBanner) {
             existingBanner.remove();
         }
 
-        // Create banner
+        // Create banner with less alarming message
         const banner = document.createElement('div');
         banner.id = 'server-unavailable-banner';
         banner.style.cssText = `
@@ -132,44 +267,60 @@ class SmartFarmAPIService {
             top: 0;
             left: 0;
             right: 0;
-            background: #dc3545;
-            color: white;
-            padding: 10px;
+            background: #ffc107;
+            color: #000;
+            padding: 8px;
             text-align: center;
             z-index: 9999;
             font-family: Arial, sans-serif;
+            font-size: 13px;
         `;
         banner.innerHTML = `
-            ⚠️ Server temporarily unavailable. Some features may not work. 
-            <button onclick="this.parentElement.remove()" style="background: none; border: none; color: white; cursor: pointer; margin-left: 10px;">✕</button>
+            <i class="fas fa-info-circle me-2"></i>
+            Working in offline mode. Data will sync when connection is restored.
+            <button onclick="this.parentElement.remove(); document.body.style.paddingTop='0px'; sessionStorage.setItem('serverBannerDismissed', 'true');" 
+                    style="background: none; border: none; color: #000; cursor: pointer; margin-left: 10px; font-size: 14px; font-weight: bold;">✕</button>
         `;
 
         // Add body padding to account for banner
-        document.body.style.paddingTop = '50px';
-        
-        document.body.insertBefore(banner, document.body.firstChild);
+        if (document.body) {
+            document.body.style.paddingTop = '40px';
+            document.body.insertBefore(banner, document.body.firstChild);
+        }
 
-        // Auto-remove after 10 seconds
+        // Auto-remove after 8 seconds
         setTimeout(() => {
             if (banner.parentElement) {
                 banner.remove();
-                document.body.style.paddingTop = '0px';
+                if (document.body) {
+                    document.body.style.paddingTop = '0px';
+                }
             }
-        }, 10000);
+        }, 8000);
     }
 
     // Check if backend is available
     async isBackendAvailable() {
         try {
+            // Use AbortController for proper timeout (3 seconds)
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 3000);
+            
             const response = await fetch(`${this.baseURL}/api/health`, {
                 method: 'GET',
                 credentials: 'include',
                 mode: 'cors',
-                timeout: 5000
+                signal: controller.signal
             });
+            
+            clearTimeout(timeoutId);
             return response.ok;
         } catch (error) {
-            console.warn('Backend not available:', error.message);
+            if (error.name === 'AbortError') {
+                console.warn('Backend health check timed out');
+            } else {
+                console.warn('Backend not available:', error.message);
+            }
             return false;
         }
     }
@@ -336,6 +487,74 @@ class SmartFarmAPIService {
 
     async getLivestockStats() {
         return await this.request('/livestock/stats/overview');
+    }
+
+    // Feed Mix Management API
+    async getFeedMixes(params = {}) {
+        const queryString = new URLSearchParams(params).toString();
+        return await this.request(`/feed-mixes${queryString ? '?' + queryString : ''}`);
+    }
+
+    async getFeedMix(id) {
+        return await this.request(`/feed-mixes/${id}`);
+    }
+
+    async createFeedMix(feedMixData) {
+        return await this.request('/feed-mixes', {
+            method: 'POST',
+            body: JSON.stringify(feedMixData)
+        });
+    }
+
+    async updateFeedMix(id, feedMixData) {
+        return await this.request(`/feed-mixes/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(feedMixData)
+        });
+    }
+
+    async deleteFeedMix(id) {
+        return await this.request(`/feed-mixes/${id}`, {
+            method: 'DELETE'
+        });
+    }
+
+    // Product Transformation API
+    async getTransformations(params = {}) {
+        const queryString = new URLSearchParams(params).toString();
+        return await this.request(`/transformations${queryString ? '?' + queryString : ''}`);
+    }
+
+    async getTransformation(id) {
+        return await this.request(`/transformations/${id}`);
+    }
+
+    async createTransformation(transformationData) {
+        return await this.request('/transformations', {
+            method: 'POST',
+            body: JSON.stringify(transformationData)
+        });
+    }
+
+    async updateTransformation(id, transformationData) {
+        return await this.request(`/transformations/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(transformationData)
+        });
+    }
+
+    async deleteTransformation(id) {
+        return await this.request(`/transformations/${id}`, {
+            method: 'DELETE'
+        });
+    }
+
+    async getTransformationAnalytics() {
+        return await this.request('/transformations/analytics');
+    }
+
+    async getFeedMixByLivestock(livestockId) {
+        return await this.request(`/livestock/${livestockId}/feed-mixes`);
     }
 
     // Inventory Management API

@@ -1,10 +1,13 @@
 import UIKit
 import Compose
-import ComposeApp
+import shared
 
 class MainViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        // Initialize shared KMM app (Koin, database, etc.)
+        AppInitializer().initialize()
         
         let composeView = ComposeView()
         composeView.setContent {

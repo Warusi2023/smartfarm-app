@@ -1,69 +1,135 @@
 [build]
-  # Build command for static site
-  command = "echo 'No build needed - serving static files'"
+  # Base directory: Netlify should run commands from web-project/
+  # Set this in Netlify dashboard: Site Settings > Build & Deploy > Base Directory = "web-project"
+  base = "."
   
-  # Publish directory
-  publish = "public"
+  # Directory that contains the deploy-ready HTML files and assets
+  publish = "dist"
+  
+  # Build command for Vite-based static site
+  # This runs from web-project/ directory
+  command = "npm install && npm run build"
   
   # Environment variables
   [build.environment]
     NODE_VERSION = "18"
+    VITE_API_BASE_URL = "https://smartfarm-app-production.up.railway.app"
     VITE_API_URL = "https://smartfarm-app-production.up.railway.app"
+    VITE_APP_NAME = "SmartFarm"
+    VITE_APP_VERSION = "1.0.0"
     APP_BUILD_TAG = "netlify"
     CI = "true"
     HUSKY = "0"
 
 [dev]
   # Local development settings
-  command = "python -m http.server 8080"
-  port = 8080
-  publish = "public"
+  command = "npm run preview"
+  port = 4173
+  publish = "dist"
 
-# Redirects for SPA routing
+# API redirects to Railway backend
+[[redirects]]
+  from = "/api/*"
+  to = "https://smartfarm-app-production.up.railway.app/api/:splat"
+  status = 200
+  force = true
+  headers = {X-From = "Netlify Edge"}
+
+# Redirect rules for SPA (but allow direct access to HTML files)
+# Exclude common files that should be served directly
+[[redirects]]
+  from = "/robots.txt"
+  to = "/robots.txt"
+  status = 200
+  force = false
+
+[[redirects]]
+  from = "/security.txt"
+  to = "/security.txt"
+  status = 200
+  force = false
+
+[[redirects]]
+  from = "/sitemap.xml"
+  to = "/sitemap.xml"
+  status = 200
+  force = false
+
+# Ensure root path is accessible without redirect (for external tools)
+[[redirects]]
+  from = "/"
+  to = "/index.html"
+  status = 200
+  force = false
+
+# SPA fallback - redirect all other routes to index.html
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
+  force = false
 
 # Headers for security and performance
 [[headers]]
   for = "/*"
   [headers.values]
     X-Frame-Options = "DENY"
-    X-Content-Type-Options = "nosniff"
     X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+    X-Robots-Tag = "index, follow"
+    Cache-Control = "public, max-age=3600"
     Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; img-src 'self' data: https:; font-src 'self' https://cdnjs.cloudflare.com; connect-src 'self' https://api.railway.app https://smartfarm-api.railway.app; frame-ancestors 'none';"
 
+# Headers for static assets
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Headers for JS files
 [[headers]]
   for = "*.js"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
+# Headers for CSS files
 [[headers]]
   for = "*.css"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
+# Headers for HTML files
 [[headers]]
-  for = "*.html"
+  for = "/*.html"
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
 
-# Functions (if needed for serverless functions)
+# Functions (if needed)
 [functions]
   directory = "netlify/functions"
 
-# Plugins - commented out to prevent plugin errors
+# Plugin configuration - commented out to prevent plugin errors
 # Uncomment and install @netlify/plugin-lighthouse if you want Lighthouse audits
 # [[plugins]]
 #   package = "@netlify/plugin-lighthouse"
-#
+#   
 #   [plugins.inputs.thresholds]
 #     performance = 0.8
 #     accessibility = 0.9
-#     best-practices = 0.8
+#     "best-practices" = 0.8
 #     seo = 0.8
+
+# Branch deploy configuration
+[context.production]
+  command = "npm run build"
+
+[context.deploy-preview]
+  command = "npm run build"
+
+[context.branch-deploy]
+  command = "npm run build"
 
 # Form handling (if needed)
 [forms]

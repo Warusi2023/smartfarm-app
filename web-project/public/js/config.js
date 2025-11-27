@@ -1,7 +1,11 @@
-// SmartFarm API Configuration
+// SmartFarm Unified API Configuration
 window.SmartFarmConfig = {
-    // API Base URL - use environment variable or fallback to production URL
-    API_BASE_URL: window.VITE_API_URL || 'https://smartfarm-backend.railway.app',
+    // API Base URL - use single source of truth
+        API_BASE_URL: window.SmartFarmApiConfig?.baseUrl || 
+                        window.VITE_API_BASE_URL || 
+                        window.VITE_API_URL || 
+                        (window).__SMARTFARM_API_BASE__ ||
+                        'https://smartfarm-app-production.up.railway.app',
     
     // Get full API URL for a given endpoint
     getApiUrl: function(endpoint) {
@@ -31,6 +35,7 @@ window.SmartFarmConfig = {
         const config = {
             API_BASE_URL: this.API_BASE_URL,
             VITE_API_URL: window.VITE_API_URL,
+            __SMARTFARM_API_BASE__: window.__SMARTFARM_API_BASE__,
             currentDomain: window.location.origin
         };
         

@@ -1,5 +1,0 @@
-/*
-  Content-Security-Policy: default-src 'self' https:; connect-src 'self' https://api.railway.app https://smartfarm-api.railway.app https://cdn.jsdelivr.net https://www.smartfarm-app.com; img-src 'self' data: https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:;
-  X-Content-Type-Options: nosniff
-  X-Robots-Tag: index, follow
-  Referrer-Policy: strict-origin-when-cross-origin

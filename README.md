@@ -47,6 +47,20 @@ A comprehensive agricultural management system that helps farmers manage their f
 - **Group Management**: Assign users to farm groups with specific roles
 - **Task Approvals**: Admin/Manager approval workflows for critical tasks
 
+## 🚀 Quick Start
+
+### Web Application
+```bash
+cd web-project && npm install && npm run dev
+```
+The web app runs on http://localhost:5173
+
+### Backend API
+See `backend/README.md` for backend setup instructions.
+
+### Android App
+See `android-project/README.md` for Android setup instructions.
+
 ## 🧭 Navigation Map
 
 ### Main Dashboard Navigation

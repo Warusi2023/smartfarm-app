@@ -212,8 +212,8 @@ class CurrencyManager {
             }
         }
         
-        // Fallback to FJD (Fiji) as default
-        return CURRENCY_CONFIG['Fiji'];
+        // Fallback to USD (United States) as default
+        return CURRENCY_CONFIG['United States'];
     }
 
     // Set currency based on country

@@ -369,13 +369,13 @@
                         <div class="col-md-4">
                             <div class="card">
                                 <div class="card-body text-center">
-                                    <h6>Free</h6>
-                                    <h4>$0<span class="fs-6">/month</span></h4>
+                                    <h6>Trial Expired</h6>
+                                    <h4>—</h4>
                                     <ul class="list-unstyled small">
-                                        <li>✓ Up to 2 farms</li>
-                                        <li>✓ Basic features</li>
+                                        <li>⚠️ Trial period ended</li>
+                                        <li>⚠️ Subscribe to continue</li>
                                     </ul>
-                                    <button class="btn btn-outline-primary btn-sm" onclick="selectNewPlan('free')">Select</button>
+                                    <button class="btn btn-outline-secondary btn-sm" disabled>N/A</button>
                                 </div>
                             </div>
                         </div>
@@ -443,16 +443,19 @@
 
         function updateSubscriptionDisplay(subscription) {
             const plans = {
-                free: {
-                    name: 'Free Plan',
-                    description: 'Perfect for getting started',
+                trial: {
+                    name: '30-Day Free Trial',
+                    description: 'Full access to all Professional features',
                     price: '$0',
                     features: [
-                        'Up to 2 farms',
-                        'Basic crop management',
-                        'Simple livestock tracking',
-                        'Basic weather data',
-                        'Email support'
+                        'All Professional features unlocked',
+                        'No farm limitations',
+                        'AI-powered insights',
+                        'Complete crop & livestock management',
+                        'Weather forecasting',
+                        'Geofencing & GPS tracking',
+                        'Financial management',
+                        'Priority support'
                     ]
                 },
                 professional: {
@@ -486,11 +489,48 @@
                 }
             };
 
+            // Handle trial expired status
+            if (subscription.status === 'trial_expired' || !subscription.plan) {
+                document.getElementById('currentPlanName').textContent = 'Trial Expired';
+                document.getElementById('currentPlanDescription').textContent = 'Please subscribe to continue using SmartFarm';
+                document.getElementById('currentPlanPrice').innerHTML = '—';
+                document.getElementById('currentPlanStatus').textContent = 'Expired';
+                document.getElementById('currentPlanStatus').className = 'plan-badge bg-danger';
+                
+                const featuresList = document.getElementById('currentPlanFeatures');
+                featuresList.innerHTML = '<li class="text-danger"><i class="fas fa-exclamation-triangle"></i> Your free trial has ended. Subscribe to continue.</li>';
+                
+                // Show subscription prompt
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-warning mt-3';
+                alertDiv.innerHTML = '<strong>Trial Expired:</strong> Please subscribe to Professional ($29/month) or Enterprise ($99/month) to continue using SmartFarm.';
+                document.querySelector('.subscription-card .p-4').appendChild(alertDiv);
+                return;
+            }
+
             const plan = plans[subscription.plan];
             if (plan) {
                 document.getElementById('currentPlanName').textContent = plan.name;
                 document.getElementById('currentPlanDescription').textContent = plan.description;
-                document.getElementById('currentPlanPrice').innerHTML = plan.price + '<span class="fs-6">/month</span>';
+                
+                if (subscription.plan === 'trial') {
+                    const daysRemaining = subscription.daysRemaining || 0;
+                    document.getElementById('currentPlanPrice').innerHTML = plan.price + '<span class="fs-6">/30 days</span>';
+                    document.getElementById('currentPlanPeriod').textContent = `Trial period • ${daysRemaining} days remaining`;
+                    
+                    // Show trial expiration warning
+                    if (daysRemaining <= 7) {
+                        const alertDiv = document.createElement('div');
+                        alertDiv.className = 'alert alert-warning mt-3';
+                        alertDiv.innerHTML = `<strong>Trial Ending Soon:</strong> Your trial expires in ${daysRemaining} day(s). Subscribe now to continue using SmartFarm.`;
+                        document.querySelector('.subscription-card .p-4').appendChild(alertDiv);
+                    }
+                } else {
+                    document.getElementById('currentPlanPrice').innerHTML = plan.price + '<span class="fs-6">/month</span>';
+                    const nextBilling = subscription.nextBillingDate ? new Date(subscription.nextBillingDate).toLocaleDateString() : 'N/A';
+                    document.getElementById('currentPlanPeriod').textContent = `Billed monthly • Next billing: ${nextBilling}`;
+                }
+                
                 document.getElementById('currentPlanStatus').textContent = subscription.status.charAt(0).toUpperCase() + subscription.status.slice(1);
                 
                 // Update features list
@@ -499,13 +539,15 @@
                     `<li><i class="fas fa-check"></i> ${feature}</li>`
                 ).join('');
 
-                // Show refund eligibility if within 30 days
-                const startDate = new Date(subscription.startDate);
-                const now = new Date();
-                const daysSinceStart = Math.floor((now - startDate) / (1000 * 60 * 60 * 24));
-                
-                if (daysSinceStart <= 30 && subscription.refundEligible) {
-                    document.getElementById('refundEligible').style.display = 'block';
+                // Show refund eligibility if within 30 days (only for paid subscriptions)
+                if (subscription.plan !== 'trial' && subscription.startDate) {
+                    const startDate = new Date(subscription.startDate);
+                    const now = new Date();
+                    const daysSinceStart = Math.floor((now - startDate) / (1000 * 60 * 60 * 24));
+                    
+                    if (daysSinceStart <= 30 && subscription.refundEligible) {
+                        document.getElementById('refundEligible').style.display = 'block';
+                    }
                 }
             }
         }

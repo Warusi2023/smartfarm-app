@@ -235,22 +235,31 @@
 # Keep your app's main classes
 -keep class com.example.smartfarm.MainActivity { *; }
 -keep class com.example.smartfarm.SmartFarmApplication { *; }
+-keep class com.yourcompany.smartfarm.MainActivity { *; }
+-keep class com.yourcompany.smartfarm.SmartFarmApplication { *; }
+-keep class com.smartfarm.** { *; }
 
 # Keep ViewModels
 -keep class com.example.smartfarm.**.ViewModel { *; }
 -keep class com.example.smartfarm.**.ViewModel$* { *; }
+-keep class com.smartfarm.ui.viewmodel.** { *; }
 
 # Keep data models
 -keep class com.example.smartfarm.data.model.** { *; }
+-keep class com.smartfarm.data.model.** { *; }
+-keep class com.smartfarm.data.database.entity.** { *; }
 
 # Keep repositories
 -keep class com.example.smartfarm.data.repository.** { *; }
+-keep class com.smartfarm.data.repository.** { *; }
 
 # Keep DAOs
 -keep class com.example.smartfarm.data.database.**Dao { *; }
+-keep class com.smartfarm.data.database.dao.** { *; }
 
 # Keep database classes
 -keep class com.example.smartfarm.data.database.**Database { *; }
+-keep class com.smartfarm.data.database.FarmDatabase { *; }
 
 # Keep utility classes
 -keep class com.example.smartfarm.util.** { *; }
@@ -263,6 +272,25 @@
 
 # Keep network manager
 -keep class com.example.smartfarm.network.** { *; }
+-keep class com.smartfarm.network.** { *; }
+
+# Keep Retrofit and Gson
+-keepattributes Signature, InnerClasses, EnclosingMethod
+-keepattributes RuntimeVisibleAnnotations, RuntimeVisibleParameterAnnotations
+-keepclassmembers,allowshrinking,allowobfuscation interface * {
+    @retrofit2.http.* <methods>;
+}
+-dontwarn org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement
+-dontwarn javax.annotation.**
+-dontwarn kotlin.Unit
+-dontwarn retrofit2.KotlinExtensions
+-dontwarn retrofit2.KotlinExtensions$*
+
+# Keep Gson serialization
+-keep class com.smartfarm.data.model.** { *; }
+-keepclassmembers class * {
+    @com.google.gson.annotations.SerializedName <fields>;
+}
 
 # Keep error handler
 -keep class com.example.smartfarm.error.** { *; }
@@ -272,6 +300,7 @@
 
 # Keep UI components
 -keep class com.example.smartfarm.ui.** { *; }
+-keep class com.smartfarm.ui.** { *; }
 
 # Keep screens
 -keep class com.example.smartfarm.*Screen { *; }
@@ -296,6 +325,7 @@
 
 # Keep dependency injection classes
 -keep class com.example.smartfarm.di.** { *; }
+-keep class com.smartfarm.di.** { *; }
 
 # =============================================================================
 # SERIALIZATION RULES

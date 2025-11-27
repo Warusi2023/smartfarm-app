@@ -1,0 +1,44 @@
+CREATE TABLE InventoryItem (
+    id TEXT NOT NULL PRIMARY KEY,
+    farmId TEXT NOT NULL,
+    name TEXT NOT NULL,
+    category TEXT NOT NULL,
+    quantity REAL NOT NULL,
+    unit TEXT NOT NULL,
+    cost REAL,
+    supplier TEXT,
+    expiryDate TEXT,
+    location TEXT,
+    notes TEXT,
+    createdAt TEXT,
+    updatedAt TEXT,
+    FOREIGN KEY (farmId) REFERENCES Farm(id) ON DELETE CASCADE
+);
+
+getAllInventoryItems:
+SELECT * FROM InventoryItem ORDER BY name ASC;
+
+getInventoryItemById:
+SELECT * FROM InventoryItem WHERE id = ?;
+
+getInventoryItemsByFarmId:
+SELECT * FROM InventoryItem WHERE farmId = ? ORDER BY name ASC;
+
+getInventoryItemsByCategory:
+SELECT * FROM InventoryItem WHERE category = ? ORDER BY name ASC;
+
+searchInventoryItems:
+SELECT * FROM InventoryItem WHERE name LIKE '%' || ? || '%' OR category LIKE '%' || ? || '%' ORDER BY name ASC;
+
+insertInventoryItem:
+INSERT INTO InventoryItem(id, farmId, name, category, quantity, unit, cost, supplier, expiryDate, location, notes, createdAt, updatedAt)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+updateInventoryItem:
+UPDATE InventoryItem
+SET farmId = ?, name = ?, category = ?, quantity = ?, unit = ?, cost = ?, supplier = ?, expiryDate = ?, location = ?, notes = ?, updatedAt = ?
+WHERE id = ?;
+
+deleteInventoryItem:
+DELETE FROM InventoryItem WHERE id = ?;
+

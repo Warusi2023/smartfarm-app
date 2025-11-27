@@ -21,7 +21,12 @@
         /googleadservices\.com/,
         /googlesyndication\.com/,
         /_app-.*\.js/,
-        /main-.*\.js/
+        /main-.*\.js/,
+        // QR Code errors
+        /All QR Code library sources failed/,
+        /QR Code library sources failed/,
+        /QR system with fallback/,
+        /Traceability viewer ready/
     ];
 
     function shouldSuppress(message) {

@@ -1,0 +1,70 @@
+# Example GitHub Actions workflow for deploying web project
+# Copy this to .github/workflows/deploy-web.yml and customize
+
+name: Deploy Web Project
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'web-project/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'web-project/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: web-project/package-lock.json
+      
+      - name: Install dependencies
+        working-directory: ./web-project
+        run: npm ci
+      
+      - name: Build
+        working-directory: ./web-project
+        run: npm run build
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          VITE_APP_NAME: SmartFarm
+      
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist
+          path: web-project/dist
+          retention-days: 1
+  
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: dist
+          path: web-project/dist
+      
+      # Add your deployment step here
+      # Examples:
+      # - Deploy to Netlify
+      # - Deploy to Vercel
+      # - Deploy to S3/CloudFront
+      # - Deploy to GitHub Pages
+

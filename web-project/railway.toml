@@ -1,10 +1,19 @@
+# Railway Configuration for SmartFarm Web Project
+# Railway should set root directory to "web-project" in dashboard settings
+
 [build]
 builder = "NIXPACKS"
+buildCommand = "npm install && npm run build"
 
 [deploy]
-startCommand = "node server.js"
+# For production: serve built files from dist/
+startCommand = "npm start"
 healthcheckPath = "/"
 healthcheckTimeout = 60
 
+# For development: use Vite dev server
+# startCommand = "npm run dev"
+
 [environments.production]
-PORT = 3000
+PORT = 4173
+NODE_ENV = "production"

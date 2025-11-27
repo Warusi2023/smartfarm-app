@@ -357,7 +357,14 @@
                     </div>
                 </div>
                 <div class="col-md-6">
-                    <div id="map"></div>
+                    <div id="map" style="position: relative;">
+                        <div id="mapLoading" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                            <div class="text-center">
+                                <i class="fas fa-spinner fa-spin fa-2x text-primary mb-2"></i>
+                                <div>Loading map...</div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="coordinate-display">
                         <div class="row">
                             <div class="col-md-6">
@@ -429,9 +436,35 @@
                     <label class="form-label">Draw Geofence Polygon</label>
                     <div class="alert alert-info">
                         <i class="fas fa-info-circle me-2"></i>
-                        Click on the map to create polygon points. Click the first point again to close the polygon.
+                        Click on the map below to create polygon points. Click the first point again or use the "Close Polygon" button to finish.
+                    </div>
+                    
+                    <!-- Map for Polygon Drawing -->
+                    <div id="polygonMap" style="height: 400px; width: 100%; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 15px; position: relative;">
+                        <div id="polygonMapLoading" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                            <div class="text-center">
+                                <i class="fas fa-spinner fa-spin fa-2x text-primary mb-2"></i>
+                                <div>Loading map...</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="polygonStatus"></div>
+                    <div class="mt-3">
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="clearPolygonPoints()" id="clearPolygonBtn" style="display: none;">
+                            <i class="fas fa-eraser me-1"></i>Clear Points
+                        </button>
+                        <button type="button" class="btn btn-success btn-sm" onclick="closePolygon()" id="closePolygonBtn" style="display: none;">
+                            <i class="fas fa-check-circle me-1"></i>Close Polygon
+                        </button>
                     </div>
                 </div>
+            </div>
+            
+            <!-- Map Preview for Circular Geofence -->
+            <div id="circularMapContainer" style="display: none;" class="mb-3">
+                <label class="form-label mb-2">Geofence Preview</label>
+                <div id="circularMap" style="height: 350px; width: 100%; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"></div>
             </div>
 
             <!-- Farm Visibility Settings -->
@@ -507,6 +540,7 @@
     <script>
         // Global variables
         let map;
+        let polygonMap = null; // Separate map for polygon drawing in step 3
         let selectedFarm = null;
         
         // Debug API configuration
@@ -531,11 +565,31 @@
 
         // Initialize the application
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 DOM loaded, initializing application...');
             checkAuthentication();
-            initializeMap();
+            
+            // Initialize map with a small delay to ensure DOM is ready
+            setTimeout(() => {
+                initializeMap();
+            }, 100);
+            
             loadFarms();
             setupEventListeners();
         });
+        
+        // Fallback initialization if DOMContentLoaded already fired
+        if (document.readyState === 'loading') {
+            // Still loading, DOMContentLoaded will fire
+        } else {
+            // DOM already loaded, initialize immediately
+            console.log('🚀 DOM already loaded, initializing immediately...');
+            checkAuthentication();
+            setTimeout(() => {
+                initializeMap();
+            }, 100);
+            loadFarms();
+            setupEventListeners();
+        }
 
         function checkAuthentication() {
             const user = localStorage.getItem('smartfarm_user') || sessionStorage.getItem('smartfarm_user');
@@ -555,22 +609,110 @@
         }
 
         function initializeMap() {
-            // Initialize map centered on Fiji
-            map = L.map('map').setView([-18.1248, 178.4501], 10);
+            console.log('🗺️ Initializing map...');
+            
+            // Check if Leaflet is loaded
+            if (typeof L === 'undefined') {
+                console.error('❌ Leaflet library not loaded!');
+                showAlert('Map library not loaded. Please refresh the page.', 'error');
+                return;
+            }
+            
+            // Check if map container exists
+            const mapContainer = document.getElementById('map');
+            if (!mapContainer) {
+                console.error('❌ Map container not found!');
+                showAlert('Map container not found. Please refresh the page.', 'error');
+                return;
+            }
+            
+            console.log('✅ Map container found:', mapContainer);
+            
+            try {
+                // Initialize map centered on Fiji
+                map = L.map('map').setView([-18.1248, 178.4501], 10);
+                console.log('✅ Map initialized:', map);
 
-            // Add OpenStreetMap tiles
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors'
-            }).addTo(map);
-
-            // Add click handler for map
-            map.on('click', function(e) {
-                if (currentStep === 2) {
-                    setFarmLocation(e.latlng.lat, e.latlng.lng);
-                } else if (currentStep === 3 && geofenceType === 'polygon') {
-                    addPolygonPoint(e.latlng.lat, e.latlng.lng);
+                // Add OpenStreetMap tiles
+                const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                });
+                
+                tileLayer.addTo(map);
+                console.log('✅ Tile layer added');
+                
+                // Add a marker to show the map is working
+                L.marker([-18.1248, 178.4501]).addTo(map)
+                    .bindPopup('Fiji - Click to set your farm location')
+                    .openPopup();
+                
+                console.log('✅ Map setup complete');
+                
+                // Hide loading indicator
+                const loadingIndicator = document.getElementById('mapLoading');
+                if (loadingIndicator) {
+                    loadingIndicator.style.display = 'none';
                 }
-            });
+                
+            } catch (error) {
+                console.error('❌ Error initializing map:', error);
+                showAlert('Failed to initialize map: ' + error.message, 'error');
+                
+                // Hide loading indicator even on error
+                const loadingIndicator = document.getElementById('mapLoading');
+                if (loadingIndicator) {
+                    loadingIndicator.innerHTML = '<div class="text-center text-danger"><i class="fas fa-exclamation-triangle fa-2x mb-2"></i><div>Map failed to load</div></div>';
+                }
+            }
+
+            // Add click handler for map (only if map was successfully initialized)
+            if (map) {
+                // Remove any existing click handlers first to prevent duplicates
+                map.off('click');
+                
+                map.on('click', function(e) {
+                    const lat = e.latlng.lat;
+                    const lng = e.latlng.lng;
+                    console.log('🗺️ Map clicked at:', lat, lng);
+                    console.log('📍 Current step:', currentStep);
+                    console.log('🔧 Geofence type:', geofenceType);
+                    
+                    if (currentStep === 2) {
+                        console.log('✅ Setting farm location');
+                        setFarmLocation(lat, lng);
+                    } else if (currentStep === 3) {
+                        if (geofenceType === 'polygon') {
+                            console.log('✅ Adding polygon point');
+                            
+                            // Check if clicking near the first point to close polygon
+                            if (polygonPoints.length >= 3) {
+                                const firstPoint = polygonPoints[0];
+                                const distance = Math.sqrt(
+                                    Math.pow(lat - firstPoint[0], 2) + 
+                                    Math.pow(lng - firstPoint[1], 2)
+                                );
+                                
+                                // If within 0.001 degrees (roughly 100m), close the polygon
+                                if (distance < 0.001) {
+                                    console.log('✅ Closing polygon');
+                                    closePolygon();
+                                    return;
+                                }
+                            }
+                            
+                            addPolygonPoint(lat, lng);
+                        } else {
+                            console.log('⚠️ Click ignored - polygon mode not selected');
+                        }
+                    } else {
+                        console.log('⚠️ Click ignored - not in step 2 or 3');
+                    }
+                });
+                
+                console.log('✅ Map click handler attached');
+            } else {
+                console.error('❌ Map not initialized, click handler not added');
+            }
         }
 
         function setupEventListeners() {
@@ -655,8 +797,19 @@
                             option.textContent = farm.name;
                             farmSelect.appendChild(option);
                         });
-                    } else {
-                        // No farms available - show option to create new
+                    }
+                    
+                    // Also load locally created farms
+                    const localFarms = JSON.parse(localStorage.getItem('localFarms') || '[]');
+                    localFarms.forEach(farm => {
+                        const option = document.createElement('option');
+                        option.value = farm.id;
+                        option.textContent = `${farm.name} (Local)`;
+                        farmSelect.appendChild(option);
+                    });
+                    
+                    // If no farms at all, show option to create new
+                    if ((!data.data || data.data.length === 0) && localFarms.length === 0) {
                         const option = document.createElement('option');
                         option.value = 'new';
                         option.textContent = 'No farms found - Create new farm';
@@ -686,7 +839,7 @@
                 showAlert(errorMessage, 'info');
                 document.getElementById('demoModeIndicator').style.display = 'block';
                 
-                // Add demo farms
+                // Add demo farms and locally created farms
                 const farmSelect = document.getElementById('farmSelect');
                 farmSelect.innerHTML = '<option value="">Select a farm...</option>';
                 
@@ -700,6 +853,15 @@
                     const option = document.createElement('option');
                     option.value = farm.id;
                     option.textContent = farm.name;
+                    farmSelect.appendChild(option);
+                });
+                
+                // Also load locally created farms
+                const localFarms = JSON.parse(localStorage.getItem('localFarms') || '[]');
+                localFarms.forEach(farm => {
+                    const option = document.createElement('option');
+                    option.value = farm.id;
+                    option.textContent = `${farm.name} (Local)`;
                     farmSelect.appendChild(option);
                 });
                 
@@ -728,7 +890,32 @@
 
             // Step-specific actions
             if (step === 3) {
+                // Ensure map is centered on farm location if coordinates exist
+                const lat = parseFloat(document.getElementById('farmLatitude').value);
+                const lng = parseFloat(document.getElementById('farmLongitude').value);
+                
+                if (!isNaN(lat) && !isNaN(lng)) {
+                    if (map) {
+                        map.setView([lat, lng], 15);
+                        console.log('🗺️ Main map centered on farm location:', lat, lng);
+                    }
+                    
+                    // Initialize polygon map if polygon is selected
+                    if (geofenceType === 'polygon') {
+                        initializePolygonMap(lat, lng);
+                    }
+                } else {
+                    console.warn('⚠️ No farm coordinates found, cannot center map');
+                }
+                
                 updateGeofencePreview();
+                // Initialize polygon drawing if polygon type is selected
+                if (geofenceType === 'polygon') {
+                    clearPolygonPoints(); // Clear any previous polygon
+                    updatePolygonStatus();
+                    console.log('✅ Initialized polygon drawing mode - ready to draw');
+                    console.log('📍 Click on the map to start adding polygon points');
+                }
             } else if (step === 4) {
                 generateReviewContent();
             }
@@ -820,7 +1007,96 @@
             }
         }
 
+        function initializePolygonMap(lat, lng) {
+            // Initialize map for polygon drawing if not already initialized
+            const polygonMapContainer = document.getElementById('polygonMap');
+            if (!polygonMapContainer) {
+                console.warn('⚠️ Polygon map container not found');
+                return;
+            }
+            
+            // If map already exists, just update view
+            if (polygonMap) {
+                polygonMap.setView([lat, lng], 15);
+                console.log('✅ Polygon map view updated');
+                return;
+            }
+            
+            console.log('🗺️ Initializing polygon map at:', lat, lng);
+            
+            try {
+                // Check if Leaflet is loaded
+                if (typeof L === 'undefined') {
+                    console.error('❌ Leaflet library not loaded!');
+                    return;
+                }
+                
+                // Initialize polygon map
+                polygonMap = L.map('polygonMap').setView([lat, lng], 15);
+                
+                // Add OpenStreetMap tiles
+                const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                });
+                tileLayer.addTo(polygonMap);
+                
+                // Add farm location marker
+                const marker = L.marker([lat, lng]).addTo(polygonMap)
+                    .bindPopup('Farm Location')
+                    .openPopup();
+                
+                // Add click handler for polygon drawing
+                polygonMap.on('click', function(e) {
+                    if (currentStep === 3 && geofenceType === 'polygon') {
+                        const clickLat = e.latlng.lat;
+                        const clickLng = e.latlng.lng;
+                        console.log('🗺️ Polygon map clicked at:', clickLat, clickLng);
+                        
+                        // Check if clicking near the first point to close polygon
+                        if (polygonPoints.length >= 3) {
+                            const firstPoint = polygonPoints[0];
+                            const distance = Math.sqrt(
+                                Math.pow(clickLat - firstPoint[0], 2) + 
+                                Math.pow(clickLng - firstPoint[1], 2)
+                            );
+                            
+                            // If within 0.001 degrees (roughly 100m), close the polygon
+                            if (distance < 0.001) {
+                                console.log('✅ Closing polygon');
+                                closePolygon();
+                                return;
+                            }
+                        }
+                        
+                        addPolygonPoint(clickLat, clickLng);
+                    }
+                });
+                
+                // Hide loading indicator
+                const loadingIndicator = document.getElementById('polygonMapLoading');
+                if (loadingIndicator) {
+                    loadingIndicator.style.display = 'none';
+                }
+                
+                // Trigger map resize to ensure it renders correctly
+                setTimeout(() => {
+                    if (polygonMap) {
+                        polygonMap.invalidateSize();
+                    }
+                }, 100);
+                
+                console.log('✅ Polygon map initialized successfully');
+            } catch (error) {
+                console.error('❌ Error initializing polygon map:', error);
+                const loadingIndicator = document.getElementById('polygonMapLoading');
+                if (loadingIndicator) {
+                    loadingIndicator.innerHTML = '<div class="text-center text-danger"><i class="fas fa-exclamation-triangle fa-2x mb-2"></i><div>Map failed to load</div></div>';
+                }
+            }
+        }
+        
         function selectGeofenceType(type) {
+            console.log('🔧 Selecting geofence type:', type);
             geofenceType = type;
             
             // Update UI
@@ -832,32 +1108,203 @@
             // Show/hide settings
             document.getElementById('circularSettings').style.display = type === 'circular' ? 'block' : 'none';
             document.getElementById('polygonSettings').style.display = type === 'polygon' ? 'block' : 'none';
+            document.getElementById('circularMapContainer').style.display = type === 'circular' ? 'block' : 'none';
             
             // Clear polygon points if switching to circular
             if (type === 'circular') {
                 clearPolygonPoints();
+                console.log('🔵 Switched to circular geofence mode');
+            } else if (type === 'polygon') {
+                // Initialize polygon drawing mode whenever polygon is selected
+                clearPolygonPoints(); // Start fresh
+                updatePolygonStatus();
+                console.log('✅ Switched to polygon drawing mode');
+                console.log('📍 Current step:', currentStep);
+                
+                // Initialize polygon map if on step 3 and coordinates exist
+                if (currentStep === 3) {
+                    const lat = parseFloat(document.getElementById('farmLatitude').value);
+                    const lng = parseFloat(document.getElementById('farmLongitude').value);
+                    
+                    if (!isNaN(lat) && !isNaN(lng)) {
+                        initializePolygonMap(lat, lng);
+                        showAlert('Polygon mode activated! Click on the map to start drawing your polygon.', 'info');
+                    } else {
+                        showAlert('Please set farm location in Step 2 before drawing polygon.', 'warning');
+                    }
+                }
             }
         }
 
         function addPolygonPoint(lat, lng) {
-            polygonPoints.push([lat, lng]);
+            // Use polygonMap if available, otherwise fall back to main map
+            const activeMap = polygonMap || map;
             
-            // Update map
-            if (geofenceLayer) {
-                map.removeLayer(geofenceLayer);
+            if (!activeMap) {
+                console.error('❌ Map not available, cannot add polygon point');
+                showAlert('Map not available. Please refresh the page.', 'warning');
+                return;
             }
             
+            console.log('📍 Adding polygon point:', lat, lng);
+            console.log('📍 Current step:', currentStep);
+            console.log('🔧 Geofence type:', geofenceType);
+            
+            polygonPoints.push([lat, lng]);
+            console.log('✅ Polygon points count:', polygonPoints.length);
+            console.log('📍 All points:', polygonPoints);
+            
+            // Remove existing geofence layer and markers
+            if (geofenceLayer) {
+                activeMap.removeLayer(geofenceLayer);
+            }
+            
+            // Remove any existing polygon point markers
+            activeMap.eachLayer(layer => {
+                if (layer.options && layer.options.isPolygonPoint) {
+                    activeMap.removeLayer(layer);
+                }
+            });
+            
+            // Add markers for all points
+            polygonPoints.forEach((point, index) => {
+                const marker = L.marker([point[0], point[1]], { 
+                    icon: L.divIcon({
+                        className: 'polygon-point-marker',
+                        html: `<div style="background: ${index === 0 && polygonPoints.length > 2 ? 'green' : 'red'}; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.5);"></div>`,
+                        iconSize: [16, 16],
+                        iconAnchor: [8, 8]
+                    }),
+                    isPolygonPoint: true
+                }).addTo(activeMap);
+                
+                // Add number label
+                marker.bindTooltip((index + 1).toString(), {
+                    permanent: true,
+                    direction: 'center',
+                    className: 'polygon-point-number'
+                });
+            });
+            
+            // Draw polyline connecting points
             if (polygonPoints.length > 1) {
-                geofenceLayer = L.polyline(polygonPoints, { color: 'red', weight: 3 }).addTo(map);
+                geofenceLayer = L.polyline(polygonPoints, { 
+                    color: 'red', 
+                    weight: 3,
+                    opacity: 0.8
+                }).addTo(activeMap);
+                console.log('✅ Added polyline connecting points');
+            }
+            
+            // Update UI to show point count
+            updatePolygonStatus();
+            
+            // Show/hide buttons
+            const clearBtn = document.getElementById('clearPolygonBtn');
+            const closeBtn = document.getElementById('closePolygonBtn');
+            
+            if (polygonPoints.length > 0 && clearBtn) {
+                clearBtn.style.display = 'inline-block';
+            }
+            
+            if (polygonPoints.length >= 3 && closeBtn) {
+                closeBtn.style.display = 'inline-block';
+            }
+            
+            console.log('✅ Polygon point added successfully');
+        }
+        
+        function updatePolygonStatus() {
+            const statusDiv = document.getElementById('polygonStatus');
+            if (statusDiv) {
+                if (polygonPoints.length === 0) {
+                    statusDiv.innerHTML = '<div class="alert alert-info">Click on the map to start drawing your polygon</div>';
+                } else if (polygonPoints.length === 1) {
+                    statusDiv.innerHTML = '<div class="alert alert-warning">Click on the map to add more points. Click the first point again to close the polygon.</div>';
+                } else if (polygonPoints.length === 2) {
+                    statusDiv.innerHTML = '<div class="alert alert-warning">Keep adding points or click the first point to close the polygon.</div>';
+                } else {
+                    statusDiv.innerHTML = `<div class="alert alert-success">Polygon has ${polygonPoints.length} points. Click the first point to close it.</div>`;
+                }
             }
         }
 
-        function clearPolygonPoints() {
-            polygonPoints = [];
-            if (geofenceLayer) {
-                map.removeLayer(geofenceLayer);
-                geofenceLayer = null;
+        function closePolygon() {
+            if (polygonPoints.length < 3) {
+                console.log('Not enough points to close polygon');
+                showAlert('Please add at least 3 points before closing the polygon.', 'warning');
+                return;
             }
+            
+            console.log('Closing polygon with', polygonPoints.length, 'points');
+            
+            // Use polygonMap if available, otherwise fall back to main map
+            const activeMap = polygonMap || map;
+            
+            if (!activeMap) {
+                console.error('❌ Map not available');
+                return;
+            }
+            
+            // Remove existing layer
+            if (geofenceLayer) {
+                activeMap.removeLayer(geofenceLayer);
+            }
+            
+            // Ensure polygon is closed (first point = last point)
+            const closedPoints = [...polygonPoints];
+            if (closedPoints[0][0] !== closedPoints[closedPoints.length - 1][0] || 
+                closedPoints[0][1] !== closedPoints[closedPoints.length - 1][1]) {
+                closedPoints.push([closedPoints[0][0], closedPoints[0][1]]);
+            }
+            
+            // Create closed polygon
+            geofenceLayer = L.polygon(closedPoints, { 
+                color: 'red', 
+                weight: 3, 
+                fillColor: 'red', 
+                fillOpacity: 0.2 
+            }).addTo(activeMap);
+            
+            // Update status
+            const statusDiv = document.getElementById('polygonStatus');
+            if (statusDiv) {
+                statusDiv.innerHTML = `<div class="alert alert-success">✅ Polygon closed with ${polygonPoints.length} points. You can continue adding points or proceed to save.</div>`;
+            }
+            
+            console.log('Polygon closed successfully');
+        }
+        
+        function clearPolygonPoints() {
+            console.log('🧹 Clearing polygon points');
+            polygonPoints = [];
+            
+            // Use polygonMap if available, otherwise fall back to main map
+            const activeMap = polygonMap || map;
+            
+            if (activeMap) {
+                // Remove geofence layer (polyline/polygon)
+                if (geofenceLayer) {
+                    activeMap.removeLayer(geofenceLayer);
+                    geofenceLayer = null;
+                }
+                
+                // Remove all polygon point markers
+                activeMap.eachLayer(layer => {
+                    if (layer.options && layer.options.isPolygonPoint) {
+                        activeMap.removeLayer(layer);
+                    }
+                });
+            }
+            
+            // Hide buttons
+            const clearBtn = document.getElementById('clearPolygonBtn');
+            const closeBtn = document.getElementById('closePolygonBtn');
+            if (clearBtn) clearBtn.style.display = 'none';
+            if (closeBtn) closeBtn.style.display = 'none';
+            
+            updatePolygonStatus();
+            console.log('✅ Polygon points cleared');
         }
 
         function updateGeofencePreview() {
@@ -939,9 +1386,62 @@
                 return;
             }
 
-            // Check if this is a demo farm
-            if (farmId.startsWith('demo-farm-')) {
-                showAlert('Demo mode: Geofence configuration saved locally. In production, this would be saved to the server.', 'success');
+            // Validate polygon geofence has enough points
+            if (geofenceType === 'polygon') {
+                if (polygonPoints.length < 3) {
+                    showAlert('Polygon geofence requires at least 3 points. Please complete your polygon drawing.', 'warning');
+                    return;
+                }
+                // Ensure polygon is closed (has last point same as first)
+                if (polygonPoints[0][0] !== polygonPoints[polygonPoints.length - 1][0] || 
+                    polygonPoints[0][1] !== polygonPoints[polygonPoints.length - 1][1]) {
+                    // Polygon not closed, add closing point
+                    polygonPoints.push([polygonPoints[0][0], polygonPoints[0][1]]);
+                }
+            }
+
+            // Check if this is a demo farm or local farm - save locally
+            if (farmId.startsWith('demo-farm-') || farmId.startsWith('local-farm-')) {
+                console.log('💾 Saving geofence configuration locally for farm:', farmId);
+                
+                // Save to localStorage
+                const geofenceConfig = {
+                    farmId: farmId,
+                    latitude,
+                    longitude,
+                    geofenceType,
+                    geofenceRadius,
+                    geofencePolygon: (geofenceType === 'polygon' && polygonPoints.length > 2) ? polygonPoints : null,
+                    isPublic,
+                    allowVisitors,
+                    visitorInstructions,
+                    savedAt: new Date().toISOString()
+                };
+                
+                // Get existing geofences or create new array
+                const geofences = JSON.parse(localStorage.getItem('localGeofences') || '[]');
+                
+                // Remove existing geofence for this farm if it exists
+                const existingIndex = geofences.findIndex(g => g.farmId === farmId);
+                if (existingIndex >= 0) {
+                    geofences[existingIndex] = geofenceConfig;
+                } else {
+                    geofences.push(geofenceConfig);
+                }
+                
+                localStorage.setItem('localGeofences', JSON.stringify(geofences));
+                
+                // Also update the farm record
+                const farms = JSON.parse(localStorage.getItem('localFarms') || '[]');
+                const farmIndex = farms.findIndex(f => f.id === farmId);
+                if (farmIndex >= 0) {
+                    farms[farmIndex].latitude = latitude;
+                    farms[farmIndex].longitude = longitude;
+                    farms[farmIndex].geofenceConfigured = true;
+                    localStorage.setItem('localFarms', JSON.stringify(farms));
+                }
+                
+                showAlert('Geofence configuration saved successfully! (Saved locally)', 'success');
                 setTimeout(() => {
                     window.location.href = 'dashboard.html';
                 }, 2000);
@@ -1014,14 +1514,65 @@
             .catch(error => {
                 console.error('Error saving configuration:', error);
                 
-                // If it's a demo farm, simulate success
-                if (farmId.startsWith('demo-farm-') || farmId === 'new') {
-                    showAlert('Demo mode: Configuration saved locally! In production, this would save to the server.', 'success');
+                // If it's a demo farm, local farm, or API failed, save locally as fallback
+                if (farmId.startsWith('demo-farm-') || farmId.startsWith('local-farm-') || farmId === 'new') {
+                    console.log('💾 Saving geofence configuration locally (fallback)');
+                    
+                    // Save to localStorage
+                    const geofenceConfig = {
+                        farmId: farmId,
+                        latitude,
+                        longitude,
+                        geofenceType,
+                        geofenceRadius,
+                        geofencePolygon: (geofenceType === 'polygon' && polygonPoints.length > 2) ? polygonPoints : null,
+                        isPublic,
+                        allowVisitors,
+                        visitorInstructions,
+                        savedAt: new Date().toISOString()
+                    };
+                    
+                    const geofences = JSON.parse(localStorage.getItem('localGeofences') || '[]');
+                    const existingIndex = geofences.findIndex(g => g.farmId === farmId);
+                    if (existingIndex >= 0) {
+                        geofences[existingIndex] = geofenceConfig;
+                    } else {
+                        geofences.push(geofenceConfig);
+                    }
+                    localStorage.setItem('localGeofences', JSON.stringify(geofences));
+                    
+                    showAlert('Configuration saved locally! (API unavailable, saved to browser storage)', 'success');
                     setTimeout(() => {
                         window.location.href = 'dashboard.html';
                     }, 3000);
                 } else {
-                    showAlert(`Error saving configuration: ${error.message}`, 'danger');
+                    // For real API farms, try to save locally as fallback if API fails
+                    console.log('💾 API failed, saving geofence configuration locally as fallback');
+                    
+                    const geofenceConfig = {
+                        farmId: farmId,
+                        latitude,
+                        longitude,
+                        geofenceType,
+                        geofenceRadius,
+                        geofencePolygon: (geofenceType === 'polygon' && polygonPoints.length > 2) ? polygonPoints : null,
+                        isPublic,
+                        allowVisitors,
+                        visitorInstructions,
+                        savedAt: new Date().toISOString(),
+                        apiError: error.message
+                    };
+                    
+                    const geofences = JSON.parse(localStorage.getItem('localGeofences') || '[]');
+                    const existingIndex = geofences.findIndex(g => g.farmId === farmId);
+                    if (existingIndex >= 0) {
+                        geofences[existingIndex] = geofenceConfig;
+                    } else {
+                        geofences.push(geofenceConfig);
+                    }
+                    localStorage.setItem('localGeofences', JSON.stringify(geofences));
+                    
+                    showAlert(`API error: ${error.message}. Configuration saved locally. You can sync it later when the server is available.`, 'warning');
                 }
             })
             .finally(() => {
@@ -1057,21 +1608,52 @@
         }
 
         function createNewFarm(farmName) {
+            console.log('🏗️ Creating new farm:', farmName);
+            
             const token = localStorage.getItem('smartfarm_token') || sessionStorage.getItem('smartfarm_token');
             
-            if (!token) {
-                showAlert('Demo mode: Cannot create real farms without authentication. Using demo farm instead.', 'info');
-                // Add demo farm to select
+            // Helper function to create farm locally (fallback)
+            const createFarmLocally = () => {
+                console.log('💾 Creating farm locally (fallback mode)');
                 const farmSelect = document.getElementById('farmSelect');
+                const farmId = `local-farm-${Date.now()}`;
+                
+                // Save to localStorage
+                const farms = JSON.parse(localStorage.getItem('localFarms') || '[]');
+                const newFarm = {
+                    id: farmId,
+                    name: farmName,
+                    location: 'Location to be updated',
+                    size: 1,
+                    description: 'Farm created via geofencing setup',
+                    createdAt: new Date().toISOString()
+                };
+                farms.push(newFarm);
+                localStorage.setItem('localFarms', JSON.stringify(farms));
+                
                 const option = document.createElement('option');
-                option.value = `demo-farm-${Date.now()}`;
+                option.value = farmId;
                 option.textContent = farmName;
+                option.selected = true;
                 farmSelect.appendChild(option);
-                farmSelect.value = option.value;
+                
+                selectedFarm = { id: farmId, name: farmName };
+                document.getElementById('nextStep1').disabled = false;
+                
+                showAlert(`Farm "${farmName}" created successfully! (Saved locally)`, 'success');
+            };
+            
+            if (!token) {
+                showAlert('Using demo mode: Farm will be saved locally.', 'info');
+                createFarmLocally();
                 return;
             }
             
-            fetch(window.SmartFarmConfig.getApiUrl('/farms'), {
+            // Try API first
+            const farmsUrl = window.SmartFarmConfig.getApiUrl('/farms');
+            console.log('🌐 Attempting to create farm via API:', farmsUrl);
+            
+            fetch(farmsUrl, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -1085,55 +1667,89 @@
                 })
             })
             .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+                console.log('📡 API Response status:', response.status);
                 
-                // Check if response is JSON
-                const contentType = response.headers.get('content-type');
-                if (!contentType || !contentType.includes('application/json')) {
-                    throw new Error('Response is not JSON. Server may be returning an error page.');
-                }
-                
-                return response.json();
+                // Try to parse as JSON first
+                return response.text().then(text => {
+                    try {
+                        return { data: JSON.parse(text), status: response.status, ok: response.ok };
+                    } catch (e) {
+                        console.warn('⚠️ Response is not JSON:', text.substring(0, 100));
+                        throw new Error('Response is not JSON. Server may be returning an error page.');
+                    }
+                });
             })
-            .then(data => {
-                if (data.success) {
+            .then(result => {
+                if (!result.ok) {
+                    // Try to extract error from response
+                    const errorMsg = result.data?.error || result.data?.message || `HTTP error! status: ${result.status}`;
+                    throw new Error(errorMsg);
+                }
+                
+                const data = result.data;
+                
+                if (data.success || data.id) {
                     // Add new farm to select dropdown
                     const farmSelect = document.getElementById('farmSelect');
                     const option = document.createElement('option');
-                    option.value = data.data.id;
-                    option.textContent = data.data.name;
+                    option.value = data.data?.id || data.id;
+                    option.textContent = data.data?.name || data.name || farmName;
                     option.selected = true;
                     farmSelect.appendChild(option);
                     
-                    selectedFarm = { id: data.data.id, name: data.data.name };
+                    selectedFarm = { 
+                        id: data.data?.id || data.id, 
+                        name: data.data?.name || data.name || farmName 
+                    };
                     document.getElementById('nextStep1').disabled = false;
                     
                     showAlert(`Farm "${farmName}" created successfully!`, 'success');
+                    console.log('✅ Farm created successfully via API');
                 } else {
-                    throw new Error(data.error || 'Failed to create farm');
+                    throw new Error(data.error || data.message || 'Failed to create farm');
                 }
             })
             .catch(error => {
-                console.error('Error creating farm:', error);
+                console.error('❌ Error creating farm:', error);
                 
-                // Check if it's a CORS error
-                if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
-                    showAlert('CORS Error: Cannot connect to backend. Please check if the backend is running and CORS is configured correctly.', 'warning');
-                    
-                    // Fallback to demo mode
-                    showAlert('Switching to demo mode. Farm will be created locally.', 'info');
-                    const farmSelect = document.getElementById('farmSelect');
-                    const option = document.createElement('option');
-                    option.value = `demo-farm-${Date.now()}`;
-                    option.textContent = farmName;
-                    farmSelect.appendChild(option);
-                    farmSelect.value = option.value;
-                    selectedFarm = { id: option.value, name: farmName };
-                    document.getElementById('nextStep1').disabled = false;
+                // Provide more specific error messages
+                let errorMessage = error.message || 'Error creating farm';
+                let shouldFallback = true;
+                
+                if (error.message.includes('401') || error.message.includes('Unauthorized')) {
+                    errorMessage = 'Authentication failed. Please log in again.';
+                    showAlert(errorMessage, 'warning');
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
+                    shouldFallback = false;
+                } else if (error.message.includes('403') || error.message.includes('Forbidden')) {
+                    errorMessage = 'You do not have permission to create farms.';
+                    showAlert(errorMessage, 'warning');
+                    shouldFallback = true;
+                } else if (error.message.includes('409') || error.message.includes('Conflict')) {
+                    errorMessage = `A farm with the name "${farmName}" already exists.`;
+                    showAlert(errorMessage, 'warning');
+                    shouldFallback = true;
+                } else if (error.message.includes('Failed to fetch') || error.message.includes('CORS')) {
+                    errorMessage = 'Cannot connect to server. Creating farm locally instead.';
+                    showAlert(errorMessage, 'info');
+                    shouldFallback = true;
+                } else if (error.message.includes('Response is not JSON')) {
+                    errorMessage = 'Server returned an unexpected response. Creating farm locally instead.';
+                    showAlert(errorMessage, 'warning');
+                    shouldFallback = true;
                 } else {
-                    showAlert('Error creating farm. Please try again.', 'danger');
+                    // For other errors, show the error but still offer fallback
+                    showAlert(`Error: ${errorMessage}. Creating farm locally instead.`, 'warning');
+                    shouldFallback = true;
+                }
+                
+                // Fallback to local storage
+                if (shouldFallback) {
+                    setTimeout(() => {
+                        createFarmLocally();
+                    }, 500);
                 }
             });
         }

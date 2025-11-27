@@ -18,11 +18,24 @@ class AIAdvisorySystem {
             await this.loadCrops();
             await this.loadLivestock();
             await this.loadRecommendations();
+            
+            // If no recommendations loaded, generate local ones
+            if (!this.recommendations || this.recommendations.length === 0) {
+                this.generateLocalRecommendations();
+            }
+            
             this.setupEventListeners();
             this.updateUI();
         } catch (error) {
             console.error('Error initializing AI Advisory System:', error);
-            this.showError('Failed to initialize AI Advisory System');
+            // Generate local recommendations as fallback
+            try {
+                this.generateLocalRecommendations();
+                this.updateUI();
+            } catch (fallbackError) {
+                console.error('Error generating fallback recommendations:', fallbackError);
+                this.showError('Failed to initialize AI Advisory System');
+            }
         }
     }
     
@@ -542,12 +555,49 @@ class AIAdvisorySystem {
         const daysSincePlanting = Math.floor((now - planting) / (1000 * 60 * 60 * 24));
         
         const cropStages = {
-            cassava: { planting: 30, vegetative: 90, tuber_formation: 150, maturation: 300 },
-            taro: { planting: 21, vegetative: 90, corm_development: 180 },
-            sweet_potato: { planting: 14, vine_development: 60, tuber_formation: 120 },
-            spinach: { germination: 7, vegetative: 35 },
-            lettuce: { germination: 7, vegetative: 45 },
-            banana: { establishment: 90, flowering: 150 }
+            // Root Crops
+            cassava: { planting: 30, vegetative: 180, tuber_formation: 270, maturation: 365 }, // 12 months
+            taro: { planting: 21, vegetative: 90, corm_development: 180, maturation: 270 }, // 9 months
+            yam: { planting: 30, vegetative: 120, tuber_formation: 180, maturation: 240 }, // 8 months
+            sweet_potato: { planting: 14, vine_development: 60, tuber_formation: 90, maturation: 120 }, // 4 months
+            potatoes: { planting: 14, vegetative: 45, flowering: 60, maturation: 90 }, // 3 months
+            carrots: { planting: 7, vegetative: 30, root_development: 50, maturation: 75 }, // 2.5 months
+            onions: { planting: 14, vegetative: 60, bulb_formation: 90, maturation: 130 }, // 4-5 months
+            garlic: { planting: 30, vegetative: 90, bulb_formation: 180, maturation: 240 }, // 8-9 months
+            
+            // Leafy Vegetables
+            spinach: { germination: 7, vegetative: 25, maturation: 40 }, // 40 days
+            lettuce: { germination: 7, vegetative: 30, maturation: 45 }, // 45 days
+            cabbage: { germination: 7, vegetative: 45, head_formation: 70, maturation: 90 }, // 3 months
+            kale: { germination: 7, vegetative: 30, maturation: 55 }, // 55 days
+            
+            // Fruit Vegetables
+            tomatoes: { germination: 7, vegetative: 45, flowering: 60, fruiting: 75 }, // 75 days
+            peppers: { germination: 10, vegetative: 50, flowering: 65, fruiting: 75 }, // 75 days
+            cucumbers: { germination: 7, vegetative: 35, flowering: 45, fruiting: 55 }, // 55 days
+            eggplant: { germination: 10, vegetative: 50, flowering: 70, fruiting: 85 }, // 85 days
+            
+            // Legumes
+            beans: { germination: 7, vegetative: 30, flowering: 45, pod_formation: 60 }, // 60 days
+            peas: { germination: 7, vegetative: 30, flowering: 45, pod_formation: 60 }, // 60 days
+            lentils: { germination: 7, vegetative: 45, flowering: 70, pod_formation: 100 }, // 100 days
+            
+            // Grains
+            corn: { germination: 7, vegetative: 45, tasseling: 70, maturation: 90 }, // 90 days
+            rice: { germination: 7, vegetative: 60, flowering: 90, maturation: 120 }, // 120 days
+            wheat: { germination: 7, vegetative: 60, heading: 90, maturation: 120 }, // 120 days
+            
+            // Fruits
+            bananas: { planting: 90, vegetative: 180, flowering: 240, maturation: 300 }, // 10-12 months
+            pineapple: { planting: 180, vegetative: 360, flowering: 450, maturation: 540 }, // 18-24 months
+            papaya: { planting: 60, vegetative: 150, flowering: 180, maturation: 240 }, // 8 months
+            mango: { planting: 90, flowering: 120, fruiting: 150 }, // 4-5 months from flowering
+            
+            // Herbs
+            basil: { germination: 5, vegetative: 20, maturation: 30 }, // 30 days
+            cilantro: { germination: 5, vegetative: 18, maturation: 25 }, // 25 days
+            parsley: { germination: 10, vegetative: 50, maturation: 70 }, // 70 days
+            mint: { germination: 7, vegetative: 20, maturation: 30 }, // 30 days
         };
         
         const stages = cropStages[cropName.toLowerCase().replace(/\s+/g, '_')];
@@ -661,13 +711,156 @@ class AIAdvisorySystem {
     
     async refreshRecommendations() {
         try {
-            await this.loadRecommendations();
-            this.updateUI();
-            this.showSuccess('Recommendations refreshed successfully');
+            // Show loading state
+            const refreshBtn = document.querySelector('button[onclick="refreshRecommendations()"]');
+            if (refreshBtn) {
+                const originalText = refreshBtn.innerHTML;
+                refreshBtn.disabled = true;
+                refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Refreshing...';
+                
+                // Try to load recommendations from API
+                await this.loadRecommendations();
+                
+                // If no recommendations from API, generate local recommendations
+                if (!this.recommendations || this.recommendations.length === 0) {
+                    this.generateLocalRecommendations();
+                }
+                
+                // Reload weather data to ensure fresh data
+                await this.loadWeatherData();
+                
+                // Update the UI
+                this.updateUI();
+                
+                // Restore button
+                refreshBtn.disabled = false;
+                refreshBtn.innerHTML = originalText;
+                
+                this.showSuccess('Recommendations refreshed successfully');
+            } else {
+                // Fallback if button not found
+                await this.loadRecommendations();
+                if (!this.recommendations || this.recommendations.length === 0) {
+                    this.generateLocalRecommendations();
+                }
+                await this.loadWeatherData();
+                this.updateUI();
+                this.showSuccess('Recommendations refreshed successfully');
+            }
         } catch (error) {
             console.error('Error refreshing recommendations:', error);
-            this.showError('Failed to refresh recommendations');
+            
+            // Restore button state on error
+            const refreshBtn = document.querySelector('button[onclick="refreshRecommendations()"]');
+            if (refreshBtn) {
+                refreshBtn.disabled = false;
+                refreshBtn.innerHTML = '<i class="fas fa-sync-alt me-1"></i>Refresh AI';
+            }
+            
+            // Generate local recommendations as fallback
+            try {
+                this.generateLocalRecommendations();
+                this.updateUI();
+                this.showSuccess('Recommendations refreshed using local data');
+            } catch (fallbackError) {
+                console.error('Error generating local recommendations:', fallbackError);
+                this.showError('Failed to refresh recommendations. Please try again later.');
+            }
         }
+    }
+    
+    generateLocalRecommendations() {
+        // Generate recommendations locally based on current weather and farm data
+        const recommendations = [];
+        
+        if (this.weatherData) {
+            // Weather-based recommendations
+            if (this.weatherData.rainfall > 20) {
+                recommendations.push({
+                    type: 'weather',
+                    priority: 'high',
+                    recommendations: 'Heavy rain expected - delay fertilizer application and protect sensitive crops',
+                    createdAt: new Date().toISOString()
+                });
+            }
+            
+            if (this.weatherData.temperature > 35) {
+                recommendations.push({
+                    type: 'livestock',
+                    priority: 'high',
+                    recommendations: 'High temperature warning - ensure adequate shade and water for livestock',
+                    createdAt: new Date().toISOString()
+                });
+            }
+            
+            if (this.weatherData.rainfall < 5 && this.weatherData.temperature > 25) {
+                recommendations.push({
+                    type: 'irrigation',
+                    priority: 'medium',
+                    recommendations: 'Dry conditions detected - consider scheduling irrigation',
+                    createdAt: new Date().toISOString()
+                });
+            }
+            
+            if (this.weatherData.humidity > 80) {
+                recommendations.push({
+                    type: 'disease_prevention',
+                    priority: 'medium',
+                    recommendations: 'High humidity - monitor crops for fungal diseases and ensure proper ventilation',
+                    createdAt: new Date().toISOString()
+                });
+            }
+        }
+        
+        // Crop-based recommendations
+        if (this.crops && this.crops.length > 0) {
+            const cropsNeedingHarvest = this.crops.filter(crop => {
+                if (!crop.maturityDate) return false;
+                const maturityDate = new Date(crop.maturityDate);
+                const daysUntilMaturity = Math.floor((maturityDate - new Date()) / (1000 * 60 * 60 * 24));
+                return daysUntilMaturity >= 0 && daysUntilMaturity <= 7;
+            });
+            
+            if (cropsNeedingHarvest.length > 0) {
+                recommendations.push({
+                    type: 'harvest',
+                    priority: 'urgent',
+                    recommendations: `${cropsNeedingHarvest.length} crop(s) ready for harvest in the next week`,
+                    createdAt: new Date().toISOString()
+                });
+            }
+        }
+        
+        // Livestock-based recommendations
+        if (this.livestock && this.livestock.length > 0) {
+            const livestockNeedingVaccination = this.livestock.filter(animal => {
+                if (!animal.lastVaccinationDate) return true;
+                const lastVaccination = new Date(animal.lastVaccinationDate);
+                const daysSinceVaccination = Math.floor((new Date() - lastVaccination) / (1000 * 60 * 60 * 24));
+                return daysSinceVaccination > 365;
+            });
+            
+            if (livestockNeedingVaccination.length > 0) {
+                recommendations.push({
+                    type: 'health',
+                    priority: 'high',
+                    recommendations: `${livestockNeedingVaccination.length} animal(s) may need vaccination`,
+                    createdAt: new Date().toISOString()
+                });
+            }
+        }
+        
+        // Default recommendation if none generated
+        if (recommendations.length === 0) {
+            recommendations.push({
+                type: 'general',
+                priority: 'low',
+                recommendations: 'Continue regular monitoring and maintenance activities',
+                createdAt: new Date().toISOString()
+            });
+        }
+        
+        this.recommendations = recommendations;
     }
     
     setupEventListeners() {
