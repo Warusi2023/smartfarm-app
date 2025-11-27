@@ -429,22 +429,26 @@ window.ByproductsDatabase = {
                     description: "Fermented vinegar from overripe bananas",
                     marketValue: 3.50,
                     processingMethod: "Fermentation, aging",
-                    equipment: ["Fermentation tanks", "Aging barrels"],
+                    equipment: ["Fermentation vessels"],
                     shelfLife: "24 months",
                     targetMarket: "Specialty food stores, restaurants",
                     processingSteps: [
-                        "Select overripe bananas",
-                        "Peel and mash bananas thoroughly",
-                        "Add water and sugar to create mash",
-                        "Transfer to fermentation tank",
-                        "Add yeast or starter culture",
-                        "Cover and allow primary fermentation for 7-14 days",
-                        "Strain liquid from solids",
-                        "Transfer to aging barrel for secondary fermentation",
+                        "Select overripe bananas (fully yellow with brown spots)",
+                        "Peel and mash bananas thoroughly to create pulp",
+                        "Add water and sugar to create mash (ratio: 1 part banana to 2 parts water)",
+                        "Transfer mash to fermentation vessel",
+                        "Add yeast or vinegar starter culture",
+                        "Cover vessel with breathable cloth or lid with airlock",
+                        "Allow primary fermentation for 7-14 days at room temperature (20-25°C)",
+                        "Stir daily to prevent mold and ensure even fermentation",
+                        "Strain liquid from solids using cheesecloth or fine mesh",
+                        "Transfer liquid to clean fermentation vessel for secondary fermentation",
                         "Age for 2-3 months, stirring occasionally",
-                        "Filter to remove sediment",
-                        "Bottle and label with production date",
-                        "Store in cool, dark place"
+                        "Test acidity level (should reach 4-6% acetic acid)",
+                        "Filter to remove sediment and any remaining solids",
+                        "Bottle in sterilized glass bottles",
+                        "Label with production date and batch number",
+                        "Store in cool, dark place away from direct sunlight"
                     ],
                     projectedOutput: {
                         yieldPercentage: 60,
@@ -2272,109 +2276,6 @@ window.ByproductsDatabase = {
                     equipment: ["Harvesting tools", "Washing station"],
                     shelfLife: "1 week",
                     targetMarket: "Local markets, restaurants"
-                }
-            ]
-        },
-        
-        banana: {
-            primary: "Fresh Banana",
-            byproducts: [
-                {
-                    name: "Banana Chips",
-                    category: "Snack Food",
-                    description: "Crispy dried banana chips",
-                    marketValue: 6.00,
-                    processingMethod: "Slicing, drying",
-                    equipment: ["Slicer", "Dehydrator"],
-                    shelfLife: "12 months",
-                    targetMarket: "Retail stores, snack distributors",
-                    processingSteps: [
-                        "Select ripe but firm bananas",
-                        "Peel and slice uniformly (3-5mm thickness)",
-                        "Soak in lemon juice or salt water",
-                        "Dry in dehydrator at 60°C for 12-24 hours",
-                        "Season with desired spices (optional)",
-                        "Package in airtight bags"
-                    ],
-                    projectedOutput: {
-                        yieldPercentage: 15,
-                        unit: "kg",
-                        outputPer100kg: 15,
-                        estimatedRevenuePer100kg: 90.00,
-                        processingTime: "2-3 days",
-                        laborRequired: "2 workers"
-                    }
-                },
-                {
-                    name: "Banana Flour",
-                    category: "Food Processing",
-                    description: "Gluten-free flour from green bananas",
-                    marketValue: 4.50,
-                    processingMethod: "Drying, grinding",
-                    equipment: ["Dehydrator", "Grinding mill"],
-                    shelfLife: "18 months",
-                    targetMarket: "Health food stores, gluten-free bakeries",
-                    processingSteps: [
-                        "Select green, unripe bananas",
-                        "Peel and slice into thin pieces",
-                        "Dry in dehydrator at 60°C for 24-36 hours",
-                        "Grind to fine powder",
-                        "Sift and package"
-                    ],
-                    projectedOutput: {
-                        yieldPercentage: 18,
-                        unit: "kg",
-                        outputPer100kg: 18,
-                        estimatedRevenuePer100kg: 81.00,
-                        processingTime: "3-4 days",
-                        laborRequired: "2 workers"
-                    }
-                },
-                {
-                    name: "Banana Vinegar",
-                    category: "Condiment",
-                    description: "Fermented vinegar from overripe bananas",
-                    marketValue: 3.50,
-                    processingMethod: "Fermentation",
-                    equipment: ["Fermentation vessels"],
-                    shelfLife: "24 months",
-                    targetMarket: "Specialty food stores, restaurants",
-                    processingSteps: [
-                        "Select overripe bananas (fully yellow with brown spots)",
-                        "Peel and mash bananas thoroughly to create pulp",
-                        "Add water and sugar to create mash (ratio: 1 part banana to 2 parts water)",
-                        "Transfer mash to fermentation vessel",
-                        "Add yeast or vinegar starter culture",
-                        "Cover vessel with breathable cloth or lid with airlock",
-                        "Allow primary fermentation for 7-14 days at room temperature (20-25°C)",
-                        "Stir daily to prevent mold and ensure even fermentation",
-                        "Strain liquid from solids using cheesecloth or fine mesh",
-                        "Transfer liquid to clean fermentation vessel for secondary fermentation",
-                        "Age for 2-3 months, stirring occasionally",
-                        "Test acidity level (should reach 4-6% acetic acid)",
-                        "Filter to remove sediment and any remaining solids",
-                        "Bottle in sterilized glass bottles",
-                        "Label with production date and batch number",
-                        "Store in cool, dark place away from direct sunlight"
-                    ],
-                    projectedOutput: {
-                        yieldPercentage: 60,
-                        unit: "liters",
-                        outputPer100kg: 60,
-                        estimatedRevenuePer100kg: 210.00,
-                        processingTime: "3-4 months",
-                        laborRequired: "1-2 workers"
-                    }
-                },
-                {
-                    name: "Banana Leaves",
-                    category: "Packaging Material",
-                    description: "Natural packaging for food",
-                    marketValue: 1.50,
-                    processingMethod: "Harvesting, cleaning",
-                    equipment: ["Harvesting tools"],
-                    shelfLife: "6 months",
-                    targetMarket: "Food vendors, restaurants"
                 }
             ]
         },

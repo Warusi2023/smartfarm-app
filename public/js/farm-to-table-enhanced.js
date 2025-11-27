@@ -334,6 +334,7 @@ class EnhancedFarmToTable {
                 </div>
             </div>
             
+            ${guide.processingSteps && guide.processingSteps.length > 0 ? `
             <div class="mb-3">
                 <h6><i class="fas fa-list-ol me-2"></i>Processing Steps</h6>
                 <ol class="list-group list-group-numbered">
@@ -342,6 +343,12 @@ class EnhancedFarmToTable {
                     `).join('')}
                 </ol>
             </div>
+            ` : `
+            <div class="mb-3">
+                <h6><i class="fas fa-list-ol me-2"></i>Processing Steps</h6>
+                <p class="text-muted"><i class="fas fa-info-circle me-1"></i>No detailed processing steps available for this product.</p>
+            </div>
+            `}
             
             <div class="d-grid gap-2">
                 <button class="btn btn-success" onclick="enhancedFarmToTable.openRecordForm('${guide.inputProduct}', '${guide.outputProduct}')">
