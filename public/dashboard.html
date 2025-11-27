@@ -14287,10 +14287,16 @@ INVENTORY SUMMARY:
             showEditProfileModal();
         }
 
+        // Store reference to current profile modal
+        let currentProfileModal = null;
+        let currentProfileBsModal = null;
+
         function showEditProfileModal() {
             const user = JSON.parse(localStorage.getItem('smartfarm_user') || '{}');
             const modal = document.createElement('div');
             modal.className = 'modal fade';
+            modal.id = 'editProfileModal';
+            modal.setAttribute('tabindex', '-1');
             modal.innerHTML = `
                 <div class="modal-dialog modal-lg modal-dialog-centered">
                     <div class="modal-content border-0 shadow-lg">
@@ -14298,10 +14304,10 @@ INVENTORY SUMMARY:
                             <h5 class="modal-title">
                                 <i class="fas fa-user-edit me-2"></i>Edit Profile
                             </h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                            <form id="editProfileForm">
+                            <form id="editProfileForm" onsubmit="event.preventDefault(); saveProfile(); return false;">
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="mb-3">
@@ -14340,7 +14346,7 @@ INVENTORY SUMMARY:
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button type="button" class="btn btn-primary" onclick="saveProfile()">
+                            <button type="button" class="btn btn-primary" id="saveProfileBtn" onclick="saveProfile()">
                                 <i class="fas fa-save me-2"></i>Save Profile
                             </button>
                         </div>
@@ -14350,69 +14356,145 @@ INVENTORY SUMMARY:
             
             document.body.appendChild(modal);
             
+            // Store references
+            currentProfileModal = modal;
+            
             // Set up modal with accessibility helper
             if (window.ModalAccessibility) {
                 window.ModalAccessibility.setupDynamicModal(modal);
             }
             
-            const bsModal = new bootstrap.Modal(modal);
+            const bsModal = new bootstrap.Modal(modal, {
+                backdrop: true,
+                keyboard: true,
+                focus: true
+            });
+            currentProfileBsModal = bsModal;
             bsModal.show();
             
+            // Prevent form submission from interfering
+            const form = modal.querySelector('#editProfileForm');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    saveProfile();
+                    return false;
+                });
+            }
+            
+            // Ensure save button is enabled and working
+            const saveBtn = modal.querySelector('#saveProfileBtn');
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    saveProfile();
+                });
+            }
+            
             modal.addEventListener('hidden.bs.modal', () => {
-                document.body.removeChild(modal);
+                if (currentProfileModal && document.body.contains(currentProfileModal)) {
+                    document.body.removeChild(currentProfileModal);
+                }
+                currentProfileModal = null;
+                currentProfileBsModal = null;
             });
         }
 
         function saveProfile() {
-            const firstName = document.getElementById('profileFirstName').value.trim();
-            const lastName = document.getElementById('profileLastName').value.trim();
-            const email = document.getElementById('profileEmail').value.trim();
-            const phone = document.getElementById('profilePhone').value.trim();
-            const farmName = document.getElementById('profileFarmName').value.trim();
-            const location = document.getElementById('profileLocation').value.trim();
-            const bio = document.getElementById('profileBio').value.trim();
-
-            if (!firstName || !lastName || !email) {
-                showErrorDialog('Validation Error', 'Please fill in all required fields (First Name, Last Name, Email).');
-                return;
-            }
-
-            // Update user data
-            const updatedUser = {
-                firstName: firstName,
-                lastName: lastName,
-                email: email,
-                phone: phone,
-                farmName: farmName,
-                location: location,
-                bio: bio,
-                updatedAt: new Date().toISOString()
-            };
-
-            localStorage.setItem('smartfarm_user', JSON.stringify(updatedUser));
-
-            // Close modal
-            const modal = document.querySelector('.modal');
-            if (modal) {
-                const bsModal = bootstrap.Modal.getInstance(modal);
-                if (bsModal) {
-                    bsModal.hide();
+            try {
+                const firstNameEl = document.getElementById('profileFirstName');
+                const lastNameEl = document.getElementById('profileLastName');
+                const emailEl = document.getElementById('profileEmail');
+                
+                if (!firstNameEl || !lastNameEl || !emailEl) {
+                    console.error('Profile form fields not found');
+                    showErrorDialog('Error', 'Unable to find profile form fields. Please refresh the page and try again.');
+                    return;
                 }
-            }
+                
+                const firstName = firstNameEl.value.trim();
+                const lastName = lastNameEl.value.trim();
+                const email = emailEl.value.trim();
+                const phone = document.getElementById('profilePhone')?.value.trim() || '';
+                const farmName = document.getElementById('profileFarmName')?.value.trim() || '';
+                const location = document.getElementById('profileLocation')?.value.trim() || '';
+                const bio = document.getElementById('profileBio')?.value.trim() || '';
 
-            showSuccessDialog(
-                '✅ Profile Updated Successfully',
-                `Your profile has been updated successfully.\n\nName: ${firstName} ${lastName}\nEmail: ${email}\nFarm: ${farmName || 'Not specified'}`
-            );
+                if (!firstName || !lastName || !email) {
+                    showErrorDialog('Validation Error', 'Please fill in all required fields (First Name, Last Name, Email).');
+                    return;
+                }
+
+                // Email validation
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email)) {
+                    showErrorDialog('Validation Error', 'Please enter a valid email address.');
+                    return;
+                }
+
+                // Update user data
+                const updatedUser = {
+                    firstName: firstName,
+                    lastName: lastName,
+                    email: email,
+                    phone: phone,
+                    farmName: farmName,
+                    location: location,
+                    bio: bio,
+                    updatedAt: new Date().toISOString()
+                };
+
+                localStorage.setItem('smartfarm_user', JSON.stringify(updatedUser));
+
+                // Close modal using stored reference
+                if (currentProfileBsModal) {
+                    currentProfileBsModal.hide();
+                } else if (currentProfileModal) {
+                    const bsModal = bootstrap.Modal.getInstance(currentProfileModal);
+                    if (bsModal) {
+                        bsModal.hide();
+                    } else {
+                        // Fallback: try to find and close any visible modal
+                        const visibleModal = document.querySelector('.modal.show, .modal.fade.show');
+                        if (visibleModal) {
+                            const fallbackModal = bootstrap.Modal.getInstance(visibleModal);
+                            if (fallbackModal) {
+                                fallbackModal.hide();
+                            }
+                        }
+                    }
+                }
+
+                showSuccessDialog(
+                    '✅ Profile Updated Successfully',
+                    `Your profile has been updated successfully.\n\nName: ${firstName} ${lastName}\nEmail: ${email}\nFarm: ${farmName || 'Not specified'}`
+                );
+            } catch (error) {
+                console.error('Error saving profile:', error);
+                showErrorDialog('Error', 'An error occurred while saving your profile. Please try again.');
+            }
         }
 
         function showSettings() {
             showSettingsModal();
         }
 
+        // Store reference to current settings modal
+        let currentSettingsModal = null;
+        let currentSettingsBsModal = null;
+
         function showSettingsModal() {
+            // Load existing settings
+            const existingSettings = JSON.parse(localStorage.getItem('smartfarm_settings') || '{}');
+            const notifications = existingSettings.notifications || {};
+            
             const modal = document.createElement('div');
             modal.className = 'modal fade';
+            modal.id = 'settingsModal';
+            modal.setAttribute('tabindex', '-1');
             modal.innerHTML = `
                 <div class="modal-dialog modal-lg modal-dialog-centered">
                     <div class="modal-content border-0 shadow-lg">
@@ -14420,7 +14502,7 @@ INVENTORY SUMMARY:
                             <h5 class="modal-title">
                                 <i class="fas fa-cog me-2"></i>Settings
                             </h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
                             <div class="row">
@@ -14429,57 +14511,57 @@ INVENTORY SUMMARY:
                                     <div class="mb-3">
                                         <label for="currencySelect" class="form-label">Currency</label>
                                         <select class="form-select" id="currencySelect">
-                                            <option value="USD">USD - US Dollar</option>
-                                            <option value="EUR">EUR - Euro</option>
-                                            <option value="GBP">GBP - British Pound</option>
-                                            <option value="JPY">JPY - Japanese Yen</option>
-                                            <option value="CAD">CAD - Canadian Dollar</option>
-                                            <option value="AUD">AUD - Australian Dollar</option>
+                                            <option value="USD" ${existingSettings.currency === 'USD' ? 'selected' : ''}>USD - US Dollar</option>
+                                            <option value="EUR" ${existingSettings.currency === 'EUR' ? 'selected' : ''}>EUR - Euro</option>
+                                            <option value="GBP" ${existingSettings.currency === 'GBP' ? 'selected' : ''}>GBP - British Pound</option>
+                                            <option value="JPY" ${existingSettings.currency === 'JPY' ? 'selected' : ''}>JPY - Japanese Yen</option>
+                                            <option value="CAD" ${existingSettings.currency === 'CAD' ? 'selected' : ''}>CAD - Canadian Dollar</option>
+                                            <option value="AUD" ${existingSettings.currency === 'AUD' ? 'selected' : ''}>AUD - Australian Dollar</option>
                                         </select>
                                     </div>
                                     <div class="mb-3">
                                         <label for="languageSelect" class="form-label">Language</label>
                                         <select class="form-select" id="languageSelect">
-                                            <option value="en">English</option>
-                                            <option value="es">Spanish</option>
-                                            <option value="fr">French</option>
-                                            <option value="de">German</option>
-                                            <option value="it">Italian</option>
+                                            <option value="en" ${existingSettings.language === 'en' ? 'selected' : ''}>English</option>
+                                            <option value="es" ${existingSettings.language === 'es' ? 'selected' : ''}>Spanish</option>
+                                            <option value="fr" ${existingSettings.language === 'fr' ? 'selected' : ''}>French</option>
+                                            <option value="de" ${existingSettings.language === 'de' ? 'selected' : ''}>German</option>
+                                            <option value="it" ${existingSettings.language === 'it' ? 'selected' : ''}>Italian</option>
                                         </select>
                                     </div>
                                     <div class="mb-3">
                                         <label for="timezoneSelect" class="form-label">Timezone</label>
                                         <select class="form-select" id="timezoneSelect">
-                                            <option value="UTC">UTC</option>
-                                            <option value="EST">EST - Eastern Time</option>
-                                            <option value="PST">PST - Pacific Time</option>
-                                            <option value="CST">CST - Central Time</option>
-                                            <option value="MST">MST - Mountain Time</option>
+                                            <option value="UTC" ${existingSettings.timezone === 'UTC' ? 'selected' : ''}>UTC</option>
+                                            <option value="EST" ${existingSettings.timezone === 'EST' ? 'selected' : ''}>EST - Eastern Time</option>
+                                            <option value="PST" ${existingSettings.timezone === 'PST' ? 'selected' : ''}>PST - Pacific Time</option>
+                                            <option value="CST" ${existingSettings.timezone === 'CST' ? 'selected' : ''}>CST - Central Time</option>
+                                            <option value="MST" ${existingSettings.timezone === 'MST' ? 'selected' : ''}>MST - Mountain Time</option>
                                         </select>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <h6 class="text-primary mb-3">Notification Settings</h6>
                                     <div class="form-check mb-3">
-                                        <input class="form-check-input" type="checkbox" id="emailNotifications" checked>
+                                        <input class="form-check-input" type="checkbox" id="emailNotifications" ${notifications.email !== false ? 'checked' : ''}>
                                         <label class="form-check-label" for="emailNotifications">
                                             Email Notifications
                                         </label>
                                     </div>
                                     <div class="form-check mb-3">
-                                        <input class="form-check-input" type="checkbox" id="taskReminders" checked>
+                                        <input class="form-check-input" type="checkbox" id="taskReminders" ${notifications.taskReminders !== false ? 'checked' : ''}>
                                         <label class="form-check-label" for="taskReminders">
                                             Task Reminders
                                         </label>
                                     </div>
                                     <div class="form-check mb-3">
-                                        <input class="form-check-input" type="checkbox" id="notificationWeatherAlerts" checked>
+                                        <input class="form-check-input" type="checkbox" id="notificationWeatherAlerts" ${notifications.weatherAlerts !== false ? 'checked' : ''}>
                                         <label class="form-check-label" for="notificationWeatherAlerts">
                                             Weather Alerts
                                         </label>
                                     </div>
                                     <div class="form-check mb-3">
-                                        <input class="form-check-input" type="checkbox" id="harvestAlerts" checked>
+                                        <input class="form-check-input" type="checkbox" id="harvestAlerts" ${notifications.harvestAlerts !== false ? 'checked' : ''}>
                                         <label class="form-check-label" for="harvestAlerts">
                                             Harvest Alerts
                                         </label>
@@ -14505,7 +14587,7 @@ INVENTORY SUMMARY:
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button type="button" class="btn btn-info" onclick="saveSettings()">
+                            <button type="button" class="btn btn-info" id="saveSettingsBtn" onclick="saveSettings()">
                                 <i class="fas fa-save me-2"></i>Save Settings
                             </button>
                         </div>
@@ -14515,50 +14597,107 @@ INVENTORY SUMMARY:
             
             document.body.appendChild(modal);
             
+            // Store references
+            currentSettingsModal = modal;
+            
             // Set up modal with accessibility helper
             if (window.ModalAccessibility) {
                 window.ModalAccessibility.setupDynamicModal(modal);
             }
             
-            const bsModal = new bootstrap.Modal(modal);
+            const bsModal = new bootstrap.Modal(modal, {
+                backdrop: true,
+                keyboard: true,
+                focus: true
+            });
+            currentSettingsBsModal = bsModal;
             bsModal.show();
             
+            // Ensure save button is enabled and working
+            const saveBtn = modal.querySelector('#saveSettingsBtn');
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    saveSettings();
+                });
+            }
+            
             modal.addEventListener('hidden.bs.modal', () => {
-                document.body.removeChild(modal);
+                if (currentSettingsModal && document.body.contains(currentSettingsModal)) {
+                    document.body.removeChild(currentSettingsModal);
+                }
+                currentSettingsModal = null;
+                currentSettingsBsModal = null;
             });
         }
 
         function saveSettings() {
-            const currency = document.getElementById('currencySelect').value;
-            const language = document.getElementById('languageSelect').value;
-            const timezone = document.getElementById('timezoneSelect').value;
-            const emailNotifications = document.getElementById('emailNotifications').checked;
-            const taskReminders = document.getElementById('taskReminders').checked;
-            const weatherAlerts = document.getElementById('weatherAlerts').checked;
-            const harvestAlerts = document.getElementById('harvestAlerts').checked;
-
-            const settings = {
-                currency: currency,
-                language: language,
-                timezone: timezone,
-                notifications: {
-                    email: emailNotifications,
-                    taskReminders: taskReminders,
-                    weatherAlerts: weatherAlerts,
-                    harvestAlerts: harvestAlerts
-                },
-                updatedAt: new Date().toISOString()
-            };
-
-            localStorage.setItem('smartfarm_settings', JSON.stringify(settings));
-
-            // Close modal
-            const modal = document.querySelector('.modal');
-            if (modal) {
-                const bsModal = bootstrap.Modal.getInstance(modal);
-                if (bsModal) {
-                    bsModal.hide();
+            try {
+                const currencyEl = document.getElementById('currencySelect');
+                const languageEl = document.getElementById('languageSelect');
+                const timezoneEl = document.getElementById('timezoneSelect');
+                const emailNotificationsEl = document.getElementById('emailNotifications');
+                const taskRemindersEl = document.getElementById('taskReminders');
+                const weatherAlertsEl = document.getElementById('notificationWeatherAlerts');
+                const harvestAlertsEl = document.getElementById('harvestAlerts');
+                
+                if (!currencyEl || !languageEl || !timezoneEl) {
+                    console.error('Settings form fields not found');
+                    showErrorDialog('Error', 'Unable to find settings form fields. Please refresh the page and try again.');
+                    return;
                 }
+                
+                const currency = currencyEl.value;
+                const language = languageEl.value;
+                const timezone = timezoneEl.value;
+                const emailNotifications = emailNotificationsEl ? emailNotificationsEl.checked : true;
+                const taskReminders = taskRemindersEl ? taskRemindersEl.checked : true;
+                const weatherAlerts = weatherAlertsEl ? weatherAlertsEl.checked : true;
+                const harvestAlerts = harvestAlertsEl ? harvestAlertsEl.checked : true;
+
+                const settings = {
+                    currency: currency,
+                    language: language,
+                    timezone: timezone,
+                    notifications: {
+                        email: emailNotifications,
+                        taskReminders: taskReminders,
+                        weatherAlerts: weatherAlerts,
+                        harvestAlerts: harvestAlerts
+                    },
+                    updatedAt: new Date().toISOString()
+                };
+
+                localStorage.setItem('smartfarm_settings', JSON.stringify(settings));
+
+                // Close modal using stored reference
+                if (currentSettingsBsModal) {
+                    currentSettingsBsModal.hide();
+                } else if (currentSettingsModal) {
+                    const bsModal = bootstrap.Modal.getInstance(currentSettingsModal);
+                    if (bsModal) {
+                        bsModal.hide();
+                    } else {
+                        // Fallback: try to find and close any visible modal
+                        const visibleModal = document.querySelector('.modal.show, .modal.fade.show');
+                        if (visibleModal) {
+                            const fallbackModal = bootstrap.Modal.getInstance(visibleModal);
+                            if (fallbackModal) {
+                                fallbackModal.hide();
+                            }
+                        }
+                    }
+                }
+
+                showSuccessDialog(
+                    '✅ Settings Saved Successfully',
+                    'Your settings have been saved successfully.'
+                );
+            } catch (error) {
+                console.error('Error saving settings:', error);
+                showErrorDialog('Error', 'An error occurred while saving your settings. Please try again.');
             }
 
             showSuccessDialog(
