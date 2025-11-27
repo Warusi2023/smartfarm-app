@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data & Security Statement - SmartFarm</title>
+    <meta name="description" content="SmartFarm Data & Security Statement - Learn how we protect your farm data and ensure security.">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="images/favicon/favicon.ico">
+    <link rel="icon" type="image/png" sizes="16x16" href="images/favicon/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="images/favicon/favicon-32x32.png">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --primary-dark: #2E7D32;
+            --text-dark: #1B5E20;
+        }
+        
+        .navbar {
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-dark) !important;
+        }
+        
+        .nav-link {
+            color: var(--text-dark) !important;
+            font-weight: 500;
+        }
+        
+        .nav-link:hover {
+            color: var(--primary-color) !important;
+        }
+        
+        .page-header {
+            background: linear-gradient(135deg, #8BC34A 0%, #4CAF50 50%, #2E7D32 100%);
+            color: white;
+            padding: 5rem 0 3rem;
+            margin-top: 56px;
+        }
+        
+        .content-section {
+            padding: 4rem 0;
+        }
+        
+        .security-card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .security-card h3 {
+            color: var(--primary-dark);
+            margin-bottom: 1rem;
+        }
+        
+        .security-icon {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+        
+        footer {
+            background: var(--text-dark);
+            color: white;
+            padding: 3rem 0 1rem;
+        }
+        
+        footer a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+        }
+        
+        footer a:hover {
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-seedling"></i> SmartFarm
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html#features">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html#pricing">Pricing</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="help.html">Help</a>
+                    </li>
+                </ul>
+                <div class="d-flex gap-2">
+                    <a href="login.html" class="btn btn-outline-primary">Login</a>
+                    <a href="signup.html" class="btn btn-primary">Join Beta</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="container">
+            <h1><i class="fas fa-shield-alt"></i> Data & Security Statement</h1>
+            <p class="lead">Your farm data security is our top priority</p>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-10 mx-auto">
+                    <div class="alert alert-info">
+                        <h5><i class="fas fa-info-circle"></i> Our Commitment</h5>
+                        <p class="mb-0">SmartFarm is committed to protecting your farm data with industry-leading security practices. We understand that your agricultural data is sensitive and valuable, and we treat it with the utmost care.</p>
+                    </div>
+
+                    <!-- Data Storage -->
+                    <div class="security-card">
+                        <div class="security-icon">
+                            <i class="fas fa-database"></i>
+                        </div>
+                        <h3>How We Store Your Data</h3>
+                        <p>Your farm data is stored securely using modern cloud infrastructure with the following protections:</p>
+                        <ul>
+                            <li><strong>Encrypted Storage:</strong> All data is encrypted at rest using industry-standard encryption algorithms (AES-256)</li>
+                            <li><strong>Secure Databases:</strong> Data is stored in secure, managed databases with regular backups and redundancy</li>
+                            <li><strong>Geographic Redundancy:</strong> Data is replicated across multiple secure data centers to ensure availability and protection against data loss</li>
+                            <li><strong>Regular Backups:</strong> Automated daily backups ensure your data can be recovered in case of any issues</li>
+                        </ul>
+                    </div>
+
+                    <!-- Data Transmission -->
+                    <div class="security-card">
+                        <div class="security-icon">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <h3>Data Transmission Security</h3>
+                        <p>All data transmitted between your device and SmartFarm servers is protected:</p>
+                        <ul>
+                            <li><strong>HTTPS/TLS Encryption:</strong> All connections use Transport Layer Security (TLS) 1.2 or higher, ensuring data is encrypted in transit</li>
+                            <li><strong>Secure API Endpoints:</strong> All API communications are secured and authenticated</li>
+                            <li><strong>Certificate Validation:</strong> We use valid SSL/TLS certificates to prevent man-in-the-middle attacks</li>
+                            <li><strong>Secure Authentication:</strong> Login credentials are never transmitted in plain text</li>
+                        </ul>
+                    </div>
+
+                    <!-- Access Control -->
+                    <div class="security-card">
+                        <div class="security-icon">
+                            <i class="fas fa-user-shield"></i>
+                        </div>
+                        <h3>Who Has Access to Your Data</h3>
+                        <p>Access to your farm data is strictly controlled:</p>
+                        <ul>
+                            <li><strong>You Control Access:</strong> Only users you authorize can access your farm data</li>
+                            <li><strong>Role-Based Permissions:</strong> Different user roles have different levels of access, ensuring team members only see what they need</li>
+                            <li><strong>SmartFarm Staff:</strong> Our technical staff may access your data only for:
+                                <ul>
+                                    <li>Providing technical support (with your explicit permission)</li>
+                                    <li>Resolving technical issues</li>
+                                    <li>Complying with legal obligations</li>
+                                </ul>
+                            </li>
+                            <li><strong>No Third-Party Access:</strong> We do not sell, rent, or share your data with third parties except as required by law or with your explicit consent</li>
+                            <li><strong>Audit Logs:</strong> All access to your data is logged and monitored for security purposes</li>
+                        </ul>
+                    </div>
+
+                    <!-- Protection Measures -->
+                    <div class="security-card">
+                        <div class="security-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h3>Protection Measures</h3>
+                        <p>We employ multiple layers of security to protect your data:</p>
+                        <ul>
+                            <li><strong>Firewall Protection:</strong> Our servers are protected by advanced firewalls that block unauthorized access</li>
+                            <li><strong>Intrusion Detection:</strong> We monitor for suspicious activity and potential security threats</li>
+                            <li><strong>Regular Security Updates:</strong> All systems are kept up-to-date with the latest security patches</li>
+                            <li><strong>Secure Authentication:</strong> We support strong password requirements and optional two-factor authentication</li>
+                            <li><strong>Security Monitoring:</strong> 24/7 monitoring of our systems for security incidents</li>
+                            <li><strong>Incident Response:</strong> We have procedures in place to respond quickly to any security incidents</li>
+                        </ul>
+                    </div>
+
+                    <!-- Data Retention -->
+                    <div class="security-card">
+                        <div class="security-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <h3>Data Retention & Deletion</h3>
+                        <p>You have control over your data:</p>
+                        <ul>
+                            <li><strong>Data Retention:</strong> We retain your data for as long as your account is active and for a reasonable period after account closure for legal and business purposes</li>
+                            <li><strong>Account Deletion:</strong> You can request account deletion at any time, and we will delete your data in accordance with our data retention policy</li>
+                            <li><strong>Data Export:</strong> You can export your data at any time in standard formats</li>
+                            <li><strong>Backup Retention:</strong> Deleted data may remain in backups for up to 90 days before permanent deletion</li>
+                        </ul>
+                    </div>
+
+                    <!-- Compliance -->
+                    <div class="security-card">
+                        <div class="security-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <h3>Compliance & Standards</h3>
+                        <p>We follow industry best practices and standards:</p>
+                        <ul>
+                            <li><strong>Data Protection Regulations:</strong> We comply with applicable data protection laws and regulations</li>
+                            <li><strong>Industry Standards:</strong> Our security practices align with industry standards for cloud-based applications</li>
+                            <li><strong>Regular Audits:</strong> We conduct regular security assessments and audits</li>
+                            <li><strong>Privacy by Design:</strong> Security and privacy considerations are built into our platform from the ground up</li>
+                        </ul>
+                    </div>
+
+                    <!-- Your Responsibilities -->
+                    <div class="security-card">
+                        <div class="security-icon">
+                            <i class="fas fa-user-check"></i>
+                        </div>
+                        <h3>Your Role in Security</h3>
+                        <p>You also play an important role in keeping your data secure:</p>
+                        <ul>
+                            <li><strong>Strong Passwords:</strong> Use a strong, unique password for your SmartFarm account</li>
+                            <li><strong>Account Security:</strong> Don't share your login credentials with others</li>
+                            <li><strong>Secure Devices:</strong> Ensure devices you use to access SmartFarm are secure and up-to-date</li>
+                            <li><strong>Logout:</strong> Log out when using shared or public devices</li>
+                            <li><strong>Report Issues:</strong> Report any suspicious activity or security concerns immediately</li>
+                        </ul>
+                    </div>
+
+                    <!-- Contact -->
+                    <div class="alert alert-success">
+                        <h5><i class="fas fa-envelope"></i> Questions About Security?</h5>
+                        <p class="mb-0">If you have questions about how we protect your data, please contact us at <a href="mailto:security@smartfarm-app.com">security@smartfarm-app.com</a> or through our <a href="contact.html">contact form</a>.</p>
+                    </div>
+
+                    <div class="text-muted mt-4">
+                        <p><small><strong>Last Updated:</strong> <span id="lastUpdated"></span></small></p>
+                        <p><small>This statement may be updated periodically. We will notify users of significant changes.</small></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <h5><i class="fas fa-seedling"></i> SmartFarm</h5>
+                    <p>Digital assistant for modern farmers.</p>
+                </div>
+                <div class="col-md-2 mb-3">
+                    <h5>Company</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="about.html">About</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                        <li><a href="help.html">Help</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <h5>Legal</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="privacy-policy.html">Privacy Policy</a></li>
+                        <li><a href="terms-of-service.html">Terms of Service</a></li>
+                        <li><a href="data-security.html">Data & Security</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="login.html">Login</a></li>
+                        <li><a href="signup.html">Sign Up</a></li>
+                    </ul>
+                </div>
+            </div>
+            <hr style="border-color: rgba(255,255,255,0.2);">
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-0">&copy; <span id="currentYear"></span> SmartFarm Technologies. All rights reserved.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="mb-0">Data stored securely. Encrypted in transit.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+        document.getElementById('lastUpdated').textContent = new Date().toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
+    </script>
+</body>
+</html>
+
