@@ -4,11 +4,14 @@
 Netlify is trying to build from the repository root (`/opt/build/repo`) instead of `web-project/` directory, causing `package.json` not found error.
 
 ## Root Cause
-The Netlify dashboard UI settings are overriding the `netlify.toml` file configuration.
+1. **Netlify dashboard UI settings** are overriding the `netlify.toml` file configuration
+2. **Conflicting netlify.toml files**: There are TWO `netlify.toml` files (root and `web-project/`), which may cause confusion
 
 ## Solution
 
-### Step 1: Update Netlify Dashboard Settings
+### ⚠️ CRITICAL: Update Netlify Dashboard Settings FIRST
+
+**The dashboard UI settings MUST match the root `netlify.toml` file.**
 
 1. **Go to Netlify Dashboard**
    - Visit: https://app.netlify.com
@@ -17,44 +20,69 @@ The Netlify dashboard UI settings are overriding the `netlify.toml` file configu
 2. **Navigate to Build Settings**
    - Go to: **Site Settings** → **Build & Deploy** → **Build settings**
 
-3. **Update Base Directory**
+3. **Update Base Directory** ⚠️ **MOST IMPORTANT**
    - Find **"Base directory"** field
-   - Set it to: `web-project`
-   - **IMPORTANT**: This must be exactly `web-project` (no leading/trailing slashes)
+   - **Set it to: `web-project`**
+   - **IMPORTANT**: 
+     - Must be exactly `web-project` (no leading/trailing slashes)
+     - No quotes, no spaces
+     - This tells Netlify: "Change into web-project/ before running any commands"
 
 4. **Update Publish Directory**
    - Find **"Publish directory"** field
-   - Set it to: `web-project/dist`
-   - **OR** leave it as `dist` if Netlify resolves it relative to base directory
+   - **Set it to: `dist`** (relative to base directory)
+   - Since base = `web-project`, this resolves to `web-project/dist`
 
-5. **Verify Build Command**
+5. **Update Build Command**
    - Find **"Build command"** field
-   - Should be: `npm install && npm run build`
-   - If empty, Netlify will use the command from `netlify.toml`
+   - **Set it to: `npm install && npm run build`**
+   - This runs AFTER Netlify changes into `web-project/` directory
 
 6. **Save Settings**
    - Click **"Save"** button at the bottom
+   - **Wait for confirmation** that settings are saved
 
-### Step 2: Clear Build Cache (Optional but Recommended)
+### Step 2: Verify Root netlify.toml File
+
+The root `netlify.toml` (at repository root) should have:
+```toml
+[build]
+  base = "web-project"
+  command = "npm install && npm run build"
+  publish = "dist"
+```
+
+**Note**: The `web-project/netlify.toml` file is redundant and can be ignored. Netlify reads the root `netlify.toml` first.
+
+### Step 3: Clear Build Cache and Trigger New Deploy
 
 1. Go to **Deploys** tab
 2. Click **"Clear cache and retry deploy"** (or trigger a new deploy)
+3. **Watch the build logs** - you should see it change into `web-project/` directory
 
-### Step 3: Verify Configuration
+### Step 4: Verify Configuration in Build Logs
 
-After updating settings, the resolved config should show:
-- `base: /opt/build/repo/web-project` (not `/opt/build/repo`)
-- `publish: /opt/build/repo/web-project/dist` (not `/opt/build/repo/dist`)
+After updating settings, check the build logs. You should see:
+```
+Current directory: /opt/build/repo/web-project
+Installing dependencies...
+Found package.json in /opt/build/repo/web-project/package.json
+```
 
-## Alternative: Use Netlify UI to Override
+**NOT**:
+```
+Current directory: /opt/build/repo
+Error: ENOENT: no such file or directory, open '/opt/build/repo/package.json'
+```
 
-If the `netlify.toml` file is still not being respected:
+## Why Dashboard Settings Matter
 
-1. **Remove base directory from netlify.toml** (let UI handle it)
-2. **Set everything in Netlify Dashboard UI**:
-   - Base directory: `web-project`
-   - Build command: `npm install && npm run build`
-   - Publish directory: `web-project/dist`
+Netlify uses this priority order:
+1. **Dashboard UI settings** (highest priority - can override netlify.toml)
+2. Root `netlify.toml` file
+3. `web-project/netlify.toml` (if base directory is set)
+
+**Therefore**: Dashboard settings MUST be set correctly, even if `netlify.toml` is correct.
 
 ## Expected Result
 
