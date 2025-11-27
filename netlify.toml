@@ -3,9 +3,10 @@
 
 [build]
   # Base directory: This tells Netlify to change into web-project/ before building
+  # IMPORTANT: This must match the UI setting in Netlify dashboard
   base = "web-project"
   
-  # Build command (runs from web-project/ directory)
+  # Build command (runs from web-project/ directory after base directory change)
   command = "npm install && npm run build"
   
   # Publish directory (relative to base directory, so web-project/dist)
