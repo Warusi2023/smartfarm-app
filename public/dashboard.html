@@ -7938,7 +7938,23 @@
         }
 
         function saveLivestockData() {
-            localStorage.setItem('livestockData', JSON.stringify(livestock));
+            try {
+                if (!Array.isArray(livestock)) {
+                    console.warn('⚠️ livestock is not an array, cannot save:', typeof livestock);
+                    return;
+                }
+                localStorage.setItem('livestockData', JSON.stringify(livestock));
+                console.log('💾 Saved livestock data to localStorage:', livestock.length, 'animals');
+            } catch (error) {
+                console.error('❌ Error saving livestock data to localStorage:', error);
+                // Try to save a backup with a different key
+                try {
+                    localStorage.setItem('livestockData_backup', JSON.stringify(livestock));
+                    console.log('✅ Saved backup to livestockData_backup');
+                } catch (backupError) {
+                    console.error('❌ Failed to save backup:', backupError);
+                }
+            }
         }
 
         function renderLivestockGrid() {
