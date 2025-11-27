@@ -61,15 +61,16 @@
 [functions]
   directory = "netlify/functions"
 
-# Plugin configuration
-[[plugins]]
-  package = "@netlify/plugin-lighthouse"
-  
-  [plugins.inputs.thresholds]
-    performance = 0.8
-    accessibility = 0.9
-    "best-practices" = 0.8
-    seo = 0.8
+# Plugin configuration - commented out to prevent plugin errors
+# Uncomment and install @netlify/plugin-lighthouse if you want Lighthouse audits
+# [[plugins]]
+#   package = "@netlify/plugin-lighthouse"
+#   
+#   [plugins.inputs.thresholds]
+#     performance = 0.8
+#     accessibility = 0.9
+#     "best-practices" = 0.8
+#     seo = 0.8
 
 # Branch deploy configuration - no build needed for static files
 [context.production]
