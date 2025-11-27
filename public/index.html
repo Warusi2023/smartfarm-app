@@ -590,7 +590,7 @@
             <p class="text-center text-muted mb-5">Real dashboard screenshots showing how SmartFarm Dashboard works</p>
             <div class="row g-4 mb-5">
                 <div class="col-lg-4">
-                    <div class="preview-card shadow-lg border-0">
+                    <div class="preview-card shadow-lg border-0" style="cursor: pointer;" onclick="showDemo('dashboard')">
                         <div class="preview-placeholder" style="height: 250px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; border-radius: 8px;">
                             <i class="fas fa-tachometer-alt fa-4x mb-3"></i>
                             <h5 class="mb-2">Main Dashboard</h5>
@@ -598,11 +598,14 @@
                         </div>
                         <div class="p-3">
                             <p class="text-muted mb-0 small">See livestock health, crop status, inventory, and tasks at a glance.</p>
+                            <button class="btn btn-sm btn-primary mt-2 w-100">
+                                <i class="fas fa-play-circle me-1"></i> View Demo
+                            </button>
                         </div>
                     </div>
                 </div>
                 <div class="col-lg-4">
-                    <div class="preview-card shadow-lg border-0">
+                    <div class="preview-card shadow-lg border-0" style="cursor: pointer;" onclick="showDemo('reports')">
                         <div class="preview-placeholder" style="height: 250px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; border-radius: 8px;">
                             <i class="fas fa-chart-bar fa-4x mb-3"></i>
                             <h5 class="mb-2">Reports & Analytics</h5>
@@ -610,11 +613,14 @@
                         </div>
                         <div class="p-3">
                             <p class="text-muted mb-0 small">Generate reports on revenue, expenses, and production trends.</p>
+                            <button class="btn btn-sm btn-primary mt-2 w-100">
+                                <i class="fas fa-play-circle me-1"></i> View Demo
+                            </button>
                         </div>
                     </div>
                 </div>
                 <div class="col-lg-4">
-                    <div class="preview-card shadow-lg border-0">
+                    <div class="preview-card shadow-lg border-0" style="cursor: pointer;" onclick="showDemo('mobile')">
                         <div class="preview-placeholder" style="height: 250px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; border-radius: 8px;">
                             <i class="fas fa-mobile-alt fa-4x mb-3"></i>
                             <h5 class="mb-2">Mobile Access</h5>
@@ -622,6 +628,9 @@
                         </div>
                         <div class="p-3">
                             <p class="text-muted mb-0 small">Use SmartFarm Dashboard on your phone, tablet, or computer.</p>
+                            <button class="btn btn-sm btn-primary mt-2 w-100">
+                                <i class="fas fa-play-circle me-1"></i> View Demo
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -821,6 +830,27 @@
         </div>
     </footer>
 
+    <!-- Demo Modal -->
+    <div class="modal fade" id="demoModal" tabindex="-1" aria-labelledby="demoModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="demoModalLabel">Demo Preview</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="demoModalBody">
+                    <!-- Demo content will be inserted here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <a href="signup.html" class="btn btn-primary" id="demoSignUpBtn">
+                        <i class="fas fa-rocket me-1"></i> Try It Now
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
@@ -838,6 +868,183 @@
                         block: 'start'
                     });
                 }
+            });
+        });
+
+        // Demo functionality
+        function showDemo(type) {
+            const modal = new bootstrap.Modal(document.getElementById('demoModal'));
+            const modalBody = document.getElementById('demoModalBody');
+            const modalTitle = document.getElementById('demoModalLabel');
+            const signUpBtn = document.getElementById('demoSignUpBtn');
+
+            let content = '';
+            let title = '';
+
+            switch(type) {
+                case 'dashboard':
+                    title = 'Main Dashboard Demo';
+                    content = `
+                        <div class="text-center mb-4">
+                            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 2rem; border-radius: 10px; color: white; margin-bottom: 1.5rem;">
+                                <i class="fas fa-tachometer-alt fa-3x mb-3"></i>
+                                <h4>Main Dashboard Overview</h4>
+                            </div>
+                            <div class="row g-3 text-start">
+                                <div class="col-md-6">
+                                    <div class="p-3 border rounded">
+                                        <h6><i class="fas fa-cow text-primary me-2"></i>Livestock Status</h6>
+                                        <p class="small mb-0">Track health, breeding cycles, and inventory of all animals</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="p-3 border rounded">
+                                        <h6><i class="fas fa-seedling text-success me-2"></i>Crop Status</h6>
+                                        <p class="small mb-0">Monitor field conditions, growth stages, and harvest schedules</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="p-3 border rounded">
+                                        <h6><i class="fas fa-boxes text-warning me-2"></i>Inventory Alerts</h6>
+                                        <p class="small mb-0">Get notified when supplies are running low</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="p-3 border rounded">
+                                        <h6><i class="fas fa-tasks text-info me-2"></i>Task Management</h6>
+                                        <p class="small mb-0">View and manage daily farm operations and activities</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <a href="dashboard.html" class="btn btn-outline-primary me-2" target="_blank">
+                                    <i class="fas fa-external-link-alt me-1"></i> Open Full Dashboard
+                                </a>
+                                <p class="text-muted small mt-2 mb-0">Note: Login required for full access</p>
+                            </div>
+                        </div>
+                    `;
+                    break;
+
+                case 'reports':
+                    title = 'Reports & Analytics Demo';
+                    content = `
+                        <div class="text-center mb-4">
+                            <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 2rem; border-radius: 10px; color: white; margin-bottom: 1.5rem;">
+                                <i class="fas fa-chart-bar fa-3x mb-3"></i>
+                                <h4>Analytics & Reporting</h4>
+                            </div>
+                            <div class="row g-3 text-start">
+                                <div class="col-md-4">
+                                    <div class="p-3 border rounded text-center">
+                                        <h5 class="text-success mb-2">$12,450</h5>
+                                        <p class="small mb-0">Monthly Revenue</p>
+                                        <i class="fas fa-arrow-up text-success mt-2"></i>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="p-3 border rounded text-center">
+                                        <h5 class="text-warning mb-2">$8,200</h5>
+                                        <p class="small mb-0">Monthly Expenses</p>
+                                        <i class="fas fa-arrow-down text-warning mt-2"></i>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="p-3 border rounded text-center">
+                                        <h5 class="text-primary mb-2">$4,250</h5>
+                                        <p class="small mb-0">Net Profit</p>
+                                        <i class="fas fa-chart-line text-primary mt-2"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <div class="list-group text-start">
+                                    <div class="list-group-item">
+                                        <h6><i class="fas fa-file-alt text-primary me-2"></i>Production Reports</h6>
+                                        <p class="small mb-0">Track crop yields, livestock production, and byproduct generation</p>
+                                    </div>
+                                    <div class="list-group-item">
+                                        <h6><i class="fas fa-chart-pie text-success me-2"></i>Financial Analytics</h6>
+                                        <p class="small mb-0">Analyze revenue, expenses, and profitability trends</p>
+                                    </div>
+                                    <div class="list-group-item">
+                                        <h6><i class="fas fa-calendar-alt text-info me-2"></i>Seasonal Trends</h6>
+                                        <p class="small mb-0">Compare performance across seasons and years</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <p class="text-muted small mb-0">Generate comprehensive reports with one click. Export to PDF or Excel for sharing.</p>
+                            </div>
+                        </div>
+                    `;
+                    break;
+
+                case 'mobile':
+                    title = 'Mobile Access Demo';
+                    content = `
+                        <div class="text-center mb-4">
+                            <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); padding: 2rem; border-radius: 10px; color: white; margin-bottom: 1.5rem;">
+                                <i class="fas fa-mobile-alt fa-3x mb-3"></i>
+                                <h4>Access From Anywhere</h4>
+                            </div>
+                            <div class="row g-3 text-start">
+                                <div class="col-md-6">
+                                    <div class="p-3 border rounded">
+                                        <h6><i class="fas fa-mobile-alt text-primary me-2"></i>Responsive Design</h6>
+                                        <p class="small mb-0">Fully optimized for smartphones, tablets, and desktops</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="p-3 border rounded">
+                                        <h6><i class="fas fa-wifi text-success me-2"></i>Works Offline</h6>
+                                        <p class="small mb-0">Record data in the field, sync when connected</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="p-3 border rounded">
+                                        <h6><i class="fas fa-map-marker-alt text-danger me-2"></i>GPS Integration</h6>
+                                        <p class="small mb-0">Track field locations and livestock movements</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="p-3 border rounded">
+                                        <h6><i class="fas fa-bell text-warning me-2"></i>Push Notifications</h6>
+                                        <p class="small mb-0">Get alerts for important events and tasks</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <div class="alert alert-info">
+                                    <h6><i class="fas fa-info-circle me-2"></i>Native Mobile Apps Coming Soon</h6>
+                                    <p class="small mb-0">Android and iOS apps are in development. The web version works great on mobile browsers today!</p>
+                                </div>
+                                <div class="d-flex justify-content-center gap-2 mt-3">
+                                    <span class="badge bg-primary" style="font-size: 1rem; padding: 0.5rem 1rem;">
+                                        <i class="fab fa-android me-1"></i> Android
+                                    </span>
+                                    <span class="badge bg-primary" style="font-size: 1rem; padding: 0.5rem 1rem;">
+                                        <i class="fab fa-apple me-1"></i> iOS
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <p class="text-muted small mb-0">Try it now: Open SmartFarm Dashboard on your mobile device!</p>
+                            </div>
+                        </div>
+                    `;
+                    break;
+            }
+
+            modalTitle.textContent = title;
+            modalBody.innerHTML = content;
+            modal.show();
+        }
+
+        // Prevent card click from triggering when clicking the button
+        document.querySelectorAll('.preview-card button').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
             });
         });
     </script>
