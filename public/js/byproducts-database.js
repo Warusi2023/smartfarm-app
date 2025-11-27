@@ -1637,7 +1637,30 @@ window.ByproductsDatabase = {
                     processingMethod: "Juicing, bottling",
                     equipment: ["Juicer", "Bottling equipment"],
                     shelfLife: "3 days (fresh)",
-                    targetMarket: "Juice bars, health food stores"
+                    targetMarket: "Juice bars, health food stores",
+                    processingSteps: [
+                        "Select fresh, firm cucumbers",
+                        "Wash cucumbers thoroughly to remove dirt",
+                        "Peel cucumbers if desired (optional)",
+                        "Cut cucumbers into pieces suitable for juicer",
+                        "Extract juice using juicer or blender",
+                        "Strain juice through fine mesh to remove pulp",
+                        "Add lemon juice or preservative if extending shelf life",
+                        "Chill juice immediately",
+                        "Bottle in clean, sterilized containers",
+                        "Seal containers tightly",
+                        "Label with production date and expiration date",
+                        "Refrigerate at 4°C or below",
+                        "Consume within 3 days for best quality"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 70,
+                        unit: "liters",
+                        outputPer100kg: 70,
+                        estimatedRevenuePer100kg: 210.00,
+                        processingTime: "1-2 hours",
+                        laborRequired: "1-2 workers"
+                    }
                 }
             ]
         },
@@ -1678,7 +1701,30 @@ window.ByproductsDatabase = {
                     processingMethod: "Cooking, mashing",
                     equipment: ["Cooking pot", "Food processor"],
                     shelfLife: "1 week (refrigerated)",
-                    targetMarket: "Food manufacturers, restaurants"
+                    targetMarket: "Food manufacturers, restaurants",
+                    processingSteps: [
+                        "Sort and clean dry beans",
+                        "Soak beans overnight in water (12-24 hours)",
+                        "Drain and rinse soaked beans",
+                        "Cook beans in water until very soft (1-2 hours)",
+                        "Drain excess water, reserving some cooking liquid",
+                        "Mash beans using food processor or masher until smooth",
+                        "Add reserved cooking liquid if needed for desired consistency",
+                        "Season with salt and spices if desired",
+                        "Cool paste completely",
+                        "Package in airtight containers",
+                        "Label with production date and storage instructions",
+                        "Refrigerate immediately at 4°C or below",
+                        "Use within 1 week or freeze for longer storage"
+                    ],
+                    projectedOutput: {
+                        yieldPercentage: 150,
+                        unit: "kg",
+                        outputPer100kg: 150,
+                        estimatedRevenuePer100kg: 525.00,
+                        processingTime: "12-24 hours (including soaking)",
+                        laborRequired: "1-2 workers"
+                    }
                 }
             ]
         },
@@ -2312,130 +2358,6 @@ window.ByproductsDatabase = {
                     equipment: ["Harvesting tools", "Chopper"],
                     shelfLife: "2 weeks",
                     targetMarket: "Local farmers, feed suppliers"
-                }
-            ]
-        },
-        
-        taro: {
-            primary: "Fresh Taro",
-            byproducts: [
-                {
-                    name: "Taro Flour",
-                    category: "Food Processing",
-                    description: "Gluten-free flour alternative",
-                    marketValue: 3.50,
-                    processingMethod: "Drying, grinding",
-                    equipment: ["Dehydrator", "Grinding mill"],
-                    shelfLife: "12 months",
-                    targetMarket: "Health food stores, gluten-free bakeries",
-                    processingSteps: [
-                        "Wash taro corms thoroughly",
-                        "Peel carefully to remove all skin",
-                        "Cut into small uniform pieces",
-                        "Dry in dehydrator at 60°C for 3-5 days",
-                        "Grind to fine powder",
-                        "Sift and package"
-                    ],
-                    projectedOutput: {
-                        yieldPercentage: 30,
-                        unit: "kg",
-                        outputPer100kg: 30,
-                        estimatedRevenuePer100kg: 105.00,
-                        processingTime: "5-7 days",
-                        laborRequired: "2 workers"
-                    }
-                },
-                {
-                    name: "Taro Chips",
-                    category: "Snack Food",
-                    description: "Purple chips with unique flavor",
-                    marketValue: 4.50,
-                    processingMethod: "Slicing, frying",
-                    equipment: ["Slicer", "Deep fryer"],
-                    shelfLife: "6 months",
-                    targetMarket: "Specialty food stores, online retailers"
-                },
-                {
-                    name: "Taro Leaves",
-                    category: "Vegetable",
-                    description: "Edible leaves for cooking",
-                    marketValue: 2.00,
-                    processingMethod: "Harvesting, cleaning",
-                    equipment: ["Harvesting tools", "Washing station"],
-                    shelfLife: "1 week",
-                    targetMarket: "Local markets, restaurants"
-                }
-            ]
-        },
-        
-        papaya: {
-            primary: "Fresh Papaya",
-            byproducts: [
-                {
-                    name: "Papaya Jam",
-                    category: "Preserves",
-                    description: "Sweet jam with tropical flavor",
-                    marketValue: 4.00,
-                    processingMethod: "Cooking, canning",
-                    equipment: ["Cooking pot", "Canning equipment"],
-                    shelfLife: "12 months",
-                    targetMarket: "Grocery stores, specialty food shops"
-                },
-                {
-                    name: "Dried Papaya",
-                    category: "Dried Fruit",
-                    description: "Chewy dried papaya strips",
-                    marketValue: 5.50,
-                    processingMethod: "Slicing, drying",
-                    equipment: ["Slicer", "Dehydrator"],
-                    shelfLife: "12 months",
-                    targetMarket: "Health food stores, snack distributors"
-                },
-                {
-                    name: "Papaya Seeds",
-                    category: "Spice",
-                    description: "Peppery seeds for seasoning",
-                    marketValue: 8.00,
-                    processingMethod: "Extraction, drying",
-                    equipment: ["Seed extractor", "Drying racks"],
-                    shelfLife: "24 months",
-                    targetMarket: "Spice companies, restaurants"
-                }
-            ]
-        },
-        
-        kava: {
-            primary: "Fresh Kava Root",
-            byproducts: [
-                {
-                    name: "Kava Powder",
-                    category: "Beverage",
-                    description: "Traditional ceremonial drink powder",
-                    marketValue: 12.00,
-                    processingMethod: "Drying, grinding",
-                    equipment: ["Drying racks", "Grinding mill"],
-                    shelfLife: "24 months",
-                    targetMarket: "Traditional medicine stores, cultural centers"
-                },
-                {
-                    name: "Kava Extract",
-                    category: "Supplements",
-                    description: "Concentrated liquid extract",
-                    marketValue: 25.00,
-                    processingMethod: "Extraction, concentration",
-                    equipment: ["Extraction equipment", "Concentrator"],
-                    shelfLife: "36 months",
-                    targetMarket: "Health supplement stores, online retailers"
-                },
-                {
-                    name: "Kava Tea Bags",
-                    category: "Beverage",
-                    description: "Convenient tea bags for preparation",
-                    marketValue: 8.00,
-                    processingMethod: "Grinding, bagging",
-                    equipment: ["Grinding mill", "Tea bag machine"],
-                    shelfLife: "18 months",
-                    targetMarket: "Tea shops, health food stores"
                 }
             ]
         },
