@@ -3,8 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmartFarm - Digital Assistant for Modern Farmers</title>
-    <meta name="description" content="SmartFarm helps farmers and agribusinesses monitor crops, livestock, and farm operations in one simple dashboard.">
+    <title>SmartFarm Dashboard - Farm Management for Mixed Livestock & Crop Operations | Fiji</title>
+    <meta name="description" content="SmartFarm Dashboard: Comprehensive farm management platform for livestock and crop operations in Fiji. Track fields, livestock, inventory, finance, and tasks. Maximize production and eliminate middlemen. Built by Small Ville Company to eradicate poverty through farmer empowerment.">
+    <meta name="keywords" content="farm management, livestock tracking, crop records, farm dashboard, Fiji agriculture, farm management software, agricultural technology, farm operations, byproducts, export markets">
+    <meta name="author" content="Small Ville Company, Fiji">
+    <meta property="og:title" content="SmartFarm Dashboard - Farm Management Platform">
+    <meta property="og:description" content="Farm management dashboard for mixed livestock and crop operations. Maximize production, eliminate middlemen, increase export markets.">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
     
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="images/favicon/favicon.ico">
@@ -315,8 +321,48 @@
                 font-size: 2rem;
             }
             
+            .hero .lead {
+                font-size: 1.25rem;
+            }
+            
             .hero p {
                 font-size: 1rem;
+            }
+            
+            .hero-cta {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .hero-cta .btn {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+            
+            .feature-card {
+                margin-bottom: 1.5rem;
+            }
+            
+            .preview-placeholder {
+                height: 250px !important;
+            }
+            
+            .mission-section .row {
+                text-align: center;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .hero h1 {
+                font-size: 1.75rem;
+            }
+            
+            .hero .lead {
+                font-size: 1.1rem;
+            }
+            
+            .navbar-brand {
+                font-size: 1.25rem;
             }
         }
 
@@ -360,25 +406,21 @@
     <!-- Hero Section -->
     <section class="hero" id="home">
         <div class="container">
-            <h1>🌱 SmartFarm</h1>
-            <p class="lead">Digital Assistant for Modern Farmers</p>
-            <p>SmartFarm helps farmers and agribusinesses monitor crops, livestock, and farm operations in one simple dashboard. Streamline your farm management, track productivity, and make data-driven decisions.</p>
+            <h1 class="display-4 fw-bold mb-4">SmartFarm Dashboard</h1>
+            <p class="lead fs-3 mb-4">Farm management dashboard for mixed livestock and crop operations</p>
+            <p class="fs-5 mb-5">Maximize your production, transform products into valuable byproducts, and eliminate middlemen controlling prices. Increase export markets and build self-reliance for farmers.</p>
             
-            <div class="hero-cta">
-                <a href="signup.html" class="btn btn-light btn-lg" style="font-size: 1.1rem; padding: 0.75rem 2rem; font-weight: 600;">
-                    <i class="fas fa-rocket"></i> Join Beta
+            <div class="hero-cta d-flex flex-column flex-md-row gap-3 justify-content-center align-items-center">
+                <a href="signup.html" class="btn btn-light btn-lg px-5 py-3" style="font-size: 1.2rem; font-weight: 600; min-width: 200px;">
+                    <i class="fas fa-rocket me-2"></i>Request Beta Access
                 </a>
-                <a href="signup.html" class="btn btn-outline-light btn-lg">
-                    <i class="fas fa-user-plus"></i> Request Access
-                </a>
-                <a href="login.html" class="btn btn-outline-light btn-lg">
-                    <i class="fas fa-sign-in-alt"></i> Login
+                <a href="#preview" class="btn btn-outline-light btn-lg px-5 py-3" style="font-size: 1.1rem; min-width: 180px;">
+                    <i class="fas fa-play-circle me-2"></i>View Demo
                 </a>
             </div>
 
-            <div class="pilot-notice">
-                <strong>📢 SmartFarm is currently in pilot.</strong> New customers can request access using the form below.<br>
-                <small>Already a SmartFarm client? Use the Login button in the top right to access your dashboard.</small>
+            <div class="pilot-notice mt-4">
+                <small><i class="fas fa-info-circle me-2"></i>SmartFarm Dashboard is currently in beta. Request access to get started.</small>
             </div>
         </div>
     </section>
@@ -386,60 +428,112 @@
     <!-- Key Features Section -->
     <section class="features" id="features">
         <div class="container">
-            <h2 class="text-center mb-5">Key Features</h2>
+            <h2 class="text-center mb-2">Everything You Need to Manage Your Farm</h2>
+            <p class="text-center text-muted mb-5">SmartFarm Dashboard provides all the tools to maximize production and profitability</p>
             <div class="row g-4">
-                <div class="col-md-4">
+                <div class="col-md-4 col-lg-4">
                     <div class="feature-card">
                         <div class="feature-icon">
-                            <i class="fas fa-seedling"></i>
+                            <i class="fas fa-map-marked-alt"></i>
                         </div>
-                        <h4>Field & Crop Tracking</h4>
-                        <p>Monitor crop growth, track planting schedules, and manage field activities all in one place.</p>
+                        <h4>Fields</h4>
+                        <p>Track crop growth and field conditions to optimize yields and reduce losses.</p>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-tasks"></i>
-                        </div>
-                        <h4>Task & Work Order Management</h4>
-                        <p>Organize daily tasks, assign work orders, and track completion across your farm operations.</p>
-                    </div>
-                </div>
-                <div class="col-md-4">
+                <div class="col-md-4 col-lg-4">
                     <div class="feature-card">
                         <div class="feature-icon">
                             <i class="fas fa-cow"></i>
                         </div>
-                        <h4>Livestock & Inventory Monitoring</h4>
-                        <p>Keep track of livestock health, inventory levels, and manage your farm resources efficiently.</p>
+                        <h4>Livestock</h4>
+                        <p>Monitor health, breeding, and inventory to maximize livestock productivity.</p>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-4 col-lg-4">
                     <div class="feature-card">
                         <div class="feature-icon">
-                            <i class="fas fa-chart-line"></i>
+                            <i class="fas fa-boxes"></i>
                         </div>
-                        <h4>Reports & Insights</h4>
-                        <p>Generate comprehensive reports and gain actionable insights into your farm's performance.</p>
+                        <h4>Inventory</h4>
+                        <p>Manage supplies and resources efficiently to reduce waste and control costs.</p>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-4 col-lg-4">
                     <div class="feature-card">
                         <div class="feature-icon">
-                            <i class="fas fa-robot"></i>
+                            <i class="fas fa-dollar-sign"></i>
                         </div>
-                        <h4>AI Advisory</h4>
-                        <p>Get intelligent recommendations and predictions to optimize your farming decisions.</p>
+                        <h4>Finance</h4>
+                        <p>Track expenses and revenue to understand profitability and make informed decisions.</p>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-4 col-lg-4">
                     <div class="feature-card">
                         <div class="feature-icon">
-                            <i class="fas fa-store"></i>
+                            <i class="fas fa-tasks"></i>
                         </div>
-                        <h4>Farm to Table</h4>
-                        <p>Track product transformations and manage your supply chain from farm to market.</p>
+                        <h4>Tasks</h4>
+                        <p>Organize daily operations and ensure nothing falls through the cracks.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 col-lg-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-recycle"></i>
+                        </div>
+                        <h4>Byproducts</h4>
+                        <p>Transform products into valuable byproducts to maximize income and reduce waste.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Mission Section -->
+    <section class="mission-section" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 5rem 0;">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 mb-4 mb-lg-0">
+                    <h2 class="mb-4">Our Mission: Empowering Farmers, Eradicating Poverty</h2>
+                    <p class="lead mb-4">SmartFarm Dashboard was built to eradicate poverty by empowering farmers to maximize production and transform their products into valuable byproducts.</p>
+                    <p class="mb-4">We help farmers eliminate middlemen who control prices, increase export markets, and build self-reliance. By providing comprehensive farm management tools, we enable farmers to access production data, optimize operations, and create sustainable income streams.</p>
+                    <div class="d-flex align-items-center">
+                        <div class="me-4">
+                            <h5 class="mb-0">Small Ville Company</h5>
+                            <p class="text-muted mb-0"><i class="fas fa-map-marker-alt me-1"></i>Fiji</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="text-center p-4 bg-white rounded shadow-sm">
+                                <i class="fas fa-users fa-3x text-primary mb-3"></i>
+                                <h4 class="mb-0">Farmer Empowerment</h4>
+                                <p class="text-muted small mb-0">Direct market access</p>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center p-4 bg-white rounded shadow-sm">
+                                <i class="fas fa-globe fa-3x text-success mb-3"></i>
+                                <h4 class="mb-0">Export Markets</h4>
+                                <p class="text-muted small mb-0">Increase opportunities</p>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center p-4 bg-white rounded shadow-sm">
+                                <i class="fas fa-handshake fa-3x text-warning mb-3"></i>
+                                <h4 class="mb-0">Eliminate Middlemen</h4>
+                                <p class="text-muted small mb-0">Fair pricing control</p>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center p-4 bg-white rounded shadow-sm">
+                                <i class="fas fa-chart-line fa-3x text-info mb-3"></i>
+                                <h4 class="mb-0">Self-Reliance</h4>
+                                <p class="text-muted small mb-0">Build independence</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -476,45 +570,40 @@
     <!-- Screenshots / Preview Section -->
     <section class="preview" id="preview">
         <div class="container">
-            <h2 class="text-center mb-5">See SmartFarm in Action</h2>
-            <p class="text-center text-muted mb-5">Visualize how SmartFarm helps you manage your farm operations</p>
-            <div class="row g-4">
-                <div class="col-md-4">
-                    <div class="preview-card">
-                        <div class="preview-placeholder">
-                            <i class="fas fa-cow fa-3x mb-3"></i><br>
-                            <strong>Track Livestock Easily</strong><br>
-                            <small>Monitor health, breeding, and inventory</small>
+            <h2 class="text-center mb-2">See SmartFarm Dashboard in Action</h2>
+            <p class="text-center text-muted mb-5">Get a visual preview of how SmartFarm Dashboard helps you manage your farm</p>
+            <div class="row g-4 mb-4">
+                <div class="col-lg-6">
+                    <div class="preview-card shadow-lg border-0">
+                        <div class="preview-placeholder" style="height: 300px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; border-radius: 8px;">
+                            <i class="fas fa-tachometer-alt fa-4x mb-3"></i>
+                            <h4 class="mb-2">Main Dashboard</h4>
+                            <p class="mb-0 text-center px-4">Comprehensive overview of all farm operations, livestock, crops, and tasks in one unified view</p>
                         </div>
-                        <h5 class="mt-3">Livestock Management</h5>
-                        <p class="text-muted">Keep track of livestock health, breeding cycles, and inventory levels all in one place.</p>
+                        <div class="p-3">
+                            <h5 class="mb-2">Unified Dashboard</h5>
+                            <p class="text-muted mb-0 small">See everything at a glance: livestock health, crop status, inventory levels, and pending tasks.</p>
+                        </div>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="preview-card">
-                        <div class="preview-placeholder">
-                            <i class="fas fa-seedling fa-3x mb-3"></i><br>
-                            <strong>Monitor Field Health</strong><br>
-                            <small>Track crops from planting to harvest</small>
+                <div class="col-lg-6">
+                    <div class="preview-card shadow-lg border-0">
+                        <div class="preview-placeholder" style="height: 300px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; border-radius: 8px;">
+                            <i class="fas fa-chart-bar fa-4x mb-3"></i>
+                            <h4 class="mb-2">Analytics & Reports</h4>
+                            <p class="mb-0 text-center px-4">Track production, revenue, expenses, and byproduct transformations with detailed insights</p>
                         </div>
-                        <h5 class="mt-3">Crop Tracking</h5>
-                        <p class="text-muted">Monitor crop growth, track planting schedules, and manage field activities efficiently.</p>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="preview-card">
-                        <div class="preview-placeholder">
-                            <i class="fas fa-boxes fa-3x mb-3"></i><br>
-                            <strong>Manage Farm Inventory</strong><br>
-                            <small>Track supplies and resources</small>
+                        <div class="p-3">
+                            <h5 class="mb-2">Data-Driven Decisions</h5>
+                            <p class="text-muted mb-0 small">Make informed decisions with comprehensive reports on profitability, production trends, and market opportunities.</p>
                         </div>
-                        <h5 class="mt-3">Inventory Control</h5>
-                        <p class="text-muted">Manage farm supplies, equipment, and resources with real-time tracking and alerts.</p>
                     </div>
                 </div>
             </div>
-            <div class="text-center mt-4">
-                <p class="text-muted"><em>Screenshots coming soon - these previews show key features you'll have access to</em></p>
+            <div class="text-center">
+                <a href="signup.html" class="btn btn-primary btn-lg">
+                    <i class="fas fa-rocket me-2"></i>Request Access to See Full Dashboard
+                </a>
             </div>
         </div>
     </section>
@@ -576,38 +665,38 @@
             <div class="row">
                 <div class="col-md-6">
                     <div class="faq-item">
-                        <div class="faq-question">What is SmartFarm?</div>
-                        <p>SmartFarm is a comprehensive digital platform designed to help farmers and agribusinesses manage their operations efficiently. It provides tools for tracking crops, livestock, tasks, inventory, and generating insights through a single dashboard.</p>
+                        <div class="faq-question">What is SmartFarm Dashboard?</div>
+                        <p>SmartFarm Dashboard is a comprehensive farm management platform designed for mixed livestock and crop operations. It helps farmers track fields, livestock, inventory, finance, and tasks through a unified dashboard to maximize production and profitability.</p>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="faq-item">
-                        <div class="faq-question">Who can use SmartFarm?</div>
-                        <p>SmartFarm is designed for smallholder farmers, commercial farms, and agribusiness managers. Whether you're managing a small family farm or a large agricultural operation, SmartFarm can help streamline your management processes.</p>
+                        <div class="faq-question">Who can use SmartFarm Dashboard?</div>
+                        <p>SmartFarm Dashboard is designed for smallholder farmers, commercial farms, and agribusiness managers in Fiji and beyond. Whether you're managing a small family farm or a large agricultural operation, SmartFarm Dashboard helps streamline operations and eliminate middlemen.</p>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="faq-item">
                         <div class="faq-question">Is my farm data secure?</div>
-                        <p>Yes, data security is our top priority. All data is encrypted in transit and stored securely. We follow industry best practices to protect your information and comply with data protection regulations.</p>
+                        <p>Yes, data security is our top priority. All data is encrypted in transit and stored securely. We follow industry best practices to protect your information. See our <a href="data-security.html">Data & Security</a> page for details.</p>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="faq-item">
-                        <div class="faq-question">Can I use SmartFarm on mobile?</div>
-                        <p>Yes! SmartFarm is fully responsive and works on mobile devices, tablets, and desktops. You can access your farm data and manage operations from anywhere with an internet connection.</p>
+                        <div class="faq-question">Can I use SmartFarm Dashboard on mobile?</div>
+                        <p>Yes! SmartFarm Dashboard is fully responsive and works on mobile devices, tablets, and desktops. You can access your farm data and manage operations from anywhere. Native mobile apps for Android and iOS are coming soon.</p>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="faq-item">
                         <div class="faq-question">How do I get started?</div>
-                        <p>Simply click the "Request Access" button and fill out the form. Our team will review your request and contact you to set up your SmartFarm account. Existing clients can log in directly.</p>
+                        <p>Click "Request Beta Access" and fill out the form. Our team at Small Ville Company will review your request and contact you to set up your SmartFarm Dashboard account. Existing clients can log in directly.</p>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="faq-item">
-                        <div class="faq-question">What kind of support is available?</div>
-                        <p>We provide comprehensive support through our help documentation, email support, and for enterprise clients, dedicated account management. Check out our <a href="help.html">Help page</a> for more information.</p>
+                        <div class="faq-question">Who is behind SmartFarm Dashboard?</div>
+                        <p>SmartFarm Dashboard is developed by Small Ville Company, based in Fiji. Our mission is to eradicate poverty by empowering farmers to maximize production, transform products into byproducts, eliminate middlemen, and increase export markets. <a href="about.html">Learn more</a>.</p>
                     </div>
                 </div>
             </div>
@@ -619,23 +708,27 @@
         <div class="container">
             <div class="row">
                 <div class="col-md-4 footer-section">
-                    <h5><i class="fas fa-seedling"></i> SmartFarm</h5>
-                    <p>Digital assistant for modern farmers. Streamline your farm management, track productivity, and make data-driven decisions.</p>
-                    <div class="status-badge">
+                    <h5><i class="fas fa-seedling"></i> SmartFarm Dashboard</h5>
+                    <p class="mb-3">Farm management platform for mixed livestock and crop operations. Empowering farmers to maximize production and eliminate middlemen.</p>
+                    <p class="mb-2"><strong>Small Ville Company</strong></p>
+                    <p class="mb-2"><i class="fas fa-map-marker-alt me-2"></i>Fiji</p>
+                    <p class="mb-2"><i class="fas fa-envelope me-2"></i><a href="mailto:info@smartfarm-app.com" style="color: rgba(255,255,255,0.8);">info@smartfarm-app.com</a></p>
+                    <div class="status-badge mt-3">
                         <i class="fas fa-circle" style="font-size: 0.5rem; vertical-align: middle;"></i> 
-                        Server Status: Online | Environment: Production
+                        <small>Server Status: Online</small>
                     </div>
                 </div>
                 <div class="col-md-2 footer-section">
                     <h5>Company</h5>
                     <ul class="list-unstyled">
-                        <li><a href="about.html">About</a></li>
+                        <li><a href="about.html">About Us</a></li>
                         <li><a href="contact.html">Contact</a></li>
-                        <li><a href="help.html">Help</a></li>
+                        <li><a href="help.html">Help & Docs</a></li>
+                        <li><a href="#mission">Our Mission</a></li>
                     </ul>
                 </div>
                 <div class="col-md-3 footer-section">
-                    <h5>Legal</h5>
+                    <h5>Legal & Trust</h5>
                     <ul class="list-unstyled">
                         <li><a href="privacy-policy.html">Privacy Policy</a></li>
                         <li><a href="terms-of-service.html">Terms of Service</a></li>
@@ -644,10 +737,10 @@
                     </ul>
                 </div>
                 <div class="col-md-3 footer-section">
-                    <h5>Quick Links</h5>
+                    <h5>Get Started</h5>
                     <ul class="list-unstyled">
-                        <li><a href="login.html">Login</a></li>
-                        <li><a href="signup.html">Sign Up</a></li>
+                        <li><a href="signup.html">Request Beta Access</a></li>
+                        <li><a href="login.html">Login to Dashboard</a></li>
                         <li><a href="#features">Features</a></li>
                         <li><a href="#pricing">Pricing</a></li>
                     </ul>
@@ -659,7 +752,7 @@
                     <p class="mb-0">&copy; <span id="currentYear"></span> SmartFarm Technologies. All rights reserved.</p>
                 </div>
                 <div class="col-md-6 text-md-end">
-                    <p class="mb-0">Data stored securely. Encrypted in transit.</p>
+                    <p class="mb-0">Data stored securely. Encrypted in transit. | <a href="mailto:info@smartfarm-app.com" style="color: rgba(255,255,255,0.8);">Contact Support</a></p>
                 </div>
             </div>
         </div>
