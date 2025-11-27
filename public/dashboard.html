@@ -14449,29 +14449,37 @@ INVENTORY SUMMARY:
 
                 localStorage.setItem('smartfarm_user', JSON.stringify(updatedUser));
 
-                // Close modal using stored reference
-                if (currentProfileBsModal) {
-                    currentProfileBsModal.hide();
-                } else if (currentProfileModal) {
-                    const bsModal = bootstrap.Modal.getInstance(currentProfileModal);
-                    if (bsModal) {
-                        bsModal.hide();
-                    } else {
-                        // Fallback: try to find and close any visible modal
-                        const visibleModal = document.querySelector('.modal.show, .modal.fade.show');
-                        if (visibleModal) {
-                            const fallbackModal = bootstrap.Modal.getInstance(visibleModal);
-                            if (fallbackModal) {
-                                fallbackModal.hide();
+                // Close modal using stored reference, then show success dialog
+                const closeModal = () => {
+                    if (currentProfileBsModal) {
+                        currentProfileBsModal.hide();
+                    } else if (currentProfileModal) {
+                        const bsModal = bootstrap.Modal.getInstance(currentProfileModal);
+                        if (bsModal) {
+                            bsModal.hide();
+                        } else {
+                            // Fallback: try to find and close any visible modal
+                            const visibleModal = document.querySelector('.modal.show, .modal.fade.show');
+                            if (visibleModal && visibleModal.id === 'editProfileModal') {
+                                const fallbackModal = bootstrap.Modal.getInstance(visibleModal);
+                                if (fallbackModal) {
+                                    fallbackModal.hide();
+                                }
                             }
                         }
                     }
-                }
+                };
 
-                showSuccessDialog(
-                    '✅ Profile Updated Successfully',
-                    `Your profile has been updated successfully.\n\nName: ${firstName} ${lastName}\nEmail: ${email}\nFarm: ${farmName || 'Not specified'}`
-                );
+                // Close the edit modal first
+                closeModal();
+
+                // Wait a bit for modal to start closing, then show success dialog
+                setTimeout(() => {
+                    showSuccessDialog(
+                        '✅ Profile Updated Successfully',
+                        `Your profile has been updated successfully.\n\nName: ${firstName} ${lastName}\nEmail: ${email}\nFarm: ${farmName || 'Not specified'}`
+                    );
+                }, 300);
             } catch (error) {
                 console.error('Error saving profile:', error);
                 showErrorDialog('Error', 'An error occurred while saving your profile. Please try again.');
@@ -14672,29 +14680,37 @@ INVENTORY SUMMARY:
 
                 localStorage.setItem('smartfarm_settings', JSON.stringify(settings));
 
-                // Close modal using stored reference
-                if (currentSettingsBsModal) {
-                    currentSettingsBsModal.hide();
-                } else if (currentSettingsModal) {
-                    const bsModal = bootstrap.Modal.getInstance(currentSettingsModal);
-                    if (bsModal) {
-                        bsModal.hide();
-                    } else {
-                        // Fallback: try to find and close any visible modal
-                        const visibleModal = document.querySelector('.modal.show, .modal.fade.show');
-                        if (visibleModal) {
-                            const fallbackModal = bootstrap.Modal.getInstance(visibleModal);
-                            if (fallbackModal) {
-                                fallbackModal.hide();
+                // Close modal using stored reference, then show success dialog
+                const closeModal = () => {
+                    if (currentSettingsBsModal) {
+                        currentSettingsBsModal.hide();
+                    } else if (currentSettingsModal) {
+                        const bsModal = bootstrap.Modal.getInstance(currentSettingsModal);
+                        if (bsModal) {
+                            bsModal.hide();
+                        } else {
+                            // Fallback: try to find and close any visible modal
+                            const visibleModal = document.querySelector('.modal.show, .modal.fade.show');
+                            if (visibleModal && visibleModal.id === 'settingsModal') {
+                                const fallbackModal = bootstrap.Modal.getInstance(visibleModal);
+                                if (fallbackModal) {
+                                    fallbackModal.hide();
+                                }
                             }
                         }
                     }
-                }
+                };
 
-                showSuccessDialog(
-                    '✅ Settings Saved Successfully',
-                    'Your settings have been saved successfully.'
-                );
+                // Close the settings modal first
+                closeModal();
+
+                // Wait a bit for modal to start closing, then show success dialog
+                setTimeout(() => {
+                    showSuccessDialog(
+                        '✅ Settings Saved Successfully',
+                        'Your settings have been saved successfully.'
+                    );
+                }, 300);
             } catch (error) {
                 console.error('Error saving settings:', error);
                 showErrorDialog('Error', 'An error occurred while saving your settings. Please try again.');
@@ -16261,6 +16277,68 @@ INVENTORY SUMMARY:
                         <div class="modal-footer border-top">
                             <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
                                 <i class="fas fa-times me-2"></i>Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Set up modal with accessibility helper if available
+            if (window.ModalAccessibility) {
+                window.ModalAccessibility.setupDynamicModal(modal);
+            }
+            
+            const bsModal = new bootstrap.Modal(modal);
+            
+            // Handle callback when modal is hidden
+            if (callback && typeof callback === 'function') {
+                modal.addEventListener('hidden.bs.modal', () => {
+                    callback();
+                });
+            }
+            
+            // Clean up modal when hidden
+            modal.addEventListener('hidden.bs.modal', () => {
+                if (modal.parentNode) {
+                    document.body.removeChild(modal);
+                }
+            });
+            
+            bsModal.show();
+        }
+
+        function showSuccessDialog(title, message, callback = null) {
+            // Fallback to alert if Bootstrap is not available
+            if (typeof bootstrap === 'undefined') {
+                alert(`${title}\n\n${message}`);
+                if (callback && typeof callback === 'function') {
+                    callback();
+                }
+                return;
+            }
+
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.setAttribute('tabindex', '-1');
+            modal.setAttribute('aria-labelledby', 'successDialogLabel');
+            modal.setAttribute('aria-hidden', 'true');
+            modal.innerHTML = `
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header bg-success text-white">
+                            <h5 class="modal-title" id="successDialogLabel">
+                                <i class="fas fa-check-circle me-2"></i>${title}
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="mb-0" style="white-space: pre-line;">${message}</p>
+                        </div>
+                        <div class="modal-footer border-top">
+                            <button type="button" class="btn btn-success" data-bs-dismiss="modal">
+                                <i class="fas fa-check me-2"></i>OK
                             </button>
                         </div>
                     </div>
