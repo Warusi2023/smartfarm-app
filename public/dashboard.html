@@ -16018,60 +16018,34 @@ INVENTORY SUMMARY:
         async function loadLivestockData() {
             console.log('🐄 Loading livestock data...');
             try {
-                // Check if API is available
-                if (typeof window.SmartFarmAPI === 'undefined') {
-                    console.warn('⚠️ SmartFarmAPI not available, using localStorage fallback');
-                    
-                    // Load from localStorage
+                // FIRST: Try to load from localStorage as backup
+                let localLivestock = [];
+                try {
                     const savedLivestock = localStorage.getItem('livestockData');
                     if (savedLivestock) {
-                        try {
-                            livestock = JSON.parse(savedLivestock);
-                            console.log('✅ Livestock data loaded from localStorage:', livestock.length, 'animals');
-                        } catch (e) {
-                            console.error('Error loading livestock data from localStorage:', e);
-                            livestock = [];
+                        localLivestock = JSON.parse(savedLivestock);
+                        if (Array.isArray(localLivestock) && localLivestock.length > 0) {
+                            console.log('✅ Loaded livestock from localStorage backup:', localLivestock.length, 'animals');
+                            // Use localStorage data as initial data
+                            livestock = [...localLivestock];
                         }
+                    }
+                } catch (e) {
+                    console.warn('⚠️ Error loading from localStorage:', e);
+                }
+
+                // Check if API is available
+                if (typeof window.SmartFarmAPI === 'undefined') {
+                    console.warn('⚠️ SmartFarmAPI not available, using localStorage only');
+                    
+                    // If we have localStorage data, use it
+                    if (localLivestock.length > 0) {
+                        livestock = localLivestock;
+                        console.log('✅ Using localStorage data:', livestock.length, 'animals');
                     } else {
-                        // Initialize with sample data
-                        livestock = [
-                            {
-                                id: 1,
-                                name: 'Angus Bull #001',
-                                type: 'Cattle',
-                                breed: 'Angus Cattle',
-                                quantity: 1,
-                                location: 'Pasture A',
-                                healthStatus: 'Healthy',
-                                birthDate: '2020-03-15',
-                                weight: '650 kg',
-                                value: 2500,
-                                earTags: ['AB001'],
-                                gpsLat: -18.1416,
-                                gpsLng: 178.4419,
-                                healthNotes: 'Excellent breeding bull',
-                                lastUpdated: new Date().toISOString()
-                            },
-                            {
-                                id: 2,
-                                name: 'Holstein Cow #002',
-                                type: 'Cattle',
-                                breed: 'Holstein Dairy',
-                                quantity: 1,
-                                location: 'Barn B',
-                                healthStatus: 'Pregnant',
-                                birthDate: '2019-07-20',
-                                weight: '550 kg',
-                                value: 1800,
-                                earTags: ['HC002'],
-                                gpsLat: -18.1416,
-                                gpsLng: 178.4419,
-                                healthNotes: 'Due to calve in 3 months',
-                                lastUpdated: new Date().toISOString()
-                            }
-                        ];
-                        saveLivestockData();
-                        console.log('✅ Initialized with sample livestock data');
+                        // Initialize with empty array (don't create sample data automatically)
+                        livestock = [];
+                        console.log('ℹ️ No livestock data found, starting with empty list');
                     }
                     
                     renderLivestockGrid();
@@ -16080,41 +16054,85 @@ INVENTORY SUMMARY:
                     return;
                 }
 
-                const response = await window.SmartFarmAPI.getLivestock();
-                if (!response || response.success === false || !response.data) {
-                    console.warn('Livestock data unavailable; skipping render');
-                    safeText('#livestock-count', '0');
-                    return;
+                // Try to load from API
+                try {
+                    const response = await window.SmartFarmAPI.getLivestock();
+                    
+                    if (response && response.success && response.data && Array.isArray(response.data) && response.data.length > 0) {
+                        console.log('✅ Livestock data loaded successfully from API:', response.data.length, 'items');
+                        
+                        // Merge API data with localStorage data (preserve recently added items)
+                        const mergedMap = new Map();
+                        
+                        // First, add localStorage items (preserves newly added items not yet synced)
+                        localLivestock.forEach(item => {
+                            const key = item.id || (item.tag ? `tag_${item.tag}` : `local_${Date.now()}_${Math.random()}`);
+                            mergedMap.set(key, item);
+                        });
+                        
+                        // Then, add/update with API data
+                        response.data.forEach(item => {
+                            const apiItem = {
+                                id: item.id,
+                                name: item.name || `${item.type || 'Unknown'} ${item.tag || item.id}`,
+                                type: item.type,
+                                breed: item.breed,
+                                tag: item.tag,
+                                quantity: item.quantity || 1,
+                                location: item.location || 'Barn A',
+                                healthStatus: item.status || item.healthStatus || 'Unknown',
+                                birthDate: item.birthDate || item.createdAt,
+                                weight: item.weight || null,
+                                value: item.value || 0,
+                                earTags: item.earTags || (item.tag ? [item.tag] : []),
+                                gpsLat: item.gpsLat || -18.1416,
+                                gpsLng: item.gpsLng || 178.4419,
+                                weightRecords: item.weightRecords || [],
+                                immunizations: item.immunizations || [],
+                                healthNotes: item.description || item.healthNotes || 'No notes',
+                                createdAt: item.createdAt,
+                                lastUpdated: item.updatedAt || new Date().toISOString()
+                            };
+                            
+                            const key = item.id || (item.tag ? `tag_${item.tag}` : `api_${Date.now()}_${Math.random()}`);
+                            mergedMap.set(key, apiItem);
+                        });
+                        
+                        // Convert map back to array
+                        livestock = Array.from(mergedMap.values());
+                        
+                        // ALWAYS save to localStorage as backup
+                        saveLivestockData();
+                        console.log('✅ Saved livestock data to localStorage backup:', livestock.length, 'animals');
+                    } else {
+                        // API returned empty or invalid data, use localStorage if available
+                        console.warn('⚠️ API returned empty or invalid data, using localStorage backup');
+                        if (localLivestock.length > 0) {
+                            livestock = localLivestock;
+                            console.log('✅ Using localStorage backup data:', livestock.length, 'animals');
+                        } else {
+                            livestock = [];
+                            console.log('ℹ️ No livestock data available from API or localStorage');
+                        }
+                    }
+                } catch (apiError) {
+                    console.error('❌ Error loading from API:', apiError);
+                    // Use localStorage backup if available
+                    if (localLivestock.length > 0) {
+                        livestock = localLivestock;
+                        console.log('✅ Using localStorage backup after API error:', livestock.length, 'animals');
+                    } else {
+                        livestock = [];
+                        console.log('ℹ️ No backup data available');
+                    }
                 }
-                
-                console.log('✅ Livestock data loaded successfully:', response.data.length, 'items');
-                
-                // Update livestock array for backward compatibility
-                livestock = response.data.map(item => ({
-                    id: item.id,
-                    name: item.name,
-                    type: item.type,
-                    breed: item.breed,
-                    quantity: 1,
-                    location: 'Barn A',
-                    healthStatus: item.status || 'Unknown',
-                    birthDate: item.createdAt,
-                    weight: 'Unknown',
-                    value: 0,
-                    earTags: [`ET${item.id.slice(-6)}`],
-                    gpsLat: -18.1416,
-                    gpsLng: 178.4419,
-                    weightRecords: [],
-                    immunizations: [],
-                    healthNotes: item.description || 'No notes',
-                    createdAt: item.createdAt
-                }));
                 
                 // Update UI safely
                 renderLivestockGrid();
                 renderLivestockTable();
                 updateLivestockStatistics();
                 updateAnalyticsCharts();
+                
             } catch (error) {
                 console.error('❌ Error loading livestock data:', error);
                 console.error('Error details:', {
@@ -16123,15 +16141,27 @@ INVENTORY SUMMARY:
                     name: error.name
                 });
                 
-                // Fallback: initialize with empty array
-                livestock = [];
+                // Fallback: try localStorage one more time
+                try {
+                    const savedLivestock = localStorage.getItem('livestockData');
+                    if (savedLivestock) {
+                        livestock = JSON.parse(savedLivestock);
+                        console.log('✅ Recovered livestock from localStorage after error:', livestock.length, 'animals');
+                    } else {
+                        livestock = [];
+                    }
+                } catch (e) {
+                    console.error('❌ Failed to recover from localStorage:', e);
+                    livestock = [];
+                }
+                
                 renderLivestockGrid();
                 renderLivestockTable();
                 updateLivestockStatistics();
                 
                 // Show user-friendly message
-                if (error.message.includes('Failed to fetch')) {
-                    console.warn('🌐 Network error - backend may be unavailable');
+                if (error.message && error.message.includes('Failed to fetch')) {
+                    console.warn('🌐 Network error - backend may be unavailable, using localStorage backup');
                 }
             }
         }
