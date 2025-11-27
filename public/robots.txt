@@ -1,0 +1,25 @@
+# SmartFarm Dashboard - Robots.txt
+# Allow all search engines and crawlers to index the public site
+
+User-agent: *
+Allow: /
+
+# Allow all public pages
+Allow: /index.html
+Allow: /about.html
+Allow: /contact.html
+Allow: /help.html
+Allow: /signup.html
+Allow: /login.html
+Allow: /privacy-policy.html
+Allow: /terms-of-service.html
+Allow: /data-security.html
+
+# Disallow dashboard and private areas (require authentication)
+Disallow: /dashboard.html
+Disallow: /dashboard-simple.html
+Disallow: /api/
+
+# Sitemap location
+Sitemap: https://www.smartfarm-app.com/sitemap.xml
+
