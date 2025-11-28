@@ -1,9 +1,6 @@
 [build]
-  # Tell Netlify to run everything inside the web-project folder
-  base = "web-project"
+  # Run everything from the repo root, but manually cd into web-project
+  command = "cd web-project && npm install && npm run build"
 
-  # Install deps and build the Vite app
-  command = "npm install && npm run build"
-
-  # This is relative to the base ("web-project"), so it points to web-project/dist
-  publish = "dist"
+  # Path is from the repo root, so this points to web-project/dist
+  publish = "web-project/dist"
