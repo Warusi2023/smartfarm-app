@@ -1,6 +1,3 @@
 [build]
-  # Run everything from the repo root, but manually cd into web-project
-  command = "cd web-project && npm install && npm run build"
-
-  # Path is from the repo root, so this points to web-project/dist
+  command = "cd web-project && npm install --include=dev && npm run build"
   publish = "web-project/dist"
