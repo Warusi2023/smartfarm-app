@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import com.smartfarm.ui.components.EmptyState
 import com.smartfarm.ui.components.ErrorState
 import com.smartfarm.ui.components.LoadingState
+import com.smartfarm.ui.components.DailyTipsCard
 import com.smartfarm.shared.ui.viewmodel.DashboardViewModel
 import org.koin.compose.viewmodel.viewModel
 
@@ -87,6 +88,13 @@ private fun DashboardContent(uiState: com.smartfarm.shared.ui.viewmodel.Dashboar
                 )
             }
         }
+        
+        Spacer(Modifier.height(16.dp))
+        
+        DailyTipsCard(
+            dailyTip = uiState.dailyTip,
+            modifier = Modifier.fillMaxWidth()
+        )
         
         if (uiState.error != null && uiState.farms.isNotEmpty()) {
             Spacer(Modifier.height(16.dp))

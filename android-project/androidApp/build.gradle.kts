@@ -1,11 +1,11 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("com.google.gms.google-services") // Firebase plugin
+    // id("com.google.gms.google-services") // Firebase plugin (disabled for now)
 }
 
 android {
-    namespace = "com.yourcompany.smartfarm.android"
+    namespace = "com.smartfarm_app.android"
     compileSdk = 34
 
     defaultConfig {
@@ -13,7 +13,7 @@ android {
         minSdk = 24
         targetSdk = 34
         versionCode = 1
-        versionName = "1.0"
+        versionName = "1.0."
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

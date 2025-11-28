@@ -13,7 +13,7 @@ plugins {
     kotlin("plugin.serialization") version "1.9.24" apply false
     
     // Compose Multiplatform
-    id("org.jetbrains.compose") version "1.5.11" apply false
+    id("org.jetbrains.compose") version "1.7.0" apply false
     
     // iOS Support
     id("org.jetbrains.kotlin.native.cocoapods") version "1.9.24" apply false
@@ -31,7 +31,7 @@ plugins {
 // Project-wide configuration removed - repositories are now managed in settings.gradle.kts
 
 // Cross-platform dependencies versions
-extra["compose.version"] = "1.5.11"
+extra["compose.version"] = "1.7.0"
 extra["kotlin.version"] = "1.9.24"
 extra["coroutines.version"] = "1.7.3"
 extra["serialization.version"] = "1.6.0"

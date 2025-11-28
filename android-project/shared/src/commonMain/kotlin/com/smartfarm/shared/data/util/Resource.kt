@@ -1,11 +1,8 @@
 package com.smartfarm.shared.data.util
 
-/**
- * A sealed class that represents the state of a resource (loading, success, or error)
- */
+// Simple result wrapper for now
 sealed class Resource<out T> {
     data class Success<out T>(val data: T) : Resource<T>()
-    data class Error(val exception: Throwable, val data: T? = null) : Resource<Nothing>()
+    data class Error(val message: String, val throwable: Throwable? = null) : Resource<Nothing>()
     object Loading : Resource<Nothing>()
 }
-

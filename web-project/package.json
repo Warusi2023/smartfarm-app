@@ -16,7 +16,7 @@
   "devDependencies": {
     "esbuild": "0.21.5",
     "typescript": "5.6.3",
-    "vite": "5.4.20"
+    "vite": "^5.4.20"
   },
   "dependencies": {
     "serve": "14.2.1"

@@ -324,16 +324,54 @@ class FileUploadService {
         return "file_${System.currentTimeMillis()}_${kotlin.random.Random.nextInt(1000, 9999)}"
     }
     
-    // Platform-specific implementations
-    private expect suspend fun deleteLocalFile(fileId: String): Boolean
-    private expect suspend fun deleteS3File(fileId: String): Boolean
-    private expect suspend fun deleteGoogleCloudFile(fileId: String): Boolean
-    private expect suspend fun deleteAzureFile(fileId: String): Boolean
-    private expect suspend fun deleteCustomFile(fileId: String): Boolean
+    // Platform-specific implementations - stubbed for first release
+    private suspend fun deleteLocalFile(fileId: String): Boolean {
+        // no-op in first release
+        return true
+    }
     
-    private expect suspend fun generateLocalThumbnail(fileId: String, maxSize: Int): String?
-    private expect suspend fun generateS3Thumbnail(fileId: String, maxSize: Int): String?
-    private expect suspend fun generateGoogleCloudThumbnail(fileId: String, maxSize: Int): String?
-    private expect suspend fun generateAzureThumbnail(fileId: String, maxSize: Int): String?
-    private expect suspend fun generateCustomThumbnail(fileId: String, maxSize: Int): String?
+    private suspend fun deleteS3File(fileId: String): Boolean {
+        // no-op in first release
+        return true
+    }
+    
+    private suspend fun deleteGoogleCloudFile(fileId: String): Boolean {
+        // no-op in first release
+        return true
+    }
+    
+    private suspend fun deleteAzureFile(fileId: String): Boolean {
+        // no-op in first release
+        return true
+    }
+    
+    private suspend fun deleteCustomFile(fileId: String): Boolean {
+        // no-op in first release
+        return true
+    }
+    
+    private suspend fun generateLocalThumbnail(fileId: String, maxSize: Int): String? {
+        // no-op in first release
+        return null
+    }
+    
+    private suspend fun generateS3Thumbnail(fileId: String, maxSize: Int): String? {
+        // no-op in first release
+        return null
+    }
+    
+    private suspend fun generateGoogleCloudThumbnail(fileId: String, maxSize: Int): String? {
+        // no-op in first release
+        return null
+    }
+    
+    private suspend fun generateAzureThumbnail(fileId: String, maxSize: Int): String? {
+        // no-op in first release
+        return null
+    }
+    
+    private suspend fun generateCustomThumbnail(fileId: String, maxSize: Int): String? {
+        // no-op in first release
+        return null
+    }
 }

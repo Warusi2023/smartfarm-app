@@ -1,10 +1,16 @@
 package com.smartfarm.shared.network
 
 import com.smartfarm.shared.data.model.dto.*
+import com.smartfarm.shared.data.util.Resource
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.http.*
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.builtins.MapSerializer
+import kotlinx.serialization.builtins.serializer
 
 /**
  * Ktor-based API client for SmartFarm backend
@@ -24,7 +30,7 @@ class SmartFarmApi(
             }.body()
             Resource.Success(response)
         } catch (e: Exception) {
-            Resource.Error(e)
+            Resource.Error(e.message ?: "Network error", e)
         }
     }
     
@@ -43,7 +49,7 @@ class SmartFarmApi(
             }.body()
             Resource.Success(response)
         } catch (e: Exception) {
-            Resource.Error(e)
+            Resource.Error(e.message ?: "Network error", e)
         }
     }
     
@@ -54,7 +60,7 @@ class SmartFarmApi(
             }.body()
             Resource.Success(response)
         } catch (e: Exception) {
-            Resource.Error(e)
+            Resource.Error(e.message ?: "Network error", e)
         }
     }
     
@@ -66,7 +72,7 @@ class SmartFarmApi(
             }.body()
             Resource.Success(response)
         } catch (e: Exception) {
-            Resource.Error(e)
+            Resource.Error(e.message ?: "Network error", e)
         }
     }
     
@@ -78,7 +84,7 @@ class SmartFarmApi(
             }.body()
             Resource.Success(response)
         } catch (e: Exception) {
-            Resource.Error(e)
+            Resource.Error(e.message ?: "Network error", e)
         }
     }
     
@@ -91,7 +97,7 @@ class SmartFarmApi(
             }.body()
             Resource.Success(response)
         } catch (e: Exception) {
-            Resource.Error(e)
+            Resource.Error(e.message ?: "Network error", e)
         }
     }
     
@@ -104,7 +110,7 @@ class SmartFarmApi(
             }.body()
             Resource.Success(response)
         } catch (e: Exception) {
-            Resource.Error(e)
+            Resource.Error(e.message ?: "Network error", e)
         }
     }
     
@@ -132,7 +138,7 @@ class SmartFarmApi(
             }.body()
             Resource.Success(response)
         } catch (e: Exception) {
-            Resource.Error(e)
+            Resource.Error(e.message ?: "Network error", e)
         }
     }
     
@@ -145,7 +151,7 @@ class SmartFarmApi(
             }.body()
             Resource.Success(response)
         } catch (e: Exception) {
-            Resource.Error(e)
+            Resource.Error(e.message ?: "Network error", e)
         }
     }
     
@@ -158,7 +164,7 @@ class SmartFarmApi(
             }.body()
             Resource.Success(response)
         } catch (e: Exception) {
-            Resource.Error(e)
+            Resource.Error(e.message ?: "Network error", e)
         }
     }
     
@@ -186,7 +192,7 @@ class SmartFarmApi(
             }.body()
             Resource.Success(response)
         } catch (e: Exception) {
-            Resource.Error(e)
+            Resource.Error(e.message ?: "Network error", e)
         }
     }
     
@@ -199,7 +205,7 @@ class SmartFarmApi(
             }.body()
             Resource.Success(response)
         } catch (e: Exception) {
-            Resource.Error(e)
+            Resource.Error(e.message ?: "Network error", e)
         }
     }
     
@@ -212,7 +218,7 @@ class SmartFarmApi(
             }.body()
             Resource.Success(response)
         } catch (e: Exception) {
-            Resource.Error(e)
+            Resource.Error(e.message ?: "Network error", e)
         }
     }
     
@@ -240,7 +246,7 @@ class SmartFarmApi(
             }.body()
             Resource.Success(response)
         } catch (e: Exception) {
-            Resource.Error(e)
+            Resource.Error(e.message ?: "Network error", e)
         }
     }
     
@@ -253,7 +259,7 @@ class SmartFarmApi(
             }.body()
             Resource.Success(response)
         } catch (e: Exception) {
-            Resource.Error(e)
+            Resource.Error(e.message ?: "Network error", e)
         }
     }
     
@@ -266,7 +272,7 @@ class SmartFarmApi(
             }.body()
             Resource.Success(response)
         } catch (e: Exception) {
-            Resource.Error(e)
+            Resource.Error(e.message ?: "Network error", e)
         }
     }
     
@@ -294,7 +300,7 @@ class SmartFarmApi(
             }.body()
             Resource.Success(response)
         } catch (e: Exception) {
-            Resource.Error(e)
+            Resource.Error(e.message ?: "Network error", e)
         }
     }
     
@@ -307,7 +313,7 @@ class SmartFarmApi(
             }.body()
             Resource.Success(response)
         } catch (e: Exception) {
-            Resource.Error(e)
+            Resource.Error(e.message ?: "Network error", e)
         }
     }
     
@@ -320,7 +326,7 @@ class SmartFarmApi(
             }.body()
             Resource.Success(response)
         } catch (e: Exception) {
-            Resource.Error(e)
+            Resource.Error(e.message ?: "Network error", e)
         }
     }
     
@@ -348,7 +354,7 @@ class SmartFarmApi(
             }.body()
             Resource.Success(response)
         } catch (e: Exception) {
-            Resource.Error(e)
+            Resource.Error(e.message ?: "Network error", e)
         }
     }
     
@@ -361,7 +367,7 @@ class SmartFarmApi(
             }.body()
             Resource.Success(response)
         } catch (e: Exception) {
-            Resource.Error(e)
+            Resource.Error(e.message ?: "Network error", e)
         }
     }
     
@@ -374,7 +380,7 @@ class SmartFarmApi(
             }.body()
             Resource.Success(response)
         } catch (e: Exception) {
-            Resource.Error(e)
+            Resource.Error(e.message ?: "Network error", e)
         }
     }
     
@@ -402,7 +408,7 @@ class SmartFarmApi(
             }.body()
             Resource.Success(response)
         } catch (e: Exception) {
-            Resource.Error(e)
+            Resource.Error(e.message ?: "Network error", e)
         }
     }
     
@@ -412,7 +418,51 @@ class SmartFarmApi(
             val response: HealthResponse = client.get("$baseUrl/api/health").body()
             Resource.Success(response)
         } catch (e: Exception) {
-            Resource.Error(e)
+            Resource.Error(e.message ?: "Network error", e)
+        }
+    }
+    
+    // ========== Daily Tips ==========
+    suspend fun getDailyTip(): Resource<DailyTipDto> {
+        return try {
+            val response: DailyTipResponse = client.get("$baseUrl/api/daily-tips/today").body()
+            if (response.success) {
+                Resource.Success(response.tip)
+            } else {
+                Resource.Error(response.error ?: "Failed to fetch daily tip", null)
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Network error", e)
+        }
+    }
+    
+    suspend fun getPersonalizedTip(crops: List<CropDto>, livestock: List<LivestockDto>): Resource<DailyTipDto> {
+        return try {
+            // Build simplified data for backend
+            val cropsData = crops.map { mapOf(
+                "name" to it.name,
+                "variety" to (it.variety ?: ""),
+                "status" to (it.status ?: "")
+            ) }
+            val livestockData = livestock.map { mapOf(
+                "type" to (it.type ?: ""),
+                "breed" to (it.breed ?: "")
+            ) }
+            
+            val cropsJson = Json.encodeToString(ListSerializer(MapSerializer(String.serializer(), String.serializer())), cropsData)
+            val livestockJson = Json.encodeToString(ListSerializer(MapSerializer(String.serializer(), String.serializer())), livestockData)
+            
+            val url = "$baseUrl/api/daily-tips/personalized?crops=${java.net.URLEncoder.encode(cropsJson, "UTF-8")}&livestock=${java.net.URLEncoder.encode(livestockJson, "UTF-8")}"
+            val response: DailyTipResponse = client.get(url) {
+                addAuthHeader()
+            }.body()
+            if (response.success) {
+                Resource.Success(response.tip)
+            } else {
+                Resource.Error(response.error ?: "Failed to fetch personalized tip", null)
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Network error", e)
         }
     }
 }

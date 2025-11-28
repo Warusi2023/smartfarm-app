@@ -4,12 +4,13 @@ import com.russhwolf.settings.Settings
 import com.smartfarm.shared.data.database.DatabaseDriverFactory
 import com.smartfarm.shared.data.preferences.PreferencesStorage
 import com.smartfarm.shared.data.repository.*
-import com.smartfarm.shared.database.FarmDatabase
 import com.smartfarm.shared.network.SmartFarmApi
 import com.smartfarm.shared.network.createConfiguredHttpClient
 import com.smartfarm.shared.ui.viewmodel.*
 import org.koin.core.module.Module
 import org.koin.dsl.module
+
+// Note: Database imports removed - FarmDatabase and SqlDriver not used in commonMain
 
 /**
  * Base URL for the SmartFarm API
@@ -24,11 +25,11 @@ fun createSharedKoinModule(
     settings: Settings
 ): Module = module {
     
-    // Database
-    single {
-        val driver = databaseDriverFactory.createDriver()
-        FarmDatabase(driver)
-    }
+    // Database - Commented out for now (no cross-platform database yet)
+    // single {
+    //     val driver = databaseDriverFactory.createDriver()
+    //     FarmDatabase(driver)
+    // }
     
     // Preferences
     single { PreferencesStorage(settings) }
@@ -41,34 +42,34 @@ fun createSharedKoinModule(
         SmartFarmApi(get(), API_BASE_URL, get())
     }
     
-    // Repositories
+    // Repositories - Commented out database-dependent repositories for now
     single<AuthRepository> {
         AuthRepository(get(), get())
     }
     
-    single<FarmRepository> {
-        FarmRepository(get(), get())
-    }
+    // single<FarmRepository> {
+    //     FarmRepository(get(), get())
+    // }
     
-    single<LivestockRepository> {
-        LivestockRepository(get(), get())
-    }
+    // single<LivestockRepository> {
+    //     LivestockRepository(get(), get())
+    // }
     
-    single<CropRepository> {
-        CropRepository(get(), get())
-    }
+    // single<CropRepository> {
+    //     CropRepository(get(), get())
+    // }
     
     single<TaskRepository> {
-        TaskRepository(get(), get())
+        TaskRepository(get())
     }
     
-    single<InventoryRepository> {
-        InventoryRepository(get(), get())
-    }
+    // single<InventoryRepository> {
+    //     InventoryRepository(get(), get())
+    // }
     
-    single<FinancialRepository> {
-        FinancialRepository(get(), get())
-    }
+    // single<FinancialRepository> {
+    //     FinancialRepository(get(), get())
+    // }
     
     single<AnalyticsRepository> {
         AnalyticsRepository(get())
@@ -80,7 +81,7 @@ fun createSharedKoinModule(
     }
     
     factory<DashboardViewModel> {
-        DashboardViewModel(get(), get(), get(), get(), get())
+        DashboardViewModel(get(), get(), get(), get(), get(), get())
     }
     
     factory<FarmViewModel> {

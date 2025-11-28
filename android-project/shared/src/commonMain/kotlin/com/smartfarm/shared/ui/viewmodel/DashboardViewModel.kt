@@ -17,7 +17,8 @@ class DashboardViewModel(
     private val livestockRepository: LivestockRepository,
     private val cropRepository: CropRepository,
     private val taskRepository: TaskRepository,
-    private val analyticsRepository: AnalyticsRepository
+    private val analyticsRepository: AnalyticsRepository,
+    private val api: com.smartfarm.shared.network.SmartFarmApi
 ) {
     private val viewModelScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     
@@ -70,6 +71,19 @@ class DashboardViewModel(
                     else -> null
                 }
                 
+                // Load daily tip - try personalized first, fallback to generic
+                val dailyTip = if (crops.isNotEmpty() || livestock.isNotEmpty()) {
+                    when (val tipRes = api.getPersonalizedTip(crops, livestock)) {
+                        is Resource.Success -> tipRes.data
+                        else -> null
+                    }
+                } else {
+                    when (val tipRes = api.getDailyTip()) {
+                        is Resource.Success -> tipRes.data
+                        else -> null
+                    }
+                }
+                
                 val error = when {
                     farmsRes is Resource.Error -> farmsRes.exception?.message
                     livestockRes is Resource.Error -> livestockRes.exception?.message
@@ -84,6 +98,7 @@ class DashboardViewModel(
                     crops = crops,
                     tasks = tasks,
                     analytics = analytics,
+                    dailyTip = dailyTip,
                     isLoading = false,
                     error = error
                 )
@@ -104,6 +119,7 @@ data class DashboardUiState(
     val crops: List<CropDto> = emptyList(),
     val tasks: List<TaskDto> = emptyList(),
     val analytics: AnalyticsDto? = null,
+    val dailyTip: DailyTipDto? = null,
     val isLoading: Boolean = false,
     val error: String? = null
 )

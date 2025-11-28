@@ -356,6 +356,11 @@ try {
   const aiAdvisoryRoutes = new AIAdvisoryRoutes();
   app.use('/api/ai-advisory', aiAdvisoryRoutes.getRouter());
   console.log('✅ AI Advisory routes loaded');
+  
+  // Load Daily Tips routes
+  const DailyTipsRoutes = require('./routes/daily-tips');
+  app.use('/api/daily-tips', DailyTipsRoutes);
+  console.log('✅ Daily Tips routes loaded');
 } catch (error) {
   console.warn('⚠️ Could not load auth routes, using fallback endpoints:', error.message);
   console.error('Full error:', error);
@@ -366,6 +371,11 @@ try {
     const aiAdvisoryRoutes = new AIAdvisoryRoutes();
     app.use('/api/ai-advisory', aiAdvisoryRoutes.getRouter());
     console.log('✅ AI Advisory routes loaded (standalone)');
+    
+    // Load Daily Tips routes (standalone)
+    const DailyTipsRoutes = require('./routes/daily-tips');
+    app.use('/api/daily-tips', DailyTipsRoutes);
+    console.log('✅ Daily Tips routes loaded (standalone)');
   } catch (aiError) {
     console.warn('⚠️ Could not load AI Advisory routes:', aiError.message);
     // Add fallback AI advisory endpoint

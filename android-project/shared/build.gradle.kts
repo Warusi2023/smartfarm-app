@@ -3,7 +3,6 @@ plugins {
     kotlin("plugin.serialization")
     id("org.jetbrains.compose")
     id("com.android.library")
-    id("app.cash.sqldelight")
 }
 
 android {
@@ -29,17 +28,17 @@ kotlin {
         }
     }
     
-    // iOS targets
-    listOf(
-        iosX64(),
-        iosArm64(),
-        iosSimulatorArm64()
-    ).forEach {
-        it.binaries.framework {
-            baseName = "shared"
-            isStatic = true
-        }
-    }
+    // iOS targets - commented out for now
+    // listOf(
+    //     iosX64(),
+    //     iosArm64(),
+    //     iosSimulatorArm64()
+    // ).forEach {
+    //     it.binaries.framework {
+    //         baseName = "shared"
+    //         isStatic = true
+    //     }
+    // }
     
     // Web target
     js(IR) {
@@ -99,9 +98,6 @@ kotlin {
                 implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
                 implementation("io.ktor:ktor-client-logging:$ktorVersion")
                 
-                // Database - SQLDelight
-                implementation("com.squareup.sqldelight:runtime:2.0.0")
-                
                 // Preferences - Multiplatform Settings
                 implementation("com.russhwolf:multiplatform-settings:1.1.1")
             }
@@ -119,9 +115,6 @@ kotlin {
             dependencies {
                 // Ktor Android engine
                 implementation("io.ktor:ktor-client-android:2.3.7")
-                
-                // SQLDelight Android driver
-                implementation("com.squareup.sqldelight:android-driver:2.0.0")
             }
         }
         
@@ -141,23 +134,21 @@ kotlin {
             }
         }
         
-        val iosX64Main by getting
-        val iosArm64Main by getting
-        val iosSimulatorArm64Main by getting
-        val iosMain by creating {
-            dependsOn(commonMain)
-            iosX64Main.dependsOn(this)
-            iosArm64Main.dependsOn(this)
-            iosSimulatorArm64Main.dependsOn(this)
-            
-            dependencies {
-                // Ktor iOS engine
-                implementation("io.ktor:ktor-client-darwin:2.3.7")
-                
-                // SQLDelight iOS driver
-                implementation("com.squareup.sqldelight:native-driver:2.0.0")
-            }
-        }
+        // iOS source sets - commented out for now
+        // val iosX64Main by getting
+        // val iosArm64Main by getting
+        // val iosSimulatorArm64Main by getting
+        // val iosMain by creating {
+        //     dependsOn(commonMain)
+        //     iosX64Main.dependsOn(this)
+        //     iosArm64Main.dependsOn(this)
+        //     iosSimulatorArm64Main.dependsOn(this)
+        //     
+        //     dependencies {
+        //         // Ktor iOS engine
+        //         implementation("io.ktor:ktor-client-darwin:2.3.7")
+        //     }
+        // }
         
         val jsMain by getting {
             dependencies {
@@ -193,14 +184,3 @@ kotlin {
         }
     }
 }
-
-sqldelight {
-    databases {
-        create("FarmDatabase") {
-            packageName.set("com.smartfarm.shared.database")
-            generateAsync.set(true)
-            // Tell SQLDelight where to find .sq files
-            sourceFolders.set(listOf("sqldelight"))
-        }
-    }
-} 
