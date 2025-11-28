@@ -199,6 +199,8 @@ sqldelight {
         create("FarmDatabase") {
             packageName.set("com.smartfarm.shared.database")
             generateAsync.set(true)
+            // Tell SQLDelight where to find .sq files
+            sourceFolders.set(listOf("sqldelight"))
         }
     }
 } 
