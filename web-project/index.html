@@ -16,7 +16,31 @@
       const el = document.getElementById("app");
       // Use production API URL if env var is not set
       const apiBaseUrl = API_URL || 'https://smartfarm-app-production.up.railway.app';
-      el.innerHTML = "<h1>SmartFarm Web</h1><p>API: " + apiBaseUrl + "</p>";
+      
+      // Create a proper landing page with navigation
+      el.innerHTML = `
+        <div style="max-width: 800px; margin: 50px auto; padding: 20px; font-family: Arial, sans-serif;">
+          <h1>SmartFarm Web</h1>
+          <p><strong>API:</strong> ${apiBaseUrl}</p>
+          <div style="margin: 30px 0;">
+            <a href="public/login.html" style="display: inline-block; padding: 12px 24px; background: #4CAF50; color: white; text-decoration: none; border-radius: 5px; margin-right: 10px; font-weight: bold;">
+              Login
+            </a>
+            <a href="public/signup.html" style="display: inline-block; padding: 12px 24px; background: #2196F3; color: white; text-decoration: none; border-radius: 5px; margin-right: 10px; font-weight: bold;">
+              Sign Up
+            </a>
+            <a href="public/dashboard.html" style="display: inline-block; padding: 12px 24px; background: #666; color: white; text-decoration: none; border-radius: 5px; font-weight: bold;">
+              Dashboard
+            </a>
+          </div>
+          <div id="health-status" style="margin-top: 30px;">
+            <p>Checking API status...</p>
+          </div>
+        </div>
+      `;
+      
+      const healthStatusEl = document.getElementById("health-status");
+      
       // Use /api/health endpoint (which exists and works)
       const healthUrl = apiBaseUrl.endsWith('/api') ? apiBaseUrl + '/health' : apiBaseUrl + '/api/health';
       fetch(healthUrl)
@@ -24,10 +48,15 @@
           if (!r.ok) throw new Error(`HTTP ${r.status}`);
           return r.json();
         })
-        .then(j => el.insertAdjacentHTML("beforeend", "<pre>"+JSON.stringify(j,null,2)+"</pre>"))
+        .then(j => {
+          healthStatusEl.innerHTML = `
+            <h3 style="color: green;">✅ API Status: Online</h3>
+            <pre style="background: #f5f5f5; padding: 15px; border-radius: 5px; overflow-x: auto;">${JSON.stringify(j, null, 2)}</pre>
+          `;
+        })
         .catch(e => { 
           console.error('Health check failed:', e); 
-          el.insertAdjacentHTML("beforeend","<p style='color:red'>API call failed: " + e.message + "</p>");
+          healthStatusEl.innerHTML = `<p style="color: red;">❌ API call failed: ${e.message}</p>`;
         });
     </script>
   </body>
