@@ -364,12 +364,31 @@ try {
   
   // Load Weather Alerts routes
   console.log('🔍 Initializing Weather Alerts routes...');
-  const { router: weatherAlertsRouter, initWeatherAlertsRoutes } = require('./routes/weather-alerts');
-  const WeatherAlertService = require('./services/weatherAlertService');
-  const weatherAlertService = new WeatherAlertService(dbPool, process.env.WEATHER_API_KEY);
-  initWeatherAlertsRoutes(dbPool, weatherAlertService);
-  app.use('/api/weather-alerts', weatherAlertsRouter);
-  console.log('✅ Weather Alerts routes loaded (after app.use)');
+  try {
+    console.log('  → Requiring routes/weather-alerts module...');
+    const { router: weatherAlertsRouter, initWeatherAlertsRoutes } = require('./routes/weather-alerts');
+    console.log('  → Routes module loaded successfully');
+    
+    console.log('  → Requiring services/weatherAlertService module...');
+    const WeatherAlertService = require('./services/weatherAlertService');
+    console.log('  → WeatherAlertService module loaded successfully');
+    
+    console.log('  → Creating WeatherAlertService instance...');
+    const weatherAlertService = new WeatherAlertService(dbPool, process.env.WEATHER_API_KEY);
+    console.log('  → WeatherAlertService instance created');
+    
+    console.log('  → Initializing routes with dependencies...');
+    initWeatherAlertsRoutes(dbPool, weatherAlertService);
+    console.log('  → Routes initialized');
+    
+    console.log('  → Mounting router to /api/weather-alerts...');
+    app.use('/api/weather-alerts', weatherAlertsRouter);
+    console.log('✅ Weather Alerts routes loaded (after app.use)');
+  } catch (weatherError) {
+    console.error('❌ Error loading Weather Alerts routes:', weatherError.message);
+    console.error('❌ Weather Alerts error stack:', weatherError.stack);
+    throw weatherError; // Re-throw to be caught by outer catch
+  }
   
   // Note: Weather alerts cron job is configured via Railway Cron (not node-cron)
   // See CRON_JOB_CONFIGURATION.md for setup instructions

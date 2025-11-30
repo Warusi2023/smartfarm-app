@@ -5,7 +5,9 @@
 
 const express = require('express');
 const router = express.Router();
-const { authenticateToken } = require('../middleware/auth');
+const AuthMiddleware = require('../middleware/auth');
+const authMiddleware = new AuthMiddleware();
+const authenticateToken = authMiddleware.authenticate();
 
 // WeatherAlertService will be injected via dependency injection
 let weatherAlertService = null;
