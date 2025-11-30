@@ -371,33 +371,9 @@ try {
   app.use('/api/weather-alerts', weatherAlertsRouter);
   console.log('✅ Weather Alerts routes loaded (after app.use)');
   
-  // --- Cron Job for Weather Alerts (Optional - can use Railway Cron instead) ---
-  // Uncomment below if using node-cron instead of Railway Cron
-  /*
-  if (process.env.NODE_ENV === 'production' && process.env.WEATHER_API_KEY && dbPool) {
-    try {
-      const cron = require('node-cron');
-      const { main: generateWeatherAlerts } = require('./scripts/generate-weather-alerts');
-      
-      // Schedule to run every 6 hours
-      cron.schedule('0 */6 * * *', async () => {
-        console.log(`[${new Date().toISOString()}] Running scheduled weather alerts generation...`);
-        try {
-          await generateWeatherAlerts();
-          console.log(`[${new Date().toISOString()}] Scheduled weather alerts generation completed successfully.`);
-        } catch (error) {
-          console.error(`[${new Date().toISOString()}] Error in scheduled alert generation:`, error);
-        }
-      }, {
-        scheduled: true,
-        timezone: "UTC"
-      });
-      console.log('✅ Weather alert generation cron job scheduled (every 6 hours).');
-    } catch (error) {
-      console.warn('⚠️ Could not set up cron job (node-cron may not be installed). Use Railway Cron instead:', error.message);
-    }
-  }
-  */
+  // Note: Weather alerts cron job is configured via Railway Cron (not node-cron)
+  // See CRON_JOB_CONFIGURATION.md for setup instructions
+  
 } catch (error) {
   console.warn('⚠️ Could not load auth routes, using fallback endpoints:', error.message);
   console.error('Full error:', error);
