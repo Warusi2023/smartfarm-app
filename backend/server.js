@@ -363,12 +363,13 @@ try {
   console.log('✅ Daily Tips routes loaded');
   
   // Load Weather Alerts routes
+  console.log('🔍 Initializing Weather Alerts routes...');
   const { router: weatherAlertsRouter, initWeatherAlertsRoutes } = require('./routes/weather-alerts');
   const WeatherAlertService = require('./services/weatherAlertService');
   const weatherAlertService = new WeatherAlertService(dbPool, process.env.WEATHER_API_KEY);
   initWeatherAlertsRoutes(dbPool, weatherAlertService);
   app.use('/api/weather-alerts', weatherAlertsRouter);
-  console.log('✅ Weather Alerts routes loaded');
+  console.log('✅ Weather Alerts routes loaded (after app.use)');
   
   // --- Cron Job for Weather Alerts (Optional - can use Railway Cron instead) ---
   // Uncomment below if using node-cron instead of Railway Cron
@@ -400,6 +401,7 @@ try {
 } catch (error) {
   console.warn('⚠️ Could not load auth routes, using fallback endpoints:', error.message);
   console.error('Full error:', error);
+  console.error('Error stack:', error.stack);
   
   // Try to load AI Advisory routes separately (might work even if auth fails)
   try {
@@ -412,6 +414,20 @@ try {
     const DailyTipsRoutes = require('./routes/daily-tips');
     app.use('/api/daily-tips', DailyTipsRoutes);
     console.log('✅ Daily Tips routes loaded (standalone)');
+    
+    // Try to load Weather Alerts routes (standalone)
+    try {
+      console.log('🔍 Attempting to load Weather Alerts routes (standalone fallback)...');
+      const { router: weatherAlertsRouter, initWeatherAlertsRoutes } = require('./routes/weather-alerts');
+      const WeatherAlertService = require('./services/weatherAlertService');
+      const weatherAlertService = new WeatherAlertService(dbPool, process.env.WEATHER_API_KEY);
+      initWeatherAlertsRoutes(dbPool, weatherAlertService);
+      app.use('/api/weather-alerts', weatherAlertsRouter);
+      console.log('✅ Weather Alerts routes loaded (standalone fallback)');
+    } catch (weatherError) {
+      console.error('❌ Failed to load Weather Alerts routes:', weatherError.message);
+      console.error('Weather Alerts error stack:', weatherError.stack);
+    }
   } catch (aiError) {
     console.warn('⚠️ Could not load AI Advisory routes:', aiError.message);
     // Add fallback AI advisory endpoint
