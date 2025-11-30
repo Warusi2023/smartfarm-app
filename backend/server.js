@@ -361,6 +361,14 @@ try {
   const DailyTipsRoutes = require('./routes/daily-tips');
   app.use('/api/daily-tips', DailyTipsRoutes);
   console.log('✅ Daily Tips routes loaded');
+  
+  // Load Weather Alerts routes
+  const { router: weatherAlertsRouter, initWeatherAlertsRoutes } = require('./routes/weather-alerts');
+  const WeatherAlertService = require('./services/weatherAlertService');
+  const weatherAlertService = new WeatherAlertService(dbPool, process.env.WEATHER_API_KEY);
+  initWeatherAlertsRoutes(dbPool, weatherAlertService);
+  app.use('/api/weather-alerts', weatherAlertsRouter);
+  console.log('✅ Weather Alerts routes loaded');
 } catch (error) {
   console.warn('⚠️ Could not load auth routes, using fallback endpoints:', error.message);
   console.error('Full error:', error);

@@ -11,6 +11,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.Serializable
 
 /**
  * Ktor-based API client for SmartFarm backend
@@ -121,7 +122,7 @@ class SmartFarmApi(
             }
             Resource.Success(Unit)
         } catch (e: Exception) {
-            Resource.Error(e)
+            Resource.Error(e.message ?: "Network error", e)
         }
     }
     
@@ -175,7 +176,7 @@ class SmartFarmApi(
             }
             Resource.Success(Unit)
         } catch (e: Exception) {
-            Resource.Error(e)
+            Resource.Error(e.message ?: "Network error", e)
         }
     }
     
@@ -229,7 +230,7 @@ class SmartFarmApi(
             }
             Resource.Success(Unit)
         } catch (e: Exception) {
-            Resource.Error(e)
+            Resource.Error(e.message ?: "Network error", e)
         }
     }
     
@@ -283,7 +284,7 @@ class SmartFarmApi(
             }
             Resource.Success(Unit)
         } catch (e: Exception) {
-            Resource.Error(e)
+            Resource.Error(e.message ?: "Network error", e)
         }
     }
     
@@ -337,7 +338,7 @@ class SmartFarmApi(
             }
             Resource.Success(Unit)
         } catch (e: Exception) {
-            Resource.Error(e)
+            Resource.Error(e.message ?: "Network error", e)
         }
     }
     
@@ -391,7 +392,7 @@ class SmartFarmApi(
             }
             Resource.Success(Unit)
         } catch (e: Exception) {
-            Resource.Error(e)
+            Resource.Error(e.message ?: "Network error", e)
         }
     }
     
@@ -465,5 +466,171 @@ class SmartFarmApi(
             Resource.Error(e.message ?: "Network error", e)
         }
     }
+    
+    // ========== Weather Alerts ==========
+    suspend fun getWeatherAlerts(farmId: String? = null, unreadOnly: Boolean = false, limit: Int = 50): Resource<List<WeatherAlertDto>> {
+        return try {
+            val params = mutableListOf<String>()
+            if (farmId != null) params.add("farmId=$farmId")
+            if (unreadOnly) params.add("unreadOnly=true")
+            params.add("limit=$limit")
+            
+            val url = if (params.isNotEmpty()) {
+                "$baseUrl/api/weather-alerts?${params.joinToString("&")}"
+            } else {
+                "$baseUrl/api/weather-alerts"
+            }
+            
+            val response: WeatherAlertsResponse = client.get(url) {
+                addAuthHeader()
+            }.body()
+            if (response.success) {
+                Resource.Success(response.data)
+            } else {
+                Resource.Error(response.error ?: "Failed to fetch weather alerts", null)
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Network error", e)
+        }
+    }
+    
+    suspend fun getWeatherAlertStats(): Resource<WeatherAlertStatsDto> {
+        return try {
+            val response: WeatherAlertStatsResponse = client.get("$baseUrl/api/weather-alerts/stats") {
+                addAuthHeader()
+            }.body()
+            if (response.success && response.data != null) {
+                Resource.Success(response.data)
+            } else {
+                Resource.Error(response.error ?: "Failed to fetch alert stats", null)
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Network error", e)
+        }
+    }
+    
+    suspend fun getWeatherAlert(alertId: String): Resource<WeatherAlertDto> {
+        return try {
+            val response: WeatherAlertResponse = client.get("$baseUrl/api/weather-alerts/$alertId") {
+                addAuthHeader()
+            }.body()
+            if (response.success && response.data != null) {
+                Resource.Success(response.data)
+            } else {
+                Resource.Error(response.error ?: "Failed to fetch alert", null)
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Network error", e)
+        }
+    }
+    
+    suspend fun markAlertAsRead(alertId: String): Resource<WeatherAlertDto> {
+        return try {
+            val response: WeatherAlertResponse = client.patch("$baseUrl/api/weather-alerts/$alertId/read") {
+                addAuthHeader()
+            }.body()
+            if (response.success && response.data != null) {
+                Resource.Success(response.data)
+            } else {
+                Resource.Error(response.error ?: "Failed to mark alert as read", null)
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Network error", e)
+        }
+    }
+    
+    suspend fun dismissAlert(alertId: String): Resource<WeatherAlertDto> {
+        return try {
+            val response: WeatherAlertResponse = client.patch("$baseUrl/api/weather-alerts/$alertId/dismiss") {
+                addAuthHeader()
+            }.body()
+            if (response.success && response.data != null) {
+                Resource.Success(response.data)
+            } else {
+                Resource.Error(response.error ?: "Failed to dismiss alert", null)
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Network error", e)
+        }
+    }
+    
+    suspend fun markAlertActionTaken(alertId: String, actionNotes: String? = null): Resource<WeatherAlertDto> {
+        return try {
+            val response: WeatherAlertResponse = client.patch("$baseUrl/api/weather-alerts/$alertId/action") {
+                contentType(ContentType.Application.Json)
+                addAuthHeader()
+                setBody(AlertActionRequest(actionNotes))
+            }.body()
+            if (response.success && response.data != null) {
+                Resource.Success(response.data)
+            } else {
+                Resource.Error(response.error ?: "Failed to mark action taken", null)
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Network error", e)
+        }
+    }
+    
+    suspend fun getAlertPreferences(): Resource<AlertPreferencesDto> {
+        return try {
+            val response: AlertPreferencesResponse = client.get("$baseUrl/api/weather-alerts/preferences") {
+                addAuthHeader()
+            }.body()
+            if (response.success && response.data != null) {
+                Resource.Success(response.data)
+            } else {
+                Resource.Error(response.error ?: "Failed to fetch preferences", null)
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Network error", e)
+        }
+    }
+    
+    suspend fun updateAlertPreferences(preferences: AlertPreferencesDto): Resource<AlertPreferencesDto> {
+        return try {
+            val response: AlertPreferencesResponse = client.put("$baseUrl/api/weather-alerts/preferences") {
+                contentType(ContentType.Application.Json)
+                addAuthHeader()
+                setBody(preferences)
+            }.body()
+            if (response.success && response.data != null) {
+                Resource.Success(response.data)
+            } else {
+                Resource.Error(response.error ?: "Failed to update preferences", null)
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Network error", e)
+        }
+    }
 }
+
+// Response wrappers for API responses
+@Serializable
+data class WeatherAlertsResponse(
+    val success: Boolean,
+    val data: List<WeatherAlertDto> = emptyList(),
+    val count: Int = 0,
+    val error: String? = null
+)
+
+@Serializable
+data class WeatherAlertStatsResponse(
+    val success: Boolean,
+    val data: WeatherAlertStatsDto? = null,
+    val error: String? = null
+)
+
+@Serializable
+data class WeatherAlertResponse(
+    val success: Boolean,
+    val data: WeatherAlertDto? = null,
+    val error: String? = null
+)
+
+@Serializable
+data class AlertPreferencesResponse(
+    val success: Boolean,
+    val data: AlertPreferencesDto? = null,
+    val error: String? = null
+)
 

@@ -16,12 +16,14 @@ import com.smartfarm.ui.components.EmptyState
 import com.smartfarm.ui.components.ErrorState
 import com.smartfarm.ui.components.LoadingState
 import com.smartfarm.ui.components.DailyTipsCard
+import com.smartfarm.ui.components.WeatherAlertsWidget
 import com.smartfarm.shared.ui.viewmodel.DashboardViewModel
 import org.koin.compose.viewmodel.viewModel
 
 @Composable
 fun DashboardScreen(
-    viewModel: DashboardViewModel = viewModel()
+    viewModel: DashboardViewModel = viewModel(),
+    onNavigateToAlerts: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
     
@@ -36,13 +38,16 @@ fun DashboardScreen(
             )
         }
         else -> {
-            DashboardContent(uiState = uiState)
+            DashboardContent(uiState = uiState, onNavigateToAlerts = onNavigateToAlerts)
         }
     }
 }
 
 @Composable
-private fun DashboardContent(uiState: com.smartfarm.shared.ui.viewmodel.DashboardUiState) {
+private fun DashboardContent(
+    uiState: com.smartfarm.shared.ui.viewmodel.DashboardUiState,
+    onNavigateToAlerts: () -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -53,6 +58,14 @@ private fun DashboardContent(uiState: com.smartfarm.shared.ui.viewmodel.Dashboar
             style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.padding(bottom = 16.dp)
         )
+        
+        // Weather Alerts Widget
+        WeatherAlertsWidget(
+            onViewAll = onNavigateToAlerts,
+            modifier = Modifier.fillMaxWidth()
+        )
+        
+        Spacer(Modifier.height(16.dp))
         
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),

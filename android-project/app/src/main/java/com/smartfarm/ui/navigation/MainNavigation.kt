@@ -12,6 +12,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.smartfarm.ui.screens.*
 import com.smartfarm.shared.ui.viewmodel.AuthViewModel
 import org.koin.compose.viewmodel.viewModel
@@ -25,6 +26,10 @@ sealed class Screen(val route: String, val title: String, val icon: androidx.com
     object Tasks : Screen("tasks", "Tasks", Icons.Default.CheckCircle)
     object Inventory : Screen("inventory", "Inventory", Icons.Default.Inventory)
     object Reports : Screen("reports", "Reports", Icons.Default.Analytics)
+    object WeatherAlerts : Screen("weather_alerts", "Weather Alerts", Icons.Default.Warning)
+    object WeatherAlertDetail : Screen("weather_alert_detail/{alertId}", "Alert Details", Icons.Default.Info) {
+        fun createRoute(alertId: String) = "weather_alert_detail/$alertId"
+    }
 }
 
 @Composable
@@ -86,7 +91,11 @@ fun MainNavigation() {
         
         composable(Screen.Dashboard.route) {
             MainAppScaffold(navController = navController) {
-                DashboardScreen()
+                DashboardScreen(
+                    onNavigateToAlerts = {
+                        navController.navigate(Screen.WeatherAlerts.route)
+                    }
+                )
             }
         }
         
@@ -117,6 +126,29 @@ fun MainNavigation() {
         composable(Screen.Reports.route) {
             MainAppScaffold(navController = navController) {
                 ReportsScreen()
+            }
+        }
+        
+        composable(Screen.WeatherAlerts.route) {
+            MainAppScaffold(navController = navController) {
+                WeatherAlertsScreen(
+                    onAlertClick = { alertId ->
+                        navController.navigate(Screen.WeatherAlertDetail.createRoute(alertId))
+                    }
+                )
+            }
+        }
+        
+        composable(
+            route = Screen.WeatherAlertDetail.route,
+            arguments = listOf(navArgument("alertId") { type = androidx.navigation.NavType.StringType })
+        ) { backStackEntry ->
+            val alertId = backStackEntry.arguments?.getString("alertId") ?: ""
+            MainAppScaffold(navController = navController) {
+                WeatherAlertDetailScreen(
+                    alertId = alertId,
+                    onBack = { navController.popBackStack() }
+                )
             }
         }
     }

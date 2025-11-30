@@ -75,6 +75,10 @@ fun createSharedKoinModule(
         AnalyticsRepository(get())
     }
     
+    single<WeatherAlertsRepository> {
+        WeatherAlertsRepository(get())
+    }
+    
     // ViewModels
     factory<AuthViewModel> {
         AuthViewModel(get())
@@ -102,6 +106,10 @@ fun createSharedKoinModule(
     
     factory<InventoryViewModel> {
         InventoryViewModel(get())
+    }
+    
+    factory<WeatherAlertsViewModel> {
+        WeatherAlertsViewModel(get())
     }
 }
 

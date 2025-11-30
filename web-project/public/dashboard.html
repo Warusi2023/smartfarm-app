@@ -257,6 +257,10 @@
     <script src="js/offline-mode.js"></script>
     <script src="js/ui-hardening.js"></script>
     <script src="js/daily-tips.js"></script>
+    <!-- Weather Alerts Widget -->
+    <link href="css/weather-alerts.css" rel="stylesheet">
+    <script src="js/weather-alerts-service.js"></script>
+    <script src="js/weather-alerts-widget.js"></script>
     <style>
         :root {
             --primary-color: #2e7d32;
@@ -1641,6 +1645,13 @@
                                 <div class="stat-number" id="monthlyYield">2.5</div>
                                 <div>Monthly Yield (tons)</div>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Weather Alerts Widget Row -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div id="weather-alerts-widget"></div>
                         </div>
                     </div>
 
