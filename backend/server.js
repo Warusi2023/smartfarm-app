@@ -362,7 +362,7 @@ try {
   app.use('/api/daily-tips', DailyTipsRoutes);
   console.log('✅ Daily Tips routes loaded');
   
-  // Load Weather Alerts routes
+  // Load Weather Alerts routes (independent of other routes)
   console.log('🔍 Initializing Weather Alerts routes...');
   try {
     console.log('  → Requiring routes/weather-alerts module...');
@@ -387,7 +387,8 @@ try {
   } catch (weatherError) {
     console.error('❌ Error loading Weather Alerts routes:', weatherError.message);
     console.error('❌ Weather Alerts error stack:', weatherError.stack);
-    throw weatherError; // Re-throw to be caught by outer catch
+    // Don't re-throw - let other routes continue loading
+    console.warn('⚠️ Weather Alerts routes will be skipped, but other routes will continue');
   }
   
   // Note: Weather alerts cron job is configured via Railway Cron (not node-cron)
@@ -410,7 +411,7 @@ try {
     app.use('/api/daily-tips', DailyTipsRoutes);
     console.log('✅ Daily Tips routes loaded (standalone)');
     
-    // Try to load Weather Alerts routes (standalone)
+    // Try to load Weather Alerts routes (standalone fallback)
     try {
       console.log('🔍 Attempting to load Weather Alerts routes (standalone fallback)...');
       const { router: weatherAlertsRouter, initWeatherAlertsRoutes } = require('./routes/weather-alerts');
@@ -420,8 +421,17 @@ try {
       app.use('/api/weather-alerts', weatherAlertsRouter);
       console.log('✅ Weather Alerts routes loaded (standalone fallback)');
     } catch (weatherError) {
-      console.error('❌ Failed to load Weather Alerts routes:', weatherError.message);
+      console.error('❌ Failed to load Weather Alerts routes (standalone fallback):', weatherError.message);
       console.error('Weather Alerts error stack:', weatherError.stack);
+      // Add a basic fallback route so the endpoint exists
+      app.get('/api/weather-alerts', (req, res) => {
+        res.status(503).json({
+          success: false,
+          error: 'Weather alerts service is temporarily unavailable',
+          message: 'Please check server logs for details'
+        });
+      });
+      console.log('⚠️ Weather Alerts fallback route added (503 response)');
     }
   } catch (aiError) {
     console.warn('⚠️ Could not load AI Advisory routes:', aiError.message);
