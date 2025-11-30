@@ -58,6 +58,15 @@ class WeatherAlertsService {
             }
 
             if (!response.ok) {
+                // Handle 404 gracefully (route might not be deployed yet)
+                if (response.status === 404) {
+                    console.warn('Weather alerts API endpoint not found (404) - route may not be deployed yet');
+                    return {
+                        success: false,
+                        error: 'Weather alerts service is not available',
+                        data: []
+                    };
+                }
                 const errorData = await response.json().catch(() => ({}));
                 throw new Error(errorData.error || `HTTP ${response.status}`);
             }

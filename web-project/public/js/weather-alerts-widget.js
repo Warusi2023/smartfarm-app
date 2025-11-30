@@ -35,19 +35,32 @@ class WeatherAlertsWidget {
     async loadData() {
         try {
             const [alertsResponse, statsResponse] = await Promise.all([
-                this.service.getAlerts({ unreadOnly: true, limit: 5 }),
-                this.service.getStats()
+                this.service.getAlerts({ unreadOnly: true, limit: 5 }).catch(err => {
+                    console.warn('Weather alerts API unavailable:', err);
+                    return { success: false, error: err.message };
+                }),
+                this.service.getStats().catch(err => {
+                    console.warn('Weather alerts stats API unavailable:', err);
+                    return { success: false, error: err.message };
+                })
             ]);
 
-            if (alertsResponse.success) {
+            if (alertsResponse && alertsResponse.success) {
                 this.alerts = alertsResponse.data || [];
+            } else {
+                this.alerts = [];
             }
 
-            if (statsResponse.success) {
+            if (statsResponse && statsResponse.success) {
                 this.stats = statsResponse.data;
+            } else {
+                this.stats = { total: 0, unread: 0, critical: 0, high: 0, upcoming: 0 };
             }
         } catch (error) {
-            console.error('Error loading weather alerts data:', error);
+            console.warn('Error loading weather alerts data (non-critical):', error);
+            // Set empty defaults so widget still renders
+            this.alerts = [];
+            this.stats = { total: 0, unread: 0, critical: 0, high: 0, upcoming: 0 };
         }
     }
 
