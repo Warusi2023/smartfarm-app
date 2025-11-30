@@ -15,10 +15,18 @@
       import API_URL from "./src/env.ts";
       const el = document.getElementById("app");
       el.innerHTML = "<h1>SmartFarm Web</h1><p>API: " + API_URL + "</p>";
-      fetch(API_URL + "/health")
-        .then(r => r.json())
+      // Use /api/health endpoint (which exists and works)
+      const healthUrl = API_URL.endsWith('/api') ? API_URL + '/health' : API_URL + '/api/health';
+      fetch(healthUrl)
+        .then(r => {
+          if (!r.ok) throw new Error(`HTTP ${r.status}`);
+          return r.json();
+        })
         .then(j => el.insertAdjacentHTML("beforeend", "<pre>"+JSON.stringify(j,null,2)+"</pre>"))
-        .catch(e => { console.error(e); el.insertAdjacentHTML("beforeend","<p style='color:red'>API call failed</p>"); });
+        .catch(e => { 
+          console.error('Health check failed:', e); 
+          el.insertAdjacentHTML("beforeend","<p style='color:red'>API call failed: " + e.message + "</p>");
+        });
     </script>
   </body>
 </html>
