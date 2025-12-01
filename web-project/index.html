@@ -3,7 +3,220 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>SmartFarm</title>
+    <title>SmartFarm - Farm Management Platform</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        color: #333;
+      }
+      
+      .container {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        max-width: 900px;
+        width: 100%;
+        overflow: hidden;
+        animation: fadeIn 0.5s ease-in;
+      }
+      
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      
+      .header {
+        background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+        color: white;
+        padding: 40px;
+        text-align: center;
+      }
+      
+      .header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+      }
+      
+      .header .icon {
+        font-size: 2.5rem;
+      }
+      
+      .header p {
+        font-size: 1.1rem;
+        opacity: 0.95;
+        margin-top: 10px;
+      }
+      
+      .content {
+        padding: 40px;
+      }
+      
+      .api-info {
+        background: #f8f9fa;
+        border-left: 4px solid #4CAF50;
+        padding: 15px 20px;
+        margin-bottom: 30px;
+        border-radius: 5px;
+      }
+      
+      .api-info label {
+        font-size: 0.85rem;
+        color: #666;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+        display: block;
+        margin-bottom: 5px;
+      }
+      
+      .api-info .url {
+        font-family: 'Courier New', monospace;
+        color: #2196F3;
+        font-size: 0.95rem;
+        word-break: break-all;
+      }
+      
+      .actions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 30px;
+      }
+      
+      .btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 16px 24px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+      }
+      
+      .btn:active {
+        transform: translateY(0);
+      }
+      
+      .btn-primary {
+        background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+        color: white;
+      }
+      
+      .btn-secondary {
+        background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+        color: white;
+      }
+      
+      .btn-outline {
+        background: white;
+        color: #666;
+        border: 2px solid #e0e0e0;
+      }
+      
+      .btn-outline:hover {
+        border-color: #4CAF50;
+        color: #4CAF50;
+      }
+      
+      .status-section {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 25px;
+        margin-top: 30px;
+      }
+      
+      .status-section h3 {
+        font-size: 1.2rem;
+        margin-bottom: 15px;
+        color: #333;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      
+      .status-online {
+        color: #4CAF50;
+      }
+      
+      .status-offline {
+        color: #f44336;
+      }
+      
+      .status-loading {
+        color: #FF9800;
+      }
+      
+      .json-display {
+        background: #2d2d2d;
+        color: #f8f8f2;
+        padding: 20px;
+        border-radius: 8px;
+        overflow-x: auto;
+        font-family: 'Courier New', monospace;
+        font-size: 0.9rem;
+        line-height: 1.6;
+        margin-top: 15px;
+      }
+      
+      .json-display pre {
+        margin: 0;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+      }
+      
+      @media (max-width: 768px) {
+        .header h1 {
+          font-size: 2rem;
+        }
+        
+        .header {
+          padding: 30px 20px;
+        }
+        
+        .content {
+          padding: 30px 20px;
+        }
+        
+        .actions {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
   </head>
   <body>
     <div id="app"></div>
@@ -17,29 +230,51 @@
       // Use production API URL if env var is not set
       const apiBaseUrl = API_URL || 'https://smartfarm-app-production.up.railway.app';
       
-      // Create a proper landing page with navigation
+      // Create a professional landing page
       el.innerHTML = `
-        <div style="max-width: 800px; margin: 50px auto; padding: 20px; font-family: Arial, sans-serif;">
-          <h1>SmartFarm Web</h1>
-          <p><strong>API:</strong> ${apiBaseUrl}</p>
-          <div style="margin: 30px 0;">
-            <a href="/login.html" style="display: inline-block; padding: 12px 24px; background: #4CAF50; color: white; text-decoration: none; border-radius: 5px; margin-right: 10px; font-weight: bold;">
-              Login
-            </a>
-            <a href="/signup.html" style="display: inline-block; padding: 12px 24px; background: #2196F3; color: white; text-decoration: none; border-radius: 5px; margin-right: 10px; font-weight: bold;">
-              Sign Up
-            </a>
-            <a href="/dashboard.html" style="display: inline-block; padding: 12px 24px; background: #666; color: white; text-decoration: none; border-radius: 5px; font-weight: bold;">
-              Dashboard
-            </a>
+        <div class="container">
+          <div class="header">
+            <h1>
+              <i class="fas fa-seedling icon"></i>
+              SmartFarm
+            </h1>
+            <p>Farm Management Platform</p>
           </div>
-          <div id="health-status" style="margin-top: 30px;">
-            <p>Checking API status...</p>
+          
+          <div class="content">
+            <div class="api-info">
+              <label>API Endpoint</label>
+              <div class="url">${apiBaseUrl}</div>
+            </div>
+            
+            <div class="actions">
+              <a href="/login.html" class="btn btn-primary">
+                <i class="fas fa-sign-in-alt"></i>
+                Login
+              </a>
+              <a href="/signup.html" class="btn btn-secondary">
+                <i class="fas fa-user-plus"></i>
+                Sign Up
+              </a>
+              <a href="/dashboard.html" class="btn btn-outline">
+                <i class="fas fa-tachometer-alt"></i>
+                Dashboard
+              </a>
+            </div>
+            
+            <div class="status-section">
+              <h3 id="status-title" class="status-loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                Checking API Status...
+              </h3>
+              <div id="health-status"></div>
+            </div>
           </div>
         </div>
       `;
       
       const healthStatusEl = document.getElementById("health-status");
+      const statusTitleEl = document.getElementById("status-title");
       
       // Use /api/health endpoint (which exists and works)
       const healthUrl = apiBaseUrl.endsWith('/api') ? apiBaseUrl + '/health' : apiBaseUrl + '/api/health';
@@ -49,14 +284,32 @@
           return r.json();
         })
         .then(j => {
+          statusTitleEl.className = 'status-online';
+          statusTitleEl.innerHTML = `
+            <i class="fas fa-check-circle"></i>
+            API Status: Online
+          `;
           healthStatusEl.innerHTML = `
-            <h3 style="color: green;">✅ API Status: Online</h3>
-            <pre style="background: #f5f5f5; padding: 15px; border-radius: 5px; overflow-x: auto;">${JSON.stringify(j, null, 2)}</pre>
+            <div class="json-display">
+              <pre>${JSON.stringify(j, null, 2)}</pre>
+            </div>
           `;
         })
         .catch(e => { 
           console.error('Health check failed:', e); 
-          healthStatusEl.innerHTML = `<p style="color: red;">❌ API call failed: ${e.message}</p>`;
+          statusTitleEl.className = 'status-offline';
+          statusTitleEl.innerHTML = `
+            <i class="fas fa-exclamation-circle"></i>
+            API Status: Offline
+          `;
+          healthStatusEl.innerHTML = `
+            <p style="color: #f44336; margin-top: 10px;">
+              <strong>Error:</strong> ${e.message}
+            </p>
+            <p style="color: #666; margin-top: 10px; font-size: 0.9rem;">
+              Please check your connection or contact support if the issue persists.
+            </p>
+          `;
         });
     </script>
   </body>
