@@ -43,23 +43,8 @@ class RealApiService(
         }
     }
 
-    override suspend fun getFarm(id: String): Farm? {
-        return try {
-            val headers = httpClient.createDefaultHeaders(authToken)
-            val response = httpClient.get("${ApiConfig.Endpoints.FARMS}/$id", headers)
-            
-            if (response.isSuccessful()) {
-                json.decodeFromString<Farm>(response.body)
-            } else {
-                println("❌ API Error: ${response.statusCode} - ${response.body}")
-                super.getFarm(id)
-            }
-        } catch (e: Exception) {
-            println("❌ API Error: ${e.message}")
-            super.getFarm(id)
-        }
-    }
-
+    // Note: getFarm(id: String) not in DataService base class - removed override
+    
     override suspend fun createFarm(farm: Farm): Farm {
         return try {
             val headers = httpClient.createDefaultHeaders(authToken)
@@ -78,40 +63,7 @@ class RealApiService(
         }
     }
 
-    override suspend fun updateFarm(farm: Farm): Farm {
-        return try {
-            val headers = httpClient.createDefaultHeaders(authToken)
-            val farmJson = json.encodeToString(farm)
-            val response = httpClient.put("${ApiConfig.Endpoints.FARMS}/${farm.id}", farmJson, headers)
-            
-            if (response.isSuccessful()) {
-                json.decodeFromString<Farm>(response.body)
-            } else {
-                println("❌ API Error: ${response.statusCode} - ${response.body}")
-                super.updateFarm(farm)
-            }
-        } catch (e: Exception) {
-            println("❌ API Error: ${e.message}")
-            super.updateFarm(farm)
-        }
-    }
-
-    override suspend fun deleteFarm(id: String): Boolean {
-        return try {
-            val headers = httpClient.createDefaultHeaders(authToken)
-            val response = httpClient.delete("${ApiConfig.Endpoints.FARMS}/$id", headers)
-            
-            if (response.isSuccessful()) {
-                true
-            } else {
-                println("❌ API Error: ${response.statusCode} - ${response.body}")
-                super.deleteFarm(id)
-            }
-        } catch (e: Exception) {
-            println("❌ API Error: ${e.message}")
-            super.deleteFarm(id)
-        }
-    }
+    // Note: updateFarm and deleteFarm not in DataService base class - removed overrides
 
     override suspend fun getCrops(): List<Crop> {
         return try {
@@ -164,61 +116,7 @@ class RealApiService(
         }
     }
 
-    override suspend fun getUsers(): List<User> {
-        return try {
-            val headers = httpClient.createDefaultHeaders(authToken)
-            val response = httpClient.get(ApiConfig.Endpoints.USERS, headers)
-            
-            if (response.isSuccessful()) {
-                json.decodeFromString<List<User>>(response.body)
-            } else {
-                println("❌ API Error: ${response.statusCode} - ${response.body}")
-                super.getUsers()
-            }
-        } catch (e: Exception) {
-            println("❌ API Error: ${e.message}")
-            super.getUsers()
-        }
-    }
-
-    override suspend fun getInventory(): List<InventoryItem> {
-        return try {
-            val headers = httpClient.createDefaultHeaders(authToken)
-            val response = httpClient.get(ApiConfig.Endpoints.INVENTORY, headers)
-            
-            if (response.isSuccessful()) {
-                json.decodeFromString<List<InventoryItem>>(response.body)
-            } else {
-                println("❌ API Error: ${response.statusCode} - ${response.body}")
-                super.getInventory()
-            }
-        } catch (e: Exception) {
-            println("❌ API Error: ${e.message}")
-            super.getInventory()
-        }
-    }
-
-    override suspend fun getFinancialRecords(farmId: Long?, type: FinancialType?): List<FinancialRecord> {
-        return try {
-            val headers = httpClient.createDefaultHeaders(authToken)
-            val queryParams = mutableListOf<String>()
-            if (farmId != null) queryParams.add("farmId=$farmId")
-            if (type != null) queryParams.add("type=${type.name}")
-            
-            val queryString = if (queryParams.isNotEmpty()) "?${queryParams.joinToString("&")}" else ""
-            val response = httpClient.get("${ApiConfig.Endpoints.FINANCIAL}$queryString", headers)
-            
-            if (response.isSuccessful()) {
-                json.decodeFromString<List<FinancialRecord>>(response.body)
-            } else {
-                println("❌ API Error: ${response.statusCode} - ${response.body}")
-                super.getFinancialRecords(farmId, type)
-            }
-        } catch (e: Exception) {
-            println("❌ API Error: ${e.message}")
-            super.getFinancialRecords(farmId, type)
-        }
-    }
+    // Note: getUsers, getInventory, getFinancialRecords not in DataService base class - removed overrides
 
     override suspend fun getFarmStats(farmId: Long): Map<String, Any> {
         return try {

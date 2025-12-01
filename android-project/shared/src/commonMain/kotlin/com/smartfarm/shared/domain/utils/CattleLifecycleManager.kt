@@ -203,7 +203,7 @@ object CattleLifecycleManager {
     fun getBreedingTimeline(birthDate: Long): BreedingTimeline {
         val targetBreedingAge = 15 // months
         val gestationPeriod = 9.5 // months
-        val targetCalvingAge = targetBreedingAge + gestationPeriod
+        val targetCalvingAge = (targetBreedingAge + gestationPeriod).toInt()
         
         val targetBreedingDate = birthDate + (targetBreedingAge * 30L * 24L * 60L * 60L * 1000L)
         val targetCalvingDate = birthDate + (targetCalvingAge * 30L * 24L * 60L * 60L * 1000L)

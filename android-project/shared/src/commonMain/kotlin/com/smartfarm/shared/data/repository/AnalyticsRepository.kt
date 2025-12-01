@@ -20,7 +20,7 @@ class AnalyticsRepository(
             val result = api.getAnalytics(farmId)
             emit(result)
         } catch (e: Exception) {
-            emit(Resource.Error(e))
+                emit(Resource.Error(e.message ?: "Error", e))
         }
     }
 }

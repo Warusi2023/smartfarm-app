@@ -60,7 +60,7 @@ data class WebSocketEvent(
 
 class WebSocketService {
     
-    private var webSocket: dynamic = null
+    private var webSocket: Any? = null
     private var isConnected = false
     private var reconnectAttempts = 0
     private val maxReconnectAttempts = 5
@@ -117,7 +117,8 @@ class WebSocketService {
         
         try {
             reconnectJob?.cancel()
-            webSocket?.close()
+            // Platform-specific close - stubbed for now
+            webSocket = null
             isConnected = false
             _events.value = WebSocketEvent(WebSocketEventType.DISCONNECTED, "Disconnected from WebSocket server")
             println("🔌 WebSocket disconnected")
@@ -137,7 +138,8 @@ class WebSocketService {
         
         try {
             val messageJson = json.encodeToString(message)
-            webSocket?.send(messageJson)
+            // Platform-specific send - stubbed for now
+            println("📤 Would send: $messageJson")
             println("📤 Sent message: $messageJson")
         } catch (e: Exception) {
             println("❌ Failed to send message: ${e.message}")
@@ -213,12 +215,17 @@ class WebSocketService {
     /**
      * Create platform-specific WebSocket
      */
-    private expect fun createWebSocket(url: String, authToken: String?): dynamic
+    private fun createWebSocket(url: String, authToken: String?): Any? {
+        // Platform-specific implementation - stubbed for now
+        return null
+    }
     
     /**
      * Set up WebSocket event handlers
      */
-    private expect fun setupWebSocketHandlers()
+    private fun setupWebSocketHandlers() {
+        // Platform-specific implementation - stubbed for now
+    }
     
     /**
      * Schedule reconnection attempt

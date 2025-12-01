@@ -35,16 +35,16 @@ class FarmViewModel(
                     }
                     is Resource.Success -> {
                         _uiState.value = FarmUiState(
-                            farms = resource.data ?: emptyList(),
+                            farms = resource.data,
                             isLoading = false,
                             error = null
                         )
                     }
                     is Resource.Error -> {
                         _uiState.value = FarmUiState(
-                            farms = resource.data ?: emptyList(),
+                            farms = emptyList(),
                             isLoading = false,
-                            error = resource.exception?.message
+                            error = resource.message
                         )
                     }
                 }
@@ -62,7 +62,7 @@ class FarmViewModel(
                 is Resource.Error -> {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        error = result.exception?.message
+                        error = result.message
                     )
                 }
                 is Resource.Loading -> {}
@@ -80,7 +80,7 @@ class FarmViewModel(
                 is Resource.Error -> {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        error = result.exception?.message
+                        error = result.message
                     )
                 }
                 is Resource.Loading -> {}
@@ -98,7 +98,7 @@ class FarmViewModel(
                 is Resource.Error -> {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        error = result.exception?.message
+                        error = result.message
                     )
                 }
                 is Resource.Loading -> {}

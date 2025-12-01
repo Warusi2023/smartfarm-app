@@ -1,6 +1,12 @@
 /**
  * SmartFarm API Configuration - Single Source of Truth
  * All API calls MUST use this configuration
+ * 
+ * ⚠️ IMPORTANT: This file is auto-generated from shared-api-config.json
+ * To modify API endpoints, update shared-api-config.json and run:
+ *   .\generate-api-code.ps1
+ * 
+ * For synchronization, see: WEB_ANDROID_SYNC_GUIDE.md
  */
 
 (function() {

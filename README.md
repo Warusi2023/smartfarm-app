@@ -148,6 +148,36 @@ See `android-project/README.md` for Android setup instructions.
    npm run dev
    ```
 
+## 🔄 Web-to-Android Synchronization
+
+SmartFarm includes an automated synchronization system that keeps the web and Android projects in sync, ensuring users can access their accounts seamlessly from any device.
+
+### Quick Setup
+
+```powershell
+# Initial setup (run once)
+.\setup-sync.ps1
+
+# Watch mode for automatic syncing during development
+.\sync-web-to-android.ps1 -Watch
+```
+
+### How It Works
+
+1. **Shared Configuration**: All API endpoints are defined in `shared-api-config.json`
+2. **Code Generation**: Run `.\generate-api-code.ps1` to generate platform-specific code
+3. **Automatic Sync**: Changes in the web project automatically sync to Android
+4. **Seamless Experience**: Users can switch between web and mobile without any issues
+
+### Key Features
+
+- ✅ **Single Source of Truth**: One config file for all platforms
+- ✅ **Automatic Syncing**: Changes propagate automatically
+- ✅ **Consistent APIs**: Both platforms always match
+- ✅ **Easy Maintenance**: Update once, sync everywhere
+
+For detailed instructions, see [WEB_ANDROID_SYNC_GUIDE.md](WEB_ANDROID_SYNC_GUIDE.md)
+
 7. **Access the application**
    - Frontend: http://localhost:3000
    - Backend API: http://localhost:3001

@@ -28,6 +28,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
     
@@ -45,7 +46,9 @@ android {
     }
     
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.1"
+        // Use latest Compose Compiler that supports Kotlin 1.9.24
+        // Note: Version compatibility check is suppressed in gradle.properties
+        kotlinCompilerExtensionVersion = "1.5.14"
     }
     
     packaging {
@@ -56,6 +59,9 @@ android {
 }
 
 dependencies {
+    // Shared KMM module
+    implementation(project(":shared"))
+    
     // Core Android dependencies
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")

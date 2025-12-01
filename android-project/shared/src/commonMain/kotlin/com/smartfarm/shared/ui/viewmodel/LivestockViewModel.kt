@@ -31,16 +31,16 @@ class LivestockViewModel(
                     }
                     is Resource.Success -> {
                         _uiState.value = LivestockUiState(
-                            livestock = resource.data ?: emptyList(),
+                            livestock = resource.data,
                             isLoading = false,
                             error = null
                         )
                     }
                     is Resource.Error -> {
                         _uiState.value = LivestockUiState(
-                            livestock = resource.data ?: emptyList(),
+                            livestock = emptyList(),
                             isLoading = false,
-                            error = resource.exception?.message
+                            error = resource.message
                         )
                     }
                 }
@@ -58,7 +58,7 @@ class LivestockViewModel(
                 is Resource.Error -> {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        error = result.exception?.message
+                        error = result.message
                     )
                 }
                 is Resource.Loading -> {}
@@ -76,7 +76,7 @@ class LivestockViewModel(
                 is Resource.Error -> {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        error = result.exception?.message
+                        error = result.message
                     )
                 }
                 is Resource.Loading -> {}
@@ -94,7 +94,7 @@ class LivestockViewModel(
                 is Resource.Error -> {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        error = result.exception?.message
+                        error = result.message
                     )
                 }
                 is Resource.Loading -> {}

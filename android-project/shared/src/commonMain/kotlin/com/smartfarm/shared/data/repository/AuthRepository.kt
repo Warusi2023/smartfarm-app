@@ -67,14 +67,14 @@ class AuthRepository(
         return preferences.getString(AppPreferences.ACCESS_TOKEN)
     }
     
-    fun getRefreshToken(): String? {
+    fun getRefreshToken(): String {
         return preferences.getString(AppPreferences.REFRESH_TOKEN) ?: ""
     }
     
     suspend fun refreshToken(): Resource<String> {
         val refreshToken = getRefreshToken()
         if (refreshToken.isEmpty()) {
-            return Resource.Error(Exception("No refresh token available"))
+            return Resource.Error("No refresh token available", Exception("No refresh token available"))
         }
         
         val result = api.refreshToken(RefreshTokenRequest(refreshToken))
@@ -85,11 +85,11 @@ class AuthRepository(
                     preferences.putString(AppPreferences.ACCESS_TOKEN, newToken)
                     Resource.Success(newToken)
                 } else {
-                    Resource.Error(Exception("No token in refresh response"))
+                    Resource.Error("No token in refresh response", Exception("No token in refresh response"))
                 }
             }
-            is Resource.Error -> Resource.Error(result.exception)
-            is Resource.Loading -> Resource.Error(Exception("Unexpected loading state"))
+            is Resource.Error -> Resource.Error(result.message, result.throwable)
+            is Resource.Loading -> Resource.Error("Unexpected loading state", Exception("Unexpected loading state"))
         }
     }
     

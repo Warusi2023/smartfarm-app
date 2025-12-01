@@ -28,16 +28,16 @@ class InventoryViewModel(
                     }
                     is Resource.Success -> {
                         _uiState.value = InventoryUiState(
-                            items = resource.data ?: emptyList(),
+                            items = resource.data,
                             isLoading = false,
                             error = null
                         )
                     }
                     is Resource.Error -> {
                         _uiState.value = InventoryUiState(
-                            items = resource.data ?: emptyList(),
+                            items = emptyList(),
                             isLoading = false,
-                            error = resource.exception?.message
+                            error = resource.message
                         )
                     }
                 }
@@ -53,7 +53,7 @@ class InventoryViewModel(
                 is Resource.Error -> {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        error = result.exception?.message
+                        error = result.message
                     )
                 }
                 is Resource.Loading -> {}
@@ -69,7 +69,7 @@ class InventoryViewModel(
                 is Resource.Error -> {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        error = result.exception?.message
+                        error = result.message
                     )
                 }
                 is Resource.Loading -> {}
@@ -85,7 +85,7 @@ class InventoryViewModel(
                 is Resource.Error -> {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        error = result.exception?.message
+                        error = result.message
                     )
                 }
                 is Resource.Loading -> {}

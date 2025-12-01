@@ -54,19 +54,41 @@ fun AnalyticsScreen(dataService: DataService, onNavigateBack: () -> Unit) {
                 text = "Analytics Dashboard",
                 style = MaterialTheme.typography.headlineMedium
             )
-            IconButton(onClick = { /* Refresh data */ }) {
-                Icon(Icons.Default.Refresh, contentDescription = "Refresh")
-            }
+            // Refresh button removed - icon not available
         }
         
         Spacer(modifier = Modifier.height(16.dp))
         
-        // Farm Selection
-        FarmSelector(
-            selectedFarmId = selectedFarmId,
-            onFarmSelected = { selectedFarmId = it },
-            dataService = dataService
-        )
+        // Farm Selection - simplified
+        var farms by remember { mutableStateOf<List<Farm>>(emptyList()) }
+        LaunchedEffect(Unit) {
+            farms = dataService.getFarms()
+        }
+        
+        if (farms.isNotEmpty()) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text("Select Farm", fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    farms.forEach { farm ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = selectedFarmId == farm.id,
+                                onClick = { selectedFarmId = farm.id }
+                            )
+                            Text(farm.name)
+                        }
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+        }
         
         Spacer(modifier = Modifier.height(24.dp))
         

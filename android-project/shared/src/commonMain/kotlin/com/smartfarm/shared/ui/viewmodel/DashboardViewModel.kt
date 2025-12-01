@@ -43,25 +43,25 @@ class DashboardViewModel(
             ) { farmsRes, livestockRes, cropsRes, tasksRes, analyticsRes ->
                 val farms = when (farmsRes) {
                     is Resource.Success -> farmsRes.data
-                    is Resource.Error -> farmsRes.data ?: emptyList()
+                    is Resource.Error -> emptyList()
                     else -> emptyList()
                 }
                 
                 val livestock = when (livestockRes) {
                     is Resource.Success -> livestockRes.data
-                    is Resource.Error -> livestockRes.data ?: emptyList()
+                    is Resource.Error -> emptyList()
                     else -> emptyList()
                 }
                 
                 val crops = when (cropsRes) {
                     is Resource.Success -> cropsRes.data
-                    is Resource.Error -> cropsRes.data ?: emptyList()
+                    is Resource.Error -> emptyList()
                     else -> emptyList()
                 }
                 
                 val tasks = when (tasksRes) {
                     is Resource.Success -> tasksRes.data
-                    is Resource.Error -> tasksRes.data ?: emptyList()
+                    is Resource.Error -> emptyList()
                     else -> emptyList()
                 }
                 
@@ -85,10 +85,10 @@ class DashboardViewModel(
                 }
                 
                 val error = when {
-                    farmsRes is Resource.Error -> farmsRes.exception?.message
-                    livestockRes is Resource.Error -> livestockRes.exception?.message
-                    cropsRes is Resource.Error -> cropsRes.exception?.message
-                    tasksRes is Resource.Error -> tasksRes.exception?.message
+                    farmsRes is Resource.Error -> farmsRes.message
+                    livestockRes is Resource.Error -> livestockRes.message
+                    cropsRes is Resource.Error -> cropsRes.message
+                    tasksRes is Resource.Error -> tasksRes.message
                     else -> null
                 }
                 

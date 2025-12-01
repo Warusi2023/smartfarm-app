@@ -43,7 +43,7 @@ class CacheService {
     inline fun <reified T> set(key: String, data: T, ttl: Long = defaultTtl) {
         val entry = CacheEntry(
             data = data,
-            timestamp = getCurrentTimeMillis(),
+            timestamp = System.currentTimeMillis(),
             ttl = ttl
         )
         cache[key] = entry
@@ -94,7 +94,7 @@ class CacheService {
      * Check if cache entry is expired
      */
     fun isExpired(entry: CacheEntry<*>): Boolean {
-        val now = getCurrentTimeMillis()
+        val now = System.currentTimeMillis()
         return (now - entry.timestamp) > entry.ttl
     }
     

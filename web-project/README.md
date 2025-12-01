@@ -207,11 +207,47 @@ Upload all files to your web server's public directory.
 - **Database**: Backup any dynamic content
 - **Configuration**: Document all configuration changes
 
+## Troubleshooting
+
+### API Call Failures
+
+If you encounter "API call failed" errors:
+
+1. **Quick Debug Guide**: See [`DEBUG_QUICK_REFERENCE.md`](./DEBUG_QUICK_REFERENCE.md) for a copy-paste checklist
+2. **Detailed Guide**: See [`DEBUG_API_ERRORS.md`](./DEBUG_API_ERRORS.md) for step-by-step debugging instructions
+
+**Common Issues:**
+- **CORS Errors**: Frontend domain not in backend allowed origins
+- **Network Errors**: Backend server not running or unreachable
+- **404 Errors**: API endpoint URL incorrect
+- **500 Errors**: Backend server error (check server logs)
+
+**Quick Fixes:**
+```bash
+# Check backend health
+curl https://smartfarm-app-production.up.railway.app/api/health
+
+# Verify CORS configuration
+# Check backend/server.js for ALLOWED_ORIGINS
+
+# Clear browser cache
+# Press Ctrl+Shift+Delete (Cmd+Shift+Delete on Mac)
+```
+
+### Other Common Issues
+
+- **Page not loading**: Check browser console for errors
+- **Styles not applying**: Clear browser cache, check CSS file paths
+- **JavaScript errors**: Check browser console, verify all script files load
+- **API authentication**: Verify token is stored in localStorage/sessionStorage
+
 ## Support and Documentation
 - **Code Comments**: Inline documentation for complex logic
 - **README**: Comprehensive setup and usage guide
 - **API Documentation**: Backend integration guides
-- **Troubleshooting**: Common issues and solutions
+- **Debugging Guides**: 
+  - [`DEBUG_API_ERRORS.md`](./DEBUG_API_ERRORS.md) - Detailed debugging steps
+  - [`DEBUG_QUICK_REFERENCE.md`](./DEBUG_QUICK_REFERENCE.md) - Quick copy-paste checklist
 
 ## License
 SmartFarm Web Application - All rights reserved

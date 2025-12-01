@@ -67,7 +67,7 @@ class AuthViewModel(
                 is Resource.Error -> {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        error = result.exception.message ?: "Login failed"
+                        error = result.message
                     )
                 }
                 is Resource.Loading -> {
@@ -108,7 +108,7 @@ class AuthViewModel(
                 is Resource.Error -> {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        error = result.exception.message ?: "Registration failed"
+                        error = result.message
                     )
                 }
                 is Resource.Loading -> {
@@ -140,7 +140,7 @@ class AuthViewModel(
                 is Resource.Error -> {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        error = result.exception.message
+                        error = result.message
                     )
                 }
                 is Resource.Loading -> {

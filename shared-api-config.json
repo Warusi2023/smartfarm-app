@@ -1,0 +1,69 @@
+{
+  "api": {
+    "production": {
+      "baseUrl": "https://smartfarm-app-production.up.railway.app",
+      "endpoints": {
+        "health": "/api/health",
+        "auth": {
+          "login": "/api/auth/login",
+          "register": "/api/auth/register",
+          "logout": "/api/auth/logout",
+          "profile": "/api/auth/profile",
+          "refresh": "/api/auth/refresh"
+        },
+        "farms": "/api/farms",
+        "crops": "/api/crops",
+        "livestock": "/api/livestock",
+        "tasks": "/api/tasks",
+        "inventory": "/api/inventory",
+        "financial": "/api/financial",
+        "analytics": "/api/analytics",
+        "dailyTips": {
+          "today": "/api/daily-tips/today",
+          "personalized": "/api/daily-tips/personalized"
+        }
+      }
+    },
+    "development": {
+      "baseUrl": "http://localhost:3000",
+      "endpoints": {
+        "health": "/api/health",
+        "auth": {
+          "login": "/api/auth/login",
+          "register": "/api/auth/register",
+          "logout": "/api/auth/logout",
+          "profile": "/api/auth/profile",
+          "refresh": "/api/auth/refresh"
+        },
+        "farms": "/api/farms",
+        "crops": "/api/crops",
+        "livestock": "/api/livestock",
+        "tasks": "/api/tasks",
+        "inventory": "/api/inventory",
+        "financial": "/api/financial",
+        "analytics": "/api/analytics",
+        "dailyTips": {
+          "today": "/api/daily-tips/today",
+          "personalized": "/api/daily-tips/personalized"
+        }
+      }
+    }
+  },
+  "sync": {
+    "enabled": true,
+    "watchPaths": [
+      "web-project/public/js/api-config.js",
+      "web-project/public/js/api-service.js",
+      "web-project/src/config.ts"
+    ],
+    "targetPaths": [
+      "android-project/shared/src/commonMain/kotlin/com/smartfarm/shared/network/SmartFarmApi.kt",
+      "android-project/app/src/main/java/com/smartfarm/network/SmartFarmApi.kt",
+      "android-project/shared/src/commonMain/kotlin/com/smartfarm/shared/di/SharedKoinModule.kt",
+      "android-project/app/build.gradle.kts"
+    ]
+  },
+  "version": "1.0.0",
+  "lastUpdated": "2024-01-01T00:00:00Z"
+}
+

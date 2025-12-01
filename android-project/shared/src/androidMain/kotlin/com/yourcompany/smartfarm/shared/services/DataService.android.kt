@@ -1,3 +1,3 @@
 package com.yourcompany.smartfarm.shared.services
 
-actual fun getCurrentTimeMillis(): Long = System.currentTimeMillis()
+// Removed actual function - no corresponding expect declaration

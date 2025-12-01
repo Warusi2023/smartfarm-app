@@ -102,8 +102,8 @@ object ChartConfig {
                     label = "Production Count",
                     data = listOf(plants.toDouble(), flowers.toDouble(), trees.toDouble(), 
                                 aquatic.toDouble(), livestock.toDouble(), pets.toDouble()),
-                    backgroundColor = listOf("#4CAF50", "#E91E63", "#2196F3", "#00BCD4", "#FF9800", "#9C27B0"),
-                    borderColor = listOf("#388E3C", "#C2185B", "#1976D2", "#0097A7", "#F57C00", "#7B1FA2"),
+                    backgroundColor = "#4CAF50", // Single color for now
+                    borderColor = "#388E3C", // Single color for now
                     fill = true
                 )
             ),
@@ -157,8 +157,8 @@ object ChartConfig {
                 Dataset(
                     label = "Performance Metrics",
                     data = listOf(efficiency, growthRate, sustainability),
-                    backgroundColor = listOf("#4CAF50", "#2196F3", "#FF9800"),
-                    borderColor = listOf("#388E3C", "#1976D2", "#F57C00"),
+                    backgroundColor = "#4CAF50", // Single color for now
+                    borderColor = "#388E3C", // Single color for now
                     fill = true
                 )
             ),
@@ -181,8 +181,8 @@ object ChartConfig {
                 Dataset(
                     label = "Equipment Status",
                     data = listOf(operational.toDouble(), maintenance.toDouble(), offline.toDouble()),
-                    backgroundColor = listOf("#4CAF50", "#FF9800", "#F44336"),
-                    borderColor = listOf("#388E3C", "#F57C00", "#D32F2F"),
+                    backgroundColor = "#4CAF50", // Single color for now
+                    borderColor = "#388E3C", // Single color for now
                     fill = true
                 )
             ),

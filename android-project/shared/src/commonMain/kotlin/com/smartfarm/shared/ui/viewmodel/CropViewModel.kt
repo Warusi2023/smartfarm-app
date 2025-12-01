@@ -35,9 +35,9 @@ class CropViewModel(
                     }
                     is Resource.Error -> {
                         _uiState.value = CropUiState(
-                            crops = resource.data ?: emptyList(),
+                            crops = emptyList(),
                             isLoading = false,
-                            error = resource.exception?.message
+                            error = resource.message
                         )
                     }
                 }
@@ -53,7 +53,7 @@ class CropViewModel(
                 is Resource.Error -> {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        error = result.exception?.message
+                        error = result.message
                     )
                 }
                 is Resource.Loading -> {}
@@ -69,7 +69,7 @@ class CropViewModel(
                 is Resource.Error -> {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        error = result.exception?.message
+                        error = result.message
                     )
                 }
                 is Resource.Loading -> {}
@@ -85,7 +85,7 @@ class CropViewModel(
                 is Resource.Error -> {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        error = result.exception?.message
+                        error = result.message
                     )
                 }
                 is Resource.Loading -> {}
