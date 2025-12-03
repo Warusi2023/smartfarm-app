@@ -360,6 +360,10 @@ try {
   // Load Daily Tips routes
   const DailyTipsRoutes = require('./routes/daily-tips');
   app.use('/api/daily-tips', DailyTipsRoutes);
+  
+  // Biological Farming routes
+  const biologicalFarmingRoutes = require('./routes/biological-farming');
+  app.use('/api/biological-farming', biologicalFarmingRoutes);
   console.log('✅ Daily Tips routes loaded');
   
   // Load Weather Alerts routes (independent of other routes)
@@ -409,6 +413,10 @@ try {
     // Load Daily Tips routes (standalone)
     const DailyTipsRoutes = require('./routes/daily-tips');
     app.use('/api/daily-tips', DailyTipsRoutes);
+    
+    // Biological Farming routes
+    const biologicalFarmingRoutes = require('./routes/biological-farming');
+    app.use('/api/biological-farming', biologicalFarmingRoutes);
     console.log('✅ Daily Tips routes loaded (standalone)');
     
     // Try to load Weather Alerts routes (standalone fallback)

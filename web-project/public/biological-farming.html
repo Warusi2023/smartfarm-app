@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biological Farming - SmartFarm</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #2d5016 0%, #3d7a1f 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            margin: 20px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        .header-section {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: linear-gradient(135deg, #2d5016, #3d7a1f);
+            color: white;
+            border-radius: 15px;
+        }
+
+        .benefit-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            border-left: 5px solid #3d7a1f;
+            margin-bottom: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .benefit-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .insect-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            border-left: 5px solid #28a745;
+            margin-bottom: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .insect-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .pest-card {
+            background: #fff3cd;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #ffc107;
+        }
+
+        .good-insect-badge {
+            background: #28a745;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            margin: 5px;
+            font-size: 0.9rem;
+        }
+
+        .bad-pest-badge {
+            background: #dc3545;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            margin: 5px;
+            font-size: 0.9rem;
+        }
+
+        .crop-guide-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+        }
+
+        .breeding-guide {
+            background: #e7f3ff;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 4px solid #007bff;
+        }
+
+        .organic-badge {
+            background: #28a745;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            display: inline-block;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-seedling me-2"></i>SmartFarm
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="dashboard.html">
+                            <i class="fas fa-home me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="biological-farming.html">
+                            <i class="fas fa-bug me-1"></i>Biological Farming
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="pesticide-management.html">
+                            <i class="fas fa-spray-can me-1"></i>Pesticides
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="main-container">
+            <!-- Header -->
+            <div class="header-section">
+                <h1><i class="fas fa-bug me-2"></i>Biological Farming Module</h1>
+                <p class="lead mb-0">Breed Good Insects for Natural Crop Protection</p>
+                <span class="organic-badge mt-3">
+                    <i class="fas fa-leaf me-2"></i>Organic & Naturally Grown Certified
+                </span>
+            </div>
+
+            <!-- Introduction Section -->
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <div class="benefit-card">
+                        <h3><i class="fas fa-info-circle text-primary me-2"></i>What is Biological Farming?</h3>
+                        <p class="lead">Biological pest control uses beneficial insects (good insects) to naturally attack and control harmful pests (bad insects). This method is:</p>
+                        <div class="row mt-3">
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <i class="fas fa-shield-alt fa-3x text-success mb-2"></i>
+                                    <h5>Safe</h5>
+                                    <p>No harmful chemicals</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <i class="fas fa-dollar-sign fa-3x text-success mb-2"></i>
+                                    <h5>Affordable</h5>
+                                    <p>Low-cost pest control</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <i class="fas fa-globe fa-3x text-success mb-2"></i>
+                                    <h5>Eco-Friendly</h5>
+                                    <p>Works with nature</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <i class="fas fa-certificate fa-3x text-success mb-2"></i>
+                                    <h5>Certified</h5>
+                                    <p>Organic certification</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Good Insects Section -->
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <h2 class="mb-4"><i class="fas fa-bug text-success me-2"></i>Good Insects (Beneficial Insects)</h2>
+                    <div id="goodInsectsContainer" class="row">
+                        <!-- Good insects will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bad Insects Section -->
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <h2 class="mb-4"><i class="fas fa-exclamation-triangle text-danger me-2"></i>Bad Insects (Harmful Pests)</h2>
+                    <div id="badInsectsContainer" class="row">
+                        <!-- Bad insects will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Crop Guide Section -->
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <h2 class="mb-4"><i class="fas fa-seedling text-primary me-2"></i>Crop Guide: Good Insects vs Bad Insects</h2>
+                    <div class="mb-3">
+                        <label for="cropSelector" class="form-label">Select Your Crop:</label>
+                        <select class="form-select form-select-lg" id="cropSelector">
+                            <option value="">-- Select a Crop --</option>
+                        </select>
+                    </div>
+                    <div id="cropGuideContainer">
+                        <!-- Crop guide will be displayed here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Breeding Guide Section -->
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <h2 class="mb-4"><i class="fas fa-home text-info me-2"></i>How to Breed Beneficial Insects (Insectary Setup)</h2>
+                    <div class="breeding-guide">
+                        <h4><i class="fas fa-seedling me-2"></i>1. Plant Flowering Plants</h4>
+                        <p>Create an "insectary" by planting flowers that attract beneficial insects:</p>
+                        <ul>
+                            <li><strong>Marigold</strong> - Attracts ladybirds and lacewings</li>
+                            <li><strong>Basil</strong> - Attracts parasitic wasps</li>
+                            <li><strong>Coriander</strong> - Attracts hoverflies and lacewings</li>
+                            <li><strong>Fennel</strong> - Attracts beneficial insects</li>
+                            <li><strong>Sunflower</strong> - Provides food and shelter</li>
+                        </ul>
+                    </div>
+                    <div class="breeding-guide">
+                        <h4><i class="fas fa-ban me-2"></i>2. Reduce Pesticide Use</h4>
+                        <p>Avoid using broad-spectrum pesticides that kill beneficial insects. Use organic sprays (neem, chili, ginger) only when necessary.</p>
+                    </div>
+                    <div class="breeding-guide">
+                        <h4><i class="fas fa-tint me-2"></i>3. Provide Water Sources</h4>
+                        <p>Set up shallow water dishes or small ponds to provide water for beneficial insects. Add stones or floating plants for landing spots.</p>
+                    </div>
+                    <div class="breeding-guide">
+                        <h4><i class="fas fa-calendar-alt me-2"></i>4. Release Timing</h4>
+                        <p>Release beneficial insects during early planting stages, before pest populations become too large. Monitor and release additional insects as needed.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Organic Farming Support -->
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <div class="benefit-card">
+                        <h3><i class="fas fa-certificate text-success me-2"></i>Organic Farming Support</h3>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <h5><i class="fas fa-check-circle text-success me-2"></i>What to Do:</h5>
+                                <ul>
+                                    <li>Avoid harmful synthetic pesticides</li>
+                                    <li>Use organic sprays (neem, chili, ginger) only when necessary</li>
+                                    <li>Maintain beneficial insect populations</li>
+                                    <li>Improve soil and water health</li>
+                                    <li>Monitor pest populations regularly</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5><i class="fas fa-times-circle text-danger me-2"></i>What to Avoid:</h5>
+                                <ul>
+                                    <li>Broad-spectrum chemical pesticides</li>
+                                    <li>Spraying during beneficial insect activity</li>
+                                    <li>Overuse of any pesticides</li>
+                                    <li>Destroying natural habitats</li>
+                                    <li>Using pesticides near flowering plants</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Marketing Advantage -->
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <div class="benefit-card bg-success text-white">
+                        <h3><i class="fas fa-tags me-2"></i>Marketing Advantage</h3>
+                        <p class="lead">Farmers using biological pest control can label their produce as:</p>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <div class="card bg-white text-dark mb-3">
+                                    <div class="card-body">
+                                        <h5 class="card-title">
+                                            <i class="fas fa-leaf text-success me-2"></i>
+                                            "Naturally Protected Using Good Insects – No Synthetic Chemicals"
+                                        </h5>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card bg-white text-dark mb-3">
+                                    <div class="card-body">
+                                        <h5 class="card-title">
+                                            <i class="fas fa-certificate text-success me-2"></i>
+                                            "Organic / Chemical-Free Produce"
+                                        </h5>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="mt-3"><strong>Benefits:</strong> Higher market value, premium pricing, access to organic markets, consumer trust</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Benefits Summary -->
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="benefit-card">
+                        <h3><i class="fas fa-chart-line text-primary me-2"></i>Benefits of Biological Farming</h3>
+                        <div class="row mt-3">
+                            <div class="col-md-3">
+                                <div class="text-center p-3">
+                                    <i class="fas fa-arrow-up fa-2x text-success mb-2"></i>
+                                    <h5>Higher Yields</h5>
+                                    <p>Better crop protection</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center p-3">
+                                    <i class="fas fa-dollar-sign fa-2x text-success mb-2"></i>
+                                    <h5>Lower Costs</h5>
+                                    <p>Reduced chemical expenses</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center p-3">
+                                    <i class="fas fa-globe fa-2x text-success mb-2"></i>
+                                    <h5>Eco-Friendly</h5>
+                                    <p>Sustainable farming</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center p-3">
+                                    <i class="fas fa-certificate fa-2x text-success mb-2"></i>
+                                    <h5>Certification</h5>
+                                    <p>Organic standards</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/biological-farming.js"></script>
+</body>
+</html>
+
