@@ -30,6 +30,7 @@ sealed class Screen(val route: String, val title: String, val icon: androidx.com
     object WeatherAlertDetail : Screen("weather_alert_detail/{alertId}", "Alert Details", Icons.Default.Info) {
         fun createRoute(alertId: String) = "weather_alert_detail/$alertId"
     }
+    object BiologicalFarming : Screen("biological_farming", "Biological Farming", Icons.Default.Bug)
 }
 
 @Composable
@@ -149,6 +150,12 @@ fun MainNavigation() {
                     alertId = alertId,
                     onBack = { navController.popBackStack() }
                 )
+            }
+        }
+        
+        composable(Screen.BiologicalFarming.route) {
+            MainAppScaffold(navController = navController) {
+                BiologicalFarmingScreen()
             }
         }
     }

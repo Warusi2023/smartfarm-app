@@ -602,6 +602,111 @@ class SmartFarmApi(
             Resource.Error(e.message ?: "Network error", e)
         }
     }
+    
+    // ========== Biological Farming ==========
+    suspend fun getBeneficialInsects(): Resource<List<BeneficialInsectDto>> {
+        return try {
+            val response: BeneficialInsectsResponse = client.get("$baseUrl/api/biological-farming/good-insects").body()
+            if (response.success) {
+                Resource.Success(response.data)
+            } else {
+                Resource.Error(response.error ?: "Failed to fetch beneficial insects", null)
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Network error", e)
+        }
+    }
+    
+    suspend fun getBeneficialInsect(id: Int): Resource<BeneficialInsectDto> {
+        return try {
+            val response: BeneficialInsectResponse = client.get("$baseUrl/api/biological-farming/good-insects/$id").body()
+            if (response.success && response.data != null) {
+                Resource.Success(response.data)
+            } else {
+                Resource.Error(response.error ?: "Failed to fetch beneficial insect", null)
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Network error", e)
+        }
+    }
+    
+    suspend fun getHarmfulPests(): Resource<List<HarmfulPestDto>> {
+        return try {
+            val response: HarmfulPestsResponse = client.get("$baseUrl/api/biological-farming/bad-insects").body()
+            if (response.success) {
+                Resource.Success(response.data)
+            } else {
+                Resource.Error(response.error ?: "Failed to fetch harmful pests", null)
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Network error", e)
+        }
+    }
+    
+    suspend fun getHarmfulPest(id: Int): Resource<HarmfulPestDto> {
+        return try {
+            val response: HarmfulPestResponse = client.get("$baseUrl/api/biological-farming/bad-insects/$id").body()
+            if (response.success && response.data != null) {
+                Resource.Success(response.data)
+            } else {
+                Resource.Error(response.error ?: "Failed to fetch harmful pest", null)
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Network error", e)
+        }
+    }
+    
+    suspend fun getCropGuides(): Resource<Map<String, CropGuideDto>> {
+        return try {
+            val response: CropGuidesResponse = client.get("$baseUrl/api/biological-farming/crop-guides").body()
+            if (response.success) {
+                Resource.Success(response.data)
+            } else {
+                Resource.Error(response.error ?: "Failed to fetch crop guides", null)
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Network error", e)
+        }
+    }
+    
+    suspend fun getCropGuide(cropName: String): Resource<CropGuideDto> {
+        return try {
+            val response: CropGuideResponse = client.get("$baseUrl/api/biological-farming/crop-guides/$cropName").body()
+            if (response.success && response.data != null) {
+                Resource.Success(response.data)
+            } else {
+                Resource.Error(response.error ?: "Failed to fetch crop guide", null)
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Network error", e)
+        }
+    }
+    
+    suspend fun matchBeneficialInsectsForPest(pestName: String): Resource<List<MatchingInsectDto>> {
+        return try {
+            val response: PestMatchResponse = client.get("$baseUrl/api/biological-farming/match/$pestName").body()
+            if (response.success) {
+                Resource.Success(response.matchingInsects)
+            } else {
+                Resource.Error(response.error ?: "Failed to match beneficial insects", null)
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Network error", e)
+        }
+    }
+    
+    suspend fun getCropRecommendations(cropName: String): Resource<CropRecommendationsResponse> {
+        return try {
+            val response: CropRecommendationsResponse = client.get("$baseUrl/api/biological-farming/recommendations/$cropName").body()
+            if (response.success) {
+                Resource.Success(response)
+            } else {
+                Resource.Error(response.error ?: "Failed to get crop recommendations", null)
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Network error", e)
+        }
+    }
 }
 
 // Response wrappers for API responses
