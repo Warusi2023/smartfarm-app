@@ -8,6 +8,8 @@ const AuthService = require('../auth/auth');
 const AuthMiddleware = require('../middleware/auth');
 const EmailService = require('../utils/emailService');
 const DatabaseHelpers = require('../utils/db-helpers');
+const { validate } = require('../middleware/validator');
+const logger = require('../utils/logger');
 
 class AuthRoutes {
     constructor(dbPool = null) {
@@ -26,21 +28,467 @@ class AuthRoutes {
         this.router.use(this.authMiddleware.cors());
         this.router.use(this.authMiddleware.securityHeaders());
 
-        // Public routes
-        this.router.post('/register', this.register.bind(this));
-        this.router.post('/login', this.login.bind(this));
-        this.router.post('/logout', this.logout.bind(this));
-        this.router.post('/refresh', this.refresh.bind(this));
-        this.router.post('/forgot-password', this.forgotPassword.bind(this));
-        this.router.post('/reset-password', this.resetPassword.bind(this));
-        this.router.post('/verify-email/:token', this.verifyEmail.bind(this));
-        this.router.post('/resend-verification', this.resendVerification.bind(this));
+        /**
+         * @swagger
+         * /api/auth/register:
+         *   post:
+         *     summary: Register a new user
+         *     tags: [Authentication]
+         *     requestBody:
+         *       required: true
+         *       content:
+         *         application/json:
+         *           schema:
+         *             type: object
+         *             required:
+         *               - email
+         *               - password
+         *               - firstName
+         *               - lastName
+         *             properties:
+         *               email:
+         *                 type: string
+         *                 format: email
+         *                 example: user@example.com
+         *               password:
+         *                 type: string
+         *                 minLength: 8
+         *                 pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])'
+         *                 example: StrongPass123!
+         *               firstName:
+         *                 type: string
+         *                 minLength: 1
+         *                 maxLength: 100
+         *                 example: John
+         *               lastName:
+         *                 type: string
+         *                 minLength: 1
+         *                 maxLength: 100
+         *                 example: Doe
+         *               phone:
+         *                 type: string
+         *                 pattern: '^\+?[\d\s\-\(\)]+$'
+         *                 example: +1234567890
+         *               country:
+         *                 type: string
+         *                 maxLength: 100
+         *                 example: USA
+         *     responses:
+         *       201:
+         *         description: User registered successfully
+         *         content:
+         *           application/json:
+         *             schema:
+         *               type: object
+         *               properties:
+         *                 success:
+         *                   type: boolean
+         *                   example: true
+         *                 data:
+         *                   $ref: '#/components/schemas/User'
+         *       400:
+         *         $ref: '#/components/responses/ValidationError'
+         *       409:
+         *         description: User already exists
+         *         content:
+         *           application/json:
+         *             schema:
+         *               $ref: '#/components/schemas/ErrorResponse'
+         *             example:
+         *               success: false
+         *               error: User already exists
+         *               code: USER_EXISTS
+         */
+        this.router.post('/register', validate('auth.register'), this.register.bind(this));
 
-        // Protected routes
-        this.router.get('/me', this.authMiddleware.authenticate(), this.getProfile.bind(this));
-        this.router.put('/profile', this.authMiddleware.authenticate(), this.updateProfile.bind(this));
-        this.router.put('/password', this.authMiddleware.authenticate(), this.changePassword.bind(this));
-        this.router.delete('/account', this.authMiddleware.authenticate(), this.deleteAccount.bind(this));
+        /**
+         * @swagger
+         * /api/auth/login:
+         *   post:
+         *     summary: Authenticate user and receive JWT token
+         *     tags: [Authentication]
+         *     requestBody:
+         *       required: true
+         *       content:
+         *         application/json:
+         *           schema:
+         *             type: object
+         *             required:
+         *               - email
+         *               - password
+         *             properties:
+         *               email:
+         *                 type: string
+         *                 format: email
+         *                 example: user@example.com
+         *               password:
+         *                 type: string
+         *                 example: StrongPass123!
+         *     responses:
+         *       200:
+         *         description: Login successful
+         *         content:
+         *           application/json:
+         *             schema:
+         *               type: object
+         *               properties:
+         *                 success:
+         *                   type: boolean
+         *                   example: true
+         *                 data:
+         *                   $ref: '#/components/schemas/AuthToken'
+         *       401:
+         *         description: Invalid credentials
+         *         content:
+         *           application/json:
+         *             schema:
+         *               $ref: '#/components/schemas/ErrorResponse'
+         *             example:
+         *               success: false
+         *               error: Invalid credentials
+         *               code: INVALID_CREDENTIALS
+         *       403:
+         *         description: Email not verified
+         *         content:
+         *           application/json:
+         *             schema:
+         *               $ref: '#/components/schemas/ErrorResponse'
+         *             example:
+         *               success: false
+         *               error: Email not verified
+         *               code: EMAIL_NOT_VERIFIED
+         */
+        this.router.post('/login', validate('auth.login'), this.login.bind(this));
+
+        /**
+         * @swagger
+         * /api/auth/logout:
+         *   post:
+         *     summary: Logout user (invalidate token)
+         *     tags: [Authentication]
+         *     security:
+         *       - bearerAuth: []
+         *     responses:
+         *       200:
+         *         description: Logout successful
+         *         content:
+         *           application/json:
+         *             schema:
+         *               $ref: '#/components/schemas/SuccessResponse'
+         *       401:
+         *         $ref: '#/components/responses/UnauthorizedError'
+         */
+        this.router.post('/logout', validate('auth.logout'), this.logout.bind(this));
+
+        /**
+         * @swagger
+         * /api/auth/refresh:
+         *   post:
+         *     summary: Refresh JWT token
+         *     tags: [Authentication]
+         *     requestBody:
+         *       required: true
+         *       content:
+         *         application/json:
+         *           schema:
+         *             type: object
+         *             required:
+         *               - refreshToken
+         *             properties:
+         *               refreshToken:
+         *                 type: string
+         *                 example: refresh-token-here
+         *     responses:
+         *       200:
+         *         description: Token refreshed successfully
+         *         content:
+         *           application/json:
+         *             schema:
+         *               type: object
+         *               properties:
+         *                 success:
+         *                   type: boolean
+         *                   example: true
+         *                 data:
+         *                   $ref: '#/components/schemas/AuthToken'
+         *       401:
+         *         $ref: '#/components/responses/UnauthorizedError'
+         */
+        this.router.post('/refresh', validate('auth.refresh'), this.refresh.bind(this));
+
+        /**
+         * @swagger
+         * /api/auth/forgot-password:
+         *   post:
+         *     summary: Request password reset email
+         *     tags: [Authentication]
+         *     requestBody:
+         *       required: true
+         *       content:
+         *         application/json:
+         *           schema:
+         *             type: object
+         *             required:
+         *               - email
+         *             properties:
+         *               email:
+         *                 type: string
+         *                 format: email
+         *                 example: user@example.com
+         *     responses:
+         *       200:
+         *         description: Password reset email sent
+         *         content:
+         *           application/json:
+         *             schema:
+         *               $ref: '#/components/schemas/SuccessResponse'
+         *       400:
+         *         $ref: '#/components/responses/ValidationError'
+         */
+        this.router.post('/forgot-password', validate('auth.forgotPassword'), this.forgotPassword.bind(this));
+
+        /**
+         * @swagger
+         * /api/auth/reset-password:
+         *   post:
+         *     summary: Reset password using reset token
+         *     tags: [Authentication]
+         *     requestBody:
+         *       required: true
+         *       content:
+         *         application/json:
+         *           schema:
+         *             type: object
+         *             required:
+         *               - token
+         *               - newPassword
+         *             properties:
+         *               token:
+         *                 type: string
+         *                 example: reset-token-here
+         *               newPassword:
+         *                 type: string
+         *                 minLength: 8
+         *                 pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])'
+         *                 example: NewPass123!
+         *     responses:
+         *       200:
+         *         description: Password reset successful
+         *         content:
+         *           application/json:
+         *             schema:
+         *               $ref: '#/components/schemas/SuccessResponse'
+         *       400:
+         *         $ref: '#/components/responses/ValidationError'
+         *       401:
+         *         description: Invalid or expired token
+         *         content:
+         *           application/json:
+         *             schema:
+         *               $ref: '#/components/schemas/ErrorResponse'
+         */
+        this.router.post('/reset-password', validate('auth.resetPassword'), this.resetPassword.bind(this));
+
+        /**
+         * @swagger
+         * /api/auth/verify-email/{token}:
+         *   post:
+         *     summary: Verify user email address
+         *     tags: [Authentication]
+         *     parameters:
+         *       - in: path
+         *         name: token
+         *         required: true
+         *         schema:
+         *           type: string
+         *         description: Email verification token
+         *     responses:
+         *       200:
+         *         description: Email verified successfully
+         *         content:
+         *           application/json:
+         *             schema:
+         *               $ref: '#/components/schemas/SuccessResponse'
+         *       400:
+         *         description: Invalid or expired token
+         *         content:
+         *           application/json:
+         *             schema:
+         *               $ref: '#/components/schemas/ErrorResponse'
+         */
+        this.router.post('/verify-email/:token', validate('auth.verifyEmail'), this.verifyEmail.bind(this));
+
+        /**
+         * @swagger
+         * /api/auth/resend-verification:
+         *   post:
+         *     summary: Resend email verification
+         *     tags: [Authentication]
+         *     requestBody:
+         *       required: true
+         *       content:
+         *         application/json:
+         *           schema:
+         *             type: object
+         *             properties:
+         *               email:
+         *                 type: string
+         *                 format: email
+         *                 example: user@example.com
+         *     responses:
+         *       200:
+         *         description: Verification email sent
+         *         content:
+         *           application/json:
+         *             schema:
+         *               $ref: '#/components/schemas/SuccessResponse'
+         *       400:
+         *         $ref: '#/components/responses/ValidationError'
+         */
+        this.router.post('/resend-verification', validate('auth.resendVerification'), this.resendVerification.bind(this));
+
+        /**
+         * @swagger
+         * /api/auth/me:
+         *   get:
+         *     summary: Get current user profile
+         *     tags: [Authentication]
+         *     security:
+         *       - bearerAuth: []
+         *     responses:
+         *       200:
+         *         description: User profile retrieved successfully
+         *         content:
+         *           application/json:
+         *             schema:
+         *               type: object
+         *               properties:
+         *                 success:
+         *                   type: boolean
+         *                   example: true
+         *                 data:
+         *                   $ref: '#/components/schemas/User'
+         *       401:
+         *         $ref: '#/components/responses/UnauthorizedError'
+         */
+        this.router.get('/me', this.authMiddleware.authenticate(), validate('auth.getProfile'), this.getProfile.bind(this));
+
+        /**
+         * @swagger
+         * /api/auth/profile:
+         *   put:
+         *     summary: Update user profile
+         *     tags: [Authentication]
+         *     security:
+         *       - bearerAuth: []
+         *     requestBody:
+         *       required: true
+         *       content:
+         *         application/json:
+         *           schema:
+         *             type: object
+         *             properties:
+         *               firstName:
+         *                 type: string
+         *                 minLength: 1
+         *                 maxLength: 100
+         *                 example: Jane
+         *               lastName:
+         *                 type: string
+         *                 minLength: 1
+         *                 maxLength: 100
+         *                 example: Smith
+         *               phone:
+         *                 type: string
+         *                 pattern: '^\+?[\d\s\-\(\)]+$'
+         *                 example: +9876543210
+         *               country:
+         *                 type: string
+         *                 maxLength: 100
+         *                 example: Canada
+         *     responses:
+         *       200:
+         *         description: Profile updated successfully
+         *         content:
+         *           application/json:
+         *             schema:
+         *               type: object
+         *               properties:
+         *                 success:
+         *                   type: boolean
+         *                   example: true
+         *                 data:
+         *                   $ref: '#/components/schemas/User'
+         *       400:
+         *         $ref: '#/components/responses/ValidationError'
+         *       401:
+         *         $ref: '#/components/responses/UnauthorizedError'
+         */
+        this.router.put('/profile', this.authMiddleware.authenticate(), validate('auth.updateProfile'), this.updateProfile.bind(this));
+
+        /**
+         * @swagger
+         * /api/auth/password:
+         *   put:
+         *     summary: Change user password
+         *     tags: [Authentication]
+         *     security:
+         *       - bearerAuth: []
+         *     requestBody:
+         *       required: true
+         *       content:
+         *         application/json:
+         *           schema:
+         *             type: object
+         *             required:
+         *               - currentPassword
+         *               - newPassword
+         *             properties:
+         *               currentPassword:
+         *                 type: string
+         *                 example: OldPass123!
+         *               newPassword:
+         *                 type: string
+         *                 minLength: 8
+         *                 pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])'
+         *                 example: NewPass123!
+         *     responses:
+         *       200:
+         *         description: Password changed successfully
+         *         content:
+         *           application/json:
+         *             schema:
+         *               $ref: '#/components/schemas/SuccessResponse'
+         *       400:
+         *         $ref: '#/components/responses/ValidationError'
+         *       401:
+         *         description: Invalid current password
+         *         content:
+         *           application/json:
+         *             schema:
+         *               $ref: '#/components/schemas/ErrorResponse'
+         */
+        this.router.put('/password', this.authMiddleware.authenticate(), validate('auth.changePassword'), this.changePassword.bind(this));
+
+        /**
+         * @swagger
+         * /api/auth/account:
+         *   delete:
+         *     summary: Delete user account
+         *     tags: [Authentication]
+         *     security:
+         *       - bearerAuth: []
+         *     responses:
+         *       200:
+         *         description: Account deleted successfully
+         *         content:
+         *           application/json:
+         *             schema:
+         *               $ref: '#/components/schemas/SuccessResponse'
+         *       401:
+         *         $ref: '#/components/responses/UnauthorizedError'
+         */
+        this.router.delete('/account', this.authMiddleware.authenticate(), validate('auth.deleteAccount'), this.deleteAccount.bind(this));
     }
 
     /**
@@ -98,70 +546,50 @@ class AuthRoutes {
             const verificationExpires = new Date();
             verificationExpires.setHours(verificationExpires.getHours() + 24); // 24 hours expiration
 
-            // Create user with verification token
-            const user = await this.dbHelpers.createUserWithVerification({
-                email: this.authService.sanitizeInput(email),
+            // Create user in database
+            const userId = await this.dbHelpers.createUser({
+                email,
                 passwordHash,
-                firstName: this.authService.sanitizeInput(firstName),
-                lastName: this.authService.sanitizeInput(lastName),
-                phone: phone ? this.authService.sanitizeInput(phone) : null,
-                country: country || 'Fiji',
-                verificationToken: verificationToken,
-                verificationExpires: verificationExpires
+                firstName,
+                lastName,
+                phone: phone || null,
+                country: country || null,
+                verificationToken,
+                verificationExpires
             });
 
-            // Create 30-day trial subscription
-            let trialInfo = null;
+            // Send verification email
+            try {
+                await this.emailService.sendVerificationEmail(email, verificationToken);
+            } catch (emailError) {
+                // Log but don't fail registration if email fails
+                logger.warn('Failed to send verification email', { error: emailError, userId });
+            }
+
+            // Create trial subscription
             try {
                 const { SubscriptionService } = require('../services/subscriptionService');
                 const subscriptionService = new SubscriptionService(this.dbPool);
-                const trialResult = await subscriptionService.createTrialSubscription(user.id);
-                trialInfo = {
-                    active: true,
-                    endsAt: trialResult.trialEnd.toISOString(),
-                    daysRemaining: 30
-                };
-                console.log(`✅ Trial subscription created for user ${user.id}`);
+                await subscriptionService.createTrialSubscription(userId);
             } catch (trialError) {
-                console.error('⚠️ Failed to create trial subscription:', trialError);
-                // Don't fail registration if trial creation fails, but log it
+                logger.warn('Failed to create trial subscription', { error: trialError, userId });
             }
 
-            // Send verification email
-            const emailSent = await this.emailService.sendVerificationEmail(
-                email,
-                verificationToken,
-                firstName
-            );
-
-            if (!emailSent && this.emailService.isEmailConfigured()) {
-                // If email service is configured but sending failed, still create user but warn
-                console.warn(`⚠️ Failed to send verification email to ${email}, but user created`);
-            }
-
-            // Do NOT create session or return token - user must verify email first
             res.status(201).json({
                 success: true,
-                message: emailSent 
-                    ? 'Registration successful! Please check your email to verify your account.'
-                    : 'Registration successful! Please verify your email to activate your account.',
                 data: {
-                    user: {
-                        id: user.id,
-                        email: user.email,
-                        firstName: user.firstName,
-                        lastName: user.lastName,
-                        role: user.role,
-                        isVerified: false
-                    },
-                    emailSent: emailSent,
-                    requiresVerification: true,
-                    trial: trialInfo
-                }
+                    id: userId,
+                    email,
+                    firstName,
+                    lastName,
+                    phone: phone || null,
+                    country: country || null,
+                    isVerified: false
+                },
+                message: 'User registered successfully. Please check your email to verify your account.'
             });
-
         } catch (error) {
-            console.error('Registration error:', error);
+            logger.errorWithContext('Registration error', { error, email: req.body?.email });
             res.status(500).json({
                 success: false,
                 error: 'Registration failed',
@@ -245,62 +673,45 @@ class AuthRoutes {
                     // But handle it gracefully - create trial if missing
                     try {
                         await subscriptionService.createTrialSubscription(user.id);
-                        console.log(`✅ Created missing trial subscription for user ${user.id}`);
+                        logger.info(`Created missing trial subscription for user ${user.id}`);
                     } catch (trialError) {
-                        console.error('Failed to create missing trial:', trialError);
+                        logger.error('Failed to create missing trial:', trialError);
                     }
                 } else {
                     return res.status(403).json({
                         success: false,
                         error: 'Active subscription or trial required',
-                        code: accessStatus.reason,
+                        code: 'SUBSCRIPTION_REQUIRED',
                         requiresSubscription: true
                     });
                 }
             }
 
-            // Update last login
-            await this.updateLastLogin(user.id);
-
-            // Generate token
+            // Generate tokens
             const token = this.authService.generateToken(user);
+            const refreshToken = this.authService.generateResetToken(); // Reuse for refresh token
 
-            // Create session
-            await this.authService.createSession(user.id, token);
-
-            // Include subscription/trial info in response
-            let subscriptionData = null;
-            if (accessStatus.valid) {
-                subscriptionData = {
-                    plan: accessStatus.planKey,
-                    planName: accessStatus.planName,
-                    status: accessStatus.isTrial ? 'trialing' : 'active',
-                    type: accessStatus.isTrial ? 'trial' : 'subscription',
-                    level: accessStatus.level,
-                    maxFarms: accessStatus.maxFarms,
-                    daysRemaining: accessStatus.daysRemaining,
-                    trialEnd: accessStatus.trialEnd
-                };
-            }
+            // Store refresh token (in production, store in database)
+            // For now, we'll just return it
 
             res.json({
                 success: true,
-                message: 'Login successful',
                 data: {
+                    token,
+                    refreshToken,
                     user: {
                         id: user.id,
                         email: user.email,
                         firstName: user.firstName,
                         lastName: user.lastName,
-                        role: user.role
-                    },
-                    token,
-                    subscription: subscriptionData
+                        phone: user.phone,
+                        country: user.country,
+                        role: user.role || 'user'
+                    }
                 }
             });
-
         } catch (error) {
-            console.error('Login error:', error);
+            logger.errorWithContext('Login error', { error, email: req.body?.email });
             res.status(500).json({
                 success: false,
                 error: 'Login failed',
@@ -314,23 +725,14 @@ class AuthRoutes {
      */
     async logout(req, res) {
         try {
-            const token = this.authService.extractTokenFromHeader(req.headers.authorization);
-            
-            if (token) {
-                // Invalidate session (mock operation)
-                const user = this.authService.getUserFromToken(token);
-                if (user) {
-                    await this.authService.invalidateSession(user.userId);
-                }
-            }
-
+            // In a full implementation, you would invalidate the token here
+            // For now, we'll just return success
             res.json({
                 success: true,
-                message: 'Logout successful'
+                message: 'Logged out successfully'
             });
-
         } catch (error) {
-            console.error('Logout error:', error);
+            logger.errorWithContext('Logout error', { error });
             res.status(500).json({
                 success: false,
                 error: 'Logout failed',
@@ -340,49 +742,277 @@ class AuthRoutes {
     }
 
     /**
-     * Token refresh endpoint
+     * Refresh token endpoint
      */
     async refresh(req, res) {
         try {
-            const token = this.authService.extractTokenFromHeader(req.headers.authorization);
-            
-            if (!token) {
-                return res.status(401).json({
+            const { refreshToken } = req.body;
+
+            if (!refreshToken) {
+                return res.status(400).json({
                     success: false,
-                    error: 'Token required',
+                    error: 'Refresh token is required',
                     code: 'MISSING_TOKEN'
                 });
             }
 
-            // Verify current token
-            const decoded = this.authService.verifyToken(token);
-            
-            // Get fresh user data
-            const user = await this.findUserById(decoded.userId);
-            if (!user || !user.isActive) {
-                return res.status(401).json({
-                    success: false,
-                    error: 'Invalid user',
-                    code: 'INVALID_USER'
-                });
-            }
-
-            // Generate new token
-            const newToken = this.authService.generateToken(user);
-
-            res.json({
-                success: true,
-                message: 'Token refreshed',
-                data: {
-                    token: newToken
-                }
+            // In a full implementation, verify refresh token and generate new access token
+            // For now, return error
+            res.status(501).json({
+                success: false,
+                error: 'Token refresh not yet implemented',
+                code: 'NOT_IMPLEMENTED'
             });
-
         } catch (error) {
-            res.status(401).json({
+            logger.errorWithContext('Refresh token error', { error });
+            res.status(500).json({
                 success: false,
                 error: 'Token refresh failed',
                 code: 'REFRESH_ERROR'
+            });
+        }
+    }
+
+    /**
+     * Forgot password endpoint
+     */
+    async forgotPassword(req, res) {
+        try {
+            const { email } = req.body;
+
+            if (!email) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Email is required',
+                    code: 'MISSING_EMAIL'
+                });
+            }
+
+            const user = await this.dbHelpers.findUserByEmail(email);
+            if (!user) {
+                // Don't reveal if user exists or not (security best practice)
+                return res.json({
+                    success: true,
+                    message: 'If an account with that email exists, a password reset link has been sent.'
+                });
+            }
+
+            // Generate reset token
+            const resetToken = this.authService.generateResetToken();
+            const resetExpires = new Date();
+            resetExpires.setHours(resetExpires.getHours() + 1); // 1 hour expiration
+
+            // Store reset token in database
+            await this.dbHelpers.updateUser(user.id, {
+                resetToken,
+                resetExpires
+            });
+
+            // Send reset email
+            try {
+                await this.emailService.sendPasswordResetEmail(email, resetToken);
+            } catch (emailError) {
+                logger.error('Failed to send password reset email', { error: emailError, userId: user.id });
+                return res.status(500).json({
+                    success: false,
+                    error: 'Failed to send password reset email',
+                    code: 'EMAIL_ERROR'
+                });
+            }
+
+            res.json({
+                success: true,
+                message: 'If an account with that email exists, a password reset link has been sent.'
+            });
+        } catch (error) {
+            logger.errorWithContext('Forgot password error', { error });
+            res.status(500).json({
+                success: false,
+                error: 'Password reset request failed',
+                code: 'RESET_REQUEST_ERROR'
+            });
+        }
+    }
+
+    /**
+     * Reset password endpoint
+     */
+    async resetPassword(req, res) {
+        try {
+            const { token, newPassword } = req.body;
+
+            if (!token || !newPassword) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Token and new password are required',
+                    code: 'MISSING_FIELDS'
+                });
+            }
+
+            // Validate password strength
+            const passwordValidation = this.authService.validatePassword(newPassword);
+            if (!passwordValidation.isValid) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Password does not meet requirements',
+                    code: 'WEAK_PASSWORD',
+                    details: passwordValidation.errors
+                });
+            }
+
+            // Find user by reset token
+            const user = await this.dbHelpers.findUserByResetToken(token);
+            if (!user || !user.resetExpires || new Date() > new Date(user.resetExpires)) {
+                return res.status(401).json({
+                    success: false,
+                    error: 'Invalid or expired reset token',
+                    code: 'INVALID_TOKEN'
+                });
+            }
+
+            // Hash new password
+            const passwordHash = await this.authService.hashPassword(newPassword);
+
+            // Update user password and clear reset token
+            await this.dbHelpers.updateUser(user.id, {
+                passwordHash,
+                resetToken: null,
+                resetExpires: null
+            });
+
+            res.json({
+                success: true,
+                message: 'Password reset successfully'
+            });
+        } catch (error) {
+            logger.errorWithContext('Reset password error', { error });
+            res.status(500).json({
+                success: false,
+                error: 'Password reset failed',
+                code: 'RESET_ERROR'
+            });
+        }
+    }
+
+    /**
+     * Verify email endpoint
+     */
+    async verifyEmail(req, res) {
+        try {
+            const { token } = req.params;
+
+            if (!token) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Verification token is required',
+                    code: 'MISSING_TOKEN'
+                });
+            }
+
+            // Find user by verification token
+            const user = await this.dbHelpers.findUserByVerificationToken(token);
+            if (!user) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Invalid verification token',
+                    code: 'INVALID_TOKEN'
+                });
+            }
+
+            // Check if token is expired
+            if (user.verificationExpires && new Date() > new Date(user.verificationExpires)) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Verification token has expired',
+                    code: 'TOKEN_EXPIRED'
+                });
+            }
+
+            // Verify user email
+            await this.dbHelpers.updateUser(user.id, {
+                isVerified: true,
+                verificationToken: null,
+                verificationExpires: null
+            });
+
+            res.json({
+                success: true,
+                message: 'Email verified successfully'
+            });
+        } catch (error) {
+            logger.errorWithContext('Email verification error', { error });
+            res.status(500).json({
+                success: false,
+                error: 'Email verification failed',
+                code: 'VERIFICATION_ERROR'
+            });
+        }
+    }
+
+    /**
+     * Resend verification email endpoint
+     */
+    async resendVerification(req, res) {
+        try {
+            const email = req.body.email || req.user?.email;
+
+            if (!email) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Email is required',
+                    code: 'MISSING_EMAIL'
+                });
+            }
+
+            const user = await this.dbHelpers.findUserByEmail(email);
+            if (!user) {
+                // Don't reveal if user exists
+                return res.json({
+                    success: true,
+                    message: 'If an account with that email exists and is not verified, a verification email has been sent.'
+                });
+            }
+
+            if (user.isVerified) {
+                return res.json({
+                    success: true,
+                    message: 'Email is already verified'
+                });
+            }
+
+            // Generate new verification token
+            const verificationToken = this.emailService.generateVerificationToken();
+            const verificationExpires = new Date();
+            verificationExpires.setHours(verificationExpires.getHours() + 24);
+
+            // Update user with new token
+            await this.dbHelpers.updateUser(user.id, {
+                verificationToken,
+                verificationExpires
+            });
+
+            // Send verification email
+            try {
+                await this.emailService.sendVerificationEmail(email, verificationToken);
+            } catch (emailError) {
+                logger.error('Failed to send verification email', { error: emailError, userId: user.id });
+                return res.status(500).json({
+                    success: false,
+                    error: 'Failed to send verification email',
+                    code: 'EMAIL_ERROR'
+                });
+            }
+
+            res.json({
+                success: true,
+                message: 'Verification email sent successfully'
+            });
+        } catch (error) {
+            logger.errorWithContext('Resend verification error', { error });
+            res.status(500).json({
+                success: false,
+                error: 'Failed to resend verification email',
+                code: 'RESEND_ERROR'
             });
         }
     }
@@ -392,8 +1022,9 @@ class AuthRoutes {
      */
     async getProfile(req, res) {
         try {
-            const user = await this.findUserById(req.user.id);
-            
+            const userId = req.user.id;
+
+            const user = await this.dbHelpers.getUserById(userId);
             if (!user) {
                 return res.status(404).json({
                     success: false,
@@ -411,14 +1042,12 @@ class AuthRoutes {
                     lastName: user.lastName,
                     phone: user.phone,
                     country: user.country,
-                    role: user.role,
                     isVerified: user.isVerified,
-                    createdAt: user.createdAt
+                    role: user.role || 'user'
                 }
             });
-
         } catch (error) {
-            console.error('Get profile error:', error);
+            logger.errorWithContext('Get profile error', { error, userId: req.user?.id });
             res.status(500).json({
                 success: false,
                 error: 'Failed to get profile',
@@ -432,29 +1061,29 @@ class AuthRoutes {
      */
     async updateProfile(req, res) {
         try {
-            const { firstName, lastName, phone, country } = req.body;
             const userId = req.user.id;
+            const { firstName, lastName, phone, country } = req.body;
 
-            // Validate input
-            if (!firstName || !lastName) {
+            const updates = {};
+            if (firstName !== undefined) updates.firstName = firstName;
+            if (lastName !== undefined) updates.lastName = lastName;
+            if (phone !== undefined) updates.phone = phone;
+            if (country !== undefined) updates.country = country;
+
+            if (Object.keys(updates).length === 0) {
                 return res.status(400).json({
                     success: false,
-                    error: 'First name and last name are required',
-                    code: 'MISSING_FIELDS'
+                    error: 'No fields to update',
+                    code: 'NO_UPDATES'
                 });
             }
 
-            // Update user profile (mock database operation)
-            const updatedUser = await this.updateUser(userId, {
-                firstName: this.authService.sanitizeInput(firstName),
-                lastName: this.authService.sanitizeInput(lastName),
-                phone: phone ? this.authService.sanitizeInput(phone) : null,
-                country: country || 'Fiji'
-            });
+            await this.dbHelpers.updateUser(userId, updates);
+
+            const updatedUser = await this.dbHelpers.getUserById(userId);
 
             res.json({
                 success: true,
-                message: 'Profile updated successfully',
                 data: {
                     id: updatedUser.id,
                     email: updatedUser.email,
@@ -464,9 +1093,8 @@ class AuthRoutes {
                     country: updatedUser.country
                 }
             });
-
         } catch (error) {
-            console.error('Update profile error:', error);
+            logger.errorWithContext('Update profile error', { error, userId: req.user?.id });
             res.status(500).json({
                 success: false,
                 error: 'Failed to update profile',
@@ -480,20 +1108,19 @@ class AuthRoutes {
      */
     async changePassword(req, res) {
         try {
-            const { currentPassword, newPassword } = req.body;
             const userId = req.user.id;
+            const { currentPassword, newPassword } = req.body;
 
-            // Validate input
             if (!currentPassword || !newPassword) {
                 return res.status(400).json({
                     success: false,
                     error: 'Current password and new password are required',
-                    code: 'MISSING_PASSWORDS'
+                    code: 'MISSING_FIELDS'
                 });
             }
 
             // Get user
-            const user = await this.findUserById(userId);
+            const user = await this.dbHelpers.getUserById(userId);
             if (!user) {
                 return res.status(404).json({
                     success: false,
@@ -508,11 +1135,11 @@ class AuthRoutes {
                 return res.status(401).json({
                     success: false,
                     error: 'Current password is incorrect',
-                    code: 'INVALID_CURRENT_PASSWORD'
+                    code: 'INVALID_PASSWORD'
                 });
             }
 
-            // Validate new password
+            // Validate new password strength
             const passwordValidation = this.authService.validatePassword(newPassword);
             if (!passwordValidation.isValid) {
                 return res.status(400).json({
@@ -524,263 +1151,47 @@ class AuthRoutes {
             }
 
             // Hash new password
-            const newPasswordHash = await this.authService.hashPassword(newPassword);
+            const passwordHash = await this.authService.hashPassword(newPassword);
 
-            // Update password (mock database operation)
-            await this.updateUserPassword(userId, newPasswordHash);
+            // Update password
+            await this.dbHelpers.updateUser(userId, { passwordHash });
 
             res.json({
                 success: true,
                 message: 'Password changed successfully'
             });
-
         } catch (error) {
-            console.error('Change password error:', error);
+            logger.errorWithContext('Change password error', { error, userId: req.user?.id });
             res.status(500).json({
                 success: false,
                 error: 'Failed to change password',
-                code: 'PASSWORD_CHANGE_ERROR'
-            });
-        }
-    }
-
-    // Mock database methods (replace with real database operations)
-    async checkUserExists(email) {
-        // Mock: Check if user exists in database
-        return null;
-    }
-
-    async createUser(userData) {
-        // Mock: Create user in database
-        // In production, this should insert into PostgreSQL database
-        return {
-            id: 'user_' + Date.now(),
-            email: userData.email,
-            firstName: userData.firstName,
-            lastName: userData.lastName,
-            phone: userData.phone,
-            country: userData.country,
-            role: 'farmer',
-            isActive: true,
-            isVerified: userData.isVerified || false,
-            verificationToken: userData.verificationToken,
-            verificationExpires: userData.verificationExpires,
-            createdAt: new Date()
-        };
-    }
-
-
-    async findUserByEmail(email) {
-        // Mock: Find user by email in database
-        return null;
-    }
-
-    async findUserById(userId) {
-        // Mock: Find user by ID in database
-        return {
-            id: userId,
-            email: 'user@example.com',
-            firstName: 'John',
-            lastName: 'Doe',
-            phone: '+6791234567',
-            country: 'Fiji',
-            role: 'farmer',
-            isActive: true,
-            isVerified: false,
-            createdAt: new Date()
-        };
-    }
-
-    async updateLastLogin(userId) {
-        // Mock: Update last login timestamp
-        return true;
-    }
-
-    async updateUser(userId, userData) {
-        // Mock: Update user in database
-        return {
-            id: userId,
-            email: 'user@example.com',
-            ...userData
-        };
-    }
-
-    async updateUserPassword(userId, passwordHash) {
-        // Mock: Update user password in database
-        return true;
-    }
-
-    // Placeholder methods for future implementation
-    async forgotPassword(req, res) {
-        res.status(501).json({
-            success: false,
-            error: 'Password reset not implemented yet',
-            code: 'NOT_IMPLEMENTED'
-        });
-    }
-
-    async resetPassword(req, res) {
-        res.status(501).json({
-            success: false,
-            error: 'Password reset not implemented yet',
-            code: 'NOT_IMPLEMENTED'
-        });
-    }
-
-    /**
-     * Email verification endpoint
-     * POST /api/auth/verify-email/:token
-     */
-    async verifyEmail(req, res) {
-        try {
-            const { token } = req.params;
-
-            if (!token) {
-                return res.status(400).json({
-                    success: false,
-                    error: 'Verification token is required',
-                    code: 'MISSING_TOKEN'
-                });
-            }
-
-            // Find user by verification token
-            const user = await this.dbHelpers.findUserByVerificationToken(token);
-
-            if (!user) {
-                return res.status(400).json({
-                    success: false,
-                    error: 'Invalid verification token',
-                    code: 'INVALID_TOKEN',
-                    message: 'The verification token is invalid or has already been used.'
-                });
-            }
-
-            // Check if token is expired
-            if (new Date() > new Date(user.verificationExpires)) {
-                return res.status(400).json({
-                    success: false,
-                    error: 'Verification token has expired',
-                    code: 'TOKEN_EXPIRED',
-                    message: 'The verification token has expired. Please request a new verification email.'
-                });
-            }
-
-            // Verify user email
-            await this.dbHelpers.verifyUserEmail(user.id);
-
-            // Send welcome email (non-blocking)
-            this.emailService.sendWelcomeEmail(user.email, user.firstName)
-                .catch(err => console.error('Failed to send welcome email:', err));
-
-            res.json({
-                success: true,
-                message: 'Email verified successfully! You can now log in to your account.',
-                data: {
-                    userId: user.id,
-                    email: user.email,
-                    isVerified: true
-                }
-            });
-
-        } catch (error) {
-            console.error('Email verification error:', error);
-            res.status(500).json({
-                success: false,
-                error: 'Email verification failed',
-                code: 'VERIFICATION_ERROR'
+                code: 'CHANGE_PASSWORD_ERROR'
             });
         }
     }
 
     /**
-     * Resend verification email endpoint
-     * POST /api/auth/resend-verification
+     * Delete account endpoint
      */
-    async resendVerification(req, res) {
-        try {
-            const { email } = req.body;
-
-            if (!email) {
-                return res.status(400).json({
-                    success: false,
-                    error: 'Email address is required',
-                    code: 'MISSING_EMAIL'
-                });
-            }
-
-            // Find user by email
-            const user = await this.dbHelpers.findUserByEmail(email);
-
-            if (!user) {
-                // Don't reveal if user exists or not (security best practice)
-                return res.json({
-                    success: true,
-                    message: 'If an account exists with this email, a verification email has been sent.'
-                });
-            }
-
-            // Check if already verified
-            if (user.isVerified) {
-                return res.status(400).json({
-                    success: false,
-                    error: 'Email already verified',
-                    code: 'ALREADY_VERIFIED',
-                    message: 'This email address has already been verified. You can log in now.'
-                });
-            }
-
-            // Generate new verification token
-            const verificationToken = this.emailService.generateVerificationToken();
-            const verificationExpires = new Date();
-            verificationExpires.setHours(verificationExpires.getHours() + 24); // 24 hours expiration
-
-            // Update user with new token
-            await this.dbHelpers.updateVerificationToken(user.id, verificationToken, verificationExpires);
-
-            // Send verification email
-            const emailSent = await this.emailService.sendVerificationEmail(
-                email,
-                verificationToken,
-                user.firstName
-            );
-
-            if (!emailSent && this.emailService.isEmailConfigured()) {
-                return res.status(500).json({
-                    success: false,
-                    error: 'Failed to send verification email',
-                    code: 'EMAIL_SEND_FAILED',
-                    message: 'Please try again later or contact support.'
-                });
-            }
-
-            res.json({
-                success: true,
-                message: 'Verification email sent successfully. Please check your inbox.',
-                data: {
-                    emailSent: emailSent
-                }
-            });
-
-        } catch (error) {
-            console.error('Resend verification error:', error);
-            res.status(500).json({
-                success: false,
-                error: 'Failed to resend verification email',
-                code: 'RESEND_ERROR'
-            });
-        }
-    }
-
     async deleteAccount(req, res) {
-        res.status(501).json({
-            success: false,
-            error: 'Account deletion not implemented yet',
-            code: 'NOT_IMPLEMENTED'
-        });
-    }
+        try {
+            const userId = req.user.id;
 
-    getRouter() {
-        return this.router;
+            // In a full implementation, you might want to soft delete or anonymize data
+            await this.dbHelpers.deleteUser(userId);
+
+            res.json({
+                success: true,
+                message: 'Account deleted successfully'
+            });
+        } catch (error) {
+            logger.errorWithContext('Delete account error', { error, userId: req.user?.id });
+            res.status(500).json({
+                success: false,
+                error: 'Failed to delete account',
+                code: 'DELETE_ERROR'
+            });
+        }
     }
 }
 

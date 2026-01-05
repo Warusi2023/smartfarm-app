@@ -12,22 +12,22 @@
 require('dotenv').config();
 const { Pool } = require('pg');
 const WeatherAlertService = require('../services/weatherAlertService');
+const logger = require('../utils/logger');
 
 async function main() {
-    console.log('🌤️ Starting weather alerts generation...');
-    console.log(`Time: ${new Date().toISOString()}`);
+    logger.info('Starting weather alerts generation', { time: new Date().toISOString() });
 
     // Initialize database connection
     if (!process.env.DATABASE_URL) {
-        console.error('❌ DATABASE_URL not set');
+        logger.error('DATABASE_URL not set');
         process.exit(1);
     }
 
+    const { getPostgresSSLConfig } = require('../utils/ssl-config');
+    
     const dbPool = new Pool({
         connectionString: process.env.DATABASE_URL,
-        ssl: process.env.DATABASE_URL.includes('localhost') ? false : {
-            rejectUnauthorized: false
-        }
+        ssl: getPostgresSSLConfig(process.env.DATABASE_URL)
     });
 
     try {
@@ -38,17 +38,17 @@ async function main() {
         );
 
         if (!process.env.WEATHER_API_KEY) {
-            console.warn('⚠️ WEATHER_API_KEY not set. Alerts will not be generated.');
+            logger.warn('WEATHER_API_KEY not set. Alerts will not be generated.');
             process.exit(0);
         }
 
         // Process all farms
         const totalAlerts = await weatherAlertService.processAllFarms();
 
-        console.log(`✅ Weather alerts generation complete. Generated ${totalAlerts} alerts.`);
+        logger.info('Weather alerts generation complete', { totalAlerts });
         process.exit(0);
     } catch (error) {
-        console.error('❌ Error generating weather alerts:', error);
+        logger.errorWithContext('Error generating weather alerts', { error });
         process.exit(1);
     } finally {
         await dbPool.end();

@@ -5,6 +5,7 @@
  */
 
 const axios = require('axios');
+const logger = require('../utils/logger');
 
 // Alert rule definitions
 const ALERT_RULES = {
@@ -56,7 +57,7 @@ class WeatherAlertService {
      */
     async fetchWeatherForecast(lat, lng, days = 5) {
         if (!this.weatherApiKey) {
-            console.warn('Weather API key not configured');
+            logger.warn('Weather API key not configured');
             return null;
         }
 
@@ -77,7 +78,7 @@ class WeatherAlertService {
 
             return response.data;
         } catch (error) {
-            console.error('Error fetching weather forecast:', error.message);
+            logger.errorWithContext('Error fetching weather forecast', { error, lat, lng, days });
             return null;
         }
     }
@@ -262,7 +263,7 @@ class WeatherAlertService {
      */
     async generateAlertsForFarm(farmId, userId, farmData) {
         if (!farmData.latitude || !farmData.longitude) {
-            console.warn(`Farm ${farmId} has no location data`);
+            logger.warn('Farm has no location data', { farmId });
             return [];
         }
 
@@ -417,7 +418,7 @@ class WeatherAlertService {
         const result = await this.db.query(query);
         const farms = result.rows;
 
-        console.log(`Processing weather alerts for ${farms.length} farms`);
+        logger.info('Processing weather alerts', { farmCount: farms.length });
 
         let totalAlerts = 0;
         for (const farm of farms) {
@@ -434,11 +435,11 @@ class WeatherAlertService {
                 );
                 totalAlerts += alerts.length;
             } catch (error) {
-                console.error(`Error processing farm ${farm.id}:`, error.message);
+                logger.errorWithContext('Error processing farm', { error, farmId: farm.id });
             }
         }
 
-        console.log(`Generated ${totalAlerts} weather alerts`);
+        logger.info('Generated weather alerts', { totalAlerts });
         return totalAlerts;
     }
 

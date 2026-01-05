@@ -8,12 +8,16 @@
     "start": "node server.js",
     "dev": "node server.js",
     "build": "echo \"(backend) nothing to build\"",
-    "health": "node -e \"fetch('http://127.0.0.1:'+(process.env.PORT||3000)+'/api/health').then(r=>r.text()).then(console.log).catch(console.error)\"",
+    "health": "node -e \"const logger=require('./utils/logger');fetch('http://127.0.0.1:'+(process.env.PORT||3000)+'/api/health').then(r=>r.text()).then(d=>logger.info('Health check',{response:d})).catch(e=>logger.errorWithContext('Health check failed',{error:e}))\"",
     "setup:db": "node scripts/setup-database.js",
     "setup:env": "node scripts/create-env-file.js",
     "test:db": "node scripts/test-db-connection.js",
     "test:email": "node scripts/test-email-service.js",
-    "test:email-verification": "node scripts/test-email-verification.js"
+    "test:email-verification": "node scripts/test-email-verification.js",
+    "test": "NODE_ENV=test jest --coverage --coveragePathIgnorePatterns=['/node_modules/', '/tests/']",
+    "test:watch": "NODE_ENV=test jest --watch",
+    "test:unit": "NODE_ENV=test jest --testPathPattern=tests/unit",
+    "test:integration": "NODE_ENV=test jest --testPathPattern=tests/integration"
   },
   "engines": {
     "node": ">=18 <=22",
@@ -27,7 +31,18 @@
     "jsonwebtoken": "^9.0.2",
     "bcryptjs": "^2.4.3",
     "pg": "^8.11.3",
-    "dotenv": "^16.3.1"
+    "dotenv": "^16.3.1",
+    "winston": "^3.11.0",
+    "zod": "^3.22.4",
+    "validator": "^13.11.0",
+    "swagger-ui-express": "^5.0.0",
+    "swagger-jsdoc": "^6.2.8",
+    "redis": "^4.6.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^6.3.3",
+    "@jest/globals": "^29.7.0"
   },
   "keywords": [
     "smartfarm",

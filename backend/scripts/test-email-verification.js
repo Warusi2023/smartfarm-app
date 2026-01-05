@@ -32,9 +32,10 @@ const crypto = require('crypto');
 // Database connection
 let dbPool = null;
 if (process.env.DATABASE_URL) {
+    const { getPostgresSSLConfig } = require('../utils/ssl-config');
     dbPool = new Pool({
         connectionString: process.env.DATABASE_URL,
-        ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+        ssl: getPostgresSSLConfig(process.env.DATABASE_URL)
     });
 } else {
     console.warn('⚠️  DATABASE_URL not found in environment variables');

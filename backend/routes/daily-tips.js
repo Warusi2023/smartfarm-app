@@ -1,4 +1,8 @@
 const express = require('express');
+const { validate } = require('../middleware/validator');
+const { asyncHandler } = require('../middleware/error-handler');
+const { cacheMiddleware } = require('../middleware/cache-middleware');
+const { CACHE_TTL } = require('../config/cache-config');
 
 /**
  * Daily Farming Tips API
@@ -11,123 +15,108 @@ class DailyTipsRoutes {
     }
 
     setupRoutes() {
-        // Get personalized tip based on user's crops and livestock
-        this.router.get('/personalized', async (req, res) => {
-            try {
-                const { crops, livestock } = req.query;
-                
-                // Parse crops and livestock from query params
-                let cropsData = [];
-                let livestockData = [];
-                
-                if (crops) {
-                    try {
-                        cropsData = typeof crops === 'string' ? JSON.parse(crops) : crops;
-                    } catch (e) {
-                        cropsData = [];
-                    }
+        // Get personalized tip based on user's crops and livestock (cached - changes daily)
+        this.router.get('/personalized', 
+            cacheMiddleware('daily-tips:personalized', CACHE_TTL.DAILY_TIPS, (req) => {
+                const date = new Date().toISOString().split('T')[0];
+                return `daily-tips:personalized:${date}:crops:${req.query.crops || 'none'}:livestock:${req.query.livestock || 'none'}`;
+            }),
+            validate('dailyTips.personalized'), 
+            asyncHandler(async (req, res) => {
+            const { crops, livestock } = req.query;
+            
+            // Parse crops and livestock from query params
+            let cropsData = [];
+            let livestockData = [];
+            
+            if (crops) {
+                try {
+                    cropsData = typeof crops === 'string' ? JSON.parse(crops) : crops;
+                } catch (e) {
+                    cropsData = [];
                 }
-                
-                if (livestock) {
-                    try {
-                        livestockData = typeof livestock === 'string' ? JSON.parse(livestock) : livestock;
-                    } catch (e) {
-                        livestockData = [];
-                    }
+            }
+            
+            if (livestock) {
+                try {
+                    livestockData = typeof livestock === 'string' ? JSON.parse(livestock) : livestock;
+                } catch (e) {
+                    livestockData = [];
                 }
-
-                const tip = this.getPersonalizedTip(cropsData, livestockData);
-                res.json({
-                    success: true,
-                    tip: tip,
-                    date: new Date().toISOString().split('T')[0],
-                    basedOn: {
-                        crops: cropsData.length,
-                        livestock: livestockData.length
-                    }
-                });
-            } catch (error) {
-                console.error('[Daily Tips] Error:', error);
-                res.status(500).json({
-                    success: false,
-                    error: 'Failed to fetch personalized tip'
-                });
             }
-        });
 
-        // Get today's tip (fallback for when no crops/livestock data available)
-        this.router.get('/today', (req, res) => {
-            try {
-                const tip = this.getTodaysTip();
-                res.json({
-                    success: true,
-                    tip: tip,
-                    date: new Date().toISOString().split('T')[0]
-                });
-            } catch (error) {
-                console.error('[Daily Tips] Error:', error);
-                res.status(500).json({
-                    success: false,
-                    error: 'Failed to fetch daily tip'
-                });
-            }
-        });
+            const tip = this.getPersonalizedTip(cropsData, livestockData);
+            res.json({
+                success: true,
+                tip: tip,
+                date: new Date().toISOString().split('T')[0],
+                basedOn: {
+                    crops: cropsData.length,
+                    livestock: livestockData.length
+                }
+            });
+        }));
 
-        // Get tip by date
-        this.router.get('/date/:date', (req, res) => {
-            try {
-                const { date } = req.params;
-                const tip = this.getTipByDate(date);
-                res.json({
-                    success: true,
-                    tip: tip,
-                    date: date
-                });
-            } catch (error) {
-                console.error('[Daily Tips] Error:', error);
-                res.status(500).json({
-                    success: false,
-                    error: 'Failed to fetch tip for date'
-                });
-            }
-        });
+        // Get today's tip (fallback for when no crops/livestock data available) (cached - changes daily)
+        this.router.get('/today', 
+            cacheMiddleware('daily-tips:today', CACHE_TTL.DAILY_TIPS, (req) => {
+                const date = new Date().toISOString().split('T')[0];
+                return `daily-tips:today:${date}`;
+            }),
+            validate('dailyTips.today'), 
+            asyncHandler((req, res) => {
+            const tip = this.getTodaysTip();
+            res.json({
+                success: true,
+                tip: tip,
+                date: new Date().toISOString().split('T')[0]
+            });
+        }));
 
-        // Get tips by category
-        this.router.get('/category/:category', (req, res) => {
-            try {
-                const { category } = req.params;
-                const tips = this.getTipsByCategory(category);
-                res.json({
-                    success: true,
-                    tips: tips,
-                    category: category
-                });
-            } catch (error) {
-                console.error('[Daily Tips] Error:', error);
-                res.status(500).json({
-                    success: false,
-                    error: 'Failed to fetch tips'
-                });
-            }
-        });
+        // Get tip by date (cached - static per date)
+        this.router.get('/date/:date', 
+            cacheMiddleware('daily-tips:date', CACHE_TTL.DAILY_TIPS, (req) => 
+                `daily-tips:date:${req.params.date}`
+            ),
+            validate('dailyTips.byDate'), 
+            asyncHandler((req, res) => {
+            const { date } = req.params;
+            const tip = this.getTipByDate(date);
+            res.json({
+                success: true,
+                tip: tip,
+                date: date
+            });
+        }));
 
-        // Get all tips (for browsing)
-        this.router.get('/all', (req, res) => {
-            try {
-                const tips = this.getAllTips();
-                res.json({
-                    success: true,
-                    tips: tips,
-                    total: tips.length
-                });
-            } catch (error) {
-                console.error('[Daily Tips] Error:', error);
-                res.status(500).json({
-                    success: false,
-                    error: 'Failed to fetch tips'
-                });
-            }
-        });
+        // Get tips by category (cached - static data)
+        this.router.get('/category/:category', 
+            cacheMiddleware('daily-tips:category', CACHE_TTL.DAILY_TIPS, (req) => 
+                `daily-tips:category:${req.params.category}`
+            ),
+            validate('dailyTips.byCategory'), 
+            asyncHandler((req, res) => {
+            const { category } = req.params;
+            const tips = this.getTipsByCategory(category);
+            res.json({
+                success: true,
+                tips: tips,
+                category: category
+            });
+        }));
+
+        // Get all tips (for browsing) (cached - static data)
+        this.router.get('/all', 
+            cacheMiddleware('daily-tips:all', CACHE_TTL.DAILY_TIPS),
+            validate('dailyTips.all'), 
+            asyncHandler((req, res) => {
+            const tips = this.getAllTips();
+            res.json({
+                success: true,
+                tips: tips,
+                total: tips.length
+            });
+        }));
     }
 
     /**

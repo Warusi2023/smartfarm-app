@@ -5,6 +5,13 @@
 
 const express = require('express');
 const cors = require('cors');
+const logger = require('./utils/logger');
+const { validate } = require('./middleware/validator');
+const { cacheMiddleware, invalidateCache } = require('./middleware/cache-middleware');
+const { CACHE_TTL } = require('./config/cache-config');
+const metricsMiddleware = require('./middleware/metrics-middleware');
+const metricsService = require('./utils/metrics');
+const HealthCheckService = require('./utils/health-check');
 const app = express();
 
 // --- CORS SETUP (bulletproof origin handling) ---
@@ -37,7 +44,7 @@ const corsOptions = {
   origin(origin, cb) {
     // Allow non-browser tools (curl, server-to-server) with no Origin header
     if (!origin) {
-      console.log(`[CORS] ✓ Allowed: No origin header (non-browser request)`);
+      logger.debug('CORS: Allowed - No origin header (non-browser request)');
       return cb(null, true);
     }
 
@@ -51,11 +58,10 @@ const corsOptions = {
     });
 
     if (allow) {
-      console.log(`[CORS] ✓ Allowed origin: ${origin}`);
+      logger.debug('CORS: Allowed origin', { origin });
       return cb(null, true);
     } else {
-      console.log(`[CORS] ✗ Blocked origin: ${origin}`);
-      console.log(`[CORS] ℹ Allowed origins:`, ALL_ALLOWED_ORIGINS);
+      logger.warn('CORS: Blocked origin', { origin, allowedOrigins: ALL_ALLOWED_ORIGINS });
       return cb(new Error(`CORS blocked: ${origin}`));
     }
   },
@@ -74,9 +80,41 @@ app.options('*', cors(corsOptions)); // proper preflight handling
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Metrics middleware - track all requests
+const metricsMiddleware = require('./middleware/metrics-middleware');
+const metricsService = require('./utils/metrics');
+const HealthCheckService = require('./utils/health-check');
+app.use(metricsMiddleware);
+
 // --- Health & root endpoints ---
 
 // Health check (required by Railway) - includes database status
+/**
+ * @swagger
+ * /api/health:
+ *   get:
+ *     summary: Health check endpoint
+ *     description: Returns the health status of the API server
+ *     tags: [Health]
+ *     responses:
+ *       200:
+ *         description: Service is healthy
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: ok
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ *                   example: 2024-01-01T00:00:00.000Z
+ *                 environment:
+ *                   type: string
+ *                   example: production
+ */
 app.get('/api/health', async (req, res) => {
   const health = {
     ok: true,
@@ -128,10 +166,8 @@ app.get('/api/ai-advisory/test', (req, res) => {
 });
 
 // Add Livestock Health Advice endpoint directly (always available)
-app.get('/api/ai-advisory/livestock-health/:animalId', (req, res) => {
-  console.log(`[AI Advisory] Livestock health request: ${req.method} ${req.path}`);
-  console.log(`[AI Advisory] Params:`, req.params);
-  console.log(`[AI Advisory] Query:`, req.query);
+app.get('/api/ai-advisory/livestock-health/:animalId', validate('aiAdvisory.livestockHealth'), (req, res) => {
+  logger.debug('AI Advisory: Livestock health request', { method: req.method, path: req.path, params: req.params, query: req.query });
   
   try {
     const { animalId } = req.params;
@@ -214,7 +250,7 @@ app.get('/api/ai-advisory/livestock-health/:animalId', (req, res) => {
       data: recommendations
     });
   } catch (error) {
-    console.error('Error in livestock health endpoint:', error);
+    logger.errorWithContext('Error in livestock health endpoint', { error, path: req.path, params: req.params });
     res.status(500).json({
       success: false,
       error: 'Failed to generate health advice',
@@ -235,10 +271,8 @@ app.get('/', (req, res) => {
 // --- API Endpoints ---
 
 // Add AI Advisory endpoint directly (always available, even if routes fail)
-app.get('/api/ai-advisory/crop-nutrition/:cropId', (req, res) => {
-  console.log(`[AI Advisory] Request received: ${req.method} ${req.path}`);
-  console.log(`[AI Advisory] Params:`, req.params);
-  console.log(`[AI Advisory] Query:`, req.query);
+app.get('/api/ai-advisory/crop-nutrition/:cropId', validate('aiAdvisory.cropNutrition'), (req, res) => {
+  logger.debug('AI Advisory: Request received', { method: req.method, path: req.path, params: req.params, query: req.query });
   
   try {
     const { cropId } = req.params;
@@ -308,7 +342,7 @@ app.get('/api/ai-advisory/crop-nutrition/:cropId', (req, res) => {
       data: recommendations
     });
   } catch (error) {
-    console.error('Error in AI advisory endpoint:', error);
+    logger.errorWithContext('Error in AI advisory endpoint', { error, path: req.path, params: req.params });
     res.status(500).json({
       success: false,
       error: 'Failed to generate AI advice',
@@ -325,37 +359,38 @@ let dbPool = null;
 try {
   // Try to use production auth routes with email verification
   const { Pool } = require('pg');
+  const { getPostgresSSLConfig } = require('./utils/ssl-config');
   
   // Initialize database connection if DATABASE_URL is available
   if (process.env.DATABASE_URL) {
     dbPool = new Pool({
       connectionString: process.env.DATABASE_URL,
-      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+      ssl: getPostgresSSLConfig(process.env.DATABASE_URL),
       max: 20,
       min: 2,
     });
     
     dbPool.on('error', (err) => {
-      console.error('Database connection error:', err);
+      logger.errorWithContext('Database connection error', { error: err });
     });
   }
   
   AuthRoutes = require('./routes/auth');
   const authRoutes = new AuthRoutes(dbPool);
   app.use('/api/auth', authRoutes.getRouter());
-  console.log('✅ Auth routes with email verification loaded');
+  logger.info('Auth routes with email verification loaded');
   
   // Load Subscription routes
   const SubscriptionRoutes = require('./routes/subscriptions');
   const subscriptionRoutes = new SubscriptionRoutes(dbPool);
-  app.use('/api/subscriptions', subscriptionRoutes.router);
-  console.log('✅ Subscription routes loaded');
+  app.use('/api/subscriptions', subscriptionRoutes.getRouter());
+  logger.info('Subscription routes loaded');
   
   // Load AI Advisory routes
   AIAdvisoryRoutes = require('./routes/ai-advisory');
   const aiAdvisoryRoutes = new AIAdvisoryRoutes();
   app.use('/api/ai-advisory', aiAdvisoryRoutes.getRouter());
-  console.log('✅ AI Advisory routes loaded');
+  logger.info('AI Advisory routes loaded');
   
   // Load Daily Tips routes
   const DailyTipsRoutes = require('./routes/daily-tips');
@@ -364,51 +399,48 @@ try {
   // Biological Farming routes
   const biologicalFarmingRoutes = require('./routes/biological-farming');
   app.use('/api/biological-farming', biologicalFarmingRoutes);
-  console.log('✅ Daily Tips routes loaded');
+  logger.info('Daily Tips routes loaded');
   
   // Load Weather Alerts routes (independent of other routes)
-  console.log('🔍 Initializing Weather Alerts routes...');
+  logger.debug('Initializing Weather Alerts routes');
   try {
-    console.log('  → Requiring routes/weather-alerts module...');
+    logger.debug('Requiring routes/weather-alerts module');
     const { router: weatherAlertsRouter, initWeatherAlertsRoutes } = require('./routes/weather-alerts');
-    console.log('  → Routes module loaded successfully');
+    logger.debug('Routes module loaded successfully');
     
-    console.log('  → Requiring services/weatherAlertService module...');
+    logger.debug('Requiring services/weatherAlertService module');
     const WeatherAlertService = require('./services/weatherAlertService');
-    console.log('  → WeatherAlertService module loaded successfully');
+    logger.debug('WeatherAlertService module loaded successfully');
     
-    console.log('  → Creating WeatherAlertService instance...');
+    logger.debug('Creating WeatherAlertService instance');
     const weatherAlertService = new WeatherAlertService(dbPool, process.env.WEATHER_API_KEY);
-    console.log('  → WeatherAlertService instance created');
+    logger.debug('WeatherAlertService instance created');
     
-    console.log('  → Initializing routes with dependencies...');
+    logger.debug('Initializing routes with dependencies');
     initWeatherAlertsRoutes(dbPool, weatherAlertService);
-    console.log('  → Routes initialized');
+    logger.debug('Routes initialized');
     
-    console.log('  → Mounting router to /api/weather-alerts...');
+    logger.debug('Mounting router to /api/weather-alerts');
     app.use('/api/weather-alerts', weatherAlertsRouter);
-    console.log('✅ Weather Alerts routes loaded (after app.use)');
+    logger.info('Weather Alerts routes loaded');
   } catch (weatherError) {
-    console.error('❌ Error loading Weather Alerts routes:', weatherError.message);
-    console.error('❌ Weather Alerts error stack:', weatherError.stack);
+    logger.errorWithContext('Error loading Weather Alerts routes', { error: weatherError });
     // Don't re-throw - let other routes continue loading
-    console.warn('⚠️ Weather Alerts routes will be skipped, but other routes will continue');
+    logger.warn('Weather Alerts routes will be skipped, but other routes will continue');
   }
   
   // Note: Weather alerts cron job is configured via Railway Cron (not node-cron)
   // See CRON_JOB_CONFIGURATION.md for setup instructions
   
 } catch (error) {
-  console.warn('⚠️ Could not load auth routes, using fallback endpoints:', error.message);
-  console.error('Full error:', error);
-  console.error('Error stack:', error.stack);
+  logger.warnWithContext('Could not load auth routes, using fallback endpoints', { error });
   
   // Try to load AI Advisory routes separately (might work even if auth fails)
   try {
     AIAdvisoryRoutes = require('./routes/ai-advisory');
     const aiAdvisoryRoutes = new AIAdvisoryRoutes();
     app.use('/api/ai-advisory', aiAdvisoryRoutes.getRouter());
-    console.log('✅ AI Advisory routes loaded (standalone)');
+    logger.info('AI Advisory routes loaded (standalone)');
     
     // Load Daily Tips routes (standalone)
     const DailyTipsRoutes = require('./routes/daily-tips');
@@ -417,20 +449,19 @@ try {
     // Biological Farming routes
     const biologicalFarmingRoutes = require('./routes/biological-farming');
     app.use('/api/biological-farming', biologicalFarmingRoutes);
-    console.log('✅ Daily Tips routes loaded (standalone)');
+    logger.info('Daily Tips routes loaded (standalone)');
     
     // Try to load Weather Alerts routes (standalone fallback)
     try {
-      console.log('🔍 Attempting to load Weather Alerts routes (standalone fallback)...');
+      logger.debug('Attempting to load Weather Alerts routes (standalone fallback)');
       const { router: weatherAlertsRouter, initWeatherAlertsRoutes } = require('./routes/weather-alerts');
       const WeatherAlertService = require('./services/weatherAlertService');
       const weatherAlertService = new WeatherAlertService(dbPool, process.env.WEATHER_API_KEY);
       initWeatherAlertsRoutes(dbPool, weatherAlertService);
       app.use('/api/weather-alerts', weatherAlertsRouter);
-      console.log('✅ Weather Alerts routes loaded (standalone fallback)');
+      logger.info('Weather Alerts routes loaded (standalone fallback)');
     } catch (weatherError) {
-      console.error('❌ Failed to load Weather Alerts routes (standalone fallback):', weatherError.message);
-      console.error('Weather Alerts error stack:', weatherError.stack);
+      logger.errorWithContext('Failed to load Weather Alerts routes (standalone fallback)', { error: weatherError });
       // Add a basic fallback route so the endpoint exists
       app.get('/api/weather-alerts', (req, res) => {
         res.status(503).json({
@@ -439,12 +470,12 @@ try {
           message: 'Please check server logs for details'
         });
       });
-      console.log('⚠️ Weather Alerts fallback route added (503 response)');
+      logger.warn('Weather Alerts fallback route added (503 response)');
     }
   } catch (aiError) {
-    console.warn('⚠️ Could not load AI Advisory routes:', aiError.message);
+    logger.warnWithContext('Could not load AI Advisory routes', { error: aiError });
     // Add fallback AI advisory endpoint
-    app.get('/api/ai-advisory/crop-nutrition/:cropId', (req, res) => {
+    app.get('/api/ai-advisory/crop-nutrition/:cropId', validate('aiAdvisory.cropNutrition'), (req, res) => {
       const { cropId } = req.params;
       res.json({
         success: true,
@@ -484,15 +515,8 @@ try {
   }
   
   // Fallback auth endpoints (minimal implementation)
-  app.post('/api/auth/login', (req, res) => {
+  app.post('/api/auth/login', validate('auth.login'), (req, res) => {
     const { email, password } = req.body;
-    
-    if (!email || !password) {
-      return res.status(400).json({
-        success: false,
-        error: 'Email and password required'
-      });
-    }
     
     res.status(200).json({
       success: true,
@@ -508,15 +532,8 @@ try {
     });
   });
 
-  app.post('/api/auth/register', (req, res) => {
+  app.post('/api/auth/register', validate('auth.register'), (req, res) => {
     const { email, password, firstName, lastName } = req.body;
-    
-    if (!email || !password || !firstName || !lastName) {
-      return res.status(400).json({
-        success: false,
-        error: 'All fields required'
-      });
-    }
     
     res.status(201).json({
       success: true,
@@ -532,7 +549,7 @@ try {
     });
   });
 
-  app.post('/api/auth/logout', (req, res) => {
+  app.post('/api/auth/logout', validate('auth.logout'), (req, res) => {
     res.status(200).json({
       success: true,
       message: 'Logged out successfully'
@@ -541,14 +558,19 @@ try {
 }
 
 // Farms endpoints
-app.get('/api/farms', (req, res) => {
+app.get('/api/farms', 
+  cacheMiddleware('farms', CACHE_TTL.FARM_LIST, (req) => 
+    `farms:user:${req.user?.id || 'anonymous'}`
+  ),
+  validate('farms.list'), 
+  (req, res) => {
   res.status(200).json({
     success: true,
     data: []
   });
 });
 
-app.get('/api/farms/stats/overview', (req, res) => {
+app.get('/api/farms/stats/overview', validate('farms.stats'), (req, res) => {
   res.status(200).json({
     success: true,
     data: {
@@ -560,14 +582,19 @@ app.get('/api/farms/stats/overview', (req, res) => {
 });
 
 // Crops endpoints
-app.get('/api/crops', (req, res) => {
+app.get('/api/crops', 
+  cacheMiddleware('crops', CACHE_TTL.CROP_LIST, (req) => 
+    `crops:user:${req.user?.id || 'anonymous'}`
+  ),
+  validate('crops.list'), 
+  (req, res) => {
   res.status(200).json({
     success: true,
     data: []
   });
 });
 
-app.get('/api/crops/stats/overview', (req, res) => {
+app.get('/api/crops/stats/overview', validate('crops.stats'), (req, res) => {
   res.status(200).json({
     success: true,
     data: {
@@ -583,28 +610,26 @@ let livestockStorage = [];
 let feedMixesStorage = [];
 
 // Livestock endpoints
-app.get('/api/livestock', (req, res) => {
-  console.log(`[${new Date().toISOString()}] GET /api/livestock - Origin: ${req.headers.origin}`);
+app.get('/api/livestock', 
+  cacheMiddleware('livestock', CACHE_TTL.LIVESTOCK_LIST, (req) => 
+    `livestock:user:${req.user?.id || 'anonymous'}`
+  ),
+  validate('livestock.list'), 
+  (req, res) => {
+  logger.debug('GET /api/livestock', { origin: req.headers.origin });
   res.status(200).json({
     success: true,
     data: livestockStorage
   });
 });
 
-app.post('/api/livestock', (req, res) => {
-  console.log(`[${new Date().toISOString()}] POST /api/livestock - Origin: ${req.headers.origin}`);
-  console.log('Request body:', JSON.stringify(req.body, null, 2));
+app.post('/api/livestock', 
+  invalidateCache('livestock:create'),
+  validate('livestock.create'), 
+  (req, res) => {
+  logger.debug('POST /api/livestock', { origin: req.headers.origin, body: req.body });
   
   const livestockData = req.body;
-  
-  // Validate required fields
-  if (!livestockData.type || !livestockData.name) {
-    console.log('❌ Validation failed: Missing required fields');
-    return res.status(400).json({
-      success: false,
-      error: 'Type and name are required'
-    });
-  }
   
   // Create new livestock entry
   const newLivestock = {
@@ -615,7 +640,7 @@ app.post('/api/livestock', (req, res) => {
   };
   
   livestockStorage.push(newLivestock);
-  console.log('✅ Livestock added successfully:', newLivestock.id);
+  logger.info('Livestock added successfully', { id: newLivestock.id });
   
   res.status(201).json({
     success: true,
@@ -623,8 +648,8 @@ app.post('/api/livestock', (req, res) => {
   });
 });
 
-app.get('/api/livestock/:id', (req, res) => {
-  console.log(`[${new Date().toISOString()}] GET /api/livestock/${req.params.id} - Origin: ${req.headers.origin}`);
+app.get('/api/livestock/:id', validate('livestock.getById'), (req, res) => {
+  logger.debug('GET /api/livestock/:id', { id: req.params.id, origin: req.headers.origin });
   const livestock = livestockStorage.find(l => l.id === parseInt(req.params.id));
   
   if (!livestock) {
@@ -640,8 +665,11 @@ app.get('/api/livestock/:id', (req, res) => {
   });
 });
 
-app.put('/api/livestock/:id', (req, res) => {
-  console.log(`[${new Date().toISOString()}] PUT /api/livestock/${req.params.id} - Origin: ${req.headers.origin}`);
+app.put('/api/livestock/:id', 
+  invalidateCache('livestock:update'),
+  validate('livestock.update'), 
+  (req, res) => {
+  logger.debug('PUT /api/livestock/:id', { id: req.params.id, origin: req.headers.origin });
   const index = livestockStorage.findIndex(l => l.id === parseInt(req.params.id));
   
   if (index === -1) {
@@ -657,7 +685,7 @@ app.put('/api/livestock/:id', (req, res) => {
     updatedAt: new Date().toISOString()
   };
   
-  console.log('✅ Livestock updated successfully');
+  logger.info('Livestock updated successfully', { id: req.params.id });
   
   res.status(200).json({
     success: true,
@@ -665,8 +693,11 @@ app.put('/api/livestock/:id', (req, res) => {
   });
 });
 
-app.delete('/api/livestock/:id', (req, res) => {
-  console.log(`[${new Date().toISOString()}] DELETE /api/livestock/${req.params.id} - Origin: ${req.headers.origin}`);
+app.delete('/api/livestock/:id', 
+  invalidateCache('livestock:delete'),
+  validate('livestock.getById'), 
+  (req, res) => {
+  logger.debug('DELETE /api/livestock/:id', { id: req.params.id, origin: req.headers.origin });
   const index = livestockStorage.findIndex(l => l.id === parseInt(req.params.id));
   
   if (index === -1) {
@@ -677,7 +708,7 @@ app.delete('/api/livestock/:id', (req, res) => {
   }
   
   livestockStorage.splice(index, 1);
-  console.log('✅ Livestock deleted successfully');
+  logger.info('Livestock deleted successfully', { id: req.params.id });
   
   res.status(200).json({
     success: true,
@@ -686,7 +717,7 @@ app.delete('/api/livestock/:id', (req, res) => {
 });
 
 app.get('/api/livestock/stats/overview', (req, res) => {
-  console.log(`[${new Date().toISOString()}] GET /api/livestock/stats/overview - Origin: ${req.headers.origin}`);
+  logger.debug('GET /api/livestock/stats/overview', { origin: req.headers.origin });
   res.status(200).json({
     success: true,
     data: {
@@ -699,7 +730,7 @@ app.get('/api/livestock/stats/overview', (req, res) => {
 
 // Feed Mix endpoints
 app.get('/api/feed-mixes', (req, res) => {
-  console.log(`[${new Date().toISOString()}] GET /api/feed-mixes - Origin: ${req.headers.origin}`);
+  logger.debug('GET /api/feed-mixes', { origin: req.headers.origin });
   res.status(200).json({
     success: true,
     data: feedMixesStorage
@@ -707,14 +738,13 @@ app.get('/api/feed-mixes', (req, res) => {
 });
 
 app.post('/api/feed-mixes', (req, res) => {
-  console.log(`[${new Date().toISOString()}] POST /api/feed-mixes - Origin: ${req.headers.origin}`);
-  console.log('Request body:', JSON.stringify(req.body, null, 2));
+  logger.debug('POST /api/feed-mixes', { origin: req.headers.origin, body: req.body });
   
   const feedMixData = req.body;
   
   // Validate required fields
   if (!feedMixData.livestockType || !feedMixData.growthStage) {
-    console.log('❌ Validation failed: Missing required fields');
+    logger.warn('Validation failed: Missing required fields', { body: req.body });
     return res.status(400).json({
       success: false,
       error: 'Livestock type and growth stage are required'
@@ -730,7 +760,7 @@ app.post('/api/feed-mixes', (req, res) => {
   };
   
   feedMixesStorage.push(newFeedMix);
-  console.log('✅ Feed mix added successfully:', newFeedMix.id);
+  logger.info('Feed mix added successfully', { id: newFeedMix.id });
   
   res.status(201).json({
     success: true,
@@ -739,7 +769,7 @@ app.post('/api/feed-mixes', (req, res) => {
 });
 
 app.get('/api/feed-mixes/:id', (req, res) => {
-  console.log(`[${new Date().toISOString()}] GET /api/feed-mixes/${req.params.id} - Origin: ${req.headers.origin}`);
+  logger.debug('GET /api/feed-mixes/:id', { id: req.params.id, origin: req.headers.origin });
   const feedMix = feedMixesStorage.find(f => f.id === parseInt(req.params.id));
   
   if (!feedMix) {
@@ -756,7 +786,7 @@ app.get('/api/feed-mixes/:id', (req, res) => {
 });
 
 app.put('/api/feed-mixes/:id', (req, res) => {
-  console.log(`[${new Date().toISOString()}] PUT /api/feed-mixes/${req.params.id} - Origin: ${req.headers.origin}`);
+  logger.debug('PUT /api/feed-mixes/:id', { id: req.params.id, origin: req.headers.origin });
   const index = feedMixesStorage.findIndex(f => f.id === parseInt(req.params.id));
   
   if (index === -1) {
@@ -772,7 +802,7 @@ app.put('/api/feed-mixes/:id', (req, res) => {
     updatedAt: new Date().toISOString()
   };
   
-  console.log('✅ Feed mix updated successfully');
+  logger.info('Feed mix updated successfully', { id: req.params.id });
   
   res.status(200).json({
     success: true,
@@ -781,7 +811,7 @@ app.put('/api/feed-mixes/:id', (req, res) => {
 });
 
 app.delete('/api/feed-mixes/:id', (req, res) => {
-  console.log(`[${new Date().toISOString()}] DELETE /api/feed-mixes/${req.params.id} - Origin: ${req.headers.origin}`);
+  logger.debug('DELETE /api/feed-mixes/:id', { id: req.params.id, origin: req.headers.origin });
   const index = feedMixesStorage.findIndex(f => f.id === parseInt(req.params.id));
   
   if (index === -1) {
@@ -792,7 +822,7 @@ app.delete('/api/feed-mixes/:id', (req, res) => {
   }
   
   feedMixesStorage.splice(index, 1);
-  console.log('✅ Feed mix deleted successfully');
+  logger.info('Feed mix deleted successfully', { id: req.params.id });
   
   res.status(200).json({
     success: true,
@@ -801,7 +831,7 @@ app.delete('/api/feed-mixes/:id', (req, res) => {
 });
 
 app.get('/api/livestock/:livestockId/feed-mixes', (req, res) => {
-  console.log(`[${new Date().toISOString()}] GET /api/livestock/${req.params.livestockId}/feed-mixes - Origin: ${req.headers.origin}`);
+  logger.debug('GET /api/livestock/:livestockId/feed-mixes', { livestockId: req.params.livestockId, origin: req.headers.origin });
   const livestockFeedMixes = feedMixesStorage.filter(f => f.livestockId === parseInt(req.params.livestockId));
   
   res.status(200).json({
@@ -813,7 +843,7 @@ app.get('/api/livestock/:livestockId/feed-mixes', (req, res) => {
 // 404 handler (but check for AI advisory first)
 app.use((req, res) => {
   // Log 404s for debugging
-  console.log(`[404] ${req.method} ${req.path} - Not found`);
+  logger.warn('404 Not Found', { method: req.method, path: req.path });
   res.status(404).json({
     success: false,
     error: 'API endpoint not found',
@@ -823,57 +853,132 @@ app.use((req, res) => {
   });
 });
 
-// Error handler
-app.use((err, req, res, next) => {
-  console.error('[ERROR]', err);
-  res.status(err.status || 500).json({
-    success: false,
-    error: process.env.NODE_ENV === 'production' ? 'Internal server error' : err.message
-  });
+// Metrics endpoint
+/**
+ * @swagger
+ * /api/metrics:
+ *   get:
+ *     summary: Get application metrics
+ *     description: Returns request metrics, error rates, and latency statistics. Supports JSON and Prometheus formats.
+ *     tags: [Health]
+ *     parameters:
+ *       - in: query
+ *         name: format
+ *         schema:
+ *           type: string
+ *           enum: [json, prometheus]
+ *           default: json
+ *         description: Output format
+ *     responses:
+ *       200:
+ *         description: Metrics data
+ */
+app.get('/api/metrics', (req, res) => {
+    const format = req.query.format || 'json';
+    
+    if (format === 'prometheus') {
+        res.set('Content-Type', 'text/plain');
+        res.send(metricsService.getPrometheusMetrics());
+    } else {
+        res.json({
+            overall: metricsService.getOverallMetrics(),
+            endpoints: metricsService.getRequestMetrics(),
+            timestamp: new Date().toISOString()
+        });
+    }
 });
+
+// Additional health check endpoints
+let healthCheckService = null;
+
+app.get('/api/health/detailed', async (req, res) => {
+    if (!healthCheckService) {
+        healthCheckService = new HealthCheckService(dbPool);
+    }
+    
+    const health = await healthCheckService.getDetailedHealth();
+    const statusCode = health.status === 'healthy' ? 200 : 503;
+    res.status(statusCode).json(health);
+});
+
+app.get('/api/health/ready', async (req, res) => {
+    if (!healthCheckService) {
+        healthCheckService = new HealthCheckService(dbPool);
+    }
+    
+    const readiness = await healthCheckService.getReadiness();
+    const statusCode = readiness.ready ? 200 : 503;
+    res.status(statusCode).json(readiness);
+});
+
+app.get('/api/health/live', (req, res) => {
+    if (!healthCheckService) {
+        healthCheckService = new HealthCheckService(dbPool);
+    }
+    
+    const liveness = healthCheckService.getLiveness();
+    res.json(liveness);
+});
+
+// Swagger/OpenAPI Documentation
+if (process.env.NODE_ENV !== 'production' || process.env.ENABLE_SWAGGER === 'true') {
+    const swaggerUi = require('swagger-ui-express');
+    const { swaggerSpec } = require('./config/swagger');
+    
+    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+        customCss: '.swagger-ui .topbar { display: none }',
+        customSiteTitle: 'SmartFarm API Documentation'
+    }));
+    
+    logger.info('Swagger documentation available at /api-docs');
+}
+
+// 404 Not Found handler (must be before error handler)
+const { notFoundHandler, errorHandler } = require('./middleware/error-handler');
+app.use(notFoundHandler);
+
+// Global error handler (must be last)
+app.use(errorHandler);
 
 // --- Robust server start (bind 0.0.0.0 and PORT) ---
 const PORT = process.env.PORT || 3000;
 
 const server = app.listen(PORT, '0.0.0.0', () => {
-  console.log('========================================');
-  console.log(`[SmartFarm] 🚀 API Server Started`);
-  console.log('========================================');
-  console.log(`[SmartFarm] 📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`[SmartFarm] 🌐 Listening on: 0.0.0.0:${PORT}`);
-  console.log(`[SmartFarm] 🔗 Health check: http://localhost:${PORT}/api/health`);
-  console.log(`[SmartFarm] 🛡️  Allowed origins (${ALL_ALLOWED_ORIGINS.length}):`, ALL_ALLOWED_ORIGINS);
-  console.log('========================================');
+  logger.info('SmartFarm API Server Started', {
+    environment: process.env.NODE_ENV || 'development',
+    port: PORT,
+    healthCheck: `http://localhost:${PORT}/api/health`,
+    allowedOriginsCount: ALL_ALLOWED_ORIGINS.length,
+    allowedOrigins: ALL_ALLOWED_ORIGINS
+  });
 }).on('error', (err) => {
   if (err.code === 'EADDRINUSE') {
-    console.error(`\n❌ Port ${PORT} is already in use!`);
-    console.error('\n📋 Solutions:');
-    console.error(`1. Stop the other process using port ${PORT}`);
-    console.error(`2. Use a different port: PORT=3001 npm run dev`);
-    console.error(`3. Find and kill the process:`);
-    console.error(`   Windows: netstat -ano | findstr :${PORT}`);
-    console.error(`   Then: taskkill /PID <PID> /F`);
-    console.error(`   Mac/Linux: lsof -ti:${PORT} | xargs kill -9\n`);
+    logger.error('Port already in use', { port: PORT, error: err });
+    logger.error('Solutions:', {
+      solution1: `Stop the other process using port ${PORT}`,
+      solution2: `Use a different port: PORT=3001 npm run dev`,
+      solution3: `Find and kill the process: Windows: netstat -ano | findstr :${PORT}, Mac/Linux: lsof -ti:${PORT} | xargs kill -9`
+    });
     process.exit(1);
   } else {
-    console.error('❌ Server error:', err);
+    logger.errorWithContext('Server error', { error: err });
     process.exit(1);
   }
 });
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
-  console.log('[SmartFarm] SIGTERM received, shutting down gracefully');
+  logger.info('SIGTERM received, shutting down gracefully');
   server.close(() => {
-    console.log('[SmartFarm] Server closed');
+    logger.info('Server closed');
     process.exit(0);
   });
 });
 
 process.on('SIGINT', () => {
-  console.log('[SmartFarm] SIGINT received, shutting down gracefully');
+  logger.info('SIGINT received, shutting down gracefully');
   server.close(() => {
-    console.log('[SmartFarm] Server closed');
+    logger.info('Server closed');
     process.exit(0);
   });
 });

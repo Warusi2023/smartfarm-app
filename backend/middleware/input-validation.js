@@ -30,19 +30,17 @@ class InputValidationMiddleware {
     validateBody(schema) {
         return (req, res, next) => {
             try {
-                req.body = schema.parse(req.body);
+                req.body = schema.parse(req.body || {});
                 next();
             } catch (error) {
                 if (error instanceof z.ZodError) {
-                    return res.status(400).json({
-                        success: false,
-                        error: 'Validation failed',
-                        code: 'VALIDATION_ERROR',
-                        details: error.errors.map(e => ({
-                            path: e.path.join('.'),
-                            message: e.message
-                        }))
-                    });
+                    const { ValidationError } = require('../utils/errors');
+                    const details = error.errors.map(e => ({
+                        path: e.path.join('.'),
+                        message: e.message,
+                        code: e.code
+                    }));
+                    return next(new ValidationError('Validation failed', details));
                 }
                 next(error);
             }
@@ -55,19 +53,17 @@ class InputValidationMiddleware {
     validateQuery(schema) {
         return (req, res, next) => {
             try {
-                req.query = schema.parse(req.query);
+                req.query = schema.parse(req.query || {});
                 next();
             } catch (error) {
                 if (error instanceof z.ZodError) {
-                    return res.status(400).json({
-                        success: false,
-                        error: 'Invalid query parameters',
-                        code: 'QUERY_VALIDATION_ERROR',
-                        details: error.errors.map(e => ({
-                            path: e.path.join('.'),
-                            message: e.message
-                        }))
-                    });
+                    const { ValidationError } = require('../utils/errors');
+                    const details = error.errors.map(e => ({
+                        path: e.path.join('.'),
+                        message: e.message,
+                        code: e.code
+                    }));
+                    return next(new ValidationError('Invalid query parameters', details));
                 }
                 next(error);
             }
@@ -80,22 +76,57 @@ class InputValidationMiddleware {
     validateParams(schema) {
         return (req, res, next) => {
             try {
-                req.params = schema.parse(req.params);
+                req.params = schema.parse(req.params || {});
                 next();
             } catch (error) {
                 if (error instanceof z.ZodError) {
-                    return res.status(400).json({
-                        success: false,
-                        error: 'Invalid URL parameters',
-                        code: 'PARAMS_VALIDATION_ERROR',
-                        details: error.errors.map(e => ({
-                            path: e.path.join('.'),
-                            message: e.message
-                        }))
-                    });
+                    const { ValidationError } = require('../utils/errors');
+                    const details = error.errors.map(e => ({
+                        path: e.path.join('.'),
+                        message: e.message,
+                        code: e.code
+                    }));
+                    return next(new ValidationError('Invalid URL parameters', details));
                 }
                 next(error);
             }
+        };
+    }
+
+    /**
+     * Combined validation middleware - validates body, query, and params together
+     * @param {Object} schemas - Object with optional body, query, and params schemas
+     * @returns {Function} Express middleware
+     */
+    validate(schemas = {}) {
+        const middlewares = [];
+        
+        if (schemas.body) {
+            middlewares.push(this.validateBody(schemas.body));
+        }
+        
+        if (schemas.query) {
+            middlewares.push(this.validateQuery(schemas.query));
+        }
+        
+        if (schemas.params) {
+            middlewares.push(this.validateParams(schemas.params));
+        }
+        
+        // If no schemas provided, return no-op middleware
+        if (middlewares.length === 0) {
+            return (req, res, next) => next();
+        }
+        
+        // Chain all validation middlewares
+        return (req, res, next) => {
+            let index = 0;
+            const runNext = (err) => {
+                if (err) return next(err);
+                if (index >= middlewares.length) return next();
+                middlewares[index++](req, res, runNext);
+            };
+            runNext();
         };
     }
 
@@ -274,7 +305,8 @@ class InputValidationMiddleware {
                 // TODO: Implement malware scanning (ClamAV integration)
                 if (requireMalwareScan) {
                     // Placeholder for ClamAV integration
-                    console.log(`⚠️ Malware scanning required but not implemented for ${file.originalname}`);
+                    const logger = require('../utils/logger');
+                    logger.warn('Malware scanning required but not implemented', { filename: file.originalname });
                 }
             }
 

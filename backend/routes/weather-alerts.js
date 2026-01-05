@@ -4,8 +4,13 @@
  */
 
 const express = require('express');
+const logger = require('../utils/logger');
 const router = express.Router();
 const AuthMiddleware = require('../middleware/auth');
+const { validate } = require('../middleware/validator');
+const { asyncHandler, NotFoundError, ServiceUnavailableError, BadRequestError } = require('../middleware/error-handler');
+const { cacheMiddleware, invalidateCache } = require('../middleware/cache-middleware');
+const { CACHE_TTL, CACHE_PATTERNS } = require('../config/cache-config');
 const authMiddleware = new AuthMiddleware();
 const authenticateToken = authMiddleware.authenticate();
 
@@ -25,288 +30,252 @@ function initWeatherAlertsRoutes(pool, service) {
  * GET /api/weather-alerts
  * Get all alerts for the authenticated user
  */
-router.get('/', authenticateToken, async (req, res) => {
-    try {
-        const userId = req.user.id;
-        const { farmId, unreadOnly, limit = 50 } = req.query;
+router.get('/', 
+    authenticateToken, 
+    cacheMiddleware('weather-alerts', CACHE_TTL.WEATHER_ALERTS, (req) => 
+        `weather-alerts:user:${req.user.id}:farm:${req.query.farmId || 'all'}:unread:${req.query.unreadOnly || 'false'}:limit:${req.query.limit || 50}`
+    ),
+    validate('weatherAlerts.list'), 
+    asyncHandler(async (req, res) => {
+    const userId = req.user.id;
+    const { farmId, unreadOnly, limit = 50 } = req.query;
 
-        let query = `
-            SELECT wa.*, f.name as farm_name, f.location as farm_location
-            FROM weather_alerts wa
-            LEFT JOIN farms f ON wa.farm_id = f.id
-            WHERE wa.user_id = $1
-        `;
-        const params = [userId];
+    let query = `
+        SELECT wa.*, f.name as farm_name, f.location as farm_location
+        FROM weather_alerts wa
+        LEFT JOIN farms f ON wa.farm_id = f.id
+        WHERE wa.user_id = $1
+    `;
+    const params = [userId];
 
-        if (farmId) {
-            query += ' AND wa.farm_id = $2';
-            params.push(farmId);
-        }
-
-        if (unreadOnly === 'true') {
-            query += ` AND wa.is_read = FALSE`;
-        }
-
-        query += ` ORDER BY wa.expected_time ASC, wa.created_at DESC LIMIT $${params.length + 1}`;
-        params.push(parseInt(limit));
-
-        const result = await dbPool.query(query, params);
-
-        // Parse JSONB weather_data
-        const alerts = result.rows.map(row => ({
-            ...row,
-            weatherData: typeof row.weather_data === 'string' 
-                ? JSON.parse(row.weather_data) 
-                : row.weather_data
-        }));
-
-        res.json({
-            success: true,
-            data: alerts,
-            count: alerts.length
-        });
-    } catch (error) {
-        console.error('Error fetching weather alerts:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Failed to fetch weather alerts'
-        });
+    if (farmId) {
+        query += ' AND wa.farm_id = $2';
+        params.push(farmId);
     }
-});
+
+    if (unreadOnly === 'true') {
+        query += ` AND wa.is_read = FALSE`;
+    }
+
+    query += ` ORDER BY wa.expected_time ASC, wa.created_at DESC LIMIT $${params.length + 1}`;
+    params.push(parseInt(limit));
+
+    const result = await dbPool.query(query, params);
+
+    // Parse JSONB weather_data
+    const alerts = result.rows.map(row => ({
+        ...row,
+        weatherData: typeof row.weather_data === 'string' 
+            ? JSON.parse(row.weather_data) 
+            : row.weather_data
+    }));
+
+    res.json({
+        success: true,
+        data: alerts,
+        count: alerts.length
+    });
+}));
 
 /**
  * GET /api/weather-alerts/stats
  * Get alert statistics for the user
  */
-router.get('/stats', authenticateToken, async (req, res) => {
-    try {
-        const userId = req.user.id;
+router.get('/stats', 
+    authenticateToken, 
+    cacheMiddleware('weather-alerts:stats', CACHE_TTL.WEATHER_ALERTS_STATS, (req) => 
+        `weather-alerts:stats:user:${req.user.id}:farm:${req.query.farmId || 'all'}`
+    ),
+    validate('weatherAlerts.stats'), 
+    asyncHandler(async (req, res) => {
+    const userId = req.user.id;
 
-        const statsQuery = `
-            SELECT 
-                COUNT(*) as total,
-                COUNT(*) FILTER (WHERE is_read = FALSE) as unread,
-                COUNT(*) FILTER (WHERE severity = 'critical') as critical,
-                COUNT(*) FILTER (WHERE severity = 'high') as high,
-                COUNT(*) FILTER (WHERE expected_time > NOW()) as upcoming
-            FROM weather_alerts
-            WHERE user_id = $1
-            AND is_dismissed = FALSE
-        `;
+    const statsQuery = `
+        SELECT 
+            COUNT(*) as total,
+            COUNT(*) FILTER (WHERE is_read = FALSE) as unread,
+            COUNT(*) FILTER (WHERE severity = 'critical') as critical,
+            COUNT(*) FILTER (WHERE severity = 'high') as high,
+            COUNT(*) FILTER (WHERE expected_time > NOW()) as upcoming
+        FROM weather_alerts
+        WHERE user_id = $1
+        AND is_dismissed = FALSE
+    `;
 
-        const result = await dbPool.query(statsQuery, [userId]);
-        const stats = result.rows[0];
+    const result = await dbPool.query(statsQuery, [userId]);
+    const stats = result.rows[0];
 
-        res.json({
-            success: true,
-            data: {
-                total: parseInt(stats.total),
-                unread: parseInt(stats.unread),
-                critical: parseInt(stats.critical),
-                high: parseInt(stats.high),
-                upcoming: parseInt(stats.upcoming)
-            }
-        });
-    } catch (error) {
-        console.error('Error fetching alert stats:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Failed to fetch alert statistics'
-        });
-    }
-});
+    res.json({
+        success: true,
+        data: {
+            total: parseInt(stats.total),
+            unread: parseInt(stats.unread),
+            critical: parseInt(stats.critical),
+            high: parseInt(stats.high),
+            upcoming: parseInt(stats.upcoming)
+        }
+    });
+}));
 
 /**
  * GET /api/weather-alerts/:id
  * Get a specific alert
  */
-router.get('/:id', authenticateToken, async (req, res) => {
-    try {
-        const { id } = req.params;
-        const userId = req.user.id;
+router.get('/:id', authenticateToken, validate('weatherAlerts.getById'), asyncHandler(async (req, res, next) => {
+    const { id } = req.params;
+    const userId = req.user.id;
 
-        const query = `
-            SELECT wa.*, f.name as farm_name, f.location as farm_location
-            FROM weather_alerts wa
-            LEFT JOIN farms f ON wa.farm_id = f.id
-            WHERE wa.id = $1 AND wa.user_id = $2
-        `;
+    const query = `
+        SELECT wa.*, f.name as farm_name, f.location as farm_location
+        FROM weather_alerts wa
+        LEFT JOIN farms f ON wa.farm_id = f.id
+        WHERE wa.id = $1 AND wa.user_id = $2
+    `;
 
-        const result = await dbPool.query(query, [id, userId]);
+    const result = await dbPool.query(query, [id, userId]);
 
-        if (result.rows.length === 0) {
-            return res.status(404).json({
-                success: false,
-                error: 'Alert not found'
-            });
-        }
-
-        const alert = result.rows[0];
-        alert.weatherData = typeof alert.weather_data === 'string' 
-            ? JSON.parse(alert.weather_data) 
-            : alert.weather_data;
-
-        res.json({
-            success: true,
-            data: alert
-        });
-    } catch (error) {
-        console.error('Error fetching alert:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Failed to fetch alert'
-        });
+    if (result.rows.length === 0) {
+        return next(new NotFoundError('Alert', id));
     }
-});
+
+    const alert = result.rows[0];
+    alert.weatherData = typeof alert.weather_data === 'string' 
+        ? JSON.parse(alert.weather_data) 
+        : alert.weather_data;
+
+    res.json({
+        success: true,
+        data: alert
+    });
+}));
 
 /**
  * PATCH /api/weather-alerts/:id/read
  * Mark alert as read
  */
-router.patch('/:id/read', authenticateToken, async (req, res) => {
-    try {
-        const { id } = req.params;
-        const userId = req.user.id;
+router.patch('/:id/read', 
+    authenticateToken, 
+    invalidateCache('weather-alerts:update'),
+    validate('weatherAlerts.markRead'), 
+    asyncHandler(async (req, res, next) => {
+    const { id } = req.params;
+    const userId = req.user.id;
 
-        const updateQuery = `
-            UPDATE weather_alerts
-            SET is_read = TRUE, updated_at = CURRENT_TIMESTAMP
-            WHERE id = $1 AND user_id = $2
-            RETURNING *
-        `;
+    const updateQuery = `
+        UPDATE weather_alerts
+        SET is_read = TRUE, updated_at = CURRENT_TIMESTAMP
+        WHERE id = $1 AND user_id = $2
+        RETURNING *
+    `;
 
-        const result = await dbPool.query(updateQuery, [id, userId]);
+    const result = await dbPool.query(updateQuery, [id, userId]);
 
-        if (result.rows.length === 0) {
-            return res.status(404).json({
-                success: false,
-                error: 'Alert not found'
-            });
-        }
-
-        // Track metric
-        if (weatherAlertService) {
-            await weatherAlertService.trackAlertEvent(id, userId, 'viewed');
-        }
-
-        res.json({
-            success: true,
-            data: result.rows[0]
-        });
-    } catch (error) {
-        console.error('Error marking alert as read:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Failed to update alert'
-        });
+    if (result.rows.length === 0) {
+        return next(new NotFoundError('Alert', id));
     }
-});
+
+    // Track metric
+    if (weatherAlertService) {
+        await weatherAlertService.trackAlertEvent(id, userId, 'viewed');
+    }
+
+    res.json({
+        success: true,
+        data: result.rows[0]
+    });
+}));
 
 /**
  * PATCH /api/weather-alerts/:id/dismiss
  * Dismiss an alert
  */
-router.patch('/:id/dismiss', authenticateToken, async (req, res) => {
-    try {
-        const { id } = req.params;
-        const userId = req.user.id;
+router.patch('/:id/dismiss', 
+    authenticateToken, 
+    invalidateCache('weather-alerts:update'),
+    validate('weatherAlerts.dismiss'), 
+    asyncHandler(async (req, res, next) => {
+    const { id } = req.params;
+    const userId = req.user.id;
 
-        const updateQuery = `
-            UPDATE weather_alerts
-            SET is_dismissed = TRUE, updated_at = CURRENT_TIMESTAMP
-            WHERE id = $1 AND user_id = $2
-            RETURNING *
-        `;
+    const updateQuery = `
+        UPDATE weather_alerts
+        SET is_dismissed = TRUE, updated_at = CURRENT_TIMESTAMP
+        WHERE id = $1 AND user_id = $2
+        RETURNING *
+    `;
 
-        const result = await dbPool.query(updateQuery, [id, userId]);
+    const result = await dbPool.query(updateQuery, [id, userId]);
 
-        if (result.rows.length === 0) {
-            return res.status(404).json({
-                success: false,
-                error: 'Alert not found'
-            });
-        }
-
-        // Track metric
-        if (weatherAlertService) {
-            await weatherAlertService.trackAlertEvent(id, userId, 'dismissed');
-        }
-
-        res.json({
-            success: true,
-            data: result.rows[0]
-        });
-    } catch (error) {
-        console.error('Error dismissing alert:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Failed to dismiss alert'
-        });
+    if (result.rows.length === 0) {
+        return next(new NotFoundError('Alert', id));
     }
-});
+
+    // Track metric
+    if (weatherAlertService) {
+        await weatherAlertService.trackAlertEvent(id, userId, 'dismissed');
+    }
+
+    res.json({
+        success: true,
+        data: result.rows[0]
+    });
+}));
 
 /**
  * PATCH /api/weather-alerts/:id/action
  * Mark that action was taken on an alert
  */
-router.patch('/:id/action', authenticateToken, async (req, res) => {
-    try {
-        const { id } = req.params;
-        const userId = req.user.id;
-        const { actionNotes } = req.body;
+router.patch('/:id/action', 
+    authenticateToken, 
+    invalidateCache('weather-alerts:update'),
+    validate('weatherAlerts.updateAction'), 
+    asyncHandler(async (req, res, next) => {
+    const { id } = req.params;
+    const userId = req.user.id;
+    const { actionNotes } = req.body;
 
-        const updateQuery = `
-            UPDATE weather_alerts
-            SET action_taken = TRUE, 
-                action_notes = $3,
-                updated_at = CURRENT_TIMESTAMP
-            WHERE id = $1 AND user_id = $2
-            RETURNING *
-        `;
+    const updateQuery = `
+        UPDATE weather_alerts
+        SET action_taken = TRUE, 
+            action_notes = $3,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = $1 AND user_id = $2
+        RETURNING *
+    `;
 
-        const result = await dbPool.query(updateQuery, [id, userId, actionNotes || null]);
+    const result = await dbPool.query(updateQuery, [id, userId, actionNotes || null]);
 
-        if (result.rows.length === 0) {
-            return res.status(404).json({
-                success: false,
-                error: 'Alert not found'
-            });
-        }
+    if (result.rows.length === 0) {
+        return next(new NotFoundError('Alert', id));
+    }
 
-        // Track metric
-        if (weatherAlertService) {
-            await weatherAlertService.trackAlertEvent(id, userId, 'action_taken', {
-                notes: actionNotes
-            });
-        }
-
-        res.json({
-            success: true,
-            data: result.rows[0]
-        });
-    } catch (error) {
-        console.error('Error updating alert action:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Failed to update alert'
+    // Track metric
+    if (weatherAlertService) {
+        await weatherAlertService.trackAlertEvent(id, userId, 'action_taken', {
+            notes: actionNotes
         });
     }
-});
+
+    res.json({
+        success: true,
+        data: result.rows[0]
+    });
+}));
 
 /**
  * POST /api/weather-alerts/generate
  * Manually trigger alert generation for user's farms (admin/for testing)
  */
-router.post('/generate', authenticateToken, async (req, res) => {
-    try {
-        const userId = req.user.id;
+router.post('/generate', 
+    authenticateToken, 
+    invalidateCache('weather-alerts:create'),
+    validate('weatherAlerts.generate'), 
+    asyncHandler(async (req, res, next) => {
+    const userId = req.user.id;
 
-        if (!weatherAlertService) {
-            return res.status(503).json({
-                success: false,
-                error: 'Weather alert service not initialized'
-            });
-        }
+    if (!weatherAlertService) {
+        return next(new ServiceUnavailableError('Weather alert service not initialized'));
+    }
 
         // Get user's farms
         const farmsQuery = `
@@ -341,7 +310,7 @@ router.post('/generate', authenticateToken, async (req, res) => {
                     alertsGenerated: alerts.length
                 });
             } catch (error) {
-                console.error(`Error generating alerts for farm ${farm.id}:`, error);
+                logger.errorWithContext('Error generating alerts for farm', { error, farmId: farm.id });
                 results.push({
                     farmId: farm.id,
                     farmName: farm.name,
@@ -350,89 +319,77 @@ router.post('/generate', authenticateToken, async (req, res) => {
             }
         }
 
-        res.json({
-            success: true,
-            data: {
-                totalAlertsGenerated: totalAlerts,
-                farmsProcessed: results
-            }
-        });
-    } catch (error) {
-        console.error('Error generating alerts:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Failed to generate alerts'
-        });
-    }
-});
+    res.json({
+        success: true,
+        data: {
+            totalAlertsGenerated: totalAlerts,
+            farmsProcessed: results
+        }
+    });
+}));
 
 /**
  * GET /api/weather-alerts/preferences
  * Get user's alert preferences
  */
-router.get('/preferences', authenticateToken, async (req, res) => {
-    try {
-        const userId = req.user.id;
+router.get('/preferences', 
+    authenticateToken, 
+    cacheMiddleware('user-preferences', CACHE_TTL.USER_PREFERENCES, (req) => 
+        `user-preferences:${req.user.id}`
+    ),
+    validate('weatherAlerts.getPreferences'), 
+    asyncHandler(async (req, res, next) => {
+    const userId = req.user.id;
 
-        if (!weatherAlertService) {
-            return res.status(503).json({
-                success: false,
-                error: 'Weather alert service not initialized'
-            });
-        }
-
-        const preferences = await weatherAlertService.getUserPreferences(userId);
-
-        res.json({
-            success: true,
-            data: preferences
-        });
-    } catch (error) {
-        console.error('Error fetching preferences:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Failed to fetch preferences'
-        });
+    if (!weatherAlertService) {
+        return next(new ServiceUnavailableError('Weather alert service not initialized'));
     }
-});
+
+    const preferences = await weatherAlertService.getUserPreferences(userId);
+
+    res.json({
+        success: true,
+        data: preferences
+    });
+}));
 
 /**
  * PUT /api/weather-alerts/preferences
  * Update user's alert preferences
  */
-router.put('/preferences', authenticateToken, async (req, res) => {
-    try {
-        const userId = req.user.id;
-        const updates = req.body;
+router.put('/preferences', 
+    authenticateToken, 
+    invalidateCache('preferences:update'),
+    validate('weatherAlerts.updatePreferences'), 
+    asyncHandler(async (req, res, next) => {
+    const userId = req.user.id;
+    const updates = req.body;
 
-        const allowedFields = [
-            'enable_heavy_rain',
-            'enable_frost',
-            'enable_heat_stress',
-            'enable_strong_wind',
-            'enable_drought',
-            'min_severity',
-            'notification_enabled'
-        ];
+    const allowedFields = [
+        'enable_heavy_rain',
+        'enable_frost',
+        'enable_heat_stress',
+        'enable_strong_wind',
+        'enable_drought',
+        'min_severity',
+        'notification_enabled'
+    ];
 
-        const updateFields = [];
-        const updateValues = [];
-        let paramIndex = 1;
+    const updateFields = [];
+    const updateValues = [];
+    let paramIndex = 1;
 
-        for (const field of allowedFields) {
-            if (updates.hasOwnProperty(field)) {
-                updateFields.push(`${field} = $${paramIndex}`);
-                updateValues.push(updates[field]);
-                paramIndex++;
-            }
+    for (const field of allowedFields) {
+        if (updates.hasOwnProperty(field)) {
+            updateFields.push(`${field} = $${paramIndex}`);
+            updateValues.push(updates[field]);
+            paramIndex++;
         }
+    }
 
-        if (updateFields.length === 0) {
-            return res.status(400).json({
-                success: false,
-                error: 'No valid fields to update'
-            });
-        }
+    if (updateFields.length === 0) {
+        return next(new BadRequestError('No valid fields to update'));
+    }
 
         updateFields.push(`updated_at = CURRENT_TIMESTAMP`);
         updateValues.push(userId);
@@ -462,18 +419,11 @@ router.put('/preferences', authenticateToken, async (req, res) => {
             });
         }
 
-        res.json({
-            success: true,
-            data: result.rows[0]
-        });
-    } catch (error) {
-        console.error('Error updating preferences:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Failed to update preferences'
-        });
-    }
-});
+    res.json({
+        success: true,
+        data: result.rows[0]
+    });
+}));
 
 module.exports = { router, initWeatherAlertsRoutes };
 

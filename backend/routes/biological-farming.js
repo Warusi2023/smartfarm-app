@@ -266,7 +266,12 @@ const cropGuides = {
  * GET /api/biological-farming/good-insects
  * Get all beneficial insects
  */
-router.get('/good-insects', (req, res) => {
+const { validate } = require('../middleware/validator');
+
+router.get('/good-insects', 
+    cacheMiddleware('biological-farming:good-insects', CACHE_TTL.BIOLOGICAL_FARMING),
+    validate('biologicalFarming.goodInsects'), 
+    (req, res) => {
     try {
         res.json({
             success: true,
@@ -286,7 +291,12 @@ router.get('/good-insects', (req, res) => {
  * GET /api/biological-farming/good-insects/:id
  * Get a specific beneficial insect by ID
  */
-router.get('/good-insects/:id', (req, res) => {
+router.get('/good-insects/:id', 
+    cacheMiddleware('biological-farming:good-insects', CACHE_TTL.BIOLOGICAL_FARMING, (req) => 
+        `biological-farming:good-insects:id:${req.params.id}`
+    ),
+    validate('biologicalFarming.goodInsectById'), 
+    (req, res) => {
     try {
         const insect = goodInsects.find(i => i.id === parseInt(req.params.id));
         if (!insect) {
@@ -312,7 +322,10 @@ router.get('/good-insects/:id', (req, res) => {
  * GET /api/biological-farming/bad-insects
  * Get all harmful pests
  */
-router.get('/bad-insects', (req, res) => {
+router.get('/bad-insects', 
+    cacheMiddleware('biological-farming:bad-insects', CACHE_TTL.BIOLOGICAL_FARMING),
+    validate('biologicalFarming.badInsects'), 
+    (req, res) => {
     try {
         res.json({
             success: true,
@@ -332,7 +345,12 @@ router.get('/bad-insects', (req, res) => {
  * GET /api/biological-farming/bad-insects/:id
  * Get a specific pest by ID
  */
-router.get('/bad-insects/:id', (req, res) => {
+router.get('/bad-insects/:id', 
+    cacheMiddleware('biological-farming:bad-insects', CACHE_TTL.BIOLOGICAL_FARMING, (req) => 
+        `biological-farming:bad-insects:id:${req.params.id}`
+    ),
+    validate('biologicalFarming.badInsectById'), 
+    (req, res) => {
     try {
         const pest = badInsects.find(p => p.id === parseInt(req.params.id));
         if (!pest) {
@@ -358,7 +376,10 @@ router.get('/bad-insects/:id', (req, res) => {
  * GET /api/biological-farming/crop-guides
  * Get all crop guides
  */
-router.get('/crop-guides', (req, res) => {
+router.get('/crop-guides', 
+    cacheMiddleware('biological-farming:crop-guides', CACHE_TTL.BIOLOGICAL_FARMING),
+    validate('biologicalFarming.cropGuides'), 
+    (req, res) => {
     try {
         res.json({
             success: true,
@@ -378,7 +399,12 @@ router.get('/crop-guides', (req, res) => {
  * GET /api/biological-farming/crop-guides/:cropName
  * Get crop guide for a specific crop
  */
-router.get('/crop-guides/:cropName', (req, res) => {
+router.get('/crop-guides/:cropName', 
+    cacheMiddleware('biological-farming:crop-guides', CACHE_TTL.BIOLOGICAL_FARMING, (req) => 
+        `biological-farming:crop-guides:name:${req.params.cropName.toLowerCase()}`
+    ),
+    validate('biologicalFarming.cropGuideByName'), 
+    (req, res) => {
     try {
         const cropName = req.params.cropName;
         const guide = cropGuides[cropName];
@@ -409,7 +435,12 @@ router.get('/crop-guides/:cropName', (req, res) => {
  * GET /api/biological-farming/match/:pestName
  * Find beneficial insects that target a specific pest
  */
-router.get('/match/:pestName', (req, res) => {
+router.get('/match/:pestName', 
+    cacheMiddleware('biological-farming:match', CACHE_TTL.BIOLOGICAL_FARMING, (req) => 
+        `biological-farming:match:pest:${req.params.pestName.toLowerCase()}`
+    ),
+    validate('biologicalFarming.matchPest'), 
+    (req, res) => {
     try {
         const pestName = req.params.pestName.toLowerCase();
         const matchingInsects = goodInsects.filter(insect => 
@@ -444,7 +475,12 @@ router.get('/match/:pestName', (req, res) => {
  * GET /api/biological-farming/recommendations/:cropName
  * Get pest control recommendations for a crop
  */
-router.get('/recommendations/:cropName', (req, res) => {
+router.get('/recommendations/:cropName', 
+    cacheMiddleware('biological-farming:recommendations', CACHE_TTL.BIOLOGICAL_FARMING, (req) => 
+        `biological-farming:recommendations:crop:${req.params.cropName.toLowerCase()}`
+    ),
+    validate('biologicalFarming.recommendations'), 
+    (req, res) => {
     try {
         const cropName = req.params.cropName;
         const guide = cropGuides[cropName];

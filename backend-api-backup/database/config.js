@@ -24,10 +24,16 @@ const config = {
             idle: 10000
         },
         dialectOptions: {
-            ssl: process.env.NODE_ENV === 'production' ? {
-                require: true,
-                rejectUnauthorized: false
-            } : false
+            ssl: (() => {
+                // Use secure SSL configuration
+                const { getSSLConfig } = require('../../utils/ssl-config');
+                const sslConfig = getSSLConfig(process.env.DATABASE_URL);
+                if (sslConfig === false) return false;
+                return {
+                    require: true,
+                    ...sslConfig
+                };
+            })()
         }
     }
 };

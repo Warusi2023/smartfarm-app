@@ -11,6 +11,7 @@ const compression = require('compression');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const { Pool } = require('pg');
+const logger = require('./utils/logger');
 
 // Import routes and middleware
 const AuthRoutes = require('./routes/auth');
@@ -25,9 +26,10 @@ const PORT = process.env.PORT || 3000;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 
 // Initialize database connection with improved pool settings
+const { getPostgresSSLConfig } = require('./utils/ssl-config');
 const dbPool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+    ssl: getPostgresSSLConfig(process.env.DATABASE_URL),
     max: parseInt(process.env.DB_POOL_MAX || '50', 10), // Increased from 20 to 50
     min: parseInt(process.env.DB_POOL_MIN || '10', 10), // Minimum connections
     idleTimeoutMillis: 30000,
@@ -39,11 +41,11 @@ const dbPool = new Pool({
 
 // Test database connection
 dbPool.on('connect', () => {
-    console.log('✅ Database connected successfully');
+    logger.info('Database connected successfully');
 });
 
 dbPool.on('error', (err) => {
-    console.error('❌ Database connection error:', err);
+    logger.errorWithContext('Database connection error', { error: err });
 });
 
 // Initialize middleware
@@ -152,7 +154,7 @@ app.get('/api/health', async (req, res) => {
             database: dbTest.rows[0] ? 'connected' : 'disconnected'
         });
     } catch (error) {
-        console.error('Health check failed:', error);
+        logger.errorWithContext('Health check failed', { error });
         res.status(503).json({
             ok: false,
             service: process.env.API_NAME || 'SmartFarm',
@@ -273,45 +275,32 @@ app.use('/api/*', (req, res) => {
     });
 });
 
-// Global error handler with monitoring
+// 404 Not Found handler (must be before error handler)
+const { notFoundHandler, errorHandler } = require('./middleware/error-handler');
+app.use(notFoundHandler);
+
+// Global error handler with monitoring (must be last)
 app.use(monitoring.errorHandler());
-app.use((err, req, res, next) => {
-    console.error('Global error handler:', err);
-
-    // Capture error with monitoring (already done by errorHandler middleware)
-    // This is a fallback if errorHandler didn't catch it
-
-    // Don't leak error details in production
-    const errorMessage = NODE_ENV === 'production' 
-        ? 'Internal server error' 
-        : err.message;
-
-    res.status(err.status || 500).json({
-        success: false,
-        error: errorMessage,
-        code: 'INTERNAL_ERROR',
-        ...(NODE_ENV === 'development' && { stack: err.stack })
-    });
-});
+app.use(errorHandler);
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
-    console.log('SIGTERM received, shutting down gracefully');
+    logger.info('SIGTERM received, shutting down gracefully');
     server.close(() => {
-        console.log('Process terminated');
+        logger.info('Process terminated');
         dbPool.end(() => {
-            console.log('Database connections closed');
+            logger.info('Database connections closed');
             process.exit(0);
         });
     });
 });
 
 process.on('SIGINT', () => {
-    console.log('SIGINT received, shutting down gracefully');
+    logger.info('SIGINT received, shutting down gracefully');
     server.close(() => {
-        console.log('Process terminated');
+        logger.info('Process terminated');
         dbPool.end(() => {
-            console.log('Database connections closed');
+            logger.info('Database connections closed');
             process.exit(0);
         });
     });
@@ -319,11 +308,13 @@ process.on('SIGINT', () => {
 
 // Start server
 const server = app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 SmartFarm API server running on port ${PORT}`);
-    console.log(`📊 Environment: ${NODE_ENV}`);
-    console.log(`🔗 Health check: http://localhost:${PORT}/api/health`);
-    console.log(`📚 API docs: http://localhost:${PORT}/api/docs`);
-    console.log(`🗄️ Database: ${process.env.DATABASE_URL ? 'Connected' : 'Not configured'}`);
+    logger.info('SmartFarm API server started', {
+        port: PORT,
+        environment: NODE_ENV,
+        healthCheck: `http://localhost:${PORT}/api/health`,
+        apiDocs: `http://localhost:${PORT}/api/docs`,
+        database: process.env.DATABASE_URL ? 'Connected' : 'Not configured'
+    });
 });
 
 // Export for testing

@@ -4,6 +4,9 @@
  */
 
 const express = require('express');
+const { validate } = require('../middleware/validator');
+const { cacheMiddleware } = require('../middleware/cache-middleware');
+const { CACHE_TTL } = require('../config/cache-config');
 
 class AIAdvisoryRoutes {
     constructor() {
@@ -12,11 +15,23 @@ class AIAdvisoryRoutes {
     }
 
     setupRoutes() {
-        // Crop nutrition advice endpoint
-        this.router.get('/crop-nutrition/:cropId', this.getCropNutritionAdvice.bind(this));
+        // Crop nutrition advice endpoint (cached - computed recommendations)
+        this.router.get('/crop-nutrition/:cropId', 
+            cacheMiddleware('ai-advisory:crop-nutrition', CACHE_TTL.AI_ADVISORY, (req) => 
+                `ai-advisory:crop-nutrition:${req.params.cropId}:stage:${req.query.growthStage || req.query.status || 'default'}`
+            ),
+            validate('aiAdvisory.cropNutrition'), 
+            this.getCropNutritionAdvice.bind(this)
+        );
         
-        // Livestock health advice endpoint
-        this.router.get('/livestock-health/:animalId', this.getLivestockHealthAdvice.bind(this));
+        // Livestock health advice endpoint (cached - computed recommendations)
+        this.router.get('/livestock-health/:animalId', 
+            cacheMiddleware('ai-advisory:livestock-health', CACHE_TTL.AI_ADVISORY, (req) => 
+                `ai-advisory:livestock-health:${req.params.animalId}:type:${req.query.type || 'default'}:age:${req.query.age || 'default'}`
+            ),
+            validate('aiAdvisory.livestockHealth'), 
+            this.getLivestockHealthAdvice.bind(this)
+        );
     }
 
     /**

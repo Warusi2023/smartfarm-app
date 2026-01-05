@@ -72,7 +72,7 @@ module.exports = {
       acquire: 30000,
       idle: 10000
     },
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+    ssl: require('./utils/ssl-config').getPostgresSSLConfig(process.env.DATABASE_URL)
   }
 };
 "@

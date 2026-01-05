@@ -150,9 +150,10 @@ async function setupDatabase() {
     console.log('\n🔍 Testing database connection...');
     try {
         const { Pool } = require('pg');
+        const { getPostgresSSLConfig } = require('../utils/ssl-config');
         const testPool = new Pool({
             connectionString: databaseUrl.trim(),
-            ssl: databaseUrl.includes('railway') ? { rejectUnauthorized: false } : false,
+            ssl: getPostgresSSLConfig(databaseUrl.trim()),
             connectionTimeoutMillis: 5000
         });
         

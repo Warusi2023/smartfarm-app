@@ -28,9 +28,11 @@ class DatabaseSecurity {
                 ALTER SYSTEM SET log_line_prefix = '%t [%p]: [%l-1] user=%u,db=%d,app=%a,client=%h ';
             `);
 
-            console.log('✅ Database query logging enabled');
+            const logger = require('../utils/logger');
+            logger.info('Database query logging enabled');
         } catch (error) {
-            console.warn('⚠️ Failed to enable query logging:', error.message);
+            const logger = require('../utils/logger');
+            logger.warn('Failed to enable query logging', { error: error.message });
         }
     }
 
@@ -56,7 +58,8 @@ class DatabaseSecurity {
 
             return result.rows;
         } catch (error) {
-            console.warn('⚠️ Failed to get slow queries:', error.message);
+            const logger = require('../utils/logger');
+            logger.warn('Failed to get slow queries', { error: error.message });
             return [];
         }
     }
@@ -114,7 +117,8 @@ class DatabaseSecurity {
             this.suspiciousQueries.shift();
         }
 
-        console.warn('⚠️ Suspicious query detected:', reason);
+        const logger = require('../utils/logger');
+        logger.warn('Suspicious query detected', { reason, query: query.substring(0, 100) });
         
         // In production, send alert to monitoring system
         if (process.env.NODE_ENV === 'production') {
@@ -145,7 +149,8 @@ class DatabaseSecurity {
 
         // Log slow queries
         if (auditEntry.isSlow) {
-            console.warn(`⚠️ Slow query detected (${executionTime}ms):`, query.substring(0, 100));
+            const logger = require('../utils/logger');
+            logger.warn('Slow query detected', { executionTime, query: query.substring(0, 100) });
         }
     }
 
@@ -226,23 +231,22 @@ class DatabaseSecurity {
                 REVOKE ALTER ON SCHEMA public FROM smartfarm_app;
             `);
 
-            console.log('✅ Database roles configured');
+            const logger = require('../utils/logger');
+            logger.info('Database roles configured');
         } catch (error) {
-            console.warn('⚠️ Failed to setup database roles:', error.message);
+            const logger = require('../utils/logger');
+            logger.warn('Failed to setup database roles', { error: error.message });
         }
     }
 
     /**
      * Enable connection encryption
+     * Uses centralized SSL configuration utility for secure defaults
      */
     getConnectionConfig() {
+        const { getSSLConfig } = require('../utils/ssl-config');
         return {
-            ssl: process.env.NODE_ENV === 'production' ? {
-                rejectUnauthorized: true,
-                ca: process.env.DB_SSL_CA, // Certificate authority
-                cert: process.env.DB_SSL_CERT, // Client certificate
-                key: process.env.DB_SSL_KEY // Client key
-            } : false
+            ssl: getSSLConfig(process.env.DATABASE_URL)
         };
     }
 }

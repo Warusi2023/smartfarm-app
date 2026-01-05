@@ -1,164 +1,169 @@
 /**
- * SmartFarm Subscription Service
- * Handles subscription logic, trial management, and access evaluation
+ * Subscription Service
+ * Business logic for subscription management
  */
 
-const DatabaseHelpers = require('../utils/db-helpers');
+const BaseSubscriptionService = require('./subscriptionService').SubscriptionService;
+const SubscriptionRepository = require('../repositories/subscriptionRepository');
+const logger = require('../utils/logger');
 
-// How long the free trial lasts (in days)
-const TRIAL_DAYS = 30;
-
-// Map plan -> limits & level rank
-const PLAN_CONFIG = {
-    trial: {
-        level: 'pro',       // trial has Pro features
-        maxFarms: 10
-    },
-    professional: {
-        level: 'pro',
-        maxFarms: 10
-    },
-    enterprise: {
-        level: 'enterprise',
-        maxFarms: Infinity
-    }
-};
-
-class SubscriptionService {
+class SubscriptionService extends BaseSubscriptionService {
     constructor(dbPool) {
-        this.dbPool = dbPool;
-        this.dbHelpers = new DatabaseHelpers(dbPool);
+        super(dbPool);
+        this.repository = new SubscriptionRepository(dbPool);
     }
 
     /**
-     * Create a "trial" subscription when a new user registers
+     * Get available subscription plans
+     * @returns {Object} Subscription plans
      */
-    async createTrialSubscription(userId) {
-        if (!this.dbPool) {
-            // Mock implementation
-            const trialEnd = new Date();
-            trialEnd.setDate(trialEnd.getDate() + TRIAL_DAYS);
-            return { trialEnd };
-        }
-
-        const client = await this.dbPool.connect();
-        try {
-            const now = new Date();
-            const trialEnd = new Date();
-            trialEnd.setDate(now.getDate() + TRIAL_DAYS);
-
-            await client.query('BEGIN');
-
-            const result = await client.query(
-                `
-                INSERT INTO subscriptions (
-                    user_id,
-                    plan_name,
-                    plan_type,
-                    status,
-                    trial_end,
-                    created_at,
-                    updated_at
-                )
-                VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
-                RETURNING *
-                `,
-                [userId, 'trial', 'trial', 'trialing', trialEnd]
-            );
-
-            await client.query('COMMIT');
-            return { trialEnd, subscription: result.rows[0] };
-        } catch (error) {
-            await client.query('ROLLBACK');
-            console.error('Error creating trial subscription:', error);
-            throw error;
-        } finally {
-            client.release();
-        }
+    getPlans() {
+        return this.repository.getPlans();
     }
 
     /**
-     * Get the latest subscription for a user
+     * Get current user subscription with trial status
+     * @param {string} userId - User ID
+     * @returns {Promise<Object>} Subscription data
      */
-    async getLatestSubscription(userId) {
-        return await this.dbHelpers.getUserSubscription(userId);
-    }
+    async getCurrentSubscription(userId) {
+        const subscription = await this.repository.getUserSubscription(userId);
+        const userTrialInfo = await this.repository.getUserTrialInfo(userId);
 
-    /**
-     * Determine if user currently has access (trial or paid)
-     */
-    evaluateSubscription(sub) {
-        if (!sub) {
-            return { valid: false, reason: 'NO_SUBSCRIPTION' };
-        }
+        if (!subscription) {
+            // Check if user is in trial period
+            if (userTrialInfo && userTrialInfo.trial_end) {
+                const trialEnd = new Date(userTrialInfo.trial_end);
+                const now = new Date();
 
-        const now = new Date();
-
-        // Trial subscription
-        if (sub.status === 'trialing' && sub.trial_end) {
-            const trialEnd = new Date(sub.trial_end);
-            if (now <= trialEnd) {
-                const daysRemaining = Math.ceil((trialEnd - now) / (1000 * 60 * 60 * 24));
-                return {
-                    valid: true,
-                    planKey: 'trial',
-                    planName: 'trial',
-                    level: PLAN_CONFIG.trial.level,
-                    maxFarms: PLAN_CONFIG.trial.maxFarms,
-                    isTrial: true,
-                    trialEnd: trialEnd.toISOString(),
-                    daysRemaining
-                };
-            }
-            return { valid: false, reason: 'TRIAL_EXPIRED', trialEnd: trialEnd.toISOString() };
-        }
-
-        // Paid subscription
-        if (sub.status === 'active') {
-            // If you store current_period_end, enforce it here
-            if (sub.current_period_end) {
-                const end = new Date(sub.current_period_end);
-                if (now > end) {
-                    return { valid: false, reason: 'PERIOD_EXPIRED' };
+                if (trialEnd > now) {
+                    // Still in trial
+                    const daysRemaining = Math.ceil((trialEnd - now) / (1000 * 60 * 60 * 24));
+                    return {
+                        plan: 'trial',
+                        status: 'active',
+                        trialEnd: trialEnd.toISOString(),
+                        daysRemaining: daysRemaining,
+                        startDate: userTrialInfo.created_at || new Date().toISOString(),
+                        nextBillingDate: null,
+                        autoRenew: false,
+                        requiresSubscription: true
+                    };
+                } else {
+                    // Trial expired
+                    return {
+                        plan: null,
+                        status: 'trial_expired',
+                        trialEnd: trialEnd.toISOString(),
+                        daysRemaining: 0,
+                        requiresSubscription: true,
+                        message: 'Your free trial has ended. Please subscribe to continue using SmartFarm.'
+                    };
                 }
             }
 
-            // Normalize plan name (handle both 'professional' and 'pro')
-            const planName = (sub.plan_name || sub.plan || '').toLowerCase();
-            const key = planName === 'professional' ? 'professional' : planName;
-            const config = PLAN_CONFIG[key];
-
-            if (!config) {
-                return { valid: false, reason: 'UNKNOWN_PLAN', planName: key };
-            }
-
+            // No trial info - likely new user
             return {
-                valid: true,
-                planKey: key,
-                planName: sub.plan_name || sub.plan,
-                level: config.level,
-                maxFarms: config.maxFarms,
-                isTrial: false
+                plan: null,
+                status: 'no_subscription',
+                requiresSubscription: true,
+                message: 'Please start your free trial or subscribe to a plan.'
             };
         }
 
-        return { valid: false, reason: 'INACTIVE_STATUS', status: sub.status };
+        return subscription;
     }
 
     /**
-     * Get user's active access status (combines subscription lookup and evaluation)
+     * Subscribe to a plan
+     * @param {string} userId - User ID
+     * @param {string} planId - Plan ID
+     * @param {string} paymentMethod - Payment method
+     * @returns {Promise<Object>} Subscription data
      */
-    async getUserAccessStatus(userId) {
-        const subscription = await this.getLatestSubscription(userId);
-        return this.evaluateSubscription(subscription);
+    async subscribe(userId, planId, paymentMethod = null) {
+        // Validate plan ID
+        const validPlans = ['free', 'professional', 'enterprise'];
+        if (!validPlans.includes(planId)) {
+            throw new Error('Invalid plan ID');
+        }
+
+        // In production, integrate with payment processor (Stripe, PayPal, etc.)
+        // For now, simulate successful subscription
+        const subscription = {
+            userId,
+            plan: planId,
+            status: 'active',
+            startDate: new Date().toISOString(),
+            nextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+            autoRenew: true,
+            paymentMethod: paymentMethod || 'none'
+        };
+
+        // Save to database
+        await this.repository.createOrUpdateSubscription(subscription);
+
+        return subscription;
+    }
+
+    /**
+     * Cancel subscription
+     * @param {string} userId - User ID
+     * @returns {Promise<Object>} Cancellation result
+     */
+    async cancelSubscription(userId) {
+        const subscription = await this.repository.getUserSubscription(userId);
+
+        if (!subscription || !['professional', 'enterprise'].includes(subscription.plan)) {
+            throw new Error('No active paid subscription to cancel');
+        }
+
+        // Update subscription status
+        await this.repository.updateSubscription(userId, {
+            status: 'cancelled',
+            cancelledAt: new Date().toISOString(),
+            autoRenew: false
+        });
+
+        return {
+            plan: null,
+            status: 'cancelled',
+            message: 'Your subscription has been cancelled. You will retain access until the end of your current billing period.'
+        };
+    }
+
+    /**
+     * Update subscription
+     * @param {string} userId - User ID
+     * @param {Object} updates - Update data
+     * @returns {Promise<Object>} Updated subscription
+     */
+    async updateSubscription(userId, updates) {
+        const { planId, autoRenew } = updates;
+
+        if (planId && !['professional', 'enterprise'].includes(planId)) {
+            throw new Error('Invalid plan ID. Must subscribe to Professional or Enterprise plan.');
+        }
+
+        const updateData = {
+            ...(planId && { plan: planId }),
+            ...(autoRenew !== undefined && { autoRenew }),
+            updatedAt: new Date().toISOString()
+        };
+
+        await this.repository.updateSubscription(userId, updateData);
+
+        return updateData;
+    }
+
+    /**
+     * Get subscription history
+     * @param {string} userId - User ID
+     * @returns {Promise<Array>} Subscription history
+     */
+    async getSubscriptionHistory(userId) {
+        return await this.repository.getSubscriptionHistory(userId);
     }
 }
 
-module.exports = {
-    SubscriptionService,
-    TRIAL_DAYS,
-    PLAN_CONFIG
-};
-
-
-
+module.exports = SubscriptionService;
