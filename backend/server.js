@@ -403,9 +403,12 @@ try {
   
   // Load Weather Alerts routes (independent of other routes)
   logger.debug('Initializing Weather Alerts routes');
+  let weatherAlertsRouter = null;
   try {
     logger.debug('Requiring routes/weather-alerts module');
-    const { router: weatherAlertsRouter, initWeatherAlertsRoutes } = require('./routes/weather-alerts');
+    const weatherAlertsModule = require('./routes/weather-alerts');
+    weatherAlertsRouter = weatherAlertsModule.router;
+    const initWeatherAlertsRoutes = weatherAlertsModule.initWeatherAlertsRoutes;
     logger.debug('Routes module loaded successfully');
     
     logger.debug('Requiring services/weatherAlertService module');
@@ -425,8 +428,25 @@ try {
     logger.info('Weather Alerts routes loaded');
   } catch (weatherError) {
     logger.errorWithContext('Error loading Weather Alerts routes', { error: weatherError });
-    // Don't re-throw - let other routes continue loading
-    logger.warn('Weather Alerts routes will be skipped, but other routes will continue');
+    // Always mount routes, even if initialization fails
+    // Routes will handle database/service unavailability gracefully
+    if (weatherAlertsRouter) {
+      logger.debug('Mounting weather alerts router despite initialization error');
+      app.use('/api/weather-alerts', weatherAlertsRouter);
+      logger.info('Weather Alerts routes mounted (with potential service limitations)');
+    } else {
+      // If router couldn't be loaded, add fallback route
+      logger.warn('Weather Alerts router not available, adding fallback route');
+      app.use('/api/weather-alerts', (req, res) => {
+        res.status(503).json({
+          success: false,
+          error: 'Weather alerts service is temporarily unavailable',
+          message: 'Service initialization failed. Please check server logs.',
+          data: []
+        });
+      });
+      logger.info('Weather Alerts fallback route added (503 response)');
+    }
   }
   
   // Note: Weather alerts cron job is configured via Railway Cron (not node-cron)

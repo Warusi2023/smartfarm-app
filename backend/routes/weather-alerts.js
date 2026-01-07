@@ -27,6 +27,16 @@ function initWeatherAlertsRoutes(pool, service) {
 }
 
 /**
+ * Helper function to check if database is available
+ */
+function checkDatabaseAvailable(next) {
+    if (!dbPool) {
+        return next(new ServiceUnavailableError('Database connection not available. Weather alerts service cannot function without a database connection.'));
+    }
+    return null;
+}
+
+/**
  * GET /api/weather-alerts
  * Get all alerts for the authenticated user
  */
@@ -36,7 +46,11 @@ router.get('/',
         `weather-alerts:user:${req.user.id}:farm:${req.query.farmId || 'all'}:unread:${req.query.unreadOnly || 'false'}:limit:${req.query.limit || 50}`
     ),
     validate('weatherAlerts.list'), 
-    asyncHandler(async (req, res) => {
+    asyncHandler(async (req, res, next) => {
+    // Check if database is available
+    const dbCheck = checkDatabaseAvailable(next);
+    if (dbCheck) return dbCheck;
+    
     const userId = req.user.id;
     const { farmId, unreadOnly, limit = 50 } = req.query;
 
@@ -87,7 +101,11 @@ router.get('/stats',
         `weather-alerts:stats:user:${req.user.id}:farm:${req.query.farmId || 'all'}`
     ),
     validate('weatherAlerts.stats'), 
-    asyncHandler(async (req, res) => {
+    asyncHandler(async (req, res, next) => {
+    // Check if database is available
+    const dbCheck = checkDatabaseAvailable(next);
+    if (dbCheck) return dbCheck;
+    
     const userId = req.user.id;
 
     const statsQuery = `
@@ -122,6 +140,10 @@ router.get('/stats',
  * Get a specific alert
  */
 router.get('/:id', authenticateToken, validate('weatherAlerts.getById'), asyncHandler(async (req, res, next) => {
+    // Check if database is available
+    const dbCheck = checkDatabaseAvailable(next);
+    if (dbCheck) return dbCheck;
+    
     const { id } = req.params;
     const userId = req.user.id;
 
@@ -158,6 +180,10 @@ router.patch('/:id/read',
     invalidateCache('weather-alerts:update'),
     validate('weatherAlerts.markRead'), 
     asyncHandler(async (req, res, next) => {
+    // Check if database is available
+    const dbCheck = checkDatabaseAvailable(next);
+    if (dbCheck) return dbCheck;
+    
     const { id } = req.params;
     const userId = req.user.id;
 
@@ -194,6 +220,10 @@ router.patch('/:id/dismiss',
     invalidateCache('weather-alerts:update'),
     validate('weatherAlerts.dismiss'), 
     asyncHandler(async (req, res, next) => {
+    // Check if database is available
+    const dbCheck = checkDatabaseAvailable(next);
+    if (dbCheck) return dbCheck;
+    
     const { id } = req.params;
     const userId = req.user.id;
 
@@ -230,6 +260,10 @@ router.patch('/:id/action',
     invalidateCache('weather-alerts:update'),
     validate('weatherAlerts.updateAction'), 
     asyncHandler(async (req, res, next) => {
+    // Check if database is available
+    const dbCheck = checkDatabaseAvailable(next);
+    if (dbCheck) return dbCheck;
+    
     const { id } = req.params;
     const userId = req.user.id;
     const { actionNotes } = req.body;
@@ -271,6 +305,10 @@ router.post('/generate',
     invalidateCache('weather-alerts:create'),
     validate('weatherAlerts.generate'), 
     asyncHandler(async (req, res, next) => {
+    // Check if database is available
+    const dbCheck = checkDatabaseAvailable(next);
+    if (dbCheck) return dbCheck;
+    
     const userId = req.user.id;
 
     if (!weatherAlertService) {
@@ -339,6 +377,10 @@ router.get('/preferences',
     ),
     validate('weatherAlerts.getPreferences'), 
     asyncHandler(async (req, res, next) => {
+    // Check if database is available
+    const dbCheck = checkDatabaseAvailable(next);
+    if (dbCheck) return dbCheck;
+    
     const userId = req.user.id;
 
     if (!weatherAlertService) {
@@ -362,6 +404,10 @@ router.put('/preferences',
     invalidateCache('preferences:update'),
     validate('weatherAlerts.updatePreferences'), 
     asyncHandler(async (req, res, next) => {
+    // Check if database is available
+    const dbCheck = checkDatabaseAvailable(next);
+    if (dbCheck) return dbCheck;
+    
     const userId = req.user.id;
     const updates = req.body;
 
