@@ -81,9 +81,6 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Metrics middleware - track all requests
-const metricsMiddleware = require('./middleware/metrics-middleware');
-const metricsService = require('./utils/metrics');
-const HealthCheckService = require('./utils/health-check');
 app.use(metricsMiddleware);
 
 // --- Health & root endpoints ---
