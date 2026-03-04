@@ -1,492 +1,429 @@
-# SmartFarm Performance Optimization Guide
+# ⚡ Performance Optimization Guide
 
-## 🚀 **Performance Optimization Overview**
+**Complete guide to optimize SmartFarm performance**
 
-This guide provides comprehensive strategies to optimize SmartFarm's performance for production deployment.
-
----
-
-## 📊 **Performance Metrics & Targets**
-
-### **Target Performance Metrics**
-- **Page Load Time:** < 3 seconds
-- **Time to Interactive:** < 5 seconds
-- **Lighthouse Score:** > 90
-- **Bundle Size:** < 2MB
-- **API Response Time:** < 500ms
-- **Memory Usage:** < 512MB
+**Estimated Time:** 1 hour (optional)
 
 ---
 
-## 🔧 **Frontend Optimizations**
+## 📋 **Overview**
 
-### **1. Bundle Size Optimization**
+This guide helps you optimize SmartFarm performance for faster load times and better user experience.
 
-#### **Code Splitting**
-```kotlin
-// Implement dynamic imports for route-based code splitting
-@Composable
-fun LazyLoadedScreen() {
-    var component by remember { mutableStateOf<@Composable () -> Unit?>(null) }
-    
-    LaunchedEffect(Unit) {
-        // Dynamic import for heavy components
-        component = { HeavyComponent() }
-    }
-    
-    component?.invoke()
-}
-```
+**Performance Targets:**
+- Page load times < 3 seconds
+- API response times < 2 seconds
+- Lighthouse score 80+
+- Optimized images and assets
 
-#### **Tree Shaking**
-```kotlin
-// Use specific imports instead of wildcard imports
-// ❌ Bad
-import androidx.compose.web.dom.*
+---
 
-// ✅ Good
-import androidx.compose.web.dom.Div
-import androidx.compose.web.dom.Text
-import androidx.compose.web.dom.Button
-```
+## ✅ **Performance Optimization Checklist**
 
-#### **Bundle Analysis**
+### **1. Enable Gzip/Brotli Compression**
+
+#### **Status:** ✅ Netlify handles automatically
+
+- [ ] **Verify compression is enabled:**
+  - Netlify automatically enables gzip/brotli compression
+  - No action needed
+  - Check in DevTools → Network → Response Headers:
+    - Should see: `content-encoding: gzip` or `br`
+
+#### **Manual Verification:**
+
+1. Open DevTools → Network tab
+2. Reload page
+3. Click on a JavaScript/CSS file
+4. Check **Response Headers**
+5. Look for: `content-encoding: gzip` or `br`
+
+**Expected:** Compression is automatic on Netlify ✅
+
+---
+
+### **2. Optimize Images**
+
+#### **2.1 Convert Images to WebP**
+
+- [ ] **Identify large images:**
+  - Check `web-project/public/images/` directory
+  - Find images > 100KB
+  - List images that need optimization
+
+- [ ] **Convert to WebP format:**
+  - Use online tool: https://cloudconvert.com/webp-converter
+  - Or use command line: `cwebp input.jpg -q 80 -o output.webp`
+  - Or use npm package: `npm install -g webp-converter`
+
+- [ ] **Update image references:**
+  - Replace `.jpg`/`.png` with `.webp` in HTML/CSS
+  - Add fallback for older browsers:
+    ```html
+    <picture>
+      <source srcset="image.webp" type="image/webp">
+      <img src="image.jpg" alt="Description">
+    </picture>
+    ```
+
+#### **2.2 Implement Lazy Loading**
+
+- [ ] **Add lazy loading to images:**
+  - Update `<img>` tags to include `loading="lazy"`
+  - Example:
+    ```html
+    <img src="image.jpg" alt="Description" loading="lazy">
+    ```
+
+- [ ] **For background images:**
+  - Use CSS `loading="lazy"` attribute
+  - Or use Intersection Observer API
+
+#### **2.3 Image Optimization Checklist**
+
+- [ ] Large images converted to WebP
+- [ ] Images compressed (quality 80-85%)
+- [ ] Lazy loading implemented
+- [ ] Responsive images (srcset) used
+- [ ] Image dimensions specified (prevents layout shift)
+
+---
+
+### **3. Minify CSS/JS**
+
+#### **Status:** ✅ Build process handles automatically
+
+- [ ] **Verify minification:**
+  - Vite automatically minifies CSS/JS in production builds
+  - Check `web-project/dist/` after build
+  - Files should be minified (no whitespace, single line)
+
+#### **Build Process:**
+
 ```bash
-# Analyze bundle size
-./gradlew :web:bundleAnalyze
-
-# Check for duplicate dependencies
-./gradlew :web:dependencies --configuration jsRuntimeClasspath
+cd web-project
+npm run build
 ```
 
-### **2. Image Optimization**
+**Vite automatically:**
+- ✅ Minifies JavaScript
+- ✅ Minifies CSS
+- ✅ Tree-shakes unused code
+- ✅ Code splitting
+- ✅ Asset optimization
 
-#### **WebP Format**
-```html
-<!-- Use WebP with fallback -->
-<picture>
-  <source srcset="image.webp" type="image/webp">
-  <img src="image.jpg" alt="Farm Image">
-</picture>
-```
-
-#### **Lazy Loading**
-```kotlin
-@Composable
-fun LazyImage(src: String, alt: String) {
-    var isLoaded by remember { mutableStateOf(false) }
-    
-    Img({
-        src(src)
-        alt(alt)
-        style {
-            opacity(if (isLoaded) 1.0 else 0.0)
-            transition("opacity 0.3s")
-        }
-        onLoad { isLoaded = true }
-    })
-}
-```
-
-### **3. CSS Optimization**
-
-#### **Critical CSS Inlining**
-```html
-<!-- Inline critical CSS -->
-<style>
-  /* Critical above-the-fold styles */
-  .header { /* ... */ }
-  .hero { /* ... */ }
-</style>
-```
-
-#### **CSS Minification**
-```kotlin
-// In build.gradle.kts
-kotlin {
-    js(IR) {
-        browser {
-            commonWebpackConfig {
-                cssSupport {
-                    enabled.set(true)
-                    minify.set(true) // Enable CSS minification
-                }
-            }
-        }
-    }
-}
-```
-
-### **4. JavaScript Optimization**
-
-#### **Debouncing & Throttling**
-```kotlin
-@Composable
-fun DebouncedSearch(onSearch: (String) -> Unit) {
-    var searchTerm by remember { mutableStateOf("") }
-    var debouncedTerm by remember { mutableStateOf("") }
-    
-    LaunchedEffect(searchTerm) {
-        delay(300) // 300ms debounce
-        debouncedTerm = searchTerm
-    }
-    
-    LaunchedEffect(debouncedTerm) {
-        onSearch(debouncedTerm)
-    }
-    
-    Input({
-        value(searchTerm)
-        onInput { searchTerm = it.value }
-    })
-}
-```
-
-#### **Memoization**
-```kotlin
-@Composable
-fun ExpensiveComponent(data: List<FarmData>) {
-    val processedData = remember(data) {
-        data.map { /* expensive processing */ }
-    }
-    
-    // Use processedData
-}
-```
+**No action needed** - Vite handles this ✅
 
 ---
 
-## ⚡ **Backend Optimizations**
+### **4. Enable Browser Caching Headers**
 
-### **1. Database Optimization**
+#### **4.1 Configure Netlify Headers**
 
-#### **Indexing Strategy**
+- [ ] **Update `netlify.toml` or `_headers` file:**
+
+**Option A: Add to `netlify.toml`:**
+
+```toml
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.jpg"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000"
+
+[[headers]]
+  for = "/*.png"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000"
+
+[[headers]]
+  for = "/*.webp"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000"
+
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+```
+
+**Option B: Update `web-project/public/_headers`:**
+
+```
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.js
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.css
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.jpg
+  Cache-Control: public, max-age=31536000
+
+/*.png
+  Cache-Control: public, max-age=31536000
+
+/*.webp
+  Cache-Control: public, max-age=31536000
+
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate
+```
+
+- [ ] **Redeploy frontend:**
+  - Commit changes
+  - Netlify will auto-deploy
+  - Or trigger manual deploy
+
+- [ ] **Verify caching headers:**
+  - Open DevTools → Network tab
+  - Reload page
+  - Check Response Headers for `Cache-Control`
+  - Verify headers are set correctly
+
+---
+
+### **5. Add Database Indexes**
+
+#### **5.1 Identify Frequently Queried Fields**
+
+Common fields that should be indexed:
+- `users.email` (for login lookups)
+- `users.id` (primary key - usually auto-indexed)
+- `farms.user_id` (for user's farms)
+- `crops.farm_id` (for farm's crops)
+- `livestock.farm_id` (for farm's livestock)
+- `created_at` / `updated_at` (for sorting/filtering)
+
+#### **5.2 Create Index Migration**
+
+**Create `backend/migrations/add-performance-indexes.sql`:**
+
 ```sql
--- Add indexes for frequently queried columns
-CREATE INDEX idx_farms_user_id ON farms(user_id);
-CREATE INDEX idx_livestock_farm_id ON livestock(farm_id);
-CREATE INDEX idx_crops_farm_id ON crops(farm_id);
-CREATE INDEX idx_financial_farm_id ON financial_records(farm_id);
+-- User email index (for login lookups)
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+
+-- Farm user_id index (for user's farms)
+CREATE INDEX IF NOT EXISTS idx_farms_user_id ON farms(user_id);
+
+-- Crop farm_id index (for farm's crops)
+CREATE INDEX IF NOT EXISTS idx_crops_farm_id ON crops(farm_id);
+
+-- Livestock farm_id index (for farm's livestock)
+CREATE INDEX IF NOT EXISTS idx_livestock_farm_id ON livestock(farm_id);
+
+-- Created_at indexes (for sorting)
+CREATE INDEX IF NOT EXISTS idx_farms_created_at ON farms(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_crops_created_at ON crops(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_livestock_created_at ON livestock(created_at DESC);
+
+-- Composite indexes for common queries
+CREATE INDEX IF NOT EXISTS idx_farms_user_created ON farms(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_crops_farm_created ON crops(farm_id, created_at DESC);
 ```
 
-#### **Query Optimization**
-```javascript
-// Use eager loading to reduce N+1 queries
-const farms = await Farm.findAll({
-  include: [
-    { model: Livestock, as: 'livestock' },
-    { model: Crop, as: 'crops' },
-    { model: FinancialRecord, as: 'financialRecords' }
-  ],
-  where: { userId: req.user.id }
-});
+#### **5.3 Run Migration**
+
+**Option A: Via Railway Database Dashboard**
+
+1. Go to Railway Dashboard → PostgreSQL Service
+2. Click **"Query"** or **"Data"** tab
+3. Run the SQL script above
+4. Verify indexes created
+
+**Option B: Via Migration Script**
+
+```bash
+cd backend
+# Create migration script if doesn't exist
+node scripts/run-migration.js add-performance-indexes.sql
 ```
 
-#### **Connection Pooling**
-```javascript
-// Optimize database connection pool
-const sequelize = new Sequelize({
-  // ... other config
-  pool: {
-    max: 20,        // Maximum connections
-    min: 5,         // Minimum connections
-    acquire: 30000, // Connection timeout
-    idle: 10000     // Idle timeout
-  }
-});
+#### **5.4 Verify Indexes**
+
+**Check indexes exist:**
+
+```sql
+-- List all indexes
+SELECT 
+    tablename,
+    indexname,
+    indexdef
+FROM pg_indexes
+WHERE schemaname = 'public'
+ORDER BY tablename, indexname;
 ```
 
-### **2. Caching Strategy**
+---
 
-#### **Redis Caching**
-```javascript
-const redis = require('redis');
-const client = redis.createClient();
+### **6. Implement API Response Caching**
 
-// Cache frequently accessed data
-async function getCachedFarms(userId) {
-  const cacheKey = `farms:${userId}`;
-  let farms = await client.get(cacheKey);
+#### **Status:** ✅ Already implemented
+
+- [ ] **Verify caching is working:**
+  - Check `backend/middleware/cache-middleware.js` exists ✅
+  - Check endpoints use `cacheMiddleware` ✅
+  - Examples found:
+    - `/api/farms` uses caching
+    - `/api/crops` uses caching
+    - `/api/livestock` uses caching
+
+#### **6.1 Verify Cache Configuration**
+
+- [ ] **Check cache TTL settings:**
+  - Review `backend/config/cache-config.js`
+  - Verify TTL values are appropriate
+  - Adjust if needed
+
+#### **6.2 Test Caching**
+
+- [ ] **Test cache hit:**
+  1. Make API request: `GET /api/farms`
+  2. Check response time (should be fast)
+  3. Make same request again
+  4. Check Railway logs for "Cache hit" message
+
+- [ ] **Test cache invalidation:**
+  1. Create new farm: `POST /api/farms`
+  2. Check cache is invalidated
+  3. Verify fresh data is returned
+
+**No action needed** - Caching already implemented ✅
+
+---
+
+## 🔧 **Additional Optimizations**
+
+### **7. Code Splitting**
+
+#### **Status:** ✅ Vite handles automatically
+
+- [ ] **Verify code splitting:**
+  - Vite automatically splits code
+  - Check `web-project/dist/assets/` after build
+  - Should see multiple JS chunks
+
+**No action needed** - Vite handles this ✅
+
+### **8. Preload Critical Resources**
+
+- [ ] **Add preload links to `index.html`:**
+  ```html
+  <!-- Preload critical CSS -->
+  <link rel="preload" href="/assets/main.css" as="style">
   
-  if (!farms) {
-    farms = await Farm.findAll({ where: { userId } });
-    await client.setex(cacheKey, 3600, JSON.stringify(farms)); // 1 hour cache
-  }
-  
-  return JSON.parse(farms);
-}
-```
+  <!-- Preload critical fonts -->
+  <link rel="preload" href="/fonts/main-font.woff2" as="font" type="font/woff2" crossorigin>
+  ```
 
-#### **Response Caching**
-```javascript
-// Cache API responses
-app.get('/api/farms', cache('5 minutes'), async (req, res) => {
-  const farms = await getCachedFarms(req.user.id);
-  res.json(farms);
-});
-```
+### **9. Service Worker (PWA)**
 
-### **3. API Optimization**
+- [ ] **Consider adding service worker:**
+  - Enables offline functionality
+  - Caches assets for faster loads
+  - See `web-project/public/sw.js` (may already exist)
 
-#### **Pagination**
-```javascript
-app.get('/api/livestock', async (req, res) => {
-  const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 20;
-  const offset = (page - 1) * limit;
-  
-  const { count, rows } = await Livestock.findAndCountAll({
-    where: { farmId: req.query.farmId },
-    limit,
-    offset,
-    order: [['createdAt', 'DESC']]
-  });
-  
-  res.json({
-    data: rows,
-    pagination: {
-      page,
-      limit,
-      total: count,
-      pages: Math.ceil(count / limit)
-    }
-  });
-});
-```
+---
 
-#### **Compression**
-```javascript
-const compression = require('compression');
+## 📊 **Performance Metrics**
 
-// Enable gzip compression
-app.use(compression({
-  level: 6,
-  threshold: 1024,
-  filter: (req, res) => {
-    if (req.headers['x-no-compression']) {
-      return false;
-    }
-    return compression.filter(req, res);
-  }
-}));
+### **Before Optimization**
+
+Run Lighthouse audit and note:
+- Performance score: _____
+- First Contentful Paint: _____
+- Largest Contentful Paint: _____
+- Time to Interactive: _____
+
+### **After Optimization**
+
+Run Lighthouse audit again and compare:
+- Performance score: _____ (should improve)
+- First Contentful Paint: _____ (should decrease)
+- Largest Contentful Paint: _____ (should decrease)
+- Time to Interactive: _____ (should decrease)
+
+---
+
+## 🧪 **Testing Performance**
+
+### **Run Lighthouse Audit**
+
+1. Open Chrome DevTools → **Lighthouse** tab
+2. Select **Performance** category
+3. Click **"Analyze page load"**
+4. Review recommendations
+5. Implement fixes
+
+### **Test with Network Throttling**
+
+1. DevTools → Network tab
+2. Throttle to **"Slow 3G"**
+3. Reload page
+4. Verify site still works
+5. Check load times
+
+### **Use Performance Script**
+
+```bash
+cd backend
+node ../scripts/performance-test.js
 ```
 
 ---
 
-## 🌐 **Network Optimizations**
+## ✅ **Optimization Checklist Summary**
 
-### **1. CDN Configuration**
-
-#### **Static Asset CDN**
-```html
-<!-- Use CDN for external libraries -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-```
-
-#### **Image CDN**
-```kotlin
-// Configure image CDN URLs
-object CDNConfig {
-    const val IMAGE_CDN_URL = "https://your-cdn.com/images/"
-    
-    fun getImageUrl(path: String): String {
-        return "$IMAGE_CDN_URL$path?w=800&q=80&format=webp"
-    }
-}
-```
-
-### **2. HTTP/2 Optimization**
-
-#### **Server Push**
-```javascript
-// Configure HTTP/2 server push for critical resources
-app.use((req, res, next) => {
-  if (req.path === '/') {
-    res.set('Link', '</styles.css>; rel=preload; as=style');
-    res.set('Link', '</app.js>; rel=preload; as=script');
-  }
-  next();
-});
-```
-
-#### **Resource Hints**
-```html
-<!-- Preload critical resources -->
-<link rel="preload" href="/styles.css" as="style">
-<link rel="preload" href="/app.js" as="script">
-<link rel="dns-prefetch" href="//api.openweathermap.org">
-<link rel="preconnect" href="//maps.googleapis.com">
-```
+- [ ] Gzip/Brotli compression enabled (Netlify automatic) ✅
+- [ ] Images optimized (WebP, lazy loading)
+- [ ] CSS/JS minified (Vite automatic) ✅
+- [ ] Browser caching headers configured
+- [ ] Database indexes added
+- [ ] API response caching implemented ✅
 
 ---
 
-## 📱 **Mobile Optimizations**
+## 🎯 **Priority Order**
 
-### **1. Touch Optimization**
-```css
-/* Optimize touch targets */
-.button, .nav-link {
-  min-height: 44px;
-  min-width: 44px;
-  touch-action: manipulation;
-}
+**High Priority (Do First):**
+1. ✅ Enable compression (automatic)
+2. ✅ Minify CSS/JS (automatic)
+3. ✅ API caching (already done)
+4. ⚠️ Add database indexes
+5. ⚠️ Configure browser caching headers
 
-/* Reduce touch delay */
-* {
-  touch-action: manipulation;
-}
-```
+**Medium Priority:**
+6. ⚠️ Optimize images (WebP, lazy loading)
 
-### **2. Viewport Optimization**
-```html
-<!-- Optimize viewport for mobile -->
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-```
-
-### **3. Mobile-Specific Loading**
-```kotlin
-@Composable
-fun MobileOptimizedImage(src: String, alt: String) {
-    val isMobile = remember { window.innerWidth < 768 }
-    val optimizedSrc = if (isMobile) "$src?w=400" else "$src?w=800"
-    
-    Img({
-        src(optimizedSrc)
-        alt(alt)
-        loading("lazy")
-    })
-}
-```
+**Low Priority:**
+7. ⚠️ Preload critical resources
+8. ⚠️ Service worker (if PWA needed)
 
 ---
 
-## 🔍 **Performance Monitoring**
+## 📚 **Additional Resources**
 
-### **1. Real User Monitoring (RUM)**
-```javascript
-// Track Core Web Vitals
-window.addEventListener('load', () => {
-  // Track Largest Contentful Paint (LCP)
-  new PerformanceObserver((list) => {
-    const entries = list.getEntries();
-    const lastEntry = entries[entries.length - 1];
-    console.log('LCP:', lastEntry.startTime);
-  }).observe({ entryTypes: ['largest-contentful-paint'] });
-  
-  // Track First Input Delay (FID)
-  new PerformanceObserver((list) => {
-    list.getEntries().forEach((entry) => {
-      console.log('FID:', entry.processingStart - entry.startTime);
-    });
-  }).observe({ entryTypes: ['first-input'] });
-});
-```
-
-### **2. Performance Budgets**
-```javascript
-// Set performance budgets
-const budgets = {
-  'initial': '200kb',
-  'chunk': '100kb',
-  'total': '500kb'
-};
-
-// Monitor bundle sizes
-const bundleAnalyzer = require('webpack-bundle-analyzer');
-```
-
-### **3. Automated Performance Testing**
-```yaml
-# GitHub Actions performance test
-- name: Performance Test
-  run: |
-    npm install -g lighthouse
-    lighthouse http://localhost:8080 --output=json --output-path=./lighthouse-report.json
-    node -e "
-      const report = require('./lighthouse-report.json');
-      const score = report.categories.performance.score * 100;
-      if (score < 90) {
-        console.error('Performance score too low:', score);
-        process.exit(1);
-      }
-    "
-```
+- **Vite Performance:** https://vitejs.dev/guide/performance.html
+- **Web.dev Performance:** https://web.dev/performance/
+- **Lighthouse:** https://developers.google.com/web/tools/lighthouse
+- **Image Optimization:** https://web.dev/fast/#optimize-your-images
 
 ---
 
-## 🛠️ **Optimization Checklist**
-
-### **Frontend Checklist**
-- [ ] **Bundle Analysis** - Analyze and reduce bundle size
-- [ ] **Code Splitting** - Implement route-based code splitting
-- [ ] **Image Optimization** - Use WebP format and lazy loading
-- [ ] **CSS Optimization** - Minify and inline critical CSS
-- [ ] **JavaScript Optimization** - Implement debouncing and memoization
-- [ ] **PWA Optimization** - Optimize service worker caching
-
-### **Backend Checklist**
-- [ ] **Database Indexing** - Add indexes for frequent queries
-- [ ] **Query Optimization** - Use eager loading and pagination
-- [ ] **Caching Strategy** - Implement Redis and response caching
-- [ ] **API Optimization** - Add compression and rate limiting
-- [ ] **Connection Pooling** - Optimize database connections
-
-### **Network Checklist**
-- [ ] **CDN Setup** - Configure CDN for static assets
-- [ ] **HTTP/2** - Enable HTTP/2 server push
-- [ ] **Resource Hints** - Add preload and prefetch hints
-- [ ] **Compression** - Enable gzip/brotli compression
-
-### **Mobile Checklist**
-- [ ] **Touch Optimization** - Optimize touch targets
-- [ ] **Viewport Configuration** - Set proper viewport meta
-- [ ] **Mobile Images** - Serve optimized images for mobile
-- [ ] **Touch Actions** - Configure touch-action CSS
-
-### **Monitoring Checklist**
-- [ ] **Performance Monitoring** - Set up RUM and Core Web Vitals
-- [ ] **Performance Budgets** - Define and monitor size budgets
-- [ ] **Automated Testing** - Set up CI/CD performance tests
-- [ ] **Alerting** - Configure performance alerts
-
----
-
-## 📈 **Performance Metrics Dashboard**
-
-### **Key Performance Indicators (KPIs)**
-1. **Page Load Time** - Target: < 3s
-2. **Time to Interactive** - Target: < 5s
-3. **Lighthouse Score** - Target: > 90
-4. **Bundle Size** - Target: < 2MB
-5. **API Response Time** - Target: < 500ms
-6. **Memory Usage** - Target: < 512MB
-
-### **Monitoring Tools**
-- **Lighthouse** - Performance auditing
-- **WebPageTest** - Detailed performance analysis
-- **Google PageSpeed Insights** - Real-world performance data
-- **New Relic** - Application performance monitoring
-- **Sentry** - Performance error tracking
-
----
-
-## 🚀 **Quick Performance Wins**
-
-### **Immediate Optimizations**
-1. **Enable Compression** - 20-30% size reduction
-2. **Optimize Images** - 50-80% size reduction
-3. **Minify CSS/JS** - 10-20% size reduction
-4. **Enable Caching** - 50-90% faster repeat visits
-5. **Use CDN** - 20-50% faster global delivery
-
-### **Advanced Optimizations**
-1. **Code Splitting** - Faster initial load
-2. **Service Worker** - Offline functionality
-3. **Database Indexing** - Faster queries
-4. **Redis Caching** - Reduced database load
-5. **HTTP/2 Push** - Faster resource loading
-
----
-
-**Follow this guide to achieve excellent performance for SmartFarm! 🚀** 
+**Last Updated:** January 2025

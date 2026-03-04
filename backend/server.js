@@ -12,6 +12,32 @@ const { CACHE_TTL } = require('./config/cache-config');
 const metricsMiddleware = require('./middleware/metrics-middleware');
 const metricsService = require('./utils/metrics');
 const HealthCheckService = require('./utils/health-check');
+
+// --- Sentry Error Tracking ---
+let Sentry;
+let ProfilingIntegration;
+try {
+  Sentry = require("@sentry/node");
+  ProfilingIntegration = require("@sentry/profiling-node");
+  
+  if (process.env.SENTRY_DSN) {
+    Sentry.init({
+      dsn: process.env.SENTRY_DSN,
+      environment: process.env.NODE_ENV || "production",
+      integrations: [
+        new ProfilingIntegration(),
+      ],
+      tracesSampleRate: 1.0,
+      profilesSampleRate: 1.0,
+    });
+    logger.info('Sentry initialized successfully');
+  } else {
+    logger.warn('SENTRY_DSN not set - Sentry disabled');
+  }
+} catch (error) {
+  logger.warn('Sentry not available:', error.message);
+}
+
 const app = express();
 
 // --- CORS SETUP (bulletproof origin handling) ---
@@ -82,6 +108,12 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Metrics middleware - track all requests
 app.use(metricsMiddleware);
+
+// Sentry request handler (must be before routes)
+if (Sentry && Sentry.Handlers) {
+  app.use(Sentry.Handlers.requestHandler());
+  app.use(Sentry.Handlers.tracingHandler());
+}
 
 // --- Health & root endpoints ---
 
@@ -953,6 +985,11 @@ if (process.env.NODE_ENV !== 'production' || process.env.ENABLE_SWAGGER === 'tru
 // 404 Not Found handler (must be before error handler)
 const { notFoundHandler, errorHandler } = require('./middleware/error-handler');
 app.use(notFoundHandler);
+
+// Sentry error handler (must be after routes, before error middleware)
+if (Sentry && Sentry.Handlers) {
+  app.use(Sentry.Handlers.errorHandler());
+}
 
 // Global error handler (must be last)
 app.use(errorHandler);
