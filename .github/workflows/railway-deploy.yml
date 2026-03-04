@@ -23,7 +23,6 @@ jobs:
 
   deploy-determined-elegance:
     needs: preflight
-    if: ${{ secrets.RAILWAY_TOKEN && secrets.RAILWAY_SERVICE_ID_DETERMINED }}
     runs-on: ubuntu-latest
     defaults: { run: { working-directory: backend } }
     steps:
@@ -52,7 +51,6 @@ jobs:
 
   deploy-enchanting-joy:
     needs: preflight
-    if: ${{ secrets.RAILWAY_TOKEN && secrets.RAILWAY_SERVICE_ID_ENCHANTING }}
     runs-on: ubuntu-latest
     defaults: { run: { working-directory: backend } }
     steps:
