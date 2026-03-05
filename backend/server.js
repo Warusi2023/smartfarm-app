@@ -15,20 +15,14 @@ const HealthCheckService = require('./utils/health-check');
 
 // --- Sentry Error Tracking ---
 let Sentry;
-let ProfilingIntegration;
 try {
   Sentry = require("@sentry/node");
-  ProfilingIntegration = require("@sentry/profiling-node");
   
   if (process.env.SENTRY_DSN) {
     Sentry.init({
       dsn: process.env.SENTRY_DSN,
       environment: process.env.NODE_ENV || "production",
-      integrations: [
-        new ProfilingIntegration(),
-      ],
       tracesSampleRate: 1.0,
-      profilesSampleRate: 1.0,
     });
     logger.info('Sentry initialized successfully');
   } else {
