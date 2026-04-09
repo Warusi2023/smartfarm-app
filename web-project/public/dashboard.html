@@ -14841,23 +14841,20 @@ INVENTORY SUMMARY:
         }
 
         // Quick action functions
-        function addNewCrop() {
-            if (typeof showCropManagement === 'function') {
-                showCropManagement();
-            } else {
-                alert('Crop management will be available soon!');
-            }
-        }
-
-        // Note: addNewLivestock() function is defined earlier in the file (around line 8150)
+        // Note: addNewCrop() is defined earlier (modal builder). addNewLivestock() is defined earlier in the file (around line 8150)
         // Removed duplicate function here to prevent override
 
         function createTask() {
-            if (typeof showTasks === 'function') {
-                showTasks();
-            } else {
+            if (typeof showTasks !== 'function') {
                 alert('Task management will be available soon!');
+                return;
             }
+            showTasks();
+            setTimeout(function () {
+                if (typeof addNewTask === 'function') {
+                    addNewTask();
+                }
+            }, 0);
         }
 
         // Initialize system status check
