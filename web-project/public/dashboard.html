@@ -4284,11 +4284,13 @@
                         // Generate traceability URL
                         const traceabilityURL = `${window.location.origin}/traceability.html?product=${selectedProductId}`;
                         
-                        // Clear previous QR code
+                        // Clear previous QR code; QRCode.toCanvas requires a real <canvas>, not the container div
                         qrCodeDisplay.innerHTML = '';
-                        
-                        // Generate QR code using QRCode library
-                        QRCode.toCanvas(qrCodeDisplay, traceabilityURL, {
+                        const qrCanvas = document.createElement('canvas');
+                        qrCanvas.setAttribute('aria-label', 'Product traceability QR code');
+                        qrCodeDisplay.appendChild(qrCanvas);
+
+                        QRCode.toCanvas(qrCanvas, traceabilityURL, {
                             width: 200,
                             height: 200,
                             color: {
@@ -4455,9 +4457,16 @@
             // Generate QR code
             if (typeof QRCode !== 'undefined') {
                 const qrContainer = modal.querySelector('#qrCodePreview');
+                if (!qrContainer) {
+                    console.error('QR preview container #qrCodePreview not found');
+                    return;
+                }
                 qrContainer.innerHTML = '';
-                
-                QRCode.toCanvas(qrContainer, traceabilityURL, {
+                const qrPreviewCanvas = document.createElement('canvas');
+                qrPreviewCanvas.setAttribute('aria-label', 'Product traceability QR code preview');
+                qrContainer.appendChild(qrPreviewCanvas);
+
+                QRCode.toCanvas(qrPreviewCanvas, traceabilityURL, {
                     width: 200,
                     height: 200,
                     color: {
@@ -4474,12 +4483,14 @@
                 });
             } else {
                 const qrContainer = modal.querySelector('#qrCodePreview');
-                qrContainer.innerHTML = `
-                    <div class="alert alert-warning">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        QR Code library not loaded. Please refresh the page and try again.
-                    </div>
-                `;
+                if (qrContainer) {
+                    qrContainer.innerHTML = `
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            QR Code library not loaded. Please refresh the page and try again.
+                        </div>
+                    `;
+                }
             }
         }
 
