@@ -788,6 +788,14 @@
                     updateLifecycleStage();
                 });
             }
+
+            const cropVarietyInput = document.getElementById('cropVariety');
+            if (cropVarietyInput) {
+                cropVarietyInput.addEventListener('change', function() {
+                    calculateAndDisplayMaturityDate();
+                    updateLifecycleStage();
+                });
+            }
             
             // Add event listener for harvest date input
             const harvestDateInput = document.getElementById('harvestDate');
@@ -876,7 +884,9 @@
             const context = lastAIMaturityContext;
             let extraInfo = '';
 
-            if (context?.source === 'catalog' && context.catalogItem) {
+            if (context?.source === 'variety-override' && typeof context.baseDays === 'number') {
+                extraInfo = `<div class="mt-2 small text-muted">Variety-adjusted growth window: ${context.baseDays} days</div>`;
+            } else if (context?.source === 'catalog' && context.catalogItem) {
                 const parts = [];
                 if (context.catalogItem.growthDurationDays) {
                     parts.push(`Catalog growth window: ${context.catalogItem.growthDurationDays} days`);
@@ -1121,6 +1131,31 @@
             }
         }
 
+        /** Crop + variety → base maturity days (pre-multiplier). Refine numbers over time. */
+        const maturityDaysByCropVariety = {
+            tomato: { default: 85, cherry: 70 },
+            tomatoes: { default: 85, cherry: 70 },
+            cassava: { default: 300, 'kuli piqi': 280 },
+            capsicum: { default: 90, 'california wonder': 88 },
+            lettuce: { default: 45, romaine: 50 },
+            kava: { default: 1095, noble: 1000 },
+        };
+
+        function resolveMaturityBaseDays(cropName, variety) {
+            if (!cropName) return null;
+            const cropKey = cropName.trim().toLowerCase();
+            const varietyKey = (variety || '').trim().toLowerCase();
+            const cropConfig = maturityDaysByCropVariety[cropKey];
+            if (!cropConfig) return null;
+            if (varietyKey && typeof cropConfig[varietyKey] === 'number') {
+                return cropConfig[varietyKey];
+            }
+            if (typeof cropConfig.default === 'number') {
+                return cropConfig.default;
+            }
+            return null;
+        }
+
         function calculateMaturityDate(crop) {
             const normalizedCropName = (crop.name || '').trim().toLowerCase();
             const catalogRecord = getCatalogPlantRecord(normalizedCropName);
@@ -1140,6 +1175,8 @@
                     }
                 }
             }
+
+            const varietyOverrideDays = resolveMaturityBaseDays(normalizedCropName, crop.variety);
 
             const cropDatabase = {
                 // Vegetables (harvest times based on global agricultural standards)
@@ -1243,29 +1280,40 @@
             const variety = crop.variety ? crop.variety.toLowerCase() : '';
 
             let cropData = null;
-            if (catalogBaseDays) {
+            let maturitySource = 'fallback';
+
+            if (typeof varietyOverrideDays === 'number') {
+                cropData = { baseDays: varietyOverrideDays, varietyMultiplier: 1.0, seasonAdjustment: 0 };
+                maturitySource = 'variety-override';
+            } else if (catalogBaseDays) {
                 cropData = { baseDays: catalogBaseDays, varietyMultiplier: 1.0, seasonAdjustment: 0 };
+                maturitySource = 'catalog';
             } else {
                 cropData = cropDatabase[cropName];
+                if (cropData) {
+                    maturitySource = 'heuristic';
+                }
             }
-            
+
             // Try to find by variety if crop name doesn't match
             if (!cropData) {
                 for (const [key, data] of Object.entries(cropDatabase)) {
                     if (variety.includes(key) || key.includes(variety)) {
                         cropData = data;
+                        maturitySource = 'heuristic';
                         break;
                     }
                 }
             }
-            
+
             // Default to 60 days if no match found
             if (!cropData) {
                 cropData = { baseDays: 60, varietyMultiplier: 1.0, seasonAdjustment: 0 };
+                maturitySource = 'fallback';
             }
 
             lastAIMaturityContext = {
-                source: catalogBaseDays ? 'catalog' : (cropDatabase[cropName] ? 'heuristic' : 'fallback'),
+                source: maturitySource,
                 baseDays: cropData.baseDays,
                 catalogItem: catalogRecord
             };
