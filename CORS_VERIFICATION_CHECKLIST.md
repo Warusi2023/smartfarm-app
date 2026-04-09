@@ -163,6 +163,18 @@ Your backend (`server.js` lines 43-103) uses this CORS configuration:
 
 ## 🐛 **Troubleshooting**
 
+### ⚠️ **Before troubleshooting: interpret results correctly**
+
+Check these first to avoid false CORS alarms:
+
+1. Ensure test origin is correct:
+   - Your frontend domain in browser and `FRONTEND_URL` (for script-based checks) must match the deployed staging/production frontend.
+2. Ensure backend allows that exact origin:
+   - `ALLOWED_ORIGINS` (or legacy `CORS_ORIGINS`) includes the exact URL (protocol + domain, no trailing slash).
+3. Distinguish CORS failure vs application validation failure:
+   - `400` on `/api/auth/login` or `/api/auth/register` can be invalid payload/validation, not CORS.
+   - Treat it as CORS failure only when CORS headers are missing/mismatched or browser shows CORS policy errors.
+
 ### Problem: CORS errors in browser console
 
 **Symptoms:**

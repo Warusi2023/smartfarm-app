@@ -194,8 +194,16 @@ class AuthMiddleware {
                 });
             }
 
-            // Validate API key (implement your validation logic)
-            const validApiKey = process.env.API_KEY || 'your-api-key';
+            // Validate API key
+            const validApiKey = process.env.API_KEY;
+
+            if (!validApiKey) {
+                return res.status(500).json({
+                    success: false,
+                    error: 'API key authentication is enabled but API_KEY is not configured',
+                    code: 'API_KEY_NOT_CONFIGURED'
+                });
+            }
             
             if (apiKey !== validApiKey) {
                 return res.status(401).json({

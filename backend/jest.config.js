@@ -31,7 +31,7 @@ module.exports = {
     ],
     
     // Coverage thresholds (focus on critical paths)
-    coverageThresholds: {
+    coverageThreshold: {
         global: {
             branches: 50,
             functions: 50,

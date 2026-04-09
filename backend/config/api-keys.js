@@ -16,7 +16,8 @@ const config = {
     
     // Weather API Configuration
     weather: {
-        openweatherApiKey: process.env.OPENWEATHER_API_KEY
+        // Keep compatibility with legacy OPENWEATHER_API_KEY while standardizing on WEATHER_API_KEY.
+        openweatherApiKey: process.env.WEATHER_API_KEY || process.env.OPENWEATHER_API_KEY
     },
     
     // Firebase Configuration
@@ -40,7 +41,7 @@ function validateApiKeys() {
     }
     
     if (!config.weather.openweatherApiKey) {
-        missing.push('OPENWEATHER_API_KEY');
+        missing.push('WEATHER_API_KEY');
     }
     
     return {
@@ -66,7 +67,7 @@ function getGoogleApiKey() {
  */
 function getOpenWeatherApiKey() {
     if (!config.weather.openweatherApiKey) {
-        throw new Error('OpenWeather API key not configured. Please set OPENWEATHER_API_KEY environment variable.');
+        throw new Error('OpenWeather API key not configured. Please set WEATHER_API_KEY environment variable.');
     }
     return config.weather.openweatherApiKey;
 }

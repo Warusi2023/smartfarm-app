@@ -20,8 +20,10 @@ test.describe('Server Connection Tests', () => {
         expect(healthResponse.ok()).toBeTruthy();
         
         const healthData = await healthResponse.json();
-        expect(healthData.message).toBe('OK');
-        expect(healthData.timestamp).toBeDefined();
+        // backend/server.js returns { ok, service, ts, ... }
+        expect(healthData.ok).toBeTruthy();
+        expect(healthData.service).toBe('SmartFarm');
+        expect(healthData.ts).toBeDefined();
     });
 
     test('should fetch farms from backend API', async ({ page }) => {

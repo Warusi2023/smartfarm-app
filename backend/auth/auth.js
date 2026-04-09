@@ -9,9 +9,14 @@ const crypto = require('crypto');
 
 class AuthService {
     constructor() {
-        this.jwtSecret = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+        this.jwtSecret = process.env.JWT_SECRET;
         this.jwtExpiresIn = process.env.JWT_EXPIRES_IN || '7d';
         this.bcryptRounds = parseInt(process.env.BCRYPT_ROUNDS) || 12;
+
+        // Fail fast in non-test environments to avoid insecure fallback secrets.
+        if (!this.jwtSecret && process.env.NODE_ENV !== 'test') {
+            throw new Error('JWT_SECRET is required. Refusing to start with an insecure default secret.');
+        }
     }
 
     /**

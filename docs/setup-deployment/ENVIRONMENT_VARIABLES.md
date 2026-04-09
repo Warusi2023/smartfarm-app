@@ -1,162 +1,96 @@
 # Environment Variables Guide
 
-Complete reference for all environment variables used in SmartFarm.
+Canonical environment variable reference for the current SmartFarm codebase.
 
-## Backend Environment Variables
+## Frontend public vars (`web-project`)
 
-### Required Variables
-
-```env
-# Application
-NODE_ENV=production
-PORT=3000
-
-# Database
-DATABASE_URL=postgresql://user:password@host:5432/database
-
-# Authentication
-JWT_SECRET=your-secret-key-change-in-production
-JWT_EXPIRES_IN=7d
-BCRYPT_ROUNDS=12
-
-# Email Service
-EMAIL_SERVICE=gmail
-EMAIL_USER=your-email@example.com
-EMAIL_PASS=your-app-password
-EMAIL_FROM=SmartFarm <noreply@smartfarm.com>
-
-# Frontend URL
-FRONTEND_URL=https://your-frontend.netlify.app
-```
-
-### Optional Variables
+Required:
 
 ```env
-# Database SSL
-DB_ALLOW_INSECURE_SSL=false
-DB_SSL_CA=/path/to/ca-certificate.crt
-DB_SSL_CERT=/path/to/client-certificate.crt
-DB_SSL_KEY=/path/to/client-key.key
-
-# Logging
-LOG_LEVEL=info
-LOG_FILE=./logs/backend.log
-
-# Weather API
-WEATHER_API_KEY=your-weather-api-key
-
-# Feature Flags
-ENABLE_EMAIL_VERIFICATION=true
-ENABLE_SUBSCRIPTIONS=true
+VITE_API_URL=https://your-backend.railway.app
 ```
 
-## Frontend Environment Variables
-
-### Required Variables
-
-```env
-VITE_API_BASE_URL=https://your-api.railway.app/api
-```
-
-### Optional Variables
+Optional:
 
 ```env
 VITE_APP_NAME=SmartFarm
-VITE_ENVIRONMENT=production
-VITE_GOOGLE_MAPS_API_KEY=your-google-maps-key
+VITE_APP_VERSION=1.0.0
+VITE_SENTRY_DSN=https://examplePublicKey@o0.ingest.sentry.io/0
+VITE_SENTRY_ENVIRONMENT=production
+VITE_SENTRY_RELEASE=smartfarm-web@1.0.0
 ```
 
-## Development Setup
+Notes:
+- Frontend code primarily reads `VITE_API_URL`.
+- `VITE_API_BASE_URL` appears in legacy docs/scripts and should not be treated as the canonical name.
 
-### Backend (.env)
-```env
-NODE_ENV=development
-PORT=3000
-DATABASE_URL=sqlite:./smartfarm.db
-JWT_SECRET=dev-secret-key
-JWT_EXPIRES_IN=7d
-BCRYPT_ROUNDS=4
-EMAIL_SERVICE=test
-FRONTEND_URL=http://localhost:5173
-```
+## Backend server vars (`backend`)
 
-### Frontend (.env)
-```env
-VITE_API_BASE_URL=http://localhost:3000/api
-VITE_ENVIRONMENT=development
-```
+Required:
 
-## Production Setup
-
-### Backend (.env)
 ```env
 NODE_ENV=production
 PORT=3000
-DATABASE_URL=postgresql://user:pass@host:5432/db
-JWT_SECRET=<strong-random-secret>
+DATABASE_URL=postgresql://user:password@host:5432/database
+JWT_SECRET=replace_with_strong_secret_minimum_32_characters
+ALLOWED_ORIGINS=https://your-site.netlify.app,https://www.your-site.netlify.app
+```
+
+Recommended:
+
+```env
 JWT_EXPIRES_IN=7d
 BCRYPT_ROUNDS=12
+FRONTEND_URL=https://your-site.netlify.app
+LOG_LEVEL=info
+```
+
+Optional:
+
+```env
+SENTRY_DSN=https://examplePublicKey@o0.ingest.sentry.io/0
+SENTRY_ENVIRONMENT=production
+SENTRY_RELEASE=smartfarm-backend@1.0.0
+WEATHER_API_KEY=your_openweathermap_api_key
+ENABLE_SWAGGER=true
+REDIS_URL=redis://localhost:6379
 EMAIL_SERVICE=gmail
 EMAIL_USER=your-email@example.com
 EMAIL_PASS=your-app-password
 EMAIL_FROM=SmartFarm <noreply@smartfarm.com>
-FRONTEND_URL=https://your-app.netlify.app
-WEATHER_API_KEY=your-key
-LOG_LEVEL=info
+API_KEY=set_only_if_x_api_key_middleware_is_used
 ```
 
-### Frontend (Netlify Environment Variables)
+Compatibility aliases (legacy):
+
 ```env
-VITE_API_BASE_URL=https://your-api.railway.app/api
-VITE_ENVIRONMENT=production
+CORS_ORIGINS=https://your-site.netlify.app
+OPENWEATHER_API_KEY=your_openweathermap_api_key
 ```
 
-## Security Notes
+## Third-party integrations
 
-1. **Never commit .env files** - Add to `.gitignore`
-2. **Use strong secrets** - Generate random strings for JWT_SECRET
-3. **Rotate secrets regularly** - Change JWT_SECRET periodically
-4. **Use app passwords** - For email, use app-specific passwords
-5. **Limit access** - Only grant access to necessary variables
+- OpenWeatherMap: `WEATHER_API_KEY` (legacy alias: `OPENWEATHER_API_KEY`)
+- Sentry backend: `SENTRY_DSN`, optional `SENTRY_ENVIRONMENT`, `SENTRY_RELEASE`
+- Sentry frontend: `VITE_SENTRY_DSN`, optional `VITE_SENTRY_ENVIRONMENT`, `VITE_SENTRY_RELEASE`
+- Email provider: `EMAIL_SERVICE`, `EMAIL_USER`, `EMAIL_PASS`, `EMAIL_FROM`
 
-## Variable Descriptions
+## Monitoring vars
 
-### NODE_ENV
-- **Values:** `development`, `production`, `test`
-- **Purpose:** Sets application environment
-- **Default:** `development`
+- Backend monitoring: `SENTRY_DSN`, `SENTRY_ENVIRONMENT`, `SENTRY_RELEASE`
+- Frontend monitoring: `VITE_SENTRY_DSN`, `VITE_SENTRY_ENVIRONMENT`, `VITE_SENTRY_RELEASE`
 
-### DATABASE_URL
-- **Format:** `postgresql://user:password@host:port/database`
-- **Purpose:** Database connection string
-- **Required:** Yes (production)
+## Manual verification steps
 
-### JWT_SECRET
-- **Purpose:** Secret key for JWT token signing
-- **Required:** Yes
-- **Security:** Must be strong and secret
-
-### JWT_EXPIRES_IN
-- **Format:** `7d`, `24h`, `60m`
-- **Purpose:** JWT token expiration time
-- **Default:** `7d`
-
-### EMAIL_SERVICE
-- **Values:** `gmail`, `sendgrid`, `smtp`, `test`
-- **Purpose:** Email service provider
-- **Default:** `gmail`
-
-### FRONTEND_URL
-- **Purpose:** Frontend URL for CORS and email links
-- **Required:** Yes
-
-## Testing Environment
-
-For tests, use these minimal variables:
-```env
-NODE_ENV=test
-JWT_SECRET=test-secret
-DATABASE_URL=
-EMAIL_SERVICE=test
-```
+1. Backend shell:
+   - `cd backend`
+   - `node ../scripts/verify-env-vars.js`
+2. CORS check:
+   - Ensure Railway has `ALLOWED_ORIGINS` (or legacy `CORS_ORIGINS`) including the deployed frontend URL.
+   - Run `node scripts/test-cors.js` from repo root.
+3. API key check:
+   - `cd backend`
+   - `node ../scripts/verify-api-keys.js`
+4. Confirm no plaintext secrets are committed:
+   - Keep `.env` and `*.env` out of git (`.gitignore` already covers these).
 

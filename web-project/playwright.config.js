@@ -46,7 +46,7 @@ module.exports = defineConfig({
     },
   ],
   webServer: {
-    command: 'python -m http.server 8080',
+    command: 'npx --yes serve -s public -l 8080',
     port: 8080,
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,

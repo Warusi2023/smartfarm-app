@@ -10,9 +10,9 @@ class ErrorTracker {
     this.maxErrors = 100; // Prevent spam
     this.errorBuffer = [];
     this.config = {
-      dsn: window.SENTRY_DSN || null,
-      environment: window.NODE_ENV || 'development',
-      release: window.APP_VERSION || '1.0.0',
+      dsn: window.VITE_SENTRY_DSN || window.SENTRY_DSN || null,
+      environment: window.VITE_SENTRY_ENVIRONMENT || window.NODE_ENV || 'development',
+      release: window.VITE_SENTRY_RELEASE || window.APP_VERSION || '1.0.0',
       sampleRate: window.NODE_ENV === 'production' ? 0.1 : 1.0,
       beforeSend: this.beforeSend.bind(this),
       beforeBreadcrumb: this.beforeBreadcrumb.bind(this),

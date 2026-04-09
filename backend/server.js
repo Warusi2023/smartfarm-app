@@ -22,6 +22,17 @@ try {
     Sentry.init({
       dsn: process.env.SENTRY_DSN,
       environment: process.env.NODE_ENV || "production",
+      release: process.env.SENTRY_RELEASE || process.env.RAILWAY_GIT_COMMIT_SHA || undefined,
+      sendDefaultPii: false,
+      beforeSend(event) {
+        // Drop common sensitive headers/cookies before sending events.
+        if (event.request && event.request.headers) {
+          delete event.request.headers.authorization;
+          delete event.request.headers.cookie;
+          delete event.request.headers['x-api-key'];
+        }
+        return event;
+      },
       tracesSampleRate: 1.0,
     });
     logger.info('Sentry initialized successfully');
@@ -35,7 +46,7 @@ try {
 const app = express();
 
 // --- CORS SETUP (bulletproof origin handling) ---
-const rawOrigins = process.env.ALLOWED_ORIGINS || '';
+const rawOrigins = process.env.ALLOWED_ORIGINS || process.env.CORS_ORIGINS || '';
 const ALLOWED = rawOrigins
   .split(',')
   .map(s => s.trim())
@@ -50,12 +61,14 @@ const PRODUCTION_ORIGINS = [
 ];
 
 // Dev fallback for local development
-const DEV_FALLBACK = [
-  'http://localhost:5173',
-  'http://localhost:3000',
-  'http://localhost:8080',
-  'http://localhost:4173',
-];
+const DEV_FALLBACK = process.env.NODE_ENV === 'production'
+  ? []
+  : [
+      'http://localhost:5173',
+      'http://localhost:3000',
+      'http://localhost:8080',
+      'http://localhost:4173',
+    ];
 
 // Combine all allowed origins
 const ALL_ALLOWED_ORIGINS = [...new Set([...ALLOWED, ...PRODUCTION_ORIGINS, ...DEV_FALLBACK])];
@@ -85,7 +98,9 @@ const corsOptions = {
       return cb(new Error(`CORS blocked: ${origin}`));
     }
   },
-  credentials: false,         // set to true only if using cookies/auth
+  // Frontend currently sends credentials in fetch requests.
+  // Keep this true for compatibility and explicit origin controls above.
+  credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
   exposedHeaders: ['Content-Length', 'Content-Type'],

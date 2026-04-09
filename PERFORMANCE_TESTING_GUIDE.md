@@ -227,6 +227,21 @@ node ../scripts/performance-test.js
 - Response times
 - Success rates
 
+### ⚠️ **Known Script Interpretation Limits**
+
+When using `scripts/performance-test.js`, interpret results carefully:
+
+- The script sends `POST` requests to auth endpoints without full credential payloads.
+- `400` responses on auth endpoints can indicate invalid/missing request body, not necessarily backend performance failure.
+- Treat these as **test-input limitations** unless you also observe:
+  - timeouts,
+  - repeated `5xx` errors,
+  - or slow responses above threshold on valid, non-auth endpoints.
+
+For launch decisions, combine script output with:
+- browser-based auth flow timing in staging,
+- and network-tab timings for real login/register requests.
+
 ---
 
 ## ✅ **Performance Checklist Summary**
