@@ -244,6 +244,62 @@ class DatabaseHelpers {
 
             return result.rows[0];
         } catch (error) {
+            // Backward compatibility for older production schemas that may miss
+            // trial_end or email verification columns.
+            if (error && error.code === '42703') {
+                const msg = String(error.message || '');
+                try {
+                    // Fallback 1: no trial_end column.
+                    if (msg.includes('trial_end')) {
+                        const result = await this.dbPool.query(
+                            `INSERT INTO users (
+                                email, password_hash, first_name, last_name, phone, country,
+                                verification_token, verification_expires, is_verified, role
+                            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+                            RETURNING *`,
+                            [
+                                userData.email,
+                                userData.passwordHash,
+                                userData.firstName,
+                                userData.lastName,
+                                userData.phone || null,
+                                userData.country || 'Fiji',
+                                userData.verificationToken,
+                                userData.verificationExpires,
+                                false,
+                                userData.role || 'farmer'
+                            ]
+                        );
+                        return result.rows[0];
+                    }
+
+                    // Fallback 2: no verification_token/verification_expires columns.
+                    if (msg.includes('verification_token') || msg.includes('verification_expires')) {
+                        const result = await this.dbPool.query(
+                            `INSERT INTO users (
+                                email, password_hash, first_name, last_name, phone, country,
+                                is_verified, role
+                            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                            RETURNING *`,
+                            [
+                                userData.email,
+                                userData.passwordHash,
+                                userData.firstName,
+                                userData.lastName,
+                                userData.phone || null,
+                                userData.country || 'Fiji',
+                                false,
+                                userData.role || 'farmer'
+                            ]
+                        );
+                        return result.rows[0];
+                    }
+                } catch (fallbackError) {
+                    console.error('Database fallback create user failed:', fallbackError);
+                    throw fallbackError;
+                }
+            }
+
             console.error('Database error creating user:', error);
             throw error;
         }
