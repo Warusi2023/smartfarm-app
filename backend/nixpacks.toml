@@ -1,3 +1,5 @@
+# Backend production entrypoint: server.js (see package.json "start").
+# server-simple.cjs is demo/static-only — not for production API deploys.
 [phases.setup]
 nixPkgs = ["nodejs_20"]
 

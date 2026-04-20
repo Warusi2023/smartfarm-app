@@ -17,6 +17,33 @@ class DatabaseHelpers {
     }
 
     /**
+     * Map a PostgreSQL users row to camelCase fields expected by auth routes
+     */
+    _mapUserRow(row) {
+        if (!row) {
+            return null;
+        }
+        return {
+            id: row.id,
+            email: row.email,
+            passwordHash: row.password_hash,
+            firstName: row.first_name,
+            lastName: row.last_name,
+            phone: row.phone,
+            country: row.country,
+            role: row.role,
+            isVerified: row.is_verified,
+            isActive: row.is_active !== false,
+            verificationToken: row.verification_token,
+            verificationExpires: row.verification_expires,
+            resetToken: row.reset_token,
+            resetExpires: row.reset_expires,
+            trial_end: row.trial_end,
+            created_at: row.created_at
+        };
+    }
+
+    /**
      * Get user subscription
      */
     async getUserSubscription(userId) {
@@ -114,7 +141,7 @@ class DatabaseHelpers {
                 [token]
             );
 
-            return result.rows.length > 0 ? result.rows[0] : null;
+            return result.rows.length > 0 ? this._mapUserRow(result.rows[0]) : null;
         } catch (error) {
             console.error('Database error finding user by token:', error);
             throw error;
@@ -223,6 +250,14 @@ class DatabaseHelpers {
     }
 
     /**
+     * Create user (delegates to createUserWithVerification); returns new user id
+     */
+    async createUser(userData) {
+        const row = await this.createUserWithVerification(userData);
+        return String(row.id);
+    }
+
+    /**
      * Find user by email
      */
     async findUserByEmail(email) {
@@ -237,11 +272,119 @@ class DatabaseHelpers {
                 [email]
             );
 
-            return result.rows.length > 0 ? result.rows[0] : null;
+            return result.rows.length > 0 ? this._mapUserRow(result.rows[0]) : null;
         } catch (error) {
             console.error('Database error finding user by email:', error);
             throw error;
         }
+    }
+
+    /**
+     * Get user by id (normalized row for auth)
+     */
+    async getUserById(userId) {
+        if (!this.dbPool) {
+            return null;
+        }
+        try {
+            const result = await this.dbPool.query(
+                'SELECT * FROM users WHERE id = $1',
+                [userId]
+            );
+            return result.rows.length > 0 ? this._mapUserRow(result.rows[0]) : null;
+        } catch (error) {
+            console.error('Database error getUserById:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Find user by password reset token
+     */
+    async findUserByResetToken(token) {
+        if (!this.dbPool) {
+            return null;
+        }
+        try {
+            const result = await this.dbPool.query(
+                'SELECT * FROM users WHERE reset_token = $1',
+                [token]
+            );
+            return result.rows.length > 0 ? this._mapUserRow(result.rows[0]) : null;
+        } catch (error) {
+            console.error('Database error findUserByResetToken:', error);
+            return null;
+        }
+    }
+
+    /**
+     * Trial info from users row (used by subscription repository)
+     */
+    async getUserTrialInfo(userId) {
+        if (!this.dbPool) {
+            return null;
+        }
+        try {
+            const result = await this.dbPool.query(
+                'SELECT trial_end, created_at FROM users WHERE id = $1',
+                [userId]
+            );
+            return result.rows.length > 0 ? result.rows[0] : null;
+        } catch (error) {
+            console.error('Database error getUserTrialInfo:', error);
+            return null;
+        }
+    }
+
+    /**
+     * Partial update for auth profile / tokens / password
+     */
+    async updateUser(userId, updates) {
+        if (!this.dbPool) {
+            return;
+        }
+        const columnMap = {
+            passwordHash: 'password_hash',
+            resetToken: 'reset_token',
+            resetExpires: 'reset_expires',
+            isVerified: 'is_verified',
+            verificationToken: 'verification_token',
+            verificationExpires: 'verification_expires',
+            firstName: 'first_name',
+            lastName: 'last_name',
+            phone: 'phone',
+            country: 'country'
+        };
+        const sets = [];
+        const values = [];
+        let p = 1;
+        for (const [key, value] of Object.entries(updates)) {
+            const col = columnMap[key];
+            if (col === undefined) {
+                continue;
+            }
+            sets.push(`${col} = $${p}`);
+            values.push(value);
+            p += 1;
+        }
+        if (sets.length === 0) {
+            return;
+        }
+        values.push(userId);
+        await this.dbPool.query(
+            `UPDATE users SET ${sets.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = $${p}`,
+            values
+        );
+    }
+
+    /**
+     * Delete user account
+     */
+    async deleteUser(userId) {
+        if (!this.dbPool) {
+            return;
+        }
+        await this.dbPool.query('DELETE FROM users WHERE id = $1', [userId]);
     }
 
     /**

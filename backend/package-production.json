@@ -1,11 +1,11 @@
 {
   "name": "smartfarm-backend",
   "version": "1.0.0",
-  "description": "SmartFarm Production Backend API - Minimal",
+  "description": "Alternate minimal package manifest. Prefer backend/package.json for deploys. Production API entry is server.js only.",
   "private": true,
   "type": "commonjs",
   "scripts": {
-    "start": "node server-simple.cjs",
+    "start": "node server.js",
     "build": "echo \"(backend) nothing to build\"",
     "health": "node -e \"fetch('http://127.0.0.1:'+(process.env.PORT||3000)+'/api/health').then(r=>r.text()).then(console.log).catch(console.error)\""
   },

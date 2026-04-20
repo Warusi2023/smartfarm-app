@@ -3,7 +3,7 @@
  * Enforces subscription/trial requirements and farm limits
  */
 
-const { SubscriptionService, PLAN_CONFIG } = require('../services/subscriptionService');
+const SubscriptionService = require('../services/subscriptionService');
 
 class SubscriptionMiddleware {
     constructor(dbPool) {

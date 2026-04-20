@@ -1081,18 +1081,20 @@
             btnText.style.display = 'none';
             loading.classList.add('show');
 
-            // Collect form data - only send fields that Railway API expects
+            const countryEl = document.getElementById('country');
             const formData = {
-                username: document.getElementById('username').value,
                 email: document.getElementById('email').value,
                 password: document.getElementById('password').value,
                 firstName: document.getElementById('firstName').value,
                 lastName: document.getElementById('lastName').value,
                 phone: document.getElementById('phone').value
             };
+            if (countryEl && countryEl.value) {
+                formData.country = countryEl.value;
+            }
 
-            // API call to Railway backend
-            const apiUrl = 'https://smartfarm-app-production.up.railway.app/api/auth/register';
+            const apiBase = window.__SMARTFARM_API_BASE__ || window.VITE_API_URL || 'https://smartfarm-app-production.up.railway.app';
+            const apiUrl = apiBase.replace(/\/$/, '') + '/api/auth/register';
             
             console.log('Sending registration data:', formData);
             
@@ -1103,33 +1105,32 @@
                 },
                 body: JSON.stringify(formData)
             })
-            .then(response => {
-                console.log('Response status:', response.status);
-                console.log('Response headers:', response.headers);
-                return response.json();
-            })
-            .then(data => {
-                console.log('Response data:', data);
-                if (data.status === 'success') {
-                    showAlert('Registration successful! Please check your email to verify your account, then login.', 'success');
-                    
-                    // Clear any existing user data (since they need to verify email first)
+            .then(async (response) => {
+                let data = {};
+                try {
+                    data = await response.json();
+                } catch (e) {
+                    showAlert('Invalid response from server. Please try again.', 'danger');
+                    btnText.style.display = 'inline';
+                    loading.classList.remove('show');
+                    return;
+                }
+                console.log('Response status:', response.status, data);
+                if (response.ok && data.success === true) {
+                    showAlert(data.message || 'Registration successful! Please check your email to verify your account, then login.', 'success');
                     localStorage.removeItem('smartfarm_user');
                     sessionStorage.removeItem('smartfarm_user');
-                    
-                    // Redirect to login page after delay
                     setTimeout(() => {
                         window.location.href = 'login.html';
                     }, 3000);
                 } else {
-                    showAlert(data.message || 'Registration failed. Please try again.', 'danger');
+                    showAlert(data.error || data.message || 'Registration failed. Please try again.', 'danger');
                     btnText.style.display = 'inline';
                     loading.classList.remove('show');
                 }
             })
             .catch(error => {
                 console.error('Registration error:', error);
-                console.error('Error details:', error.message);
                 showAlert(`Registration failed: ${error.message}. Please try again.`, 'danger');
                 btnText.style.display = 'inline';
                 loading.classList.remove('show');

@@ -1,6 +1,11 @@
 /**
- * SmartFarm Simple Production Server
- * Minimal server for Railway deployment
+ * SmartFarm Simple Server — DEMO / STATIC API ONLY
+ *
+ * NOT the production backend for real auth. This file serves mock auth
+ * (mock-jwt-token), minimal /api/health, and static catalog JSON.
+ *
+ * Production deploys MUST use: node server.js (see backend/package.json).
+ * If you see mock-jwt-token from your API, the wrong process is running.
  */
 
 const express = require('express');

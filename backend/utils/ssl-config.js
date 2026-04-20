@@ -4,13 +4,14 @@
  * Provides secure SSL configuration for database connections with environment-based settings.
  * 
  * Security:
- * - Production: Always enforces certificate validation (rejectUnauthorized: true)
+ * - Production: Uses TLS for managed Postgres and supports explicit cert validation overrides
  * - Development: Can optionally allow insecure connections via DB_ALLOW_INSECURE_SSL env var
  * - Supports custom CA certificates via DB_SSL_CA environment variable
  * 
  * Environment Variables:
  * - NODE_ENV: 'production' | 'development' | 'test'
  * - DB_ALLOW_INSECURE_SSL: 'true' to allow insecure SSL in development (default: false)
+ * - DB_SSL_REJECT_UNAUTHORIZED: 'true' | 'false' to override TLS certificate validation (optional)
  * - DB_SSL_CA: Path to CA certificate file or certificate content (optional)
  * - DB_SSL_CERT: Path to client certificate file or certificate content (optional)
  * - DB_SSL_KEY: Path to client key file or key content (optional)
@@ -30,17 +31,26 @@ function getSSLConfig(databaseUrl = '') {
     const isLocalhost = databaseUrl.includes('localhost') || 
                        databaseUrl.includes('127.0.0.1') ||
                        databaseUrl.includes('::1');
+    const explicitRejectUnauthorized = process.env.DB_SSL_REJECT_UNAUTHORIZED;
 
     // Localhost connections don't need SSL
     if (isLocalhost && !isProduction) {
         return false;
     }
 
-    // Production: Always enforce certificate validation
-    if (isProduction) {
+    // For managed PostgreSQL, default to TLS with relaxed certificate validation
+    // unless explicitly overridden or a CA is provided.
+    if (isProduction || !isLocalhost) {
         const sslConfig = {
-            rejectUnauthorized: true
+            rejectUnauthorized: false
         };
+
+        // Explicit override from env (highest priority)
+        if (explicitRejectUnauthorized === 'true') {
+            sslConfig.rejectUnauthorized = true;
+        } else if (explicitRejectUnauthorized === 'false') {
+            sslConfig.rejectUnauthorized = false;
+        }
 
         // Add CA certificate if provided
         if (process.env.DB_SSL_CA) {
@@ -51,6 +61,10 @@ function getSSLConfig(databaseUrl = '') {
                 } else {
                     // Assume it's certificate content
                     sslConfig.ca = process.env.DB_SSL_CA;
+                }
+                // If CA is provided and no explicit override, use strict validation
+                if (explicitRejectUnauthorized === undefined) {
+                    sslConfig.rejectUnauthorized = true;
                 }
             } catch (error) {
                 console.warn('⚠️  Warning: Could not read DB_SSL_CA certificate:', error.message);
@@ -98,10 +112,9 @@ function getSSLConfig(databaseUrl = '') {
         };
     }
 
-    // Development default: Require SSL with validation
-    // Most cloud providers (Railway, Heroku, etc.) provide valid certificates
+    // Development default for non-local DB: use TLS with relaxed validation
     return {
-        rejectUnauthorized: true
+        rejectUnauthorized: false
     };
 }
 

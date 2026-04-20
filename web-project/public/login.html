@@ -535,186 +535,125 @@
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const rememberMe = document.getElementById('rememberMe').checked;
+            const demo = window.SMARTFARM_DEMO_MODE === true;
 
-            // Show loading state
             btnText.style.display = 'none';
             loading.classList.add('show');
 
-            // API call to backend with timeout
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
-            
-            fetch('https://smartfarm-app-production.up.railway.app/api/auth/login', {
+            const timeoutId = setTimeout(() => controller.abort(), 30000);
+            const apiBase = window.__SMARTFARM_API_BASE__ || window.VITE_API_URL || 'https://smartfarm-app-production.up.railway.app';
+            const loginUrl = apiBase.replace(/\/$/, '') + '/api/auth/login';
+
+            function storeSessionSuccess(data) {
+                const loginTime = new Date().toISOString();
+                const token = data.data.token;
+                const userObj = data.data.user;
+                const storage = rememberMe ? localStorage : sessionStorage;
+                clearAllAuthData();
+                showAlert('Login successful! Redirecting to dashboard...', 'success');
+                if (rememberMe) {
+                    localStorage.setItem('smartfarm_remember', 'true');
+                    localStorage.setItem('smartfarm_user', JSON.stringify(userObj));
+                    localStorage.setItem('smartfarm_token', token);
+                    localStorage.setItem('smartfarm_loginTime', loginTime);
+                } else {
+                    sessionStorage.setItem('smartfarm_remember', 'false');
+                    sessionStorage.setItem('smartfarm_user', JSON.stringify(userObj));
+                    sessionStorage.setItem('smartfarm_token', token);
+                    sessionStorage.setItem('smartfarm_loginTime', loginTime);
+                }
+                storage.setItem('smartfarm_userData', JSON.stringify(data.data));
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html?login=success';
+                }, 1500);
+            }
+
+            function finishError(msg) {
+                showAlert(msg, 'danger');
+                btnText.style.display = 'inline';
+                loading.classList.remove('show');
+            }
+
+            fetch(loginUrl, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    email: email,
-                    password: password
-                }),
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: email, password: password }),
                 signal: controller.signal
             })
-            .then(response => {
+            .then(async (response) => {
                 clearTimeout(timeoutId);
+                let data = {};
+                try {
+                    data = await response.json();
+                } catch (e) {
+                    data = {};
+                }
                 if (!response.ok) {
-                    // If backend is not available, try fallback authentication
-                    console.log('Backend not available (status:', response.status, '), trying fallback authentication...');
-                    return handleFallbackLogin(email, password, rememberMe);
+                    if (demo) {
+                        return handleFallbackLogin(email, password, rememberMe).then((d) => {
+                            if (d && d.status === 'success') {
+                                clearAllAuthData();
+                                showAlert('Login successful (Demo Mode)! Redirecting...', 'success');
+                                const loginTime = new Date().toISOString();
+                                if (rememberMe) {
+                                    localStorage.setItem('smartfarm_remember', 'true');
+                                    localStorage.setItem('smartfarm_user', JSON.stringify(d.data));
+                                    localStorage.setItem('smartfarm_token', d.token);
+                                    localStorage.setItem('smartfarm_loginTime', loginTime);
+                                } else {
+                                    sessionStorage.setItem('smartfarm_remember', 'false');
+                                    sessionStorage.setItem('smartfarm_user', JSON.stringify(d.data));
+                                    sessionStorage.setItem('smartfarm_token', d.token);
+                                    sessionStorage.setItem('smartfarm_loginTime', loginTime);
+                                }
+                                (rememberMe ? localStorage : sessionStorage).setItem('smartfarm_userData', JSON.stringify(d.data));
+                                setTimeout(() => { window.location.href = 'dashboard.html?login=success'; }, 1500);
+                            } else {
+                                finishError(data.error || data.message || 'Login failed');
+                            }
+                        });
+                    }
+                    finishError(data.error || data.message || 'Login failed');
+                    return;
                 }
-                return response.json();
-            })
-            .then(data => {
-                if (data.status === 'success') {
-                    console.log('=== LOGIN SUCCESS DEBUG START ===');
-                    console.log('Login response data:', data);
-                    
-                    // Clear any existing authentication data first
-                    console.log('Clearing existing auth data...');
-                    clearAllAuthData();
-                    
-                    showAlert('Login successful! Redirecting to dashboard...', 'success');
-                    
-                    // Store login state and token
-                    const loginTime = new Date().toISOString();
-                    if (rememberMe) {
-                        localStorage.setItem('smartfarm_remember', 'true');
-                        localStorage.setItem('smartfarm_user', JSON.stringify(data.data.user));
-                        if (data.token) {
-                            localStorage.setItem('smartfarm_token', data.token);
-                        }
-                        localStorage.setItem('smartfarm_loginTime', loginTime);
-                    } else {
-                        sessionStorage.setItem('smartfarm_remember', 'false');
-                        sessionStorage.setItem('smartfarm_user', JSON.stringify(data.data.user));
-                        if (data.token) {
-                            sessionStorage.setItem('smartfarm_token', data.token);
-                        }
-                        sessionStorage.setItem('smartfarm_loginTime', loginTime);
-                    }
-
-                    // Store user data with country for currency
-                    if (data.data) {
-                        const storage = rememberMe ? localStorage : sessionStorage;
-                        storage.setItem('smartfarm_userData', JSON.stringify(data.data));
-                    } else {
-                        // If no user data from API, create basic user data with country
-                        const userData = {
-                            email: email,
-                            username: email.split('@')[0], // Use email prefix as username
-                            country: 'Fiji' // Default to Fiji, can be updated later
-                        };
-                        const storage = rememberMe ? localStorage : sessionStorage;
-                        storage.setItem('smartfarm_userData', JSON.stringify(userData));
-                    }
-
-                    // Store login timestamp (reusing existing loginTime variable)
-                    if (rememberMe) {
-                        localStorage.setItem('smartfarm_loginTime', loginTime);
-                    } else {
-                        sessionStorage.setItem('smartfarm_loginTime', loginTime);
-                    }
-
-                    // Verify authentication data was stored correctly
-                    const storedUser = rememberMe ? localStorage.getItem('smartfarm_user') : sessionStorage.getItem('smartfarm_user');
-                    const storedToken = rememberMe ? localStorage.getItem('smartfarm_token') : sessionStorage.getItem('smartfarm_token');
-                    
-                    console.log('Verification - storedUser:', storedUser);
-                    console.log('Verification - storedToken:', storedToken ? 'Present' : 'Missing');
-                    console.log('Verification - rememberMe:', rememberMe);
-                    console.log('Verification - storage type:', rememberMe ? 'localStorage' : 'sessionStorage');
-                    
-                    if (storedUser && storedToken) {
-                        console.log('✅ Authentication data stored successfully');
-                        console.log('=== LOGIN SUCCESS DEBUG END ===');
-                        // Redirect to dashboard with success parameter
-                        setTimeout(() => {
-                            console.log('Redirecting to dashboard...');
-                            window.location.href = 'dashboard.html?login=success';
-                        }, 1500);
-                    } else {
-                        console.log('❌ Error storing authentication data');
-                        console.log('=== LOGIN SUCCESS DEBUG END ===');
-                        showAlert('Error storing authentication data. Please try again.', 'danger');
-                        btnText.style.display = 'inline';
-                        loading.classList.remove('show');
-                    }
+                if (data.success === true && data.data && data.data.token && data.data.user) {
+                    storeSessionSuccess(data);
                 } else {
-                    showAlert(data.message || 'Invalid email or password. Please try again.', 'danger');
-                    btnText.style.display = 'inline';
-                    loading.classList.remove('show');
+                    finishError(data.error || data.message || 'Login failed.');
                 }
             })
-            .catch(error => {
+            .catch((error) => {
                 clearTimeout(timeoutId);
                 console.error('Login error:', error);
-                console.log('Network error or timeout, trying fallback authentication...');
-                
-                // Try fallback authentication on network errors or timeouts
-                handleFallbackLogin(email, password, rememberMe)
-                    .then(data => {
-                        if (data.status === 'success') {
-                            console.log('=== FALLBACK LOGIN SUCCESS ===');
-                            console.log('Fallback login response data:', data);
-                            
-                            // Clear any existing authentication data first
-                            clearAllAuthData();
-                            
-                            showAlert('Login successful (Demo Mode)! Redirecting to dashboard...', 'success');
-                            
-                            // Store login state and token
-                            const loginTime = new Date().toISOString();
-                            if (rememberMe) {
-                                localStorage.setItem('smartfarm_remember', 'true');
-                                localStorage.setItem('smartfarm_user', JSON.stringify(data.data));
-                                localStorage.setItem('smartfarm_token', data.token);
-                                localStorage.setItem('smartfarm_loginTime', loginTime);
+                if (demo) {
+                    handleFallbackLogin(email, password, rememberMe)
+                        .then((d) => {
+                            if (d && d.status === 'success') {
+                                clearAllAuthData();
+                                showAlert('Login successful (Demo Mode)! Redirecting...', 'success');
+                                const loginTime = new Date().toISOString();
+                                if (rememberMe) {
+                                    localStorage.setItem('smartfarm_remember', 'true');
+                                    localStorage.setItem('smartfarm_user', JSON.stringify(d.data));
+                                    localStorage.setItem('smartfarm_token', d.token);
+                                    localStorage.setItem('smartfarm_loginTime', loginTime);
+                                } else {
+                                    sessionStorage.setItem('smartfarm_remember', 'false');
+                                    sessionStorage.setItem('smartfarm_user', JSON.stringify(d.data));
+                                    sessionStorage.setItem('smartfarm_token', d.token);
+                                    sessionStorage.setItem('smartfarm_loginTime', loginTime);
+                                }
+                                (rememberMe ? localStorage : sessionStorage).setItem('smartfarm_userData', JSON.stringify(d.data));
+                                setTimeout(() => { window.location.href = 'dashboard.html?login=success'; }, 1500);
                             } else {
-                                sessionStorage.setItem('smartfarm_remember', 'false');
-                                sessionStorage.setItem('smartfarm_user', JSON.stringify(data.data));
-                                sessionStorage.setItem('smartfarm_token', data.token);
-                                sessionStorage.setItem('smartfarm_loginTime', loginTime);
+                                finishError('Login failed.');
                             }
-
-                            // Store user data
-                            const storage = rememberMe ? localStorage : sessionStorage;
-                            storage.setItem('smartfarm_userData', JSON.stringify(data.data));
-
-                            // Store login timestamp (reusing existing loginTime variable)
-                            if (rememberMe) {
-                                localStorage.setItem('smartfarm_loginTime', loginTime);
-                            } else {
-                                sessionStorage.setItem('smartfarm_loginTime', loginTime);
-                            }
-
-                            // Verify authentication data was stored correctly
-                            const storedUser = rememberMe ? localStorage.getItem('smartfarm_user') : sessionStorage.getItem('smartfarm_user');
-                            const storedToken = rememberMe ? localStorage.getItem('smartfarm_token') : sessionStorage.getItem('smartfarm_token');
-                            
-                            if (storedUser && storedToken) {
-                                console.log('✅ Fallback authentication data stored successfully');
-                                // Redirect to dashboard with success parameter
-                                setTimeout(() => {
-                                    console.log('Redirecting to dashboard...');
-                                    window.location.href = 'dashboard.html?login=success';
-                                }, 1500);
-                            } else {
-                                showAlert('Error storing authentication data. Please try again.', 'danger');
-                                btnText.style.display = 'inline';
-                                loading.classList.remove('show');
-                            }
-                        } else {
-                            showAlert(data.message || 'Login failed. Please try again.', 'danger');
-                            btnText.style.display = 'inline';
-                            loading.classList.remove('show');
-                        }
-                    })
-                    .catch(fallbackError => {
-                        console.error('Fallback login error:', fallbackError);
-                        showAlert('Login failed. Please check your credentials and try again.', 'danger');
-                        btnText.style.display = 'inline';
-                        loading.classList.remove('show');
-                    });
+                        })
+                        .catch(() => finishError('Network error. Please try again.'));
+                } else {
+                    finishError('Network error. Please try again.');
+                }
             });
         }
 

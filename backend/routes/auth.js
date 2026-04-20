@@ -8,6 +8,7 @@ const AuthService = require('../auth/auth');
 const AuthMiddleware = require('../middleware/auth');
 const EmailService = require('../utils/emailService');
 const DatabaseHelpers = require('../utils/db-helpers');
+const SubscriptionService = require('../services/subscriptionService');
 const { validate } = require('../middleware/validator');
 const logger = require('../utils/logger');
 
@@ -568,7 +569,6 @@ class AuthRoutes {
 
             // Create trial subscription
             try {
-                const { SubscriptionService } = require('../services/subscriptionService');
                 const subscriptionService = new SubscriptionService(this.dbPool);
                 await subscriptionService.createTrialSubscription(userId);
             } catch (trialError) {
@@ -654,7 +654,6 @@ class AuthRoutes {
             }
 
             // Check subscription/trial status using subscription service
-            const { SubscriptionService } = require('../services/subscriptionService');
             const subscriptionService = new SubscriptionService(this.dbPool);
             const accessStatus = await subscriptionService.getUserAccessStatus(user.id);
             
@@ -1192,6 +1191,10 @@ class AuthRoutes {
                 code: 'DELETE_ERROR'
             });
         }
+    }
+
+    getRouter() {
+        return this.router;
     }
 }
 

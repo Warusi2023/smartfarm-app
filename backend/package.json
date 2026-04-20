@@ -1,7 +1,7 @@
 {
   "name": "smartfarm-backend",
   "version": "1.0.0",
-  "description": "SmartFarm Production Backend API - Minimal",
+  "description": "SmartFarm Production Backend API. Deploy: node server.js (not server-simple.cjs).",
   "private": true,
   "type": "commonjs",
   "scripts": {
