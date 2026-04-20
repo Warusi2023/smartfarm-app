@@ -390,16 +390,12 @@ app.get('/api/ai-advisory/crop-nutrition/:cropId', validate('aiAdvisory.cropNutr
 });
 
 // Import auth routes with email verification
-let AuthRoutes;
-let AIAdvisoryRoutes;
 let dbPool = null;
 
+// 1) Database pool init (independent)
 try {
-  // Try to use production auth routes with email verification
   const { Pool } = require('pg');
   const { getPostgresSSLConfig } = require('./utils/ssl-config');
-  
-  // Initialize database connection if DATABASE_URL is available
   if (process.env.DATABASE_URL) {
     dbPool = new Pool({
       connectionString: process.env.DATABASE_URL,
@@ -407,175 +403,25 @@ try {
       max: 20,
       min: 2,
     });
-    
     dbPool.on('error', (err) => {
       logger.errorWithContext('Database connection error', { error: err });
     });
   }
-  
-  AuthRoutes = require('./routes/auth');
+} catch (dbInitError) {
+  logger.errorWithContext('Database pool initialization failed', { error: dbInitError });
+}
+
+// 2) Auth route mount (isolated)
+try {
+  const AuthRoutes = require('./routes/auth');
   const authRoutes = new AuthRoutes(dbPool);
   app.use('/api/auth', authRoutes.getRouter());
-  logger.info('Auth routes with email verification loaded');
-  
-  // Load Subscription routes
-  const SubscriptionRoutes = require('./routes/subscriptions');
-  const subscriptionRoutes = new SubscriptionRoutes(dbPool);
-  app.use('/api/subscriptions', subscriptionRoutes.getRouter());
-  logger.info('Subscription routes loaded');
-  
-  // Load AI Advisory routes
-  AIAdvisoryRoutes = require('./routes/ai-advisory');
-  const aiAdvisoryRoutes = new AIAdvisoryRoutes();
-  app.use('/api/ai-advisory', aiAdvisoryRoutes.getRouter());
-  logger.info('AI Advisory routes loaded');
-  
-  // Load Daily Tips routes
-  const DailyTipsRoutes = require('./routes/daily-tips');
-  app.use('/api/daily-tips', DailyTipsRoutes);
-  
-  // Biological Farming routes
-  const biologicalFarmingRoutes = require('./routes/biological-farming');
-  app.use('/api/biological-farming', biologicalFarmingRoutes);
-  logger.info('Daily Tips routes loaded');
-  
-  // Load Weather Alerts routes (independent of other routes)
-  logger.debug('Initializing Weather Alerts routes');
-  let weatherAlertsRouter = null;
-  try {
-    logger.debug('Requiring routes/weather-alerts module');
-    const weatherAlertsModule = require('./routes/weather-alerts');
-    weatherAlertsRouter = weatherAlertsModule.router;
-    const initWeatherAlertsRoutes = weatherAlertsModule.initWeatherAlertsRoutes;
-    logger.debug('Routes module loaded successfully');
-    
-    logger.debug('Requiring services/weatherAlertService module');
-    const WeatherAlertService = require('./services/weatherAlertService');
-    logger.debug('WeatherAlertService module loaded successfully');
-    
-    logger.debug('Creating WeatherAlertService instance');
-    const weatherAlertService = new WeatherAlertService(dbPool, process.env.WEATHER_API_KEY);
-    logger.debug('WeatherAlertService instance created');
-    
-    logger.debug('Initializing routes with dependencies');
-    initWeatherAlertsRoutes(dbPool, weatherAlertService);
-    logger.debug('Routes initialized');
-    
-    logger.debug('Mounting router to /api/weather-alerts');
-    app.use('/api/weather-alerts', weatherAlertsRouter);
-    logger.info('Weather Alerts routes loaded');
-  } catch (weatherError) {
-    logger.errorWithContext('Error loading Weather Alerts routes', { error: weatherError });
-    // Always mount routes, even if initialization fails
-    // Routes will handle database/service unavailability gracefully
-    if (weatherAlertsRouter) {
-      logger.debug('Mounting weather alerts router despite initialization error');
-      app.use('/api/weather-alerts', weatherAlertsRouter);
-      logger.info('Weather Alerts routes mounted (with potential service limitations)');
-    } else {
-      // If router couldn't be loaded, add fallback route
-      logger.warn('Weather Alerts router not available, adding fallback route');
-      app.use('/api/weather-alerts', (req, res) => {
-        res.status(503).json({
-          success: false,
-          error: 'Weather alerts service is temporarily unavailable',
-          message: 'Service initialization failed. Please check server logs.',
-          data: []
-        });
-      });
-      logger.info('Weather Alerts fallback route added (503 response)');
-    }
-  }
-  
-  // Note: Weather alerts cron job is configured via Railway Cron (not node-cron)
-  // See CRON_JOB_CONFIGURATION.md for setup instructions
-  
-} catch (error) {
-  logger.warnWithContext('Could not load auth routes, using fallback endpoints', { error });
-  
-  // Try to load AI Advisory routes separately (might work even if auth fails)
-  try {
-    AIAdvisoryRoutes = require('./routes/ai-advisory');
-    const aiAdvisoryRoutes = new AIAdvisoryRoutes();
-    app.use('/api/ai-advisory', aiAdvisoryRoutes.getRouter());
-    logger.info('AI Advisory routes loaded (standalone)');
-    
-    // Load Daily Tips routes (standalone)
-    const DailyTipsRoutes = require('./routes/daily-tips');
-    app.use('/api/daily-tips', DailyTipsRoutes);
-    
-    // Biological Farming routes
-    const biologicalFarmingRoutes = require('./routes/biological-farming');
-    app.use('/api/biological-farming', biologicalFarmingRoutes);
-    logger.info('Daily Tips routes loaded (standalone)');
-    
-    // Try to load Weather Alerts routes (standalone fallback)
-    try {
-      logger.debug('Attempting to load Weather Alerts routes (standalone fallback)');
-      const { router: weatherAlertsRouter, initWeatherAlertsRoutes } = require('./routes/weather-alerts');
-      const WeatherAlertService = require('./services/weatherAlertService');
-      const weatherAlertService = new WeatherAlertService(dbPool, process.env.WEATHER_API_KEY);
-      initWeatherAlertsRoutes(dbPool, weatherAlertService);
-      app.use('/api/weather-alerts', weatherAlertsRouter);
-      logger.info('Weather Alerts routes loaded (standalone fallback)');
-    } catch (weatherError) {
-      logger.errorWithContext('Failed to load Weather Alerts routes (standalone fallback)', { error: weatherError });
-      // Add a basic fallback route so the endpoint exists
-      app.get('/api/weather-alerts', (req, res) => {
-        res.status(503).json({
-          success: false,
-          error: 'Weather alerts service is temporarily unavailable',
-          message: 'Please check server logs for details'
-        });
-      });
-      logger.warn('Weather Alerts fallback route added (503 response)');
-    }
-  } catch (aiError) {
-    logger.warnWithContext('Could not load AI Advisory routes', { error: aiError });
-    // Add fallback AI advisory endpoint
-    app.get('/api/ai-advisory/crop-nutrition/:cropId', validate('aiAdvisory.cropNutrition'), (req, res) => {
-      const { cropId } = req.params;
-      res.json({
-        success: true,
-        message: 'AI nutrition advice (fallback mode)',
-        data: {
-          growthStage: req.query.growthStage || 'vegetative',
-          nutrients: {
-            nitrogen: { value: 50, unit: 'kg/ha', priority: 'high' },
-            phosphorus: { value: 30, unit: 'kg/ha', priority: 'medium' },
-            potassium: { value: 40, unit: 'kg/ha', priority: 'high' }
-          },
-          fertilizer: [{
-            name: 'Balanced Fertilizer (NPK 15-15-15)',
-            amount: '100-150 kg/ha',
-            application: 'Apply every 2-3 weeks',
-            reason: 'Supports healthy growth'
-          }],
-          watering: {
-            frequency: 'Every 1-2 days',
-            amount: '2-3 cm',
-            timing: 'Early morning',
-            method: 'Drip irrigation recommended'
-          },
-          tips: [
-            'Test soil before applying fertilizers',
-            'Use organic compost to improve soil structure',
-            'Apply fertilizers in split doses'
-          ],
-          warnings: [{
-            type: 'info',
-            message: 'Monitor soil pH regularly (optimal: 6.0-7.0)',
-            impact: 'Affects nutrient availability'
-          }]
-        }
-      });
-    });
-  }
-  
-  // Fallback auth endpoints (minimal implementation)
+  logger.info('AUTH_ROUTES_MOUNTED');
+} catch (authError) {
+  logger.errorWithContext('AUTH_ROUTES_MOUNT_FAILED', { error: authError, message: authError?.message });
+  // Keep auth endpoints available even if full auth module fails to initialize
   app.post('/api/auth/login', validate('auth.login'), (req, res) => {
-    const { email, password } = req.body;
-    
+    const { email } = req.body;
     res.status(200).json({
       success: true,
       message: 'Login successful',
@@ -591,8 +437,7 @@ try {
   });
 
   app.post('/api/auth/register', validate('auth.register'), (req, res) => {
-    const { email, password, firstName, lastName } = req.body;
-    
+    const { email, firstName, lastName } = req.body;
     res.status(201).json({
       success: true,
       message: 'User registered successfully',
@@ -614,6 +459,126 @@ try {
     });
   });
 }
+
+// 3) Subscription routes (isolated from auth)
+try {
+  const SubscriptionRoutes = require('./routes/subscriptions');
+  const subscriptionRoutes = new SubscriptionRoutes(dbPool);
+  app.use('/api/subscriptions', subscriptionRoutes.getRouter());
+  logger.info('Subscription routes loaded');
+} catch (subscriptionError) {
+  logger.warnWithContext('Could not load subscription routes', { error: subscriptionError });
+}
+
+// 4) AI advisory routes (isolated)
+try {
+  const AIAdvisoryRoutes = require('./routes/ai-advisory');
+  const aiAdvisoryRoutes = new AIAdvisoryRoutes();
+  app.use('/api/ai-advisory', aiAdvisoryRoutes.getRouter());
+  logger.info('AI Advisory routes loaded');
+} catch (aiError) {
+  logger.warnWithContext('Could not load AI Advisory routes', { error: aiError });
+  // Add fallback AI advisory endpoint
+  app.get('/api/ai-advisory/crop-nutrition/:cropId', validate('aiAdvisory.cropNutrition'), (req, res) => {
+    const { cropId } = req.params;
+    res.json({
+      success: true,
+      message: 'AI nutrition advice (fallback mode)',
+      data: {
+        growthStage: req.query.growthStage || 'vegetative',
+        nutrients: {
+          nitrogen: { value: 50, unit: 'kg/ha', priority: 'high' },
+          phosphorus: { value: 30, unit: 'kg/ha', priority: 'medium' },
+          potassium: { value: 40, unit: 'kg/ha', priority: 'high' }
+        },
+        fertilizer: [{
+          name: 'Balanced Fertilizer (NPK 15-15-15)',
+          amount: '100-150 kg/ha',
+          application: 'Apply every 2-3 weeks',
+          reason: 'Supports healthy growth'
+        }],
+        watering: {
+          frequency: 'Every 1-2 days',
+          amount: '2-3 cm',
+          timing: 'Early morning',
+          method: 'Drip irrigation recommended'
+        },
+        tips: [
+          'Test soil before applying fertilizers',
+          'Use organic compost to improve soil structure',
+          'Apply fertilizers in split doses'
+        ],
+        warnings: [{
+          type: 'info',
+          message: 'Monitor soil pH regularly (optimal: 6.0-7.0)',
+          impact: 'Affects nutrient availability'
+        }]
+      }
+    });
+  });
+}
+
+// 5) Daily tips and biological routes (isolated)
+try {
+  const DailyTipsRoutes = require('./routes/daily-tips');
+  app.use('/api/daily-tips', DailyTipsRoutes);
+  const biologicalFarmingRoutes = require('./routes/biological-farming');
+  app.use('/api/biological-farming', biologicalFarmingRoutes);
+  logger.info('Daily Tips routes loaded');
+} catch (tipsError) {
+  logger.warnWithContext('Could not load daily tips/biological routes', { error: tipsError });
+}
+
+// 6) Weather alerts routes (isolated)
+logger.debug('Initializing Weather Alerts routes');
+let weatherAlertsRouter = null;
+try {
+  logger.debug('Requiring routes/weather-alerts module');
+  const weatherAlertsModule = require('./routes/weather-alerts');
+  weatherAlertsRouter = weatherAlertsModule.router;
+  const initWeatherAlertsRoutes = weatherAlertsModule.initWeatherAlertsRoutes;
+  logger.debug('Routes module loaded successfully');
+  
+  logger.debug('Requiring services/weatherAlertService module');
+  const WeatherAlertService = require('./services/weatherAlertService');
+  logger.debug('WeatherAlertService module loaded successfully');
+  
+  logger.debug('Creating WeatherAlertService instance');
+  const weatherAlertService = new WeatherAlertService(dbPool, process.env.WEATHER_API_KEY);
+  logger.debug('WeatherAlertService instance created');
+  
+  logger.debug('Initializing routes with dependencies');
+  initWeatherAlertsRoutes(dbPool, weatherAlertService);
+  logger.debug('Routes initialized');
+  
+  logger.debug('Mounting router to /api/weather-alerts');
+  app.use('/api/weather-alerts', weatherAlertsRouter);
+  logger.info('Weather Alerts routes loaded');
+} catch (weatherError) {
+  logger.errorWithContext('Error loading Weather Alerts routes', { error: weatherError });
+  // Always mount routes, even if initialization fails
+  // Routes will handle database/service unavailability gracefully
+  if (weatherAlertsRouter) {
+    logger.debug('Mounting weather alerts router despite initialization error');
+    app.use('/api/weather-alerts', weatherAlertsRouter);
+    logger.info('Weather Alerts routes mounted (with potential service limitations)');
+  } else {
+    // If router couldn't be loaded, add fallback route
+    logger.warn('Weather Alerts router not available, adding fallback route');
+    app.use('/api/weather-alerts', (req, res) => {
+      res.status(503).json({
+        success: false,
+        error: 'Weather alerts service is temporarily unavailable',
+        message: 'Service initialization failed. Please check server logs.',
+        data: []
+      });
+    });
+    logger.info('Weather Alerts fallback route added (503 response)');
+  }
+}
+
+// Note: Weather alerts cron job is configured via Railway Cron (not node-cron)
+// See CRON_JOB_CONFIGURATION.md for setup instructions
 
 // Farms endpoints
 app.get('/api/farms', 
