@@ -1,2 +1,2 @@
-web: node server-simple.cjs
+web: node server.js
 

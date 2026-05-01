@@ -31,11 +31,8 @@ class MockAPIService {
 
     async checkBackendHealth() {
         try {
-            const response = await fetch('/api/health', { 
-                method: 'GET',
-                timeout: 5000 
-            });
-            this.isBackendAvailable = response.ok;
+            const response = await window.SmartFarmApiClient.get('/api/health');
+            this.isBackendAvailable = !!response && response.success !== false;
             return this.isBackendAvailable;
         } catch (error) {
             this.isBackendAvailable = false;
@@ -52,21 +49,23 @@ class MockAPIService {
         if (this.isBackendAvailable) {
             // Try real API first
             try {
-                const response = await fetch(`/api${endpoint}`, {
-                    method,
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('jwtToken') || sessionStorage.getItem('jwtToken')}`
-                    },
-                    body: data ? JSON.stringify(data) : undefined
-                });
-
-                if (response.ok) {
-                    const jsonResponse = await response.json();
-                    return { success: true, data: jsonResponse.data || jsonResponse };
+                const path = `/api${endpoint}`;
+                let jsonResponse;
+                if (method === 'GET') {
+                    jsonResponse = await window.SmartFarmApiClient.get(path);
+                } else if (method === 'POST') {
+                    jsonResponse = await window.SmartFarmApiClient.post(path, data || {});
+                } else if (method === 'PUT') {
+                    jsonResponse = await window.SmartFarmApiClient.put(path, data || {});
+                } else if (method === 'DELETE') {
+                    jsonResponse = await window.SmartFarmApiClient.del(path);
                 } else {
-                    throw new Error(`HTTP ${response.status}`);
+                    jsonResponse = await window.SmartFarmApiClient.request(path, { method, body: data || undefined });
                 }
+                if (jsonResponse && jsonResponse.success === false) {
+                    throw new Error(jsonResponse.error || jsonResponse.message || 'API request failed');
+                }
+                return { success: true, data: (jsonResponse && jsonResponse.data) || jsonResponse };
             } catch (error) {
                 console.warn('Backend API failed, falling back to mock:', error.message);
                 this.isBackendAvailable = false;

@@ -238,23 +238,7 @@ class LocationSelector {
     }
 
     async tryBackendSearch(query) {
-        // Get API base URL from config
-        const apiBaseUrl = window.SmartFarmConfig?.getApiUrl('') || 'https://smartfarm-app-production.up.railway.app';
-        
-        const response = await fetch(
-            `${apiBaseUrl}/api/weather/search?q=${encodeURIComponent(query)}`,
-            { timeout: 5000 } // 5 second timeout
-        );
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            if (errorData.useDemo) {
-                throw new Error('Weather API not configured on server');
-            }
-            throw new Error(`Search API error: ${response.status}`);
-        }
-
-        const result = await response.json();
+        const result = await window.SmartFarmApiClient.get(`/api/weather/search?q=${encodeURIComponent(query)}`);
         if (!result.success) {
             throw new Error(result.error || 'Search failed');
         }
@@ -816,19 +800,9 @@ class LocationSelector {
 
     async getLocationName(lat, lng) {
         try {
-            // Try backend API first
-            const apiBaseUrl = window.SmartFarmConfig?.getApiUrl('') || 'https://smartfarm-app-production.up.railway.app';
-            
-            const response = await fetch(
-                `${apiBaseUrl}/api/weather/location?lat=${lat}&lng=${lng}`,
-                { timeout: 5000 }
-            );
-
-            if (response.ok) {
-                const result = await response.json();
-                if (result.success && result.data) {
-                    return result.data.fullName || 'Unknown Location';
-                }
+            const result = await window.SmartFarmApiClient.get(`/api/weather/location?lat=${lat}&lng=${lng}`);
+            if (result.success && result.data) {
+                return result.data.fullName || 'Unknown Location';
             }
         } catch (error) {
             console.warn('Backend reverse geocoding failed, trying fallback:', error);

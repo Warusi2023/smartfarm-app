@@ -36,42 +36,16 @@ class WeatherAlertsService {
      * Make authenticated API request
      */
     async request(endpoint, options = {}) {
-        const url = this.getApiUrl(endpoint);
-        const token = this.getAuthToken();
-
-        const config = {
-            ...options,
-            headers: {
-                'Content-Type': 'application/json',
-                ...(token && { 'Authorization': `Bearer ${token}` }),
-                ...options.headers
-            }
-        };
-
         try {
-            const response = await fetch(url, config);
-            
-            if (response.status === 401) {
-                // Token expired, redirect to login
-                window.location.href = '/login.html';
-                throw new Error('Authentication required');
-            }
+            const path = `/api/weather-alerts${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+            const method = (options.method || 'GET').toUpperCase();
+            const body = options.body ? JSON.parse(options.body) : undefined;
 
-            if (!response.ok) {
-                // Handle 404 gracefully (route might not be deployed yet)
-                if (response.status === 404) {
-                    console.warn('Weather alerts API endpoint not found (404) - route may not be deployed yet');
-                    return {
-                        success: false,
-                        error: 'Weather alerts service is not available',
-                        data: []
-                    };
-                }
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.error || `HTTP ${response.status}`);
-            }
-
-            return await response.json();
+            if (method === 'GET') return await window.SmartFarmApiClient.get(path);
+            if (method === 'POST') return await window.SmartFarmApiClient.post(path, body || {});
+            if (method === 'PUT') return await window.SmartFarmApiClient.put(path, body || {});
+            if (method === 'DELETE') return await window.SmartFarmApiClient.del(path);
+            return await window.SmartFarmApiClient.request(path, { method, body });
         } catch (error) {
             console.error(`Weather alerts API error (${endpoint}):`, error);
             throw error;

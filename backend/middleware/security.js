@@ -271,7 +271,10 @@ class SecurityMiddleware {
      */
     generateSignature(req, apiKey, timestamp) {
         const crypto = require('crypto');
-        const secret = process.env.API_SECRET || 'default-secret';
+        const secret = process.env.API_SECRET;
+        if (!secret) {
+            throw new Error('API_SECRET is required for request signature generation');
+        }
         const data = `${req.method}${req.path}${JSON.stringify(req.body)}${timestamp}`;
         return crypto.createHmac('sha256', secret).update(data).digest('hex');
     }

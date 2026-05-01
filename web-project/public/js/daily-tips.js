@@ -37,18 +37,7 @@ class DailyTipsWidget {
             }
 
             // Fallback to generic tip
-            const response = await fetch(`${this.apiBaseUrl}/api/daily-tips/today`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
-            }
-
-            const data = await response.json();
+            const data = await window.SmartFarmApiClient.get('/api/daily-tips/today');
             if (data.success && data.tip) {
                 this.currentTip = data.tip;
             } else {
@@ -81,18 +70,7 @@ class DailyTipsWidget {
                 params.append('livestock', JSON.stringify(livestock));
             }
 
-            const response = await fetch(`${this.apiBaseUrl}/api/daily-tips/personalized?${params.toString()}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
-            }
-
-            const data = await response.json();
+            const data = await window.SmartFarmApiClient.get(`/api/daily-tips/personalized?${params.toString()}`);
             if (data.success && data.tip) {
                 return data.tip;
             }
@@ -113,21 +91,10 @@ class DailyTipsWidget {
                 }
             }
 
-            // Fallback: try direct API call
-            const token = localStorage.getItem('smartfarm_token') || sessionStorage.getItem('smartfarm_token');
-            const response = await fetch(`${this.apiBaseUrl}/api/crops`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-                }
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                if (data.success && data.data) {
-                    return Array.isArray(data.data) ? data.data : [];
-                }
+            // Fallback: use centralized API client
+            const data = await window.SmartFarmApiClient.get('/api/crops');
+            if (data.success && data.data) {
+                return Array.isArray(data.data) ? data.data : [];
             }
         } catch (error) {
             console.warn('Daily Tips: Failed to fetch crops', error);
@@ -145,21 +112,10 @@ class DailyTipsWidget {
                 }
             }
 
-            // Fallback: try direct API call
-            const token = localStorage.getItem('smartfarm_token') || sessionStorage.getItem('smartfarm_token');
-            const response = await fetch(`${this.apiBaseUrl}/api/livestock`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-                }
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                if (data.success && data.data) {
-                    return Array.isArray(data.data) ? data.data : [];
-                }
+            // Fallback: use centralized API client
+            const data = await window.SmartFarmApiClient.get('/api/livestock');
+            if (data.success && data.data) {
+                return Array.isArray(data.data) ? data.data : [];
             }
         } catch (error) {
             console.warn('Daily Tips: Failed to fetch livestock', error);
@@ -251,20 +207,11 @@ class DailyTipsWidget {
             }
 
             // Fallback: Get a random tip from all available tips
-            const response = await fetch(`${this.apiBaseUrl}/api/daily-tips/all`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                if (data.success && data.tips && data.tips.length > 0) {
-                    const randomIndex = Math.floor(Math.random() * data.tips.length);
-                    this.currentTip = data.tips[randomIndex];
-                    this.render();
-                }
+            const data = await window.SmartFarmApiClient.get('/api/daily-tips/all');
+            if (data.success && data.tips && data.tips.length > 0) {
+                const randomIndex = Math.floor(Math.random() * data.tips.length);
+                this.currentTip = data.tips[randomIndex];
+                this.render();
             }
         } catch (error) {
             console.error('Daily Tips: Error loading new tip', error);

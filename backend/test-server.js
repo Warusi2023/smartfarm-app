@@ -1,10 +1,10 @@
-// Test script to verify server-simple.cjs works
+// Test script to verify server.js works
 const http = require('http');
 
 const PORT = process.env.PORT || 3000;
 
 // Test the server
-const server = require('./server-simple.cjs');
+const server = require('./server.js');
 
 console.log(`✅ Server loaded successfully`);
 console.log(`🚀 Server should be running on port ${PORT}`);

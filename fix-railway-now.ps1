@@ -15,7 +15,7 @@ npm install --prefer-offline --no-audit --no-fund 2>&1 | Out-Null
 Write-Host "Starting backend server..." -ForegroundColor White
 $job = Start-Job -ScriptBlock {
     cd E:\Document\SmartFarm\backend
-    node server-simple.cjs
+    node server.js
 }
 
 Start-Sleep -Seconds 3
@@ -55,7 +55,7 @@ if (Test-Path "railway.toml") {
         Write-Host "[FAIL] railway.toml root not set to backend" -ForegroundColor Red
     }
     
-    if ($railwayConfig -match 'start = "node server-simple.cjs"') {
+    if ($railwayConfig -match 'start = "node server.js"') {
         Write-Host "[PASS] railway.toml start command correct" -ForegroundColor Green
     } else {
         Write-Host "[FAIL] railway.toml start command incorrect" -ForegroundColor Red
@@ -81,7 +81,7 @@ Write-Host "`n[Step 4] Checking backend/package.json..." -ForegroundColor Yellow
 if (Test-Path "backend/package.json") {
     $packageJson = Get-Content "backend/package.json" -Raw | ConvertFrom-Json
     
-    if ($packageJson.scripts.start -eq "node server-simple.cjs") {
+    if ($packageJson.scripts.start -eq "node server.js") {
         Write-Host "[PASS] package.json start script correct" -ForegroundColor Green
     } else {
         Write-Host "[FAIL] package.json start script incorrect" -ForegroundColor Red

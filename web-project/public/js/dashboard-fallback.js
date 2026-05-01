@@ -30,14 +30,8 @@ class DashboardFallback {
 
     async checkAPIAndShowFallback() {
         try {
-            // Check if API is available
-            const response = await fetch('https://smartfarm-app-production.up.railway.app/api/health', {
-                method: 'GET',
-                mode: 'cors',
-                timeout: 3000
-            });
-            
-            if (!response.ok) {
+            const response = await window.SmartFarmApiClient.get('/api/health');
+            if (!response || response.success === false) {
                 throw new Error('API not available');
             }
             
@@ -246,14 +240,8 @@ class DashboardFallback {
         `;
         
         try {
-            // Check API availability
-            const response = await fetch('https://smartfarm-app-production.up.railway.app/api/health', {
-                method: 'GET',
-                mode: 'cors',
-                timeout: 5000
-            });
-            
-            if (response.ok) {
+            const response = await window.SmartFarmApiClient.get('/api/health');
+            if (response && response.success !== false) {
                 console.log('API is available, reloading page for full dashboard');
                 window.location.reload();
             } else {

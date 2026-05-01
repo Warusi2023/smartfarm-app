@@ -477,6 +477,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/api-url-fix.js"></script>
+    <script src="js/api-client.js"></script>
     <script src="js/login-fix.js"></script>
     <script src="js/navigation-dropdown.js"></script>
     <script>
@@ -542,9 +543,6 @@
 
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 30000);
-            const apiBase = window.__SMARTFARM_API_BASE__ || window.VITE_API_URL || 'https://smartfarm-app-production.up.railway.app';
-            const loginUrl = apiBase.replace(/\/$/, '') + '/api/auth/login';
-
             function storeSessionSuccess(data) {
                 const loginTime = new Date().toISOString();
                 const token = data.data.token;
@@ -564,6 +562,9 @@
                     sessionStorage.setItem('smartfarm_loginTime', loginTime);
                 }
                 storage.setItem('smartfarm_userData', JSON.stringify(data.data));
+                if (window.SmartFarmApiClient && token) {
+                    window.SmartFarmApiClient.setAuthToken(token, userObj);
+                }
                 setTimeout(() => {
                     window.location.href = 'dashboard.html?login=success';
                 }, 1500);
@@ -575,48 +576,9 @@
                 loading.classList.remove('show');
             }
 
-            fetch(loginUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: email, password: password }),
-                signal: controller.signal
-            })
-            .then(async (response) => {
+            window.SmartFarmApiClient.post('/api/auth/login', { email: email, password: password })
+            .then(async (data) => {
                 clearTimeout(timeoutId);
-                let data = {};
-                try {
-                    data = await response.json();
-                } catch (e) {
-                    data = {};
-                }
-                if (!response.ok) {
-                    if (demo) {
-                        return handleFallbackLogin(email, password, rememberMe).then((d) => {
-                            if (d && d.status === 'success') {
-                                clearAllAuthData();
-                                showAlert('Login successful (Demo Mode)! Redirecting...', 'success');
-                                const loginTime = new Date().toISOString();
-                                if (rememberMe) {
-                                    localStorage.setItem('smartfarm_remember', 'true');
-                                    localStorage.setItem('smartfarm_user', JSON.stringify(d.data));
-                                    localStorage.setItem('smartfarm_token', d.token);
-                                    localStorage.setItem('smartfarm_loginTime', loginTime);
-                                } else {
-                                    sessionStorage.setItem('smartfarm_remember', 'false');
-                                    sessionStorage.setItem('smartfarm_user', JSON.stringify(d.data));
-                                    sessionStorage.setItem('smartfarm_token', d.token);
-                                    sessionStorage.setItem('smartfarm_loginTime', loginTime);
-                                }
-                                (rememberMe ? localStorage : sessionStorage).setItem('smartfarm_userData', JSON.stringify(d.data));
-                                setTimeout(() => { window.location.href = 'dashboard.html?login=success'; }, 1500);
-                            } else {
-                                finishError(data.error || data.message || 'Login failed');
-                            }
-                        });
-                    }
-                    finishError(data.error || data.message || 'Login failed');
-                    return;
-                }
                 if (data.success === true && data.data && data.data.token && data.data.user) {
                     storeSessionSuccess(data);
                 } else {
@@ -652,7 +614,7 @@
                         })
                         .catch(() => finishError('Network error. Please try again.'));
                 } else {
-                    finishError('Network error. Please try again.');
+                    finishError(error?.error || error?.message || 'Network error. Please try again.');
                 }
             });
         }

@@ -47,7 +47,7 @@ class HealthCheckService {
             logger.errorWithContext('Database health check failed', { error });
             return {
                 status: 'unhealthy',
-                error: error.message
+                reason: 'DB_UNAVAILABLE'
             };
         }
     }
@@ -71,7 +71,7 @@ class HealthCheckService {
             logger.errorWithContext('Cache health check failed', { error });
             return {
                 status: 'unhealthy',
-                error: error.message
+                reason: 'CACHE_UNAVAILABLE'
             };
         }
     }
@@ -124,10 +124,13 @@ class HealthCheckService {
             Promise.resolve(this.checkMemory())
         ]);
 
-        const allHealthy = 
-            database.status === 'healthy' || database.status === 'unknown' &&
-            cache.status === 'healthy' || cache.status === 'disabled' &&
-            memory.status === 'healthy' || memory.status === 'warning';
+        const isProduction = process.env.NODE_ENV === 'production';
+        const databaseHealthy = isProduction
+            ? database.status === 'healthy'
+            : (database.status === 'healthy' || database.status === 'unknown');
+        const cacheHealthy = cache.status === 'healthy' || cache.status === 'disabled';
+        const memoryHealthy = memory.status === 'healthy' || memory.status === 'warning';
+        const allHealthy = databaseHealthy && cacheHealthy && memoryHealthy;
 
         return {
             status: allHealthy ? 'healthy' : 'degraded',
@@ -152,7 +155,10 @@ class HealthCheckService {
      */
     async getReadiness() {
         const database = await this.checkDatabase();
-        const isReady = database.status === 'healthy' || database.status === 'unknown';
+        const isProduction = process.env.NODE_ENV === 'production';
+        const isReady = isProduction
+            ? database.status === 'healthy'
+            : (database.status === 'healthy' || database.status === 'unknown');
 
         return {
             ready: isReady,

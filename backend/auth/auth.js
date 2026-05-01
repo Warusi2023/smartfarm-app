@@ -110,6 +110,20 @@ class AuthService {
     }
 
     /**
+     * Hash opaque tokens (e.g., refresh tokens) before persistence
+     */
+    hashToken(token) {
+        return crypto.createHash('sha256').update(token).digest('hex');
+    }
+
+    /**
+     * Refresh token expiry timestamp (default: 7 days)
+     */
+    getRefreshExpiryDate() {
+        return new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    }
+
+    /**
      * Validate password strength
      */
     validatePassword(password) {

@@ -140,6 +140,59 @@ class EmailService {
     }
 
     /**
+     * Send password reset email
+     */
+    async sendPasswordResetEmail(email, resetToken, firstName = 'User') {
+        if (!this.isConfigured || !this.transporter) {
+            console.warn('⚠️ Email service not configured, skipping password reset email');
+            return false;
+        }
+
+        const resetUrl = `${this.frontendUrl}/reset-password.html?token=${resetToken}`;
+        const emailHtml = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reset Your Password - SmartFarm</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <h2 style="color: #2e7d32;">Password Reset Request</h2>
+    <p>Hello ${firstName},</p>
+    <p>We received a request to reset your SmartFarm account password.</p>
+    <p>Click the link below to set a new password:</p>
+    <p>
+        <a href="${resetUrl}" style="display: inline-block; padding: 12px 20px; background-color: #2e7d32; color: #fff; text-decoration: none; border-radius: 4px;">
+            Reset Password
+        </a>
+    </p>
+    <p>If the button does not work, copy and paste this URL into your browser:</p>
+    <p style="word-break: break-all;">${resetUrl}</p>
+    <p><strong>This link expires in 1 hour.</strong></p>
+    <p>If you did not request this change, you can safely ignore this email.</p>
+    <p style="font-size: 12px; color: #666;">SmartFarm Security Team</p>
+</body>
+</html>`;
+
+        try {
+            const info = await this.transporter.sendMail({
+                from: this.fromEmail,
+                to: email,
+                subject: 'Reset Your SmartFarm Password',
+                html: emailHtml,
+                text: `We received a request to reset your SmartFarm password. Use this link (valid for 1 hour): ${resetUrl}`
+            });
+
+            console.log(`✅ Password reset email sent to ${email}:`, info.messageId);
+            return true;
+        } catch (error) {
+            console.error(`❌ Failed to send password reset email to ${email}:`, error.message);
+            return false;
+        }
+    }
+
+    /**
      * Send welcome email (after verification)
      */
     async sendWelcomeEmail(email, firstName = 'User') {

@@ -760,7 +760,7 @@ class SmartFarmAPIService {
     }
 
     async updateSubscription(subscriptionData) {
-        return await this.request('/subscriptions', {
+        return await this.request('/subscriptions/update', {
             method: 'PUT',
             body: JSON.stringify(subscriptionData)
         });

@@ -3,10 +3,10 @@ name: Frontend CI/CD
 on:
   push:
     branches: [ main ]
-    paths: [ 'public/**', 'netlify.toml' ]
+    paths: [ 'web-project/public/**', 'web-project/netlify.toml' ]
   pull_request:
     branches: [ main ]
-    paths: [ 'public/**', 'netlify.toml' ]
+    paths: [ 'web-project/public/**', 'web-project/netlify.toml' ]
 
 jobs:
   build:
@@ -24,28 +24,28 @@ jobs:
     - name: Check frontend structure
       run: |
         echo "Checking frontend files..."
-        ls -la public/
-        test -f public/index.html || (echo "index.html not found" && exit 1)
-        test -f public/dashboard.html || (echo "dashboard.html not found" && exit 1)
-        test -f netlify.toml || (echo "netlify.toml not found" && exit 1)
+        ls -la web-project/public/
+        test -f web-project/public/index.html || (echo "index.html not found" && exit 1)
+        test -f web-project/public/dashboard.html || (echo "dashboard.html not found" && exit 1)
+        test -f web-project/netlify.toml || (echo "netlify.toml not found" && exit 1)
         echo "✅ Frontend structure is valid"
     
     - name: Validate HTML
       run: |
         echo "Validating HTML files..."
         # Basic HTML validation (check for required elements)
-        grep -q "<!DOCTYPE html>" public/index.html || (echo "Missing DOCTYPE in index.html" && exit 1)
-        grep -q "<!DOCTYPE html>" public/dashboard.html || (echo "Missing DOCTYPE in dashboard.html" && exit 1)
+        grep -q "<!DOCTYPE html>" web-project/public/index.html || (echo "Missing DOCTYPE in index.html" && exit 1)
+        grep -q "<!DOCTYPE html>" web-project/public/dashboard.html || (echo "Missing DOCTYPE in dashboard.html" && exit 1)
         echo "✅ HTML validation passed"
     
     - name: Check for security issues
       run: |
         echo "Checking for security issues..."
         # Check for inline scripts that might be unsafe
-        if grep -r "eval(" public/; then
+        if grep -r "eval(" web-project/public/; then
           echo "⚠️ Warning: Found eval() usage"
         fi
-        if grep -r "innerHTML" public/; then
+        if grep -r "innerHTML" web-project/public/; then
           echo "⚠️ Warning: Found innerHTML usage"
         fi
         echo "✅ Security check completed"
@@ -54,7 +54,7 @@ jobs:
       run: |
         echo "Testing API connectivity..."
         # Test if the API URL in netlify.toml is accessible
-        API_URL=$(grep "VITE_API_URL" netlify.toml | sed 's/.*VITE_API_URL = "\(.*\)"/\1/')
+        API_URL=$(grep "VITE_API_URL" web-project/netlify.toml | sed 's/.*VITE_API_URL = "\(.*\)"/\1/')
         if [ -n "$API_URL" ]; then
           echo "API URL found: $API_URL"
           # Note: We can't actually test external URLs in CI without network access
@@ -75,10 +75,10 @@ jobs:
       run: |
         echo "Checking accessibility..."
         # Check for required accessibility attributes
-        if ! grep -q "aria-label" public/dashboard.html; then
+        if ! grep -q "aria-label" web-project/public/dashboard.html; then
           echo "⚠️ Warning: No aria-label attributes found"
         fi
-        if ! grep -q "role=" public/dashboard.html; then
+        if ! grep -q "role=" web-project/public/dashboard.html; then
           echo "⚠️ Warning: No role attributes found"
         fi
         echo "✅ Accessibility check completed"
@@ -94,7 +94,7 @@ jobs:
       run: |
         echo "Checking file sizes..."
         # Check for large files that might affect performance
-        find public/ -name "*.js" -size +1M -exec echo "⚠️ Large JS file: {}" \;
-        find public/ -name "*.css" -size +500k -exec echo "⚠️ Large CSS file: {}" \;
-        find public/ -name "*.html" -size +500k -exec echo "⚠️ Large HTML file: {}" \;
+        find web-project/public/ -name "*.js" -size +1M -exec echo "⚠️ Large JS file: {}" \;
+        find web-project/public/ -name "*.css" -size +500k -exec echo "⚠️ Large CSS file: {}" \;
+        find web-project/public/ -name "*.html" -size +500k -exec echo "⚠️ Large HTML file: {}" \;
         echo "✅ Performance check completed"

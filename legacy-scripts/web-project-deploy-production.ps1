@@ -1,3 +1,4 @@
+# LEGACY: moved from web-project/scripts. Do not use for current production deploys.
 # SmartFarm Production Deployment Script
 # Complete end-to-end deployment to Railway (backend) and Netlify (frontend)
 

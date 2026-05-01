@@ -76,22 +76,12 @@
 
     async function fetchCatalog(params) {
         try {
-            const url = resolveCatalogUrl(params);
-            const response = await fetch(url, { headers: { Accept: 'application/json' } });
-            if (!response.ok) {
-                throw new Error(`Catalog request failed (${response.status})`);
+            const url = new URL(resolveCatalogUrl(params));
+            const pathWithQuery = `${url.pathname}${url.search}`;
+            const json = await window.SmartFarmApiClient.get(pathWithQuery);
+            if (json && json.success === false) {
+                throw new Error(json.message || 'Catalog request failed');
             }
-            const contentType = response.headers.get('content-type') || '';
-            if (!contentType.includes('application/json')) {
-                const preview = await response.text();
-                throw new Error(
-                    `Catalog request returned non-JSON response (content-type: ${contentType || 'unknown'})\nPreview: ${preview.slice(
-                        0,
-                        120
-                    )}`
-                );
-            }
-            const json = await response.json();
             const items = json.items || [];
             if (items.length === 0) {
                 throw new Error('Catalog request returned no items');

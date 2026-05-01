@@ -1,3 +1,4 @@
+/** LEGACY: Not used in current runtime. Do not wire into production without review. */
 /**
  * Enhanced Authentication System
  * Implements MFA, refresh tokens, and strong password hashing
@@ -11,8 +12,16 @@ const QRCode = require('qrcode');
 
 class EnhancedAuth {
     constructor() {
-        this.jwtSecret = process.env.JWT_SECRET || 'change-me-in-production';
-        this.jwtRefreshSecret = process.env.JWT_REFRESH_SECRET || this.jwtSecret + '-refresh';
+        const secret = process.env.JWT_SECRET;
+        if (!secret) {
+            throw new Error('JWT_SECRET is required for EnhancedAuth');
+        }
+        const refreshSecret = process.env.JWT_REFRESH_SECRET;
+        if (!refreshSecret) {
+            throw new Error('JWT_REFRESH_SECRET is required for EnhancedAuth');
+        }
+        this.jwtSecret = secret;
+        this.jwtRefreshSecret = refreshSecret;
         this.accessTokenExpiry = process.env.JWT_ACCESS_EXPIRY || '15m'; // Short-lived
         this.refreshTokenExpiry = process.env.JWT_REFRESH_EXPIRY || '7d'; // Long-lived
         this.bcryptRounds = parseInt(process.env.BCRYPT_ROUNDS || '12', 10); // Strong salt rounds

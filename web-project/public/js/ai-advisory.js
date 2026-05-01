@@ -65,10 +65,10 @@ class AIAdvisorySystem {
     
     async loadCrops() {
         try {
-            const response = await fetch(window.SmartFarmConfig.getApiUrl('/api/crops'));
-            if (!response.ok) throw new Error('Failed to load crops');
-            
-            const data = await response.json();
+            const data = await window.SmartFarmApiClient.get('/api/crops');
+            if (!data || data.success === false) {
+                throw new Error((data && data.message) || 'Failed to load crops');
+            }
             this.crops = data.data || [];
         } catch (error) {
             console.error('Error loading crops:', error);
@@ -78,10 +78,10 @@ class AIAdvisorySystem {
     
     async loadLivestock() {
         try {
-            const response = await fetch(window.SmartFarmConfig.getApiUrl('/api/livestock'));
-            if (!response.ok) throw new Error('Failed to load livestock');
-            
-            const data = await response.json();
+            const data = await window.SmartFarmApiClient.get('/api/livestock');
+            if (!data || data.success === false) {
+                throw new Error((data && data.message) || 'Failed to load livestock');
+            }
             this.livestock = data.data || [];
         } catch (error) {
             console.error('Error loading livestock:', error);
@@ -91,10 +91,10 @@ class AIAdvisorySystem {
     
     async loadRecommendations() {
         try {
-            const response = await fetch(window.SmartFarmConfig.getApiUrl('/api/ai-advisory/recommendations'));
-            if (!response.ok) throw new Error('Failed to load recommendations');
-            
-            const data = await response.json();
+            const data = await window.SmartFarmApiClient.get('/api/ai-advisory/recommendations');
+            if (!data || data.success === false) {
+                throw new Error((data && data.message) || 'Failed to load recommendations');
+            }
             this.recommendations = data.data || [];
         } catch (error) {
             console.error('Error loading recommendations:', error);
@@ -638,10 +638,10 @@ class AIAdvisorySystem {
     
     async getCropRecommendations(cropId) {
         try {
-            const response = await fetch(window.SmartFarmConfig.getApiUrl(`/api/ai-advisory/crop-nutrition/${cropId}`));
-            if (!response.ok) throw new Error('Failed to get crop recommendations');
-            
-            const data = await response.json();
+            const data = await window.SmartFarmApiClient.get(`/api/ai-advisory/crop-nutrition/${cropId}`);
+            if (!data || data.success === false) {
+                throw new Error((data && data.message) || 'Failed to fetch advisory');
+            }
             this.showRecommendationsModal('Crop Nutrition', data.data);
         } catch (error) {
             console.error('Error getting crop recommendations:', error);
@@ -651,10 +651,10 @@ class AIAdvisorySystem {
     
     async getLivestockRecommendations(livestockId) {
         try {
-            const response = await fetch(window.SmartFarmConfig.getApiUrl(`/api/ai-advisory/livestock-health/${livestockId}`));
-            if (!response.ok) throw new Error('Failed to get livestock recommendations');
-            
-            const data = await response.json();
+            const data = await window.SmartFarmApiClient.get(`/api/ai-advisory/livestock-health/${livestockId}`);
+            if (!data || data.success === false) {
+                throw new Error((data && data.message) || 'Failed to get livestock recommendations');
+            }
             this.showRecommendationsModal('Livestock Health', data.data);
         } catch (error) {
             console.error('Error getting livestock recommendations:', error);

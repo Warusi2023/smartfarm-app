@@ -17,6 +17,23 @@ class DatabaseHelpers {
     }
 
     /**
+     * Map subscriptions row to a stable shape used by services/controllers.
+     */
+    _mapSubscriptionRow(row) {
+        if (!row) {
+            return null;
+        }
+        return {
+            ...row,
+            plan: row.plan_type || row.plan_name || null,
+            planName: row.plan_name || null,
+            planType: row.plan_type || null,
+            startDate: row.current_period_start || null,
+            nextBillingDate: row.current_period_end || null
+        };
+    }
+
+    /**
      * Map a PostgreSQL users row to camelCase fields expected by auth routes
      */
     _mapUserRow(row) {
@@ -55,11 +72,58 @@ class DatabaseHelpers {
                 'SELECT * FROM subscriptions WHERE user_id = $1 ORDER BY created_at DESC LIMIT 1',
                 [userId]
             );
-            return result.rows.length > 0 ? result.rows[0] : null;
+            return result.rows.length > 0 ? this._mapSubscriptionRow(result.rows[0]) : null;
         } catch (error) {
             console.error('Database error getting subscription:', error);
             return null;
         }
+    }
+
+    /**
+     * Create refresh token session record
+     */
+    async createUserSession(userId, tokenHash, expiresAt) {
+        if (!this.dbPool) {
+            throw new Error('Database unavailable for secure session storage');
+        }
+        const result = await this.dbPool.query(
+            `INSERT INTO user_sessions (user_id, token_hash, expires_at)
+             VALUES ($1, $2, $3)
+             RETURNING *`,
+            [userId, tokenHash, expiresAt]
+        );
+        return result.rows[0];
+    }
+
+    /**
+     * Find active refresh token session by token hash
+     */
+    async findActiveSessionByTokenHash(tokenHash) {
+        if (!this.dbPool) {
+            throw new Error('Database unavailable for secure session storage');
+        }
+        const result = await this.dbPool.query(
+            `SELECT * FROM user_sessions
+             WHERE token_hash = $1
+               AND expires_at > CURRENT_TIMESTAMP
+             ORDER BY created_at DESC
+             LIMIT 1`,
+            [tokenHash]
+        );
+        return result.rows.length > 0 ? result.rows[0] : null;
+    }
+
+    /**
+     * Revoke refresh token session by token hash
+     */
+    async revokeSessionByTokenHash(tokenHash) {
+        if (!this.dbPool) {
+            throw new Error('Database unavailable for secure session storage');
+        }
+        await this.dbPool.query(
+            `DELETE FROM user_sessions WHERE token_hash = $1`,
+            [tokenHash]
+        );
     }
 
     /**
@@ -70,16 +134,24 @@ class DatabaseHelpers {
             return subscription;
         }
         try {
-            const { userId, plan, status, startDate, nextBillingDate, autoRenew, paymentMethod } = subscription;
+            const { userId, plan, status, startDate, nextBillingDate } = subscription;
+            const normalizedPlan = String(plan || '').toLowerCase();
+            const planNameMap = {
+                trial: '30-Day Free Trial',
+                free: 'Free Plan',
+                professional: 'Professional Plan',
+                enterprise: 'Enterprise Plan'
+            };
+            const planName = planNameMap[normalizedPlan] || String(plan || 'Custom Plan');
             const result = await this.dbPool.query(
-                `INSERT INTO subscriptions (user_id, plan, status, start_date, next_billing_date, auto_renew, payment_method)
-                 VALUES ($1, $2, $3, $4, $5, $6, $7)
+                `INSERT INTO subscriptions (user_id, plan_name, plan_type, status, current_period_start, current_period_end)
+                 VALUES ($1, $2, $3, $4, $5, $6)
                  ON CONFLICT (user_id) 
-                 DO UPDATE SET plan = $2, status = $3, start_date = $4, next_billing_date = $5, auto_renew = $6, payment_method = $7, updated_at = NOW()
+                 DO UPDATE SET plan_name = $2, plan_type = $3, status = $4, current_period_start = $5, current_period_end = $6, updated_at = NOW()
                  RETURNING *`,
-                [userId, plan, status, startDate, nextBillingDate, autoRenew, paymentMethod]
+                [userId, planName, normalizedPlan, status, startDate, nextBillingDate]
             );
-            return result.rows[0];
+            return this._mapSubscriptionRow(result.rows[0]);
         } catch (error) {
             console.error('Database error creating/updating subscription:', error);
             throw error;
@@ -94,8 +166,27 @@ class DatabaseHelpers {
             return true;
         }
         try {
-            const fields = Object.keys(updates).map((key, index) => `${key} = $${index + 2}`).join(', ');
-            const values = [userId, ...Object.values(updates)];
+            const mapped = {};
+            if (updates.plan) {
+                const normalizedPlan = String(updates.plan).toLowerCase();
+                const planNameMap = {
+                    trial: '30-Day Free Trial',
+                    free: 'Free Plan',
+                    professional: 'Professional Plan',
+                    enterprise: 'Enterprise Plan'
+                };
+                mapped.plan_name = planNameMap[normalizedPlan] || updates.plan;
+                mapped.plan_type = normalizedPlan;
+            }
+            if (updates.status !== undefined) mapped.status = updates.status;
+            if (updates.startDate !== undefined) mapped.current_period_start = updates.startDate;
+            if (updates.nextBillingDate !== undefined) mapped.current_period_end = updates.nextBillingDate;
+
+            const fields = Object.keys(mapped).map((key, index) => `${key} = $${index + 2}`).join(', ');
+            const values = [userId, ...Object.values(mapped)];
+            if (!fields) {
+                return true;
+            }
             await this.dbPool.query(
                 `UPDATE subscriptions SET ${fields}, updated_at = NOW() WHERE user_id = $1`,
                 values
@@ -119,7 +210,7 @@ class DatabaseHelpers {
                 'SELECT * FROM subscriptions WHERE user_id = $1 ORDER BY created_at DESC',
                 [userId]
             );
-            return result.rows;
+            return result.rows.map((row) => this._mapSubscriptionRow(row));
         } catch (error) {
             console.error('Database error getting subscription history:', error);
             return [];

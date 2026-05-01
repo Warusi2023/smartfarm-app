@@ -8,6 +8,8 @@
     "start": "node server.js",
     "dev": "node server.js",
     "build": "echo \"(backend) nothing to build\"",
+    "migrate": "node scripts/run-migrations.js",
+    "migrate:prod": "node scripts/run-migrations.js",
     "health": "node -e \"const logger=require('./utils/logger');fetch('http://127.0.0.1:'+(process.env.PORT||3000)+'/api/health').then(r=>r.text()).then(d=>logger.info('Health check',{response:d})).catch(e=>logger.errorWithContext('Health check failed',{error:e}))\"",
     "setup:db": "node scripts/setup-database.js",
     "setup:env": "node scripts/create-env-file.js",

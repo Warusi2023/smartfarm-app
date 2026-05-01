@@ -3,6 +3,7 @@
  * Bulletproof CORS + Health Check + Proper Port Binding
  */
 
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const logger = require('./utils/logger');
@@ -179,11 +180,12 @@ app.get('/api/health', async (req, res) => {
       health.database.timestamp = result.rows[0].now;
       health.database.version = result.rows[0].version.split(' ')[0] + ' ' + result.rows[0].version.split(' ')[1];
     } catch (error) {
-      health.database.error = error.message;
+      logger.errorWithContext('Health check database query failed', { error });
+      health.database.status = 'unhealthy';
       health.ok = false; // Mark as unhealthy if DB fails
     }
   } else {
-    health.database.error = 'Database pool not initialized';
+    health.database.status = 'not_configured';
   }
 
   const statusCode = health.ok ? 200 : 503;
@@ -863,19 +865,6 @@ app.get('/api/livestock/:livestockId/feed-mixes', (req, res) => {
   });
 });
 
-// 404 handler (but check for AI advisory first)
-app.use((req, res) => {
-  // Log 404s for debugging
-  logger.warn('404 Not Found', { method: req.method, path: req.path });
-  res.status(404).json({
-    success: false,
-    error: 'API endpoint not found',
-    code: 'NOT_FOUND',
-    path: req.path,
-    message: `The endpoint ${req.path} does not exist. Available endpoints: /api/health, /api/ai-advisory/crop-nutrition/:cropId`
-  });
-});
-
 // Metrics endpoint
 /**
  * @swagger
@@ -945,15 +934,19 @@ app.get('/api/health/live', (req, res) => {
 
 // Swagger/OpenAPI Documentation
 if (process.env.NODE_ENV !== 'production' || process.env.ENABLE_SWAGGER === 'true') {
-    const swaggerUi = require('swagger-ui-express');
-    const { swaggerSpec } = require('./config/swagger');
-    
-    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
-        customCss: '.swagger-ui .topbar { display: none }',
-        customSiteTitle: 'SmartFarm API Documentation'
-    }));
-    
-    logger.info('Swagger documentation available at /api-docs');
+    try {
+        const swaggerUi = require('swagger-ui-express');
+        const { swaggerSpec } = require('./config/swagger');
+        
+        app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+            customCss: '.swagger-ui .topbar { display: none }',
+            customSiteTitle: 'SmartFarm API Documentation'
+        }));
+        
+        logger.info('Swagger documentation available at /api-docs');
+    } catch (swaggerError) {
+        logger.warn(`Swagger documentation disabled due to load error: ${swaggerError.message}`);
+    }
 }
 
 // 404 Not Found handler (must be before error handler)
@@ -970,34 +963,95 @@ app.use(errorHandler);
 
 // --- Robust server start (bind 0.0.0.0 and PORT) ---
 const PORT = process.env.PORT || 3000;
+let server = null;
 
-const server = app.listen(PORT, '0.0.0.0', () => {
-  logger.info('SmartFarm API Server Started', {
-    environment: process.env.NODE_ENV || 'development',
-    port: PORT,
-    healthCheck: `http://localhost:${PORT}/api/health`,
-    allowedOriginsCount: ALL_ALLOWED_ORIGINS.length,
-    allowedOrigins: ALL_ALLOWED_ORIGINS
-  });
-}).on('error', (err) => {
-  if (err.code === 'EADDRINUSE') {
-    logger.error('Port already in use', { port: PORT, error: err });
-    logger.error('Solutions:', {
-      solution1: `Stop the other process using port ${PORT}`,
-      solution2: `Use a different port: PORT=3001 npm run dev`,
-      solution3: `Find and kill the process: Windows: netstat -ano | findstr :${PORT}, Mac/Linux: lsof -ti:${PORT} | xargs kill -9`
-    });
-    process.exit(1);
-  } else {
-    logger.errorWithContext('Server error', { error: err });
+async function verifyStartupDependencies() {
+  const isProduction = process.env.NODE_ENV === 'production';
+
+  if (!process.env.DATABASE_URL) {
+    const message = 'DATABASE_URL is not configured';
+    if (isProduction) {
+      logger.error(message + ' - refusing to start in production');
+      process.exit(1);
+    }
+    logger.warn(message + ' - continuing in non-production mode');
+    return;
+  }
+
+  if (isProduction && !process.env.JWT_SECRET) {
+    logger.error('JWT_SECRET is required in production');
     process.exit(1);
   }
+
+  if (isProduction && !process.env.API_SECRET) {
+    logger.error('API_SECRET is required in production');
+    process.exit(1);
+  }
+
+  if (!dbPool) {
+    if (isProduction) {
+      logger.error('Database pool failed to initialize in production');
+      process.exit(1);
+    }
+    logger.warn('Database pool is not initialized - continuing in non-production mode');
+    return;
+  }
+
+  try {
+    await dbPool.query('SELECT 1');
+    logger.info('Startup DB dependency check passed');
+  } catch (error) {
+    logger.errorWithContext('Startup DB dependency check failed', { error });
+    if (isProduction) {
+      process.exit(1);
+    }
+  }
+}
+
+async function startServer() {
+  await verifyStartupDependencies();
+
+  server = app.listen(PORT, '0.0.0.0', () => {
+    logger.info('SmartFarm API Server Started', {
+      environment: process.env.NODE_ENV || 'development',
+      port: PORT,
+      healthCheck: `http://localhost:${PORT}/api/health`,
+      allowedOriginsCount: ALL_ALLOWED_ORIGINS.length,
+      allowedOrigins: ALL_ALLOWED_ORIGINS
+    });
+  }).on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      logger.error('Port already in use', { port: PORT, error: err });
+      logger.error('Solutions:', {
+        solution1: `Stop the other process using port ${PORT}`,
+        solution2: `Use a different port: PORT=3001 npm run dev`,
+        solution3: `Find and kill the process: Windows: netstat -ano | findstr :${PORT}, Mac/Linux: lsof -ti:${PORT} | xargs kill -9`
+      });
+      process.exit(1);
+    } else {
+      logger.errorWithContext('Server error', { error: err });
+      process.exit(1);
+    }
+  });
+}
+
+startServer().catch((error) => {
+  logger.errorWithContext('Fatal startup failure', { error });
+  process.exit(1);
 });
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
   logger.info('SIGTERM received, shutting down gracefully');
-  server.close(() => {
+  if (!server) {
+    process.exit(0);
+  }
+  server.close(async () => {
+    if (dbPool) {
+      await dbPool.end().catch((error) => {
+        logger.errorWithContext('Error closing DB pool on SIGTERM', { error });
+      });
+    }
     logger.info('Server closed');
     process.exit(0);
   });
@@ -1005,7 +1059,15 @@ process.on('SIGTERM', () => {
 
 process.on('SIGINT', () => {
   logger.info('SIGINT received, shutting down gracefully');
-  server.close(() => {
+  if (!server) {
+    process.exit(0);
+  }
+  server.close(async () => {
+    if (dbPool) {
+      await dbPool.end().catch((error) => {
+        logger.errorWithContext('Error closing DB pool on SIGINT', { error });
+      });
+    }
     logger.info('Server closed');
     process.exit(0);
   });

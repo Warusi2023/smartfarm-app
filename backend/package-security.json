@@ -1,12 +1,13 @@
 {
   "name": "smartfarm-backend",
   "version": "1.0.0",
-  "description": "SmartFarm Production Backend API with Security Hardening",
+  "description": "LEGACY manifest - not used for production runtime",
   "private": true,
   "type": "commonjs",
+  "deprecated": true,
   "scripts": {
-    "start": "node server-production.cjs",
-    "dev": "nodemon server-production.cjs",
+    "start": "node -e \"console.error('LEGACY: package-security.json is not used for production. Use backend/package.json (npm start -> node server.js).'); process.exit(1)\"",
+    "dev": "node -e \"console.error('LEGACY: package-security.json is not used for development. Use backend/package.json.'); process.exit(1)\"",
     "build": "echo \"(backend) nothing to build\"",
     "health": "node -e \"fetch('http://127.0.0.1:'+(process.env.PORT||3000)+'/api/health').then(r=>r.text()).then(console.log).catch(console.error)\"",
     "backup": "node scripts/backup-automation.js create",
@@ -15,7 +16,7 @@
     "security:audit": "npm audit --audit-level=moderate",
     "security:check": "npm audit && npm outdated"
   },
-  "engines": { 
+  "engines": {
     "node": ">=18 <=22",
     "npm": ">=8.0.0"
   },

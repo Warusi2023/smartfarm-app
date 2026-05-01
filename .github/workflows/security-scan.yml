@@ -137,13 +137,26 @@ jobs:
     if: github.event_name != 'schedule'
     steps:
       - uses: actions/checkout@v4
+
+      - name: Check backend Dockerfile presence
+        id: dockerfile_check
+        run: |
+          if [ -f "backend/Dockerfile" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "backend/Dockerfile found. Docker scan will run."
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "backend/Dockerfile not found. Docker scan will be skipped."
+          fi
       
       - name: Build Docker image
+        if: steps.dockerfile_check.outputs.exists == 'true'
         run: |
           docker build -t smartfarm-backend:test ./backend
         continue-on-error: true
       
       - name: Run Trivy vulnerability scanner
+        if: steps.dockerfile_check.outputs.exists == 'true'
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: 'smartfarm-backend:test'
@@ -152,8 +165,8 @@ jobs:
         continue-on-error: true
       
       - name: Upload Trivy results
+        if: always() && steps.dockerfile_check.outputs.exists == 'true'
         uses: github/codeql-action/upload-sarif@v2
-        if: always()
         with:
           sarif_file: 'trivy-results.sarif'
 

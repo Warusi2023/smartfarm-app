@@ -66,7 +66,7 @@ const validationSchemas = {
         resetPassword: {
             body: z.object({
                 token: z.string().min(1, 'Reset token is required'),
-                password: commonSchemas.strongPassword,
+                newPassword: commonSchemas.strongPassword,
             }),
         },
         verifyEmail: {
@@ -148,11 +148,13 @@ const validationSchemas = {
         },
         updatePreferences: {
             body: z.object({
-                enableEmailAlerts: z.boolean().optional(),
-                enableSmsAlerts: z.boolean().optional(),
-                enablePushAlerts: z.boolean().optional(),
-                alertSeverities: z.array(z.enum(['low', 'medium', 'high', 'critical'])).optional(),
-                alertTypes: z.array(z.string()).optional(),
+                enableHeavyRain: z.boolean().optional(),
+                enableFrost: z.boolean().optional(),
+                enableHeatStress: z.boolean().optional(),
+                enableStrongWind: z.boolean().optional(),
+                enableDrought: z.boolean().optional(),
+                minSeverity: z.enum(['low', 'medium', 'high', 'critical']).optional(),
+                notificationEnabled: z.boolean().optional(),
             }),
         },
     },

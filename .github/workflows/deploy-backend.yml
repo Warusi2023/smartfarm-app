@@ -1,0 +1,11 @@
+name: Backend Deploy Placeholder
+
+on:
+  workflow_dispatch:
+
+jobs:
+  placeholder:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deployment placeholder
+        run: echo "Backend deployment workflow is intentionally a no-op placeholder."

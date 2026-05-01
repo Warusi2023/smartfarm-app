@@ -163,21 +163,12 @@ class ButtonHandlers {
 
     async loadFinancialData() {
         try {
-            // Simulate API call - replace with actual API endpoint
-            const response = await fetch(window.SmartFarmConfig.getApiUrl('/financial/summary'), {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('smartfarm_token') || sessionStorage.getItem('smartfarm_token')}`
-                }
-            });
-            
-            if (!response.ok) {
-                // Use demo data if API fails
+            const data = await window.SmartFarmApiClient.get('/financial/summary');
+            if (!data.success) {
                 this.loadDemoFinancialData();
                 return;
             }
-            
-            const data = await response.json();
-            this.displayFinancialData(data);
+            this.displayFinancialData(data.data || data);
         } catch (error) {
             console.error('Error loading financial data:', error);
             this.loadDemoFinancialData();

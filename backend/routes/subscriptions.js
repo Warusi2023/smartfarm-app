@@ -51,11 +51,20 @@ class SubscriptionRoutes {
         );
         
         // Update subscription (protected) - invalidates cache
-        this.router.put('/update', 
-            this.authMiddleware.authenticate(), 
+        const updateSubscriptionHandlers = [
+            this.authMiddleware.authenticate(),
             invalidateCache('subscriptions:update'),
             validate('subscriptions.update'),
             asyncHandler(this.controller.updateSubscription.bind(this.controller))
+        ];
+
+        // Backward-compatible update alias
+        this.router.put('/',
+            ...updateSubscriptionHandlers
+        );
+
+        this.router.put('/update', 
+            ...updateSubscriptionHandlers
         );
         
         // Get subscription history (protected)

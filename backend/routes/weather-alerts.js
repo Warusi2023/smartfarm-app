@@ -411,6 +411,23 @@ router.put('/preferences',
     const userId = req.user.id;
     const updates = req.body;
 
+    const requestToDbFieldMap = {
+        enableHeavyRain: 'enable_heavy_rain',
+        enableFrost: 'enable_frost',
+        enableHeatStress: 'enable_heat_stress',
+        enableStrongWind: 'enable_strong_wind',
+        enableDrought: 'enable_drought',
+        minSeverity: 'min_severity',
+        notificationEnabled: 'notification_enabled'
+    };
+
+    const mappedUpdates = {};
+    for (const [requestKey, dbField] of Object.entries(requestToDbFieldMap)) {
+        if (Object.prototype.hasOwnProperty.call(updates, requestKey)) {
+            mappedUpdates[dbField] = updates[requestKey];
+        }
+    }
+
     const allowedFields = [
         'enable_heavy_rain',
         'enable_frost',
@@ -426,9 +443,9 @@ router.put('/preferences',
     let paramIndex = 1;
 
     for (const field of allowedFields) {
-        if (updates.hasOwnProperty(field)) {
+        if (Object.prototype.hasOwnProperty.call(mappedUpdates, field)) {
             updateFields.push(`${field} = $${paramIndex}`);
-            updateValues.push(updates[field]);
+            updateValues.push(mappedUpdates[field]);
             paramIndex++;
         }
     }

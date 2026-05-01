@@ -323,9 +323,9 @@ function checkSystemStatus() {
     if (!statusIndicator || !statusText) return;
     
     // Check API status
-    fetch('https://smartfarm-app-production.up.railway.app/api/health')
+    window.SmartFarmApiClient.get('/api/health')
         .then(response => {
-            if (response.ok) {
+            if (response && response.success !== false) {
                 statusIndicator.className = 'status-indicator online';
                 statusText.textContent = 'Online';
             } else {

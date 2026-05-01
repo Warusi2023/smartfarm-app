@@ -8,4 +8,4 @@ cmds = ["npm ci --only=production"]
 cmds = ["echo 'No build step needed'"]
 
 [start]
-cmd = "node server-simple.cjs"
+cmd = "node server.js"

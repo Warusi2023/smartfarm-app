@@ -71,17 +71,34 @@ This directory contains the complete PostgreSQL database schema for the SmartFar
 ### Option 1: Run Complete Schema (Recommended)
 
 ```bash
-# Connect to your Railway Postgres database
-psql $DATABASE_URL
+# From backend/ folder
+npm run migrate:prod
+```
 
-# Run the complete schema
-\i backend/database/migrations/001_complete_schema.sql
+### Pre-Migration Backup (Subscriptions)
 
-# Run additional features
-\i backend/database/migrations/002_add_missing_features.sql
+Before running production migrations that include `005_subscriptions_user_unique.sql`, back up the `subscriptions` table (or the full database).
 
-# Run email verification migration (if not already applied)
-\i backend/database/migrations/add-email-verification.sql
+Recommended minimum backup examples:
+
+```bash
+# full DB backup (preferred)
+pg_dump "$DATABASE_URL" > pre_migrate_backup.sql
+```
+
+```sql
+-- table-only backup in SQL clients (example)
+CREATE TABLE subscriptions_backup AS
+SELECT * FROM subscriptions;
+```
+
+Post-migration verification (must return zero rows):
+
+```sql
+SELECT user_id, COUNT(*)
+FROM subscriptions
+GROUP BY user_id
+HAVING COUNT(*) > 1;
 ```
 
 ### Option 2: Using Railway CLI
@@ -90,9 +107,9 @@ psql $DATABASE_URL
 # Connect to Railway Postgres
 railway connect postgres
 
-# Run migrations
-psql < backend/database/migrations/001_complete_schema.sql
-psql < backend/database/migrations/002_add_missing_features.sql
+# Run canonical migration command
+cd backend
+npm run migrate:prod
 ```
 
 ### Option 3: Using Node.js Script
@@ -158,7 +175,10 @@ ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;
 
 1. `001_complete_schema.sql` - Core tables
 2. `002_add_missing_features.sql` - Additional features
-3. `add-email-verification.sql` - Email verification (if needed)
+3. `003_add_weather_alerts.sql` - Weather alerts tables and indexes
+4. `add-email-verification.sql` - Email verification columns
+5. `004_auth_users_columns.sql` - Trial and password reset columns
+6. `005_subscriptions_user_unique.sql` - Enforce one row per user for upserts
 
 ## 🛠️ Maintenance
 

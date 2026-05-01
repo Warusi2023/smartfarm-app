@@ -688,10 +688,12 @@ class AuthRoutes {
 
             // Generate tokens
             const token = this.authService.generateToken(user);
-            const refreshToken = this.authService.generateResetToken(); // Reuse for refresh token
+            const refreshToken = this.authService.generateResetToken();
+            const refreshTokenHash = this.authService.hashToken(refreshToken);
+            const refreshTokenExpiresAt = this.authService.getRefreshExpiryDate();
 
-            // Store refresh token (in production, store in database)
-            // For now, we'll just return it
+            // Persist refresh token securely (fail closed if unavailable)
+            await this.dbHelpers.createUserSession(user.id, refreshTokenHash, refreshTokenExpiresAt);
 
             res.json({
                 success: true,
@@ -755,15 +757,60 @@ class AuthRoutes {
                 });
             }
 
-            // In a full implementation, verify refresh token and generate new access token
-            // For now, return error
-            res.status(501).json({
-                success: false,
-                error: 'Token refresh not yet implemented',
-                code: 'NOT_IMPLEMENTED'
+            const refreshTokenHash = this.authService.hashToken(refreshToken);
+            const session = await this.dbHelpers.findActiveSessionByTokenHash(refreshTokenHash);
+
+            if (!session) {
+                return res.status(401).json({
+                    success: false,
+                    error: 'Invalid or expired refresh token',
+                    code: 'INVALID_REFRESH_TOKEN'
+                });
+            }
+
+            const user = await this.dbHelpers.getUserById(session.user_id);
+            if (!user || !user.isActive) {
+                return res.status(401).json({
+                    success: false,
+                    error: 'Invalid or expired refresh token',
+                    code: 'INVALID_REFRESH_TOKEN'
+                });
+            }
+
+            const token = this.authService.generateToken(user);
+            const newRefreshToken = this.authService.generateResetToken();
+            const newRefreshTokenHash = this.authService.hashToken(newRefreshToken);
+            const newRefreshTokenExpiresAt = this.authService.getRefreshExpiryDate();
+
+            // Rotate refresh token session: revoke old, persist new
+            await this.dbHelpers.revokeSessionByTokenHash(refreshTokenHash);
+            await this.dbHelpers.createUserSession(user.id, newRefreshTokenHash, newRefreshTokenExpiresAt);
+
+            res.json({
+                success: true,
+                data: {
+                    token,
+                    refreshToken: newRefreshToken,
+                    user: {
+                        id: user.id,
+                        email: user.email,
+                        firstName: user.firstName,
+                        lastName: user.lastName,
+                        phone: user.phone,
+                        country: user.country,
+                        role: user.role || 'user'
+                    }
+                }
             });
         } catch (error) {
             logger.errorWithContext('Refresh token error', { error });
+            if (error.message && error.message.includes('Database unavailable')) {
+                return res.status(503).json({
+                    success: false,
+                    error: 'Refresh token service unavailable',
+                    code: 'REFRESH_SERVICE_UNAVAILABLE'
+                });
+            }
             res.status(500).json({
                 success: false,
                 error: 'Token refresh failed',

@@ -32,27 +32,7 @@ class UserManagement {
                 return;
             }
 
-            // Use the auth endpoint for profile
-            const response = await fetch('/api/auth/profile', {
-                headers: {
-                    'Authorization': `Bearer ${this.token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-            
-            if (response.status === 401) {
-                console.warn('Authentication failed. Redirecting to login...');
-                localStorage.removeItem('jwtToken');
-                sessionStorage.removeItem('jwtToken');
-                window.location.href = '/login.html';
-                return;
-            }
-            
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
-            }
-            
-            const jsonResponse = await response.json();
+            const jsonResponse = await window.SmartFarmApiClient.get('/api/auth/profile');
             if (jsonResponse.success) {
                 this.currentUser = jsonResponse.data;
                 this.updateUserInterface();
@@ -106,40 +86,26 @@ class UserManagement {
             return await this.mockApiRequest(endpoint, method, data);
         }
 
-        const headers = {
-            'Content-Type': 'application/json',
-        };
-        
-        if (this.token) {
-            headers['Authorization'] = `Bearer ${this.token}`;
-        }
-
-        const config = {
-            method,
-            headers,
-        };
-
-        if (data) {
-            config.body = JSON.stringify(data);
-        }
-
         try {
-            const response = await fetch(`${this.apiBase}${endpoint}`, config);
-            
-            // Check if response is JSON
-            const contentType = response.headers.get('content-type');
-            if (!contentType || !contentType.includes('application/json')) {
-                const text = await response.text();
-                console.error('Non-JSON response received:', text.substring(0, 200));
-                throw new Error(`Expected JSON response but got ${contentType || 'unknown content type'}`);
+            const path = `${this.apiBase}${endpoint}`;
+            let jsonResponse;
+            if (method === 'GET') {
+                jsonResponse = await window.SmartFarmApiClient.get(path);
+            } else if (method === 'POST') {
+                jsonResponse = await window.SmartFarmApiClient.post(path, data || {});
+            } else if (method === 'PUT') {
+                jsonResponse = await window.SmartFarmApiClient.put(path, data || {});
+            } else if (method === 'DELETE') {
+                jsonResponse = await window.SmartFarmApiClient.del(path);
+            } else {
+                jsonResponse = await window.SmartFarmApiClient.request(path, {
+                    method,
+                    body: data || undefined
+                });
             }
-            
-            const jsonResponse = await response.json();
-            
-            if (!response.ok) {
-                throw new Error(jsonResponse.error || `API Error: ${response.status}`);
+            if (jsonResponse && jsonResponse.success === false) {
+                throw new Error(jsonResponse.error || jsonResponse.message || 'API request failed');
             }
-            
             return jsonResponse;
         } catch (error) {
             console.error('API Request Error:', error);

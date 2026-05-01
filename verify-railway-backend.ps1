@@ -46,10 +46,10 @@ Write-Host "   - Health check should be passing" -ForegroundColor White
 
 # Test 3: Check local backend
 Write-Host "`n[TEST 3] Checking Local Backend..." -ForegroundColor Yellow
-if (Test-Path "backend/server-simple.cjs") {
-    Write-Host "[PASS] backend/server-simple.cjs exists" -ForegroundColor Green
+if (Test-Path "backend/server.js") {
+    Write-Host "[PASS] backend/server.js exists" -ForegroundColor Green
 } else {
-    Write-Host "[FAIL] backend/server-simple.cjs not found" -ForegroundColor Red
+    Write-Host "[FAIL] backend/server.js not found" -ForegroundColor Red
 }
 
 if (Test-Path "backend/package.json") {

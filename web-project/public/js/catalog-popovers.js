@@ -74,9 +74,8 @@
         params.set('q', name);
         params.set('limit', '10');
 
-        const response = await fetch(`${API}?${params.toString()}`);
-        if (!response.ok) throw new Error('Failed to fetch catalog data');
-        const data = await response.json();
+        const data = await window.SmartFarmApiClient.get(`${API}?${params.toString()}`);
+        if (!data.success) throw new Error(data.message || 'Failed to fetch catalog data');
         const match = (data.items || []).find(
             item => item.name.toLowerCase() === name.toLowerCase()
         );

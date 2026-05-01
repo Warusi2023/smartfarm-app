@@ -31,10 +31,8 @@ class FarmToTableSystem {
     
     async loadCrops() {
         try {
-            const response = await fetch(window.SmartFarmConfig.getApiUrl('/api/byproducts/crops'));
-            if (!response.ok) throw new Error('Failed to load crops');
-            
-            const data = await response.json();
+            const data = await window.SmartFarmApiClient.get('/api/byproducts/crops');
+            if (!data.success) throw new Error(data.message || 'Failed to load crops');
             this.crops = data.data || [];
         } catch (error) {
             console.error('Error loading crops:', error);
@@ -44,10 +42,8 @@ class FarmToTableSystem {
     
     async loadLivestock() {
         try {
-            const response = await fetch(window.SmartFarmConfig.getApiUrl('/api/byproducts/livestock'));
-            if (!response.ok) throw new Error('Failed to load livestock');
-            
-            const data = await response.json();
+            const data = await window.SmartFarmApiClient.get('/api/byproducts/livestock');
+            if (!data.success) throw new Error(data.message || 'Failed to load livestock');
             this.livestock = data.data || [];
         } catch (error) {
             console.error('Error loading livestock:', error);
@@ -57,16 +53,8 @@ class FarmToTableSystem {
     
     async loadProcessingPlans() {
         try {
-            const token = localStorage.getItem('smartfarm_token') || sessionStorage.getItem('smartfarm_token');
-            const response = await fetch(window.SmartFarmConfig.getApiUrl('/byproducts/processing-plans'), {
-                headers: {
-                    'Authorization': token ? `Bearer ${token}` : ''
-                }
-            });
-            
-            if (!response.ok) throw new Error('Failed to load processing plans');
-            
-            const data = await response.json();
+            const data = await window.SmartFarmApiClient.get('/byproducts/processing-plans');
+            if (!data.success) throw new Error(data.message || 'Failed to load processing plans');
             this.processingPlans = data.data || [];
         } catch (error) {
             console.error('Error loading processing plans from API:', error);
@@ -454,22 +442,11 @@ class FarmToTableSystem {
             
             // Try to save to backend
             try {
-                const token = localStorage.getItem('smartfarm_token') || sessionStorage.getItem('smartfarm_token');
-                const response = await fetch(window.SmartFarmConfig.getApiUrl('/byproducts/processing-plans'), {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': token ? `Bearer ${token}` : ''
-                    },
-                    body: JSON.stringify(formData)
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    this.showSuccess('Processing plan created and saved to server!');
-                } else {
-                    throw new Error('API not available');
+                const data = await window.SmartFarmApiClient.post('/byproducts/processing-plans', formData);
+                if (!data.success) {
+                    throw new Error(data.message || 'API not available');
                 }
+                this.showSuccess('Processing plan created and saved to server!');
             } catch (apiError) {
                 // Fallback to local storage if API fails
                 console.warn('API not available, saving locally:', apiError);
@@ -505,15 +482,8 @@ class FarmToTableSystem {
     
     async updatePlanStatus(planId, status) {
         try {
-            const response = await fetch(window.SmartFarmConfig.getApiUrl(`/api/byproducts/processing-plans/${planId}/status`), {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ status })
-            });
-            
-            if (!response.ok) throw new Error('Failed to update plan status');
+            const data = await window.SmartFarmApiClient.put(`/api/byproducts/processing-plans/${planId}/status`, { status });
+            if (!data.success) throw new Error(data.message || 'Failed to update plan status');
             
             this.showSuccess('Plan status updated successfully!');
             

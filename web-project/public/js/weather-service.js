@@ -132,18 +132,7 @@ class WeatherService {
 
     async getLocationName(lat, lng) {
         try {
-            // Get API base URL from config
-            const apiBaseUrl = window.SmartFarmConfig?.getApiUrl('') || 'https://smartfarm-app-production.up.railway.app';
-            
-            const response = await fetch(
-                `${apiBaseUrl}/api/weather/location?lat=${lat}&lng=${lng}`
-            );
-            
-            if (!response.ok) {
-                return 'Unknown Location';
-            }
-            
-            const result = await response.json();
+            const result = await window.SmartFarmApiClient.get(`/api/weather/location?lat=${lat}&lng=${lng}`);
             
             if (result.success && result.data) {
                 return result.data.fullName || 'Unknown Location';
@@ -159,48 +148,25 @@ class WeatherService {
         try {
             console.log(`🌤️ Fetching weather for ${location.name}...`);
             
-            // Get API base URL from config
-            const apiBaseUrl = window.SmartFarmConfig?.getApiUrl('') || 'https://smartfarm-app-production.up.railway.app';
-            
-            // Fetch current weather from backend
-            const currentWeatherResponse = await fetch(
-                `${apiBaseUrl}/api/weather/current?lat=${location.lat}&lng=${location.lng}`
-            );
-            
-            if (!currentWeatherResponse.ok) {
-                const errorData = await currentWeatherResponse.json();
-                if (errorData.useDemo) {
+            const currentWeatherData = await window.SmartFarmApiClient.get(`/api/weather/current?lat=${location.lat}&lng=${location.lng}`);
+            if (!currentWeatherData.success) {
+                if (currentWeatherData.useDemo) {
                     console.warn('⚠️ Backend weather API not configured, using demo data');
                     this.useDemoData();
                     return;
                 }
-                throw new Error(`Weather API error: ${currentWeatherResponse.status}`);
-            }
-            
-            const currentWeatherData = await currentWeatherResponse.json();
-            if (!currentWeatherData.success) {
                 throw new Error(currentWeatherData.error || 'Failed to fetch current weather');
             }
             
             const currentWeather = currentWeatherData.data;
             
-            // Fetch 7-day forecast from backend
-            const forecastResponse = await fetch(
-                `${apiBaseUrl}/api/weather/forecast?lat=${location.lat}&lng=${location.lng}&days=7`
-            );
-            
-            if (!forecastResponse.ok) {
-                const errorData = await forecastResponse.json();
-                if (errorData.useDemo) {
+            const forecastData = await window.SmartFarmApiClient.get(`/api/weather/forecast?lat=${location.lat}&lng=${location.lng}&days=7`);
+            if (!forecastData.success) {
+                if (forecastData.useDemo) {
                     console.warn('⚠️ Backend weather API not configured, using demo data');
                     this.useDemoData();
                     return;
                 }
-                throw new Error(`Forecast API error: ${forecastResponse.status}`);
-            }
-            
-            const forecastData = await forecastResponse.json();
-            if (!forecastData.success) {
                 throw new Error(forecastData.error || 'Failed to fetch forecast');
             }
             
