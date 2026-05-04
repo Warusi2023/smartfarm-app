@@ -150,8 +150,8 @@ Create `.env` file in `web-project/` directory:
 
 ```bash
 # API Configuration
-VITE_API_URL=https://smartfarm-app-production.up.railway.app
-VITE_API_BASE_URL=https://smartfarm-app-production.up.railway.app
+VITE_API_URL=https://web-production-86d39.up.railway.app
+VITE_API_BASE_URL=https://web-production-86d39.up.railway.app
 
 # App Configuration
 VITE_APP_NAME=SmartFarm

@@ -3,7 +3,7 @@
 
 param(
     [string]$ProductionUrl = "",
-    [string]$BackendUrl = "https://smartfarm-app-production.up.railway.app"
+    [string]$BackendUrl = "https://web-production-86d39.up.railway.app"
 )
 
 Write-Host "========================================" -ForegroundColor Cyan

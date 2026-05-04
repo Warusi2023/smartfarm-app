@@ -8,7 +8,7 @@ class WeatherAlertsService {
     constructor() {
         this.baseURL = window.SmartFarmApiConfig?.baseUrl || 
                       window.SmartFarmConfig?.getApiUrl('') || 
-                      'https://smartfarm-app-production.up.railway.app';
+                      'https://web-production-86d39.up.railway.app';
         this.alertsCache = null;
         this.cacheTimestamp = null;
         this.cacheDuration = 60000; // 1 minute cache

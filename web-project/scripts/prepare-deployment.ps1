@@ -93,8 +93,8 @@ if (Test-Path "frontend.env.example") {
 
 Write-Host ""
 Write-Host "Required environment variables for Netlify:" -ForegroundColor Yellow
-Write-Host "  VITE_API_BASE_URL=https://smartfarm-app-production.up.railway.app" -ForegroundColor White
-Write-Host "  VITE_API_URL=https://smartfarm-app-production.up.railway.app" -ForegroundColor White
+Write-Host "  VITE_API_BASE_URL=https://web-production-86d39.up.railway.app" -ForegroundColor White
+Write-Host "  VITE_API_URL=https://web-production-86d39.up.railway.app" -ForegroundColor White
 Write-Host "  VITE_APP_NAME=SmartFarm" -ForegroundColor White
 Write-Host "  VITE_APP_VERSION=1.0.0" -ForegroundColor White
 Write-Host "  NODE_ENV=production" -ForegroundColor White

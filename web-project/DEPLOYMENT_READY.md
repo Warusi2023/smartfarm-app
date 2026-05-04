@@ -60,8 +60,8 @@
    Go to **Site Settings** → **Environment variables** and add:
 
    ```
-   VITE_API_BASE_URL=https://smartfarm-app-production.up.railway.app
-   VITE_API_URL=https://smartfarm-app-production.up.railway.app
+   VITE_API_BASE_URL=https://web-production-86d39.up.railway.app
+   VITE_API_URL=https://web-production-86d39.up.railway.app
    VITE_APP_NAME=SmartFarm
    VITE_APP_VERSION=1.0.0
    NODE_ENV=production
@@ -208,8 +208,8 @@ Node version:        18 or 20
 
 ### Required Environment Variables
 ```
-VITE_API_BASE_URL=https://smartfarm-app-production.up.railway.app
-VITE_API_URL=https://smartfarm-app-production.up.railway.app
+VITE_API_BASE_URL=https://web-production-86d39.up.railway.app
+VITE_API_URL=https://web-production-86d39.up.railway.app
 VITE_APP_NAME=SmartFarm
 VITE_APP_VERSION=1.0.0
 NODE_ENV=production

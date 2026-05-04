@@ -13,7 +13,7 @@
    - Add the following variables:
 
    ```
-   VITE_API_URL=https://smartfarm-app-production.up.railway.app/api
+   VITE_API_URL=https://web-production-86d39.up.railway.app/api
    APP_BUILD_TAG=railway
    NODE_ENV=production
    ```
@@ -51,7 +51,7 @@
    - Add the following variables:
 
    ```
-   VITE_API_URL=https://smartfarm-app-production.up.railway.app/api
+   VITE_API_URL=https://web-production-86d39.up.railway.app/api
    APP_BUILD_TAG=netlify
    NODE_VERSION=18
    ```

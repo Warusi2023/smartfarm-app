@@ -4,7 +4,7 @@
  */
 
 class DailyTipsWidget {
-    constructor(containerId, apiBaseUrl = 'https://smartfarm-app-production.up.railway.app') {
+    constructor(containerId, apiBaseUrl = 'https://web-production-86d39.up.railway.app') {
         this.containerId = containerId;
         this.apiBaseUrl = apiBaseUrl;
         this.currentTip = null;

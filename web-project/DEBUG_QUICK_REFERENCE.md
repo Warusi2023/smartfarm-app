@@ -26,7 +26,7 @@ CORS Headers: [paste Access-Control-Allow-* from Response Headers]
 
 ## ✅ Quick Checks Before Reporting
 
-- [ ] Backend health: `curl https://smartfarm-app-production.up.railway.app/api/health`
+- [ ] Backend health: `curl https://web-production-86d39.up.railway.app/api/health`
 - [ ] Frontend domain in backend CORS allowed origins
 - [ ] Browser cache cleared
 - [ ] Network tab shows failed request

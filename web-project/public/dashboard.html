@@ -14836,7 +14836,7 @@ INVENTORY SUMMARY:
             if (!statusIndicator || !statusText) return;
             
             // Check API status
-            fetch('https://smartfarm-app-production.up.railway.app/api/health')
+            fetch('https://web-production-86d39.up.railway.app/api/health')
                 .then(response => {
                     if (response.ok) {
                         statusIndicator.className = 'status-indicator online';

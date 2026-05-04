@@ -40,8 +40,8 @@ Write-Host "   Publish directory: web-project/dist" -ForegroundColor Cyan
 Write-Host ""
 
 Write-Host "5. Set Environment Variables (BEFORE deploying):" -ForegroundColor Yellow
-Write-Host "   VITE_API_BASE_URL=https://smartfarm-app-production.up.railway.app" -ForegroundColor Green
-Write-Host "   VITE_API_URL=https://smartfarm-app-production.up.railway.app" -ForegroundColor Green
+Write-Host "   VITE_API_BASE_URL=https://web-production-86d39.up.railway.app" -ForegroundColor Green
+Write-Host "   VITE_API_URL=https://web-production-86d39.up.railway.app" -ForegroundColor Green
 Write-Host "   VITE_APP_NAME=SmartFarm" -ForegroundColor Green
 Write-Host "   VITE_APP_VERSION=1.0.0" -ForegroundColor Green
 Write-Host "   NODE_ENV=production" -ForegroundColor Green

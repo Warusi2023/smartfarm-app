@@ -9,7 +9,7 @@
     console.log('🔧 API URL Fix Script - Starting...');
     
     // Force the correct API URL
-    const CORRECT_API_URL = 'https://smartfarm-app-production.up.railway.app';
+    const CORRECT_API_URL = 'https://web-production-86d39.up.railway.app';
     
     // Override any existing configuration
     window.VITE_API_BASE_URL = CORRECT_API_URL;

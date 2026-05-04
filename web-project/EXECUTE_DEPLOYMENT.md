@@ -13,7 +13,7 @@ Before starting, verify:
 - [x] Local build works (`npm run build`)
 - [x] GitHub repository is up to date
 - [x] Netlify account ready (https://app.netlify.com)
-- [x] Backend API is accessible: https://smartfarm-app-production.up.railway.app
+- [x] Backend API is accessible: https://web-production-86d39.up.railway.app
 
 ---
 
@@ -56,8 +56,8 @@ Go to: **Site Settings** → **Environment variables** → **Add a variable**
 
 | Variable Name | Value |
 |--------------|-------|
-| `VITE_API_BASE_URL` | `https://smartfarm-app-production.up.railway.app` |
-| `VITE_API_URL` | `https://smartfarm-app-production.up.railway.app` |
+| `VITE_API_BASE_URL` | `https://web-production-86d39.up.railway.app` |
+| `VITE_API_URL` | `https://web-production-86d39.up.railway.app` |
 | `VITE_APP_NAME` | `SmartFarm` |
 | `VITE_APP_VERSION` | `1.0.0` |
 | `NODE_ENV` | `production` |
@@ -271,7 +271,7 @@ Your deployment is successful when:
 
 ### API Calls Fail
 - Verify `VITE_API_BASE_URL` is set correctly
-- Check backend is running: `curl https://smartfarm-app-production.up.railway.app/api/health`
+- Check backend is running: `curl https://web-production-86d39.up.railway.app/api/health`
 - Verify CORS is configured on backend
 
 ### Performance Issues

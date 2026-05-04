@@ -16,7 +16,7 @@ class SmartFarmEnvironment {
                                 window.VITE_API_BASE_URL || 
                                 window.VITE_API_URL || 
                                 (window).__SMARTFARM_API_BASE__ ||
-                                'https://smartfarm-app-production.up.railway.app',
+                                'https://web-production-86d39.up.railway.app',
             
             // Environment Detection
             IS_PRODUCTION: window.location.hostname === 'www.smartfarm-app.com' || 

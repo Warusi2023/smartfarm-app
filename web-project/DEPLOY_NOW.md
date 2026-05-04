@@ -68,8 +68,8 @@ This will:
 
    | Variable Name | Value |
    |--------------|-------|
-   | `VITE_API_BASE_URL` | `https://smartfarm-app-production.up.railway.app` |
-   | `VITE_API_URL` | `https://smartfarm-app-production.up.railway.app` |
+   | `VITE_API_BASE_URL` | `https://web-production-86d39.up.railway.app` |
+   | `VITE_API_URL` | `https://web-production-86d39.up.railway.app` |
    | `VITE_APP_NAME` | `SmartFarm` |
    | `VITE_APP_VERSION` | `1.0.0` |
    | `NODE_ENV` | `production` |
@@ -254,7 +254,7 @@ Complete security checklist (see PRODUCTION_DEPLOYMENT_GUIDE.md Section 4):
 ### API Calls Fail
 
 **Check:**
-1. Backend is running: `curl https://smartfarm-app-production.up.railway.app/api/health`
+1. Backend is running: `curl https://web-production-86d39.up.railway.app/api/health`
 2. CORS is configured on backend
 3. `VITE_API_BASE_URL` is set correctly
 4. Check browser console for errors
@@ -283,8 +283,8 @@ Node version:       18 or 20
 ### Required Environment Variables
 
 ```
-VITE_API_BASE_URL=https://smartfarm-app-production.up.railway.app
-VITE_API_URL=https://smartfarm-app-production.up.railway.app
+VITE_API_BASE_URL=https://web-production-86d39.up.railway.app
+VITE_API_URL=https://web-production-86d39.up.railway.app
 VITE_APP_NAME=SmartFarm
 VITE_APP_VERSION=1.0.0
 NODE_ENV=production

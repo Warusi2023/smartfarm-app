@@ -25,7 +25,7 @@ class PerformanceOptimizer {
             
             // Check if it's a Railway-related error
             const isRailwayError = message && (
-                message.includes('smartfarm-app-production.up.railway.app') ||
+                message.includes('web-production-86d39.up.railway.app') ||
                 message.includes('railway.app') ||
                 message.includes('502') ||
                 message.includes('503') ||

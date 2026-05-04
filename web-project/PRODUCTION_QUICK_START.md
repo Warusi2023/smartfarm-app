@@ -24,8 +24,8 @@ This is a condensed guide to get your SmartFarm web app deployed to production q
 In Netlify dashboard → **Site Settings** → **Environment variables**, add:
 
 ```bash
-VITE_API_BASE_URL=https://smartfarm-app-production.up.railway.app
-VITE_API_URL=https://smartfarm-app-production.up.railway.app
+VITE_API_BASE_URL=https://web-production-86d39.up.railway.app
+VITE_API_URL=https://web-production-86d39.up.railway.app
 VITE_APP_NAME=SmartFarm
 VITE_APP_VERSION=1.0.0
 NODE_ENV=production
@@ -110,7 +110,7 @@ npm run preview
 
 ### API Calls Fail
 - Verify `VITE_API_BASE_URL` is set correctly
-- Check backend is running: `curl https://smartfarm-app-production.up.railway.app/api/health`
+- Check backend is running: `curl https://web-production-86d39.up.railway.app/api/health`
 - Verify CORS is configured on backend
 
 ### Environment Variables Not Working

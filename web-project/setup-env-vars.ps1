@@ -5,7 +5,7 @@ Write-Host "🚀 SmartFarm Web - Environment Variables Setup" -ForegroundColor G
 Write-Host "=================================================" -ForegroundColor Green
 
 Write-Host "`n📋 Environment Variables to Set:" -ForegroundColor Yellow
-Write-Host "VITE_API_URL=https://smartfarm-app-production.up.railway.app/api" -ForegroundColor Cyan
+Write-Host "VITE_API_URL=https://web-production-86d39.up.railway.app/api" -ForegroundColor Cyan
 Write-Host "APP_BUILD_TAG=railway (for Railway) or netlify (for Netlify)" -ForegroundColor Cyan
 Write-Host "NODE_VERSION=18" -ForegroundColor Cyan
 

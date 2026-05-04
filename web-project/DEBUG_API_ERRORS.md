@@ -106,7 +106,7 @@ When reporting the issue, include:
    ```
 
 ### From Network Tab:
-4. **Request URL**: `https://smartfarm-app-production.up.railway.app/api/dashboard`
+4. **Request URL**: `https://web-production-86d39.up.railway.app/api/dashboard`
 5. **Status code**: `CORS error` or `404` or `500` or `(failed)`
 6. **Origin header** (Request Headers): `https://smartfarm-app.com`
 7. **Access-Control-Allow-Origin** (Response Headers): `null` or missing or `https://smartfarm-app.com`
@@ -118,7 +118,7 @@ When reporting the issue, include:
 
 ### Pattern 1: CORS Error
 ```
-Console: "Access to fetch at 'https://smartfarm-app-production.up.railway.app/api/...' 
+Console: "Access to fetch at 'https://web-production-86d39.up.railway.app/api/...' 
          from origin 'https://smartfarm-app.com' has been blocked by CORS policy"
 Network: Status shows "CORS error" or "(failed)"
 Solution: Add the frontend domain to backend CORS allowed origins
@@ -158,7 +158,7 @@ Solution: Check authentication token is valid and included in request
 
 Before reporting, verify:
 
-- [ ] Backend is running: `curl https://smartfarm-app-production.up.railway.app/api/health`
+- [ ] Backend is running: `curl https://web-production-86d39.up.railway.app/api/health`
 - [ ] Frontend domain matches backend CORS allowed origins
 - [ ] API URL is correct (check `web-project/public/js/api-config.js`)
 - [ ] Browser cache is cleared (Ctrl+Shift+Delete)
@@ -182,7 +182,7 @@ TypeError: Failed to fetch
     at SmartFarmAPIService.request (api-service.js:123:15)
 
 === NETWORK TAB ===
-Request URL: https://smartfarm-app-production.up.railway.app/api/dashboard
+Request URL: https://web-production-86d39.up.railway.app/api/dashboard
 Status: (failed) / CORS error
 Method: GET
 
@@ -214,7 +214,7 @@ Response:
 - **Backend CORS config**: `backend/server.js` (lines 10-60)
 - **Frontend API config**: `web-project/public/js/api-config.js`
 - **API Service**: `web-project/public/js/api-service.js`
-- **Health check**: `https://smartfarm-app-production.up.railway.app/api/health`
+- **Health check**: `https://web-production-86d39.up.railway.app/api/health`
 
 ---
 

@@ -73,8 +73,8 @@ Click **"Show advanced"** to configure:
 
 ```bash
 # Required - API Configuration
-VITE_API_BASE_URL = https://smartfarm-app-production.up.railway.app
-VITE_API_URL = https://smartfarm-app-production.up.railway.app
+VITE_API_BASE_URL = https://web-production-86d39.up.railway.app
+VITE_API_URL = https://web-production-86d39.up.railway.app
 
 # Required - App Configuration
 VITE_APP_NAME = SmartFarm
@@ -242,7 +242,7 @@ Manually test these critical flows:
 
 **Fix**:
 - Verify `VITE_API_BASE_URL` is correct
-- Check backend is running: `curl https://smartfarm-app-production.up.railway.app/api/health`
+- Check backend is running: `curl https://web-production-86d39.up.railway.app/api/health`
 - Verify backend CORS allows your Netlify domain
 
 ### 404 Errors on Navigation

@@ -225,7 +225,7 @@ If you encounter "API call failed" errors:
 **Quick Fixes:**
 ```bash
 # Check backend health
-curl https://smartfarm-app-production.up.railway.app/api/health
+curl https://web-production-86d39.up.railway.app/api/health
 
 # Verify CORS configuration
 # Check backend/server.js for ALLOWED_ORIGINS

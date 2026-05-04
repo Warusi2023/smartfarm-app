@@ -23,7 +23,7 @@ class SmartFarmAPIService {
         const fallbackUrl = window.VITE_API_BASE_URL || 
                window.VITE_API_URL || 
                (window).__SMARTFARM_API_BASE__ ||
-               'https://smartfarm-app-production.up.railway.app';
+               'https://web-production-86d39.up.railway.app';
         
         console.log('[API Service] Using fallback URL:', fallbackUrl);
         return fallbackUrl;

@@ -7,7 +7,7 @@ const trigger = {
     message: "Force Railway redeploy with API fixes and correct URLs",
     changes: [
         "Fixed API URLs in all configuration files",
-        "Updated API_BASE_URL to smartfarm-app-production.up.railway.app",
+        "Updated API_BASE_URL to web-production-86d39.up.railway.app",
         "Fixed duplicate files in public/public directory",
         "Enhanced API error handling and debugging"
     ],

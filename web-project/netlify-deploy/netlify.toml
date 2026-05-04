@@ -4,7 +4,7 @@
 
 [build.environment]
   NODE_VERSION = "18"
-  VITE_API_URL = "https://smartfarm-app-production.up.railway.app"
+  VITE_API_URL = "https://web-production-86d39.up.railway.app"
   APP_BUILD_TAG = "netlify"
   CI = "true"
   HUSKY = "0"
@@ -12,7 +12,7 @@
 # API redirects to Railway backend
 [[redirects]]
   from = "/api/*"
-  to = "https://smartfarm-app-production.up.railway.app/api/:splat"
+  to = "https://web-production-86d39.up.railway.app/api/:splat"
   status = 200
   force = true
   headers = {X-From = "Netlify Edge"}
