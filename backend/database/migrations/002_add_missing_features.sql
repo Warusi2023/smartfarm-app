@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS weeding_tasks (
 CREATE INDEX IF NOT EXISTS idx_weeding_tasks_crop_id ON weeding_tasks(crop_id);
 CREATE INDEX IF NOT EXISTS idx_weeding_tasks_task_date ON weeding_tasks(task_date);
 
+DROP TRIGGER IF EXISTS update_weeding_tasks_updated_at ON weeding_tasks;
 CREATE TRIGGER update_weeding_tasks_updated_at BEFORE UPDATE ON weeding_tasks
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
@@ -51,6 +52,7 @@ CREATE TABLE IF NOT EXISTS pesticide_applications (
 CREATE INDEX IF NOT EXISTS idx_pesticide_applications_crop_id ON pesticide_applications(crop_id);
 CREATE INDEX IF NOT EXISTS idx_pesticide_applications_date ON pesticide_applications(application_date);
 
+DROP TRIGGER IF EXISTS update_pesticide_applications_updated_at ON pesticide_applications;
 CREATE TRIGGER update_pesticide_applications_updated_at BEFORE UPDATE ON pesticide_applications
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
@@ -82,6 +84,7 @@ CREATE INDEX IF NOT EXISTS idx_byproducts_farm_id ON byproducts(farm_id);
 CREATE INDEX IF NOT EXISTS idx_byproducts_batch_number ON byproducts(batch_number);
 CREATE INDEX IF NOT EXISTS idx_byproducts_qr_code_id ON byproducts(qr_code_id);
 
+DROP TRIGGER IF EXISTS update_byproducts_updated_at ON byproducts;
 CREATE TRIGGER update_byproducts_updated_at BEFORE UPDATE ON byproducts
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
@@ -147,6 +150,6 @@ CREATE TABLE IF NOT EXISTS user_preferences (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+DROP TRIGGER IF EXISTS update_user_preferences_updated_at ON user_preferences;
 CREATE TRIGGER update_user_preferences_updated_at BEFORE UPDATE ON user_preferences
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
