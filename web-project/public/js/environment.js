@@ -44,7 +44,7 @@ class SmartFarmEnvironment {
                 'https://www.smartfarm-app.com',
                 'https://smartfarm-app.com',
                 'https://dulcet-sawine-92d6a8.netlify.app',
-                'http://localhost:3000',
+                'http://localhost:5173',
                 'http://localhost:8080'
             ]
         };

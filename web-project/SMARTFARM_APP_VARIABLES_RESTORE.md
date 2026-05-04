@@ -29,7 +29,7 @@ Your `smartfarm-app` component is missing essential variables. Here's how to res
   "JWT_SECRET": "your_jwt_secret_here",
   "SESSION_SECRET": "your_session_secret_here",
   "DATABASE_URL": "your_database_connection_string_here",
-  "CORS_ORIGINS": "https://www.smartfarm-app.com,https://smartfarm-app.com,http://localhost:3000,http://localhost:8080"
+  "CORS_ORIGINS": "https://www.smartfarm-app.com,https://smartfarm-app.com,http://localhost:5173,http://localhost:8080"
 }
 ```
 
@@ -46,7 +46,7 @@ GOOGLE_MAPS_API_KEY = your_google_maps_api_key_here
 JWT_SECRET = your_jwt_secret_here
 SESSION_SECRET = your_session_secret_here
 DATABASE_URL = your_database_connection_string_here
-CORS_ORIGINS = https://www.smartfarm-app.com,https://smartfarm-app.com,http://localhost:3000,http://localhost:8080
+CORS_ORIGINS = https://www.smartfarm-app.com,https://smartfarm-app.com,http://localhost:5173,http://localhost:8080
 ```
 
 ## 🎯 **Essential Variables Explained**

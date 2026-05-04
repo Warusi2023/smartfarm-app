@@ -40,10 +40,10 @@ global.fetch = jest.fn();
 // Mock window.location
 delete (window as any).location;
 window.location = {
-  href: 'http://localhost:3000',
-  origin: 'http://localhost:3000',
+  href: 'http://localhost:5173',
+  origin: 'http://localhost:5173',
   protocol: 'http:',
-  host: 'localhost:3000',
+  host: 'localhost:5173',
   hostname: 'localhost',
   port: '3000',
   pathname: '/',

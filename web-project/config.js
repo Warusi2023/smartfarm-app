@@ -19,7 +19,7 @@ const config = {
     logLevel: process.env.LOG_LEVEL || 'info',
     
     // CORS Configuration
-    corsOrigins: process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',') : ['http://localhost:3000', 'http://localhost:8080'],
+    corsOrigins: process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',') : ['http://localhost:5173', 'http://localhost:8080'],
     
     // Static file serving
     publicDir: './public',

@@ -36,10 +36,22 @@
         }
     }
     
+    /** Origin only (strip trailing /api) so health URL is never /api/api/health */
+    function normalizeApiOrigin(url) {
+        if (!url || typeof url !== 'string') {
+            return 'https://web-production-86d39.up.railway.app';
+        }
+        let u = url.trim().replace(/\/$/, '');
+        if (u.endsWith('/api')) {
+            u = u.slice(0, -4);
+        }
+        return u || 'https://web-production-86d39.up.railway.app';
+    }
+
     // Check server connectivity
     async function checkServerConnectivity() {
         try {
-            const apiBaseUrl = getApiBaseUrl();
+            const apiBaseUrl = normalizeApiOrigin(getApiBaseUrl());
             const healthUrl = `${apiBaseUrl}/api/health`;
             
             console.log('🔍 Checking server connectivity:', healthUrl);
@@ -77,28 +89,25 @@
         }
     }
     
-    // Get API base URL
+    // Get API base URL (may be origin-only or include /api; normalize for /api/health in checkServerConnectivity)
     function getApiBaseUrl() {
-        // Try multiple sources for API URL
         const sources = [
             window.SmartFarmApiConfig?.baseUrl,
             window.VITE_API_BASE_URL,
             window.VITE_API_URL,
             window.__SMARTFARM_API_BASE__,
             'https://web-production-86d39.up.railway.app',
-            'https://smartfarm-backend.railway.app',
-            'http://localhost:3000' // Fallback to local
         ];
-        
+
         for (const url of sources) {
-            if (url && url.startsWith('http')) {
+            if (url && typeof url === 'string' && url.startsWith('http')) {
                 console.log('🔗 Using API URL:', url);
                 return url;
             }
         }
-        
-        console.warn('⚠️ No valid API URL found, using localhost fallback');
-        return 'http://localhost:3000';
+
+        console.warn('⚠️ No valid API URL found, using production backend origin');
+        return 'https://web-production-86d39.up.railway.app';
     }
     
     // Start connectivity monitoring

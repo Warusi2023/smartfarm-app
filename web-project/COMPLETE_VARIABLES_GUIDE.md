@@ -63,7 +63,7 @@ APP_VERSION = 1.0.2
 
 ### CORS Configuration
 ```
-CORS_ORIGINS = https://www.smartfarm-app.com,https://smartfarm-app.com,http://localhost:3000,http://localhost:8080
+CORS_ORIGINS = https://www.smartfarm-app.com,https://smartfarm-app.com,http://localhost:5173,http://localhost:8080
 ```
 
 ## 🚀 QUICK SETUP (Minimum Required)
