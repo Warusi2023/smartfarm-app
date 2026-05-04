@@ -15,5 +15,4 @@ healthcheckTimeout = 60
 # startCommand = "npm run dev"
 
 [environments.production]
-PORT = 4173
 NODE_ENV = "production"
