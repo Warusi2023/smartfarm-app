@@ -524,11 +524,23 @@ try {
 try {
   const DailyTipsRoutes = require('./routes/daily-tips');
   app.use('/api/daily-tips', DailyTipsRoutes);
-  const biologicalFarmingRoutes = require('./routes/biological-farming');
-  app.use('/api/biological-farming', biologicalFarmingRoutes);
   logger.info('Daily Tips routes loaded');
 } catch (tipsError) {
-  logger.warnWithContext('Could not load daily tips/biological routes', { error: tipsError });
+  logger.warnWithContext('Could not load daily tips routes', {
+    message: tipsError.message,
+    stack: tipsError.stack,
+  });
+}
+
+try {
+  const biologicalFarmingRoutes = require('./routes/biological-farming');
+  app.use('/api/biological-farming', biologicalFarmingRoutes);
+  logger.info('Biological farming routes loaded');
+} catch (bioError) {
+  logger.warnWithContext('Could not load biological farming routes', {
+    message: bioError.message,
+    stack: bioError.stack,
+  });
 }
 
 // 6) Weather alerts routes (isolated)

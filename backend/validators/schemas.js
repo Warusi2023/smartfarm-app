@@ -303,6 +303,8 @@ const validationSchemas = {
     dailyTips: {
         personalized: {
             query: z.object({
+                crops: z.union([z.string(), z.array(z.any())]).optional(),
+                livestock: z.union([z.string(), z.array(z.any())]).optional(),
                 limit: z.coerce.number().int().min(1).max(50).optional().default(5),
             }).optional(),
         },

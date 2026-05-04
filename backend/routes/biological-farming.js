@@ -5,6 +5,8 @@
 
 const express = require('express');
 const router = express.Router();
+const { cacheMiddleware } = require('../middleware/cache-middleware');
+const { CACHE_TTL } = require('../config/cache-config');
 
 // Good Insects Database
 const goodInsects = [
