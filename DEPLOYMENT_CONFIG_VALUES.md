@@ -11,7 +11,7 @@
 | `NETLIFY_AUTH_TOKEN` | [Get from Netlify → User Settings → Applications] |
 | `NETLIFY_SITE_ID` | [Get from Netlify → Site Settings → General → Site ID] |
 | `NETLIFY_PRODUCTION_URL` | `https://dulcet-sawine-92d6a8.netlify.app` |
-| `RAILWAY_PRODUCTION_URL` | `https://smartfarm-app-production.up.railway.app` |
+| `RAILWAY_PRODUCTION_URL` | `https://web-production-86d39.up.railway.app` |
 | `RAILWAY_MIGRATION_TOKEN` | `dc9fd018ef76c1e7065698adecdb551dbe3baa002cdbd4f8ae35a52211e65516` |
 
 ### 🚂 **Railway Variables**
@@ -32,7 +32,7 @@
 
 | Variable Name | Variable Value |
 |---------------|----------------|
-| `VITE_API_BASE_URL` | `https://smartfarm-app-production.up.railway.app/api` |
+| `VITE_API_BASE_URL` | `https://web-production-86d39.up.railway.app/api` |
 | `VITE_OPENWEATHER_API_KEY` | `your_openweather_api_key_here` |
 | `VITE_ENVIRONMENT` | `production` |
 
@@ -66,7 +66,7 @@ scripts\trigger-deployment-simple.bat
 ## 🔍 **Monitor Deployment**
 
 - **GitHub Actions**: https://github.com/Warusi2023/smartfarm-app/actions
-- **Backend Health**: https://smartfarm-app-production.up.railway.app/api/health
+- **Backend Health**: https://web-production-86d39.up.railway.app/api/health
 - **Frontend**: https://dulcet-sawine-92d6a8.netlify.app
 
 ## 🎯 **Success Criteria**

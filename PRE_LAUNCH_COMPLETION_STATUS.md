@@ -21,7 +21,7 @@
 
 #### Backend (Railway) ✅
 - ✅ **Backend deployed and running**
-  - URL: `https://smartfarm-app-production.up.railway.app`
+  - URL: `https://web-production-86d39.up.railway.app`
   - Health endpoint: HTTP 200 ✅
   - HTTPS enabled ✅
   

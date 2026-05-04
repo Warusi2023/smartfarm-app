@@ -37,7 +37,7 @@
 **Manual Setup Required:**
 1. Create account: https://uptimerobot.com/signup/
 2. Add backend monitor:
-   - URL: `https://smartfarm-app-production.up.railway.app/api/health`
+   - URL: `https://web-production-86d39.up.railway.app/api/health`
    - Interval: 5 minutes
 3. Add frontend monitor:
    - URL: `https://your-site.netlify.app`

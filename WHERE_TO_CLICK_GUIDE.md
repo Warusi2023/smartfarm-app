@@ -102,7 +102,7 @@ For each variable below, repeat:
 
 Variable 1:
   Key:   VITE_API_URL
-  Value: https://smartfarm-app-production.up.railway.app
+  Value: https://web-production-86d39.up.railway.app
 
 Variable 2:
   Key:   NODE_VERSION
@@ -129,7 +129,7 @@ Variable 3:
 ```
 1. Open new browser tab
 2. Type in address bar:
-   https://smartfarm-app-production.up.railway.app/api/health
+   https://web-production-86d39.up.railway.app/api/health
 3. Press Enter
 
 ✅ Good: See JSON like {"status":"ok"}
@@ -142,7 +142,7 @@ Variable 3:
 2. Press F12 key (opens developer tools)
 3. 👆 Click: "Console" tab
 4. Paste this code:
-   fetch('https://smartfarm-app-production.up.railway.app/api/health')
+   fetch('https://web-production-86d39.up.railway.app/api/health')
      .then(r => r.json())
      .then(data => console.log('✅ SUCCESS:', data))
      .catch(err => console.error('❌ FAILED:', err))

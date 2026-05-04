@@ -210,7 +210,7 @@ After fixes, verify:
 
 - [ ] GitHub Actions workflow runs successfully
 - [ ] Railway service shows latest deployment
-- [ ] API health check works: `curl https://smartfarm-app-production.up.railway.app/api/health`
+- [ ] API health check works: `curl https://web-production-86d39.up.railway.app/api/health`
 - [ ] New features are live (AI Nutrition Advice, Email Verification)
 - [ ] Build logs show no errors
 

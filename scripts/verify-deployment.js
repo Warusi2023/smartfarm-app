@@ -12,7 +12,7 @@ async function verifyDeployment() {
   // Check backend
   console.log('🔍 Checking Backend...');
   try {
-    const backendHealth = await checkHealth('https://smartfarm-app-production.up.railway.app/api/health');
+    const backendHealth = await checkHealth('https://web-production-86d39.up.railway.app/api/health');
     console.log('✅ Backend: OK');
   } catch (error) {
     console.log('❌ Backend: Failed -', error.message);

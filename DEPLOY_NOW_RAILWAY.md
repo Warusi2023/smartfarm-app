@@ -49,7 +49,7 @@ API_VERSION           | v1
 
 **Check the health endpoint in your browser:**
 ```
-https://smartfarm-app-production.up.railway.app/api/health
+https://web-production-86d39.up.railway.app/api/health
 ```
 
 **Expected response:**
@@ -78,7 +78,7 @@ node scripts/test-production-cors.mjs
 ```
 🧪 Testing Production CORS Configuration
 ==================================================
-Backend URL: https://smartfarm-app-production.up.railway.app
+Backend URL: https://web-production-86d39.up.railway.app
 Testing Origins: https://www.smartfarm-app.com, https://smartfarm-app.netlify.app
 
 📡 Testing Health Endpoint...
@@ -141,7 +141,7 @@ Go to: https://app.netlify.com/
 3. Verify this variable exists:
 
 ```
-VITE_API_URL=https://smartfarm-app-production.up.railway.app
+VITE_API_URL=https://web-production-86d39.up.railway.app
 ```
 
 **Important:** No `/api` at the end!
@@ -226,7 +226,7 @@ Before testing:
 - [ ] Railway backend is deployed (green checkmark)
 - [ ] Railway logs show "SmartFarm API listening on 3000"
 - [ ] Railway logs show correct CORS origins
-- [ ] Health endpoint returns JSON: `https://smartfarm-app-production.up.railway.app/api/health`
+- [ ] Health endpoint returns JSON: `https://web-production-86d39.up.railway.app/api/health`
 - [ ] Netlify has `VITE_API_URL` environment variable
 - [ ] Netlify site is redeployed with cache cleared
 
@@ -255,7 +255,7 @@ After Railway deploys, run this to verify CORS:
 
 ```bash
 # Test from command line
-curl -i -H "Origin: https://www.smartfarm-app.com" https://smartfarm-app-production.up.railway.app/api/health
+curl -i -H "Origin: https://www.smartfarm-app.com" https://web-production-86d39.up.railway.app/api/health
 ```
 
 **Look for this in response:**

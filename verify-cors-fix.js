@@ -5,7 +5,7 @@ console.log('🔍 Testing CORS configuration...\n');
 
 // Test the backend CORS headers
 const options = {
-  hostname: 'smartfarm-app-production.up.railway.app',
+  hostname: 'web-production-86d39.up.railway.app',
   port: 443,
   path: '/api/health',
   method: 'OPTIONS',

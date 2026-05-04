@@ -7,8 +7,8 @@ Go to your Netlify site → Site Settings → Environment Variables and add:
 ### Required Variables
 
 ```env
-VITE_API_BASE_URL=https://smartfarm-backend.railway.app
-NEXT_PUBLIC_API_BASE_URL=https://smartfarm-backend.railway.app
+VITE_API_BASE_URL=https://web-production-86d39.up.railway.app
+NEXT_PUBLIC_API_BASE_URL=https://web-production-86d39.up.railway.app
 VITE_WEATHER_API_KEY=your_openweather_api_key_here
 ```
 
@@ -34,11 +34,11 @@ VITE_ENABLE_NOTIFICATIONS=true
 
 3. **Add Each Variable**
    - Key: `VITE_API_BASE_URL`
-   - Value: `https://smartfarm-backend.railway.app`
+   - Value: `https://web-production-86d39.up.railway.app`
    - Click "Save"
 
    - Key: `NEXT_PUBLIC_API_BASE_URL`
-   - Value: `https://smartfarm-backend.railway.app`
+   - Value: `https://web-production-86d39.up.railway.app`
    - Click "Save"
 
    - Key: `VITE_WEATHER_API_KEY`
@@ -76,7 +76,7 @@ If you encounter issues:
    - Check for typos in variable names
 
 2. **Verify Railway Backend**
-   - Test: `https://smartfarm-backend.railway.app/api/health`
+   - Test: `https://web-production-86d39.up.railway.app/api/health`
    - Should return: `{"message": "OK"}`
 
 3. **Check Browser Console**

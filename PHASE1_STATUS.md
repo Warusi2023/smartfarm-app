@@ -1,7 +1,7 @@
 # 📊 Phase 1 Current Status
 
 **Last Checked:** January 2025  
-**Backend URL:** `https://smartfarm-app-production.up.railway.app`  
+**Backend URL:** `https://web-production-86d39.up.railway.app`  
 **Frontend URL:** `https://your-site.netlify.app` (update with your actual URL)
 
 ---
@@ -40,7 +40,7 @@
 
 2. **Verify Database Connection**
    - Check Railway logs for database connection messages
-   - Test health endpoint: `curl https://smartfarm-app-production.up.railway.app/api/health`
+   - Test health endpoint: `curl https://web-production-86d39.up.railway.app/api/health`
    - Should show: `"database":"connected"`
 
 3. **Verify Database Migrations**
@@ -55,7 +55,7 @@
    - Your site → Site settings → Environment variables
    - Add:
      ```
-     VITE_API_URL=https://smartfarm-app-production.up.railway.app
+     VITE_API_URL=https://web-production-86d39.up.railway.app
      VITE_APP_NAME=SmartFarm
      VITE_APP_VERSION=1.0.0
      ```
@@ -76,7 +76,7 @@
 
 ### Test Backend Health
 ```bash
-curl https://smartfarm-app-production.up.railway.app/api/health
+curl https://web-production-86d39.up.railway.app/api/health
 ```
 
 Expected:
@@ -90,7 +90,7 @@ Expected:
 
 ### Test Backend Registration
 ```bash
-curl -X POST https://smartfarm-app-production.up.railway.app/api/auth/register \
+curl -X POST https://web-production-86d39.up.railway.app/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{"email":"test@example.com","password":"Test123!@#","name":"Test User","firstName":"Test","lastName":"User"}'
 ```
@@ -99,7 +99,7 @@ curl -X POST https://smartfarm-app-production.up.railway.app/api/auth/register \
 ```bash
 # Set your frontend URL
 $env:FRONTEND_URL="https://your-site.netlify.app"
-$env:BACKEND_URL="https://smartfarm-app-production.up.railway.app"
+$env:BACKEND_URL="https://web-production-86d39.up.railway.app"
 
 # Run verification script
 node scripts/verify-phase1.js

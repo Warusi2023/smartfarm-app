@@ -100,7 +100,7 @@ PORT = "3000"
 
 ### **Your Railway URL:**
 Once deployed, you'll get a URL like:
-`https://smartfarm-app-production.up.railway.app`
+`https://web-production-86d39.up.railway.app`
 
 ### **API Endpoints Available:**
 - `GET /` - Server status

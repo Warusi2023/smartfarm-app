@@ -3,7 +3,7 @@
 ## Problem
 
 ```
-Access to fetch at 'https://smartfarm-app-production.up.railway.app/api/health' 
+Access to fetch at 'https://web-production-86d39.up.railway.app/api/health' 
 from origin 'https://www.smartfarm-app.com' has been blocked by CORS policy: 
 No 'Access-Control-Allow-Origin' header is present on the requested resource.
 ```
@@ -16,7 +16,7 @@ No 'Access-Control-Allow-Origin' header is present on the requested resource.
 - ✅ `https://www.smartfarm-app.com` (PRIMARY - Netlify custom domain)
 - ✅ `https://smartfarm-app.com` (no www variant)
 - ✅ `https://smartfarm-app.netlify.app` (Netlify default domain)
-- ✅ `https://smartfarm-app-production.up.railway.app` (Railway backend)
+- ✅ `https://web-production-86d39.up.railway.app` (Railway backend)
 - ✅ All Railway domains (`railway.com`, `railway.app`, etc.)
 - ✅ Local development URLs
 
@@ -64,7 +64,7 @@ DEBUG_CORS=true
 
 **Test Preflight Request:**
 ```bash
-curl -X OPTIONS https://smartfarm-app-production.up.railway.app/api/health \
+curl -X OPTIONS https://web-production-86d39.up.railway.app/api/health \
   -H "Origin: https://www.smartfarm-app.com" \
   -H "Access-Control-Request-Method: GET" \
   -H "Access-Control-Request-Headers: Content-Type" \
@@ -84,7 +84,7 @@ curl -X OPTIONS https://smartfarm-app-production.up.railway.app/api/health \
 
 **Test Actual Request:**
 ```bash
-curl https://smartfarm-app-production.up.railway.app/api/health \
+curl https://web-production-86d39.up.railway.app/api/health \
   -H "Origin: https://www.smartfarm-app.com" \
   -v
 ```
@@ -104,7 +104,7 @@ curl https://smartfarm-app-production.up.railway.app/api/health \
 ```toml
 [[redirects]]
   from = "/api/*"
-  to = "https://smartfarm-app-production.up.railway.app/api/:splat"
+  to = "https://web-production-86d39.up.railway.app/api/:splat"
   status = 200
   force = true
   headers = {X-From = "Netlify Edge"}
@@ -114,7 +114,7 @@ curl https://smartfarm-app-production.up.railway.app/api/health \
 ```javascript
 getApiBaseUrl() {
     return window.VITE_API_URL || 
-           'https://smartfarm-app-production.up.railway.app';
+           'https://web-production-86d39.up.railway.app';
 }
 ```
 

@@ -42,7 +42,7 @@ API_RATE_WINDOW=15
 const frontendEnv = `# SmartFarm Frontend Production Environment Variables
 # Copy these to Netlify Environment Variables
 
-VITE_API_BASE_URL=https://smartfarm-app-production.up.railway.app/api
+VITE_API_BASE_URL=https://web-production-86d39.up.railway.app/api
 VITE_OPENWEATHER_API_KEY=your_openweather_api_key_here
 VITE_APP_NAME=SmartFarm
 VITE_APP_VERSION=1.0.0
@@ -76,7 +76,7 @@ NETLIFY_AUTH_TOKEN=your_netlify_auth_token_here
 NETLIFY_SITE_ID=your_netlify_site_id_here
 NETLIFY_SITE_ID_STAGING=your_netlify_staging_site_id_here
 NETLIFY_PRODUCTION_URL=https://dulcet-sawine-92d6a8.netlify.app
-RAILWAY_PRODUCTION_URL=https://smartfarm-app-production.up.railway.app
+RAILWAY_PRODUCTION_URL=https://web-production-86d39.up.railway.app
 RAILWAY_MIGRATION_TOKEN=${jwtSecret}
 SLACK_WEBHOOK=your_slack_webhook_url_here
 SNYK_TOKEN=your_snyk_token_here
@@ -111,7 +111,7 @@ const checklist = `# Deployment Checklist - Generated ${new Date().toISOString()
 - [ ] FEATURE_GEOFENCING=true
 
 ### 3. Netlify Variables (Required)
-- [ ] VITE_API_BASE_URL=https://smartfarm-app-production.up.railway.app/api
+- [ ] VITE_API_BASE_URL=https://web-production-86d39.up.railway.app/api
 - [ ] VITE_OPENWEATHER_API_KEY=your_openweather_api_key_here
 - [ ] VITE_ENVIRONMENT=production
 
@@ -129,7 +129,7 @@ git push origin main
 - [ ] Fix any failed jobs
 
 ### 6. Verify Deployment
-- [ ] Backend health: https://smartfarm-app-production.up.railway.app/api/health
+- [ ] Backend health: https://web-production-86d39.up.railway.app/api/health
 - [ ] Frontend: https://dulcet-sawine-92d6a8.netlify.app
 - [ ] Test login and dashboard functionality
 

@@ -84,7 +84,7 @@ node scripts\ping.mjs
 
 **Expected Output:**
 ```
-URL https://smartfarm-app-production.up.railway.app/api/health
+URL https://web-production-86d39.up.railway.app/api/health
 Status 200
 Body {"ok":true,"service":"SmartFarm","version":"v1","ts":1709876543210}
 ```
@@ -92,7 +92,7 @@ Body {"ok":true,"service":"SmartFarm","version":"v1","ts":1709876543210}
 ### **Test 2: Browser Test**
 Open in browser:
 ```
-https://smartfarm-app-production.up.railway.app/api/health
+https://web-production-86d39.up.railway.app/api/health
 ```
 
 **Expected:** JSON response with `{"ok":true}`  

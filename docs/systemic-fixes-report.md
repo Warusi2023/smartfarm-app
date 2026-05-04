@@ -214,7 +214,7 @@ npx playwright test tests/console.spec.js -g "dashboard"
 #### API Testing
 ```bash
 # Test API endpoints
-curl https://smartfarm-app-production.up.railway.app/api/health
+curl https://web-production-86d39.up.railway.app/api/health
 ```
 
 ---

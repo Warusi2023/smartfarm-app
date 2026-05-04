@@ -1,7 +1,7 @@
 # 📡 SmartFarm API Documentation
 
 ## 🌐 Base URL
-- **Production**: `https://smartfarm-backend.railway.app`
+- **Production**: `https://web-production-86d39.up.railway.app`
 - **Development**: `http://localhost:3000`
 
 ## 🔐 Authentication

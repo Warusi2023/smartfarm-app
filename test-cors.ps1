@@ -4,7 +4,7 @@
 Write-Host "SmartFarm CORS Configuration Test" -ForegroundColor Cyan
 Write-Host "=====================================" -ForegroundColor Cyan
 
-$railwayUrl = "https://smartfarm-app-production.up.railway.app"
+$railwayUrl = "https://web-production-86d39.up.railway.app"
 $origin = "https://www.smartfarm-app.com"
 
 Write-Host "`nTesting Railway backend at: $railwayUrl" -ForegroundColor Yellow

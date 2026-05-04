@@ -97,7 +97,7 @@ Railway will detect the GitHub push and redeploy automatically (takes 2-3 minute
 
 Once Railway completes deployment (2-3 min):
 
-✅ **Backend responds**: `https://smartfarm-app-production.up.railway.app/api/health` returns 200
+✅ **Backend responds**: `https://web-production-86d39.up.railway.app/api/health` returns 200
 ✅ **No more 502 errors**: API calls succeed
 ✅ **No more null data**: Frontend gets real data from API
 ✅ **Dashboard loads**: Shows actual farm/livestock data
@@ -142,7 +142,7 @@ The backend works locally (I tested it). All configuration is correct. The issue
 
 Wait 2-3 minutes for Railway to complete deployment, then test:
 ```
-https://smartfarm-app-production.up.railway.app/api/health
+https://web-production-86d39.up.railway.app/api/health
 ```
 
 Should return:
@@ -158,7 +158,7 @@ When that works, your frontend will automatically start working because it will 
 2. **Check Railway dashboard** for deployment status
 3. **Test health endpoint**: 
    ```powershell
-   Invoke-WebRequest https://smartfarm-app-production.up.railway.app/api/health
+   Invoke-WebRequest https://web-production-86d39.up.railway.app/api/health
    ```
 4. **If 200**: Open https://www.smartfarm-app.com (should work!)
 5. **If still 502**: Check Railway logs and send them to me

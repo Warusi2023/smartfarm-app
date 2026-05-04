@@ -59,7 +59,7 @@ echo   2. Wait 5-10 minutes for deployment to complete
 echo   3. Verify: node scripts/verify-deployment.js
 echo.
 echo 🔗 Important URLs:
-echo   Backend: https://smartfarm-app-production.up.railway.app/api/health
+echo   Backend: https://web-production-86d39.up.railway.app/api/health
 echo   Frontend: https://dulcet-sawine-92d6a8.netlify.app
 echo.
 

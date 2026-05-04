@@ -17,7 +17,7 @@
 - [ ] `GOOGLE_API_KEY` - Optional (for maps features)
 
 ### ✅ **Netlify Frontend Variables** (Required)
-- [ ] `VITE_API_URL` - Backend API URL (e.g., `https://smartfarm-app-production.up.railway.app`)
+- [ ] `VITE_API_URL` - Backend API URL (e.g., `https://web-production-86d39.up.railway.app`)
 - [ ] `VITE_APP_NAME=SmartFarm`
 - [ ] `VITE_APP_VERSION=1.0.0`
 - [ ] `VITE_SENTRY_DSN` - Optional but recommended
@@ -117,7 +117,7 @@ railway variables set ALLOWED_ORIGINS=https://your-site.netlify.app
 
 | Variable | Expected Value | Notes |
 |----------|---------------|-------|
-| `VITE_API_URL` | `https://smartfarm-app-production.up.railway.app` | No trailing `/api` |
+| `VITE_API_URL` | `https://web-production-86d39.up.railway.app` | No trailing `/api` |
 | `VITE_APP_NAME` | `SmartFarm` | Display name |
 | `VITE_APP_VERSION` | `1.0.0` | Version number |
 
@@ -155,7 +155,7 @@ After adding/modifying environment variables:
 
 1. Visit your Netlify site URL
 2. Open DevTools (F12) → Console tab
-3. Look for: `[API Config] Using environment URL: https://smartfarm-app-production.up.railway.app`
+3. Look for: `[API Config] Using environment URL: https://web-production-86d39.up.railway.app`
 4. **Should NOT see:** API connection errors
 5. Try navigating to different pages - should work without errors
 

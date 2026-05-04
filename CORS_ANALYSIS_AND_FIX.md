@@ -55,7 +55,7 @@ CORS_ORIGIN=https://your-actual-netlify-domain.netlify.app
 **Create `public/_headers` file:**
 ```
 /*
-  Access-Control-Allow-Origin: https://smartfarm-app-production.up.railway.app
+  Access-Control-Allow-Origin: https://web-production-86d39.up.railway.app
   Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS
   Access-Control-Allow-Headers: Content-Type, Authorization
 ```
@@ -92,7 +92,7 @@ CORS_ORIGIN=https://your-actual-netlify-domain.netlify.app
 ### **Step 3: Verify the Fix**
 ```bash
 # Test CORS from browser console on Netlify site:
-fetch('https://smartfarm-app-production.up.railway.app/api/health')
+fetch('https://web-production-86d39.up.railway.app/api/health')
   .then(r => r.json())
   .then(console.log)
   .catch(console.error)

@@ -13,9 +13,9 @@ CORS_ORIGIN=https://smartfarm-web-production.up.railway.app
 
 Frontend .env.production
 ------------------------
-VITE_API_URL=https://smartfarm-app-production.up.railway.app/api
-NEXT_PUBLIC_API_URL=https://smartfarm-app-production.up.railway.app/api
-REACT_APP_API_URL=https://smartfarm-app-production.up.railway.app/api
+VITE_API_URL=https://web-production-86d39.up.railway.app/api
+NEXT_PUBLIC_API_URL=https://web-production-86d39.up.railway.app/api
+REACT_APP_API_URL=https://web-production-86d39.up.railway.app/api
 NODE_ENV=production
 
 
@@ -38,9 +38,9 @@ For the Backend service (smartfarm-app):
 
 For the Frontend service (web):
   • Set Environment Variables (depending on your framework, at least one is used):
-      VITE_API_URL=https://smartfarm-app-production.up.railway.app/api
-      NEXT_PUBLIC_API_URL=https://smartfarm-app-production.up.railway.app/api
-      REACT_APP_API_URL=https://smartfarm-app-production.up.railway.app/api
+      VITE_API_URL=https://web-production-86d39.up.railway.app/api
+      NEXT_PUBLIC_API_URL=https://web-production-86d39.up.railway.app/api
+      REACT_APP_API_URL=https://web-production-86d39.up.railway.app/api
       NODE_ENV=production
   • Root Directory: web-project
   • Build Command: npm run build
@@ -50,7 +50,7 @@ For the Frontend service (web):
 IMPORTANT:
 - If your actual Railway backend hostname is different, re-run with:
     BACKEND_PUBLIC_URL="https://<YOUR-BACKEND-HOST>" node scripts/sync-env.mjs
-- Frontend must call the API via https://smartfarm-app-production.up.railway.app/api
+- Frontend must call the API via https://web-production-86d39.up.railway.app/api
 - Backend must allow CORS from https://smartfarm-web-production.up.railway.app
 
 Next:

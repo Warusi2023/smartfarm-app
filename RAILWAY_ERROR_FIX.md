@@ -2,7 +2,7 @@
 
 ## Problem
 
-Errors occurring at `performance-optimizer.js:161` related to Railway backend at `https://smartfarm-app-production.up.railway.app`:
+Errors occurring at `performance-optimizer.js:161` related to Railway backend at `https://web-production-86d39.up.railway.app`:
 
 - 502 Bad Gateway errors
 - 503 Service Unavailable errors  
@@ -111,7 +111,7 @@ Ensure NO Dockerfile-related files exist that could confuse Railway:
 
 ```bash
 # Test Railway health endpoint
-curl https://smartfarm-app-production.up.railway.app/api/health
+curl https://web-production-86d39.up.railway.app/api/health
 
 # Expected response:
 {"ok":true,"service":"SmartFarm","ts":1234567890}
@@ -121,7 +121,7 @@ curl https://smartfarm-app-production.up.railway.app/api/health
 
 ```bash
 # Test with origin header
-curl https://smartfarm-app-production.up.railway.app/api/health \
+curl https://web-production-86d39.up.railway.app/api/health \
   -H "Origin: https://www.smartfarm-app.com" \
   -v
 
@@ -203,7 +203,7 @@ app.listen(PORT, '0.0.0.0', () => {
 **3. Verify API Configuration:**
 ```javascript
 // Should be:
-VITE_API_URL=https://smartfarm-app-production.up.railway.app
+VITE_API_URL=https://web-production-86d39.up.railway.app
 ```
 
 **4. Test with Different Domain:**

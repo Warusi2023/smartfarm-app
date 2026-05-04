@@ -97,7 +97,7 @@ class WeatherService {
     async getLocationName(lat, lng) {
         try {
             // Get API base URL from config
-            const apiBaseUrl = window.SmartFarmConfig?.getApiUrl('') || 'https://smartfarm-app-production.up.railway.app';
+            const apiBaseUrl = window.SmartFarmConfig?.getApiUrl('') || 'https://web-production-86d39.up.railway.app';
             
             const response = await fetch(
                 `${apiBaseUrl}/api/weather/location?lat=${lat}&lng=${lng}`
@@ -122,7 +122,7 @@ class WeatherService {
             this.log('info', `🌤️ Fetching weather for ${location.name}...`);
             
             // Get API base URL from config
-            const apiBaseUrl = window.SmartFarmConfig?.getApiUrl('') || 'https://smartfarm-app-production.up.railway.app';
+            const apiBaseUrl = window.SmartFarmConfig?.getApiUrl('') || 'https://web-production-86d39.up.railway.app';
             
             // Fetch current weather from backend
             const currentWeatherResponse = await fetch(

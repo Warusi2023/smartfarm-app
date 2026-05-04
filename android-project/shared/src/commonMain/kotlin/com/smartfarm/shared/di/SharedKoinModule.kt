@@ -15,7 +15,7 @@ import org.koin.dsl.module
 /**
  * Base URL for the SmartFarm API
  */
-const val API_BASE_URL = "https://smartfarm-app-production.up.railway.app"
+const val API_BASE_URL = "https://web-production-86d39.up.railway.app"
 
 /**
  * Shared Koin module for dependency injection

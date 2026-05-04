@@ -10,7 +10,7 @@ import fetch from 'node-fetch';
 // Configuration
 const ORIGIN = 'https://www.smartfarm-app.com';
 const BACKUP_ORIGIN = 'https://smartfarm-app.netlify.app';
-const API_URL = process.env.API_URL || 'https://smartfarm-app-production.up.railway.app/api/health';
+const API_URL = process.env.API_URL || 'https://web-production-86d39.up.railway.app/api/health';
 
 console.log('🧪 Testing CORS Configuration for SmartFarm');
 console.log('=' .repeat(50));

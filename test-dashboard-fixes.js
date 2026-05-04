@@ -80,7 +80,7 @@ function testAPIConfiguration() {
         console.log(`✅ SmartFarmAPI initialized`);
         console.log(`   Base URL: ${baseURL}`);
         
-        if (baseURL.includes('smartfarm-app-production.up.railway.app')) {
+        if (baseURL.includes('web-production-86d39.up.railway.app')) {
             console.log('✅ Correct backend URL configured');
         } else {
             console.log('❌ Incorrect backend URL');
@@ -94,7 +94,7 @@ function testAPIConfiguration() {
         console.log(`✅ SmartFarmConfig available`);
         console.log(`   Config URL: ${configURL}`);
         
-        if (configURL.includes('smartfarm-app-production.up.railway.app')) {
+        if (configURL.includes('web-production-86d39.up.railway.app')) {
             console.log('✅ Config has correct backend URL');
         } else {
             console.log('❌ Config has incorrect backend URL');

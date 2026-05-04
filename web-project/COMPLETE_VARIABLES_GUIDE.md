@@ -13,9 +13,9 @@ LOG_LEVEL = info
 
 ### API Configuration
 ```
-VITE_API_URL = https://smartfarm-backend.railway.app
-VITE_API_BASE_URL = https://smartfarm-backend.railway.app
-NEXT_PUBLIC_API_BASE_URL = https://smartfarm-backend.railway.app
+VITE_API_URL = https://web-production-86d39.up.railway.app
+VITE_API_BASE_URL = https://web-production-86d39.up.railway.app
+NEXT_PUBLIC_API_BASE_URL = https://web-production-86d39.up.railway.app
 ```
 
 ### External Services
@@ -73,7 +73,7 @@ CORS_ORIGINS = https://www.smartfarm-app.com,https://smartfarm-app.com,http://lo
 NODE_ENV = production
 PORT = 3000
 LOG_LEVEL = info
-VITE_API_URL = https://smartfarm-backend.railway.app
+VITE_API_URL = https://web-production-86d39.up.railway.app
 ```
 
 ### For Full Features (Copy to Railway Variables):
@@ -81,7 +81,7 @@ VITE_API_URL = https://smartfarm-backend.railway.app
 NODE_ENV = production
 PORT = 3000
 LOG_LEVEL = info
-VITE_API_URL = https://smartfarm-backend.railway.app
+VITE_API_URL = https://web-production-86d39.up.railway.app
 VITE_OPENWEATHER_API_KEY = your_weather_api_key
 VITE_MAPS_API_KEY = your_maps_api_key
 VITE_FEATURE_AI_ADVISORY = true
@@ -98,7 +98,7 @@ VITE_FEATURE_GEOFENCING = true
   "NODE_ENV": "production",
   "PORT": "3000",
   "LOG_LEVEL": "info",
-  "VITE_API_URL": "https://smartfarm-backend.railway.app",
+  "VITE_API_URL": "https://web-production-86d39.up.railway.app",
   "VITE_OPENWEATHER_API_KEY": "your_weather_api_key",
   "VITE_MAPS_API_KEY": "your_maps_api_key"
 }

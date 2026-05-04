@@ -16,7 +16,7 @@
 ```
 Status: 502 Bad Gateway
 Message: "Application failed to respond"
-URL: https://smartfarm-app-production.up.railway.app
+URL: https://web-production-86d39.up.railway.app
 ```
 
 **Evidence:**
@@ -310,7 +310,7 @@ HUSKY=0
 
 **In Netlify Dashboard → Site Settings → Environment Variables:**
 ```
-VITE_API_URL=https://smartfarm-app-production.up.railway.app
+VITE_API_URL=https://web-production-86d39.up.railway.app
 NODE_VERSION=18
 CI=true
 HUSKY=0
@@ -330,7 +330,7 @@ HUSKY=0
 
 #### **Test 1: Backend Health**
 ```bash
-curl https://smartfarm-app-production.up.railway.app/api/health
+curl https://web-production-86d39.up.railway.app/api/health
 ```
 **Expected:** JSON response with `{"ok":true}`  
 **Not:** 502 error
@@ -340,7 +340,7 @@ curl https://smartfarm-app-production.up.railway.app/api/health
 2. Press F12 → Console
 3. Run:
 ```javascript
-fetch('https://smartfarm-app-production.up.railway.app/api/health')
+fetch('https://web-production-86d39.up.railway.app/api/health')
   .then(r => r.json())
   .then(console.log)
 ```

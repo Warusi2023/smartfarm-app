@@ -19,9 +19,9 @@ object ApiConfig {
         // Development: Use 10.0.2.2 for Android Emulator to access localhost
         Environment.DEVELOPMENT to "http://10.0.2.2:3000/api", // Android Emulator localhost
         // Staging: Use Railway staging URL if you have one
-        Environment.STAGING to "https://smartfarm-app-production.up.railway.app/api",
+        Environment.STAGING to "https://web-production-86d39.up.railway.app/api",
         // Production: Shared Railway backend (same as Web app)
-        Environment.PRODUCTION to "https://smartfarm-app-production.up.railway.app/api"
+        Environment.PRODUCTION to "https://web-production-86d39.up.railway.app/api"
     )
     
     // Get the current base URL

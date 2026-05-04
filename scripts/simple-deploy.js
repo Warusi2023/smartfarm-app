@@ -8,7 +8,7 @@
 console.log('🚀 SmartFarm Simple Deployment Guide\n');
 
 console.log('📋 Current Status:');
-console.log('✅ Backend: https://smartfarm-app-production.up.railway.app (Working)');
+console.log('✅ Backend: https://web-production-86d39.up.railway.app (Working)');
 console.log('✅ Frontend: https://dulcet-sawine-92d6a8.netlify.app (Working)');
 console.log('⚠️  GitHub Actions: Needs configuration\n');
 
@@ -32,7 +32,7 @@ console.log('Secret Name: NETLIFY_PRODUCTION_URL');
 console.log('Secret Value: https://dulcet-sawine-92d6a8.netlify.app');
 console.log('');
 console.log('Secret Name: RAILWAY_PRODUCTION_URL');
-console.log('Secret Value: https://smartfarm-app-production.up.railway.app');
+console.log('Secret Value: https://web-production-86d39.up.railway.app');
 console.log('');
 console.log('Secret Name: RAILWAY_MIGRATION_TOKEN');
 console.log('Secret Value: e3b65bed85523fbb9a2ae082a7e29491e8f7862df3431efc1851661d4aaad6b1');
@@ -57,7 +57,7 @@ console.log('🔗 URL: https://app.netlify.com → Your Site → Environment var
 console.log('');
 console.log('Add these variables:');
 console.log('');
-console.log('VITE_API_BASE_URL = https://smartfarm-app-production.up.railway.app/api');
+console.log('VITE_API_BASE_URL = https://web-production-86d39.up.railway.app/api');
 console.log('VITE_OPENWEATHER_API_KEY = your_openweather_api_key_here');
 console.log('VITE_ENVIRONMENT = production');
 console.log('');
@@ -73,7 +73,7 @@ console.log('');
 
 console.log('✅ SUCCESS CRITERIA:');
 console.log('- All GitHub Actions jobs show green checkmarks');
-console.log('- Backend health: https://smartfarm-app-production.up.railway.app/api/health');
+console.log('- Backend health: https://web-production-86d39.up.railway.app/api/health');
 console.log('- Frontend: https://dulcet-sawine-92d6a8.netlify.app');
 console.log('- User can login and access dashboard');
 console.log('');

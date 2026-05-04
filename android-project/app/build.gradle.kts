@@ -44,7 +44,7 @@ android {
         multiDexEnabled = true
         
         buildConfigField("String", "MAPS_API_KEY", "\"${localProperties.getProperty("MAPS_API_KEY", "YOUR_MAPS_API_KEY_HERE")}\"")
-        buildConfigField("String", "API_BASE_URL", "\"https://smartfarm-app-production.up.railway.app\"")
+        buildConfigField("String", "API_BASE_URL", "\"https://web-production-86d39.up.railway.app\"")
         
         // Manifest placeholders for API keys
         manifestPlaceholders["MAPS_API_KEY"] = localProperties.getProperty("MAPS_API_KEY", "YOUR_MAPS_API_KEY_HERE")

@@ -4,7 +4,7 @@
 
 This guide helps you execute the production deployment steps from `PRODUCTION_DEPLOYMENT_RUNBOOK_FEATURE1.md`.
 
-**Backend URL**: `https://smartfarm-app-production.up.railway.app`
+**Backend URL**: `https://web-production-86d39.up.railway.app`
 
 ---
 
@@ -42,7 +42,7 @@ Before starting, verify:
 
 **Test Health Endpoint**:
 ```bash
-curl https://smartfarm-app-production.up.railway.app/api/health
+curl https://web-production-86d39.up.railway.app/api/health
 ```
 
 **Expected Response**:
@@ -53,7 +53,7 @@ curl https://smartfarm-app-production.up.railway.app/api/health
 **Verify New Routes**:
 ```bash
 # Test weather alerts endpoint (will return 401 without auth, but confirms route exists)
-curl -I https://smartfarm-app-production.up.railway.app/api/weather-alerts
+curl -I https://web-production-86d39.up.railway.app/api/weather-alerts
 ```
 
 **Expected**: HTTP 401 (Unauthorized) - This confirms the route exists!
@@ -253,7 +253,7 @@ echo "Token: $TOKEN"
 
 **Test 1: Get Alerts**
 ```bash
-curl -X GET https://smartfarm-app-production.up.railway.app/api/weather-alerts \
+curl -X GET https://web-production-86d39.up.railway.app/api/weather-alerts \
   -H "Authorization: Bearer $TOKEN" \
   | jq '.'
 ```
@@ -262,7 +262,7 @@ curl -X GET https://smartfarm-app-production.up.railway.app/api/weather-alerts \
 
 **Test 2: Get Statistics**
 ```bash
-curl -X GET https://smartfarm-app-production.up.railway.app/api/weather-alerts/stats \
+curl -X GET https://web-production-86d39.up.railway.app/api/weather-alerts/stats \
   -H "Authorization: Bearer $TOKEN" \
   | jq '.'
 ```
@@ -271,7 +271,7 @@ curl -X GET https://smartfarm-app-production.up.railway.app/api/weather-alerts/s
 
 **Test 3: Manual Alert Generation**
 ```bash
-curl -X POST https://smartfarm-app-production.up.railway.app/api/weather-alerts/generate \
+curl -X POST https://web-production-86d39.up.railway.app/api/weather-alerts/generate \
   -H "Authorization: Bearer $TOKEN" \
   | jq '.'
 ```

@@ -53,7 +53,7 @@ PORT=3000
 ## 🧪 **Testing the Configuration**
 
 ### **1. Test Health Endpoint**
-Visit: `https://smartfarm-app-production.up.railway.app/api/health`
+Visit: `https://web-production-86d39.up.railway.app/api/health`
 
 Should return:
 ```json
@@ -70,7 +70,7 @@ Should return:
 2. Go to Console tab
 3. Run this JavaScript:
 ```javascript
-fetch('https://smartfarm-app-production.up.railway.app/api/health', {
+fetch('https://web-production-86d39.up.railway.app/api/health', {
   method: 'GET',
   headers: {
     'Origin': 'https://www.smartfarm-app.com'
@@ -117,7 +117,7 @@ node scripts/test-cors.mjs
    curl -H "Origin: https://www.smartfarm-app.com" \
         -H "Access-Control-Request-Method: GET" \
         -X OPTIONS \
-        https://smartfarm-app-production.up.railway.app/api/health
+        https://web-production-86d39.up.railway.app/api/health
    ```
 
 ### **If 502 errors persist:**

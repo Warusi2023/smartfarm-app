@@ -3,7 +3,7 @@
 ## 🎯 **All Tasks Completed Successfully**
 
 ### **✅ Step 0: Unified Backend URL**
-**Standardized on:** `https://smartfarm-app-production.up.railway.app`
+**Standardized on:** `https://web-production-86d39.up.railway.app`
 
 This URL is now used consistently across:
 - ✅ Backend CORS configuration
@@ -163,7 +163,7 @@ node scripts/test-production-cors.mjs
 - ✅ `public/backend-test.html` - Updated URL
 - ✅ `public/public/backend-test.html` - Updated URL
 - ✅ All configuration files use unified URL
-- ✅ No more references to `smartfarm-backend.railway.app`
+- ✅ No mixed legacy API hosts; production uses `https://web-production-86d39.up.railway.app`
 
 ---
 
@@ -179,7 +179,7 @@ NODE_ENV=production
 
 ### **Netlify Environment Variables:**
 ```
-VITE_API_URL=https://smartfarm-app-production.up.railway.app
+VITE_API_URL=https://web-production-86d39.up.railway.app
 ```
 
 ---

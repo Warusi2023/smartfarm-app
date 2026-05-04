@@ -2,7 +2,7 @@
 
 ## ✅ Your Current URLs:
 - **Frontend (Netlify)**: `https://dulcet-sawine-92d6a8.netlify.app`
-- **Backend (Railway)**: `https://smartfarm-app-production.up.railway.app`
+- **Backend (Railway)**: `https://web-production-86d39.up.railway.app`
 
 ## 🚀 Next Steps to Complete Setup:
 
@@ -23,7 +23,7 @@ OPENAI_API_KEY=your_openai_api_key
 In your Netlify dashboard, add these environment variables:
 
 ```
-VITE_API_URL=https://smartfarm-app-production.up.railway.app
+VITE_API_URL=https://web-production-86d39.up.railway.app
 VITE_GOOGLE_MAPS_API_KEY=your_google_maps_api_key
 VITE_OPENWEATHER_API_KEY=your_openweather_api_key
 VITE_OPENAI_API_KEY=your_openai_api_key
@@ -34,7 +34,7 @@ Once both are configured:
 
 1. **Test Railway Backend**:
    ```bash
-   curl https://smartfarm-app-production.up.railway.app/api/health
+   curl https://web-production-86d39.up.railway.app/api/health
    ```
 
 2. **Test Netlify Frontend**:

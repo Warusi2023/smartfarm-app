@@ -397,7 +397,7 @@ Add:
 Netlify → Environment Variables
 
 Add:
-- VITE_API_URL=https://smartfarm-app-production.up.railway.app
+- VITE_API_URL=https://web-production-86d39.up.railway.app
 ```
 
 ### Step 4: Deploy (1 minute)
@@ -724,7 +724,7 @@ docs/
 ## 📚 Additional Resources
 
 - **Repository:** https://github.com/Warusi2023/smartfarm-app
-- **Backend API:** https://smartfarm-app-production.up.railway.app
+- **Backend API:** https://web-production-86d39.up.railway.app
 - **Frontend:** https://dulcet-sawine-92d6a8.netlify.app
 - **Documentation:** All in `docs/` folder
 - **Issues:** GitHub Issues tab

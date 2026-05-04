@@ -27,7 +27,7 @@ Since your database is already configured, focus on these remaining tasks:
 
 2. **Test Health Endpoint**
    ```bash
-   curl https://smartfarm-app-production.up.railway.app/api/health
+   curl https://web-production-86d39.up.railway.app/api/health
    ```
    - Should return: `{"status":"healthy","database":"connected"}`
 
@@ -74,7 +74,7 @@ Check these exist in Railway → Backend service → Variables:
    - Site settings → Environment variables
    - Add:
      ```
-     VITE_API_URL=https://smartfarm-app-production.up.railway.app
+     VITE_API_URL=https://web-production-86d39.up.railway.app
      VITE_APP_NAME=SmartFarm
      VITE_APP_VERSION=1.0.0
      ```
@@ -101,12 +101,12 @@ After getting your Netlify URL:
 
 1. **Test Backend Health**
    ```bash
-   curl https://smartfarm-app-production.up.railway.app/api/health
+   curl https://web-production-86d39.up.railway.app/api/health
    ```
 
 2. **Test Backend Registration**
    ```bash
-   curl -X POST https://smartfarm-app-production.up.railway.app/api/auth/register \
+   curl -X POST https://web-production-86d39.up.railway.app/api/auth/register \
      -H "Content-Type: application/json" \
      -d '{"email":"test@example.com","password":"Test123!@#","name":"Test User","firstName":"Test","lastName":"User"}'
    ```
@@ -120,7 +120,7 @@ After getting your Netlify URL:
 4. **Run Verification Script**
    ```bash
    $env:FRONTEND_URL="https://your-site.netlify.app"
-   $env:BACKEND_URL="https://smartfarm-app-production.up.railway.app"
+   $env:BACKEND_URL="https://web-production-86d39.up.railway.app"
    node scripts/verify-phase1.js
    ```
 

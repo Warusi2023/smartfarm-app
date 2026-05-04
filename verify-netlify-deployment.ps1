@@ -16,7 +16,7 @@ Write-Host "Found netlify.toml configuration file" -ForegroundColor Green
 Write-Host "`nChecking main netlify.toml configuration..." -ForegroundColor Yellow
 $netlifyConfig = Get-Content "netlify.toml" -Raw
 
-if ($netlifyConfig -match 'VITE_API_URL = "https://smartfarm-app-production.up.railway.app"') {
+if ($netlifyConfig -match 'VITE_API_URL = "https://web-production-86d39.up.railway.app"') {
     Write-Host "API URL correctly configured in netlify.toml" -ForegroundColor Green
 } else {
     Write-Host "API URL not found or incorrect in netlify.toml" -ForegroundColor Red
@@ -33,7 +33,7 @@ Write-Host "`nChecking web-project/netlify.toml configuration..." -ForegroundCol
 if (Test-Path "web-project/netlify.toml") {
     $webProjectConfig = Get-Content "web-project/netlify.toml" -Raw
     
-    if ($webProjectConfig -match 'VITE_API_URL = "https://smartfarm-app-production.up.railway.app"') {
+    if ($webProjectConfig -match 'VITE_API_URL = "https://web-production-86d39.up.railway.app"') {
         Write-Host "API URL correctly configured in web-project/netlify.toml" -ForegroundColor Green
     } else {
         Write-Host "API URL not found or incorrect in web-project/netlify.toml" -ForegroundColor Red
@@ -71,7 +71,7 @@ $apiFiles = @(
 foreach ($file in $apiFiles) {
     if (Test-Path $file) {
         $content = Get-Content $file -Raw
-        if ($content -match 'smartfarm-app-production.up.railway.app') {
+        if ($content -match 'web-production-86d39.up.railway.app') {
             Write-Host "$file has correct API URL" -ForegroundColor Green
         } else {
             Write-Host "$file has incorrect or missing API URL" -ForegroundColor Red
@@ -84,7 +84,7 @@ foreach ($file in $apiFiles) {
 # Test Railway backend connectivity
 Write-Host "`nTesting Railway backend connectivity..." -ForegroundColor Yellow
 try {
-    $response = Invoke-WebRequest -Uri "https://smartfarm-app-production.up.railway.app/api/health" -UseBasicParsing -TimeoutSec 10
+    $response = Invoke-WebRequest -Uri "https://web-production-86d39.up.railway.app/api/health" -UseBasicParsing -TimeoutSec 10
     if ($response.StatusCode -eq 200) {
         Write-Host "Railway backend is responding (Status: $($response.StatusCode))" -ForegroundColor Green
     } else {
@@ -109,7 +109,7 @@ Write-Host "3. Verify deployment at your Netlify site URL" -ForegroundColor Whit
 Write-Host "4. Test dashboard functionality and API connectivity" -ForegroundColor White
 
 Write-Host "`nEnvironment Variables to Set in Netlify Dashboard:" -ForegroundColor Cyan
-Write-Host "VITE_API_URL=https://smartfarm-app-production.up.railway.app" -ForegroundColor White
+Write-Host "VITE_API_URL=https://web-production-86d39.up.railway.app" -ForegroundColor White
 Write-Host "APP_BUILD_TAG=netlify" -ForegroundColor White
 Write-Host "CI=true" -ForegroundColor White
 Write-Host "HUSKY=0" -ForegroundColor White

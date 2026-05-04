@@ -1,6 +1,6 @@
 # Railway Backend API Environment Variables
 
-## 🚀 **Required Environment Variables for smartfarm-app-production.up.railway.app**
+## 🚀 **Required Environment Variables for web-production-86d39.up.railway.app**
 
 ### **Core Application Variables**
 

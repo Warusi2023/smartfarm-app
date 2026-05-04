@@ -78,12 +78,12 @@ A comprehensive daily tips feature that provides farmers with helpful gardening 
 ### API Usage
 ```javascript
 // Get today's tip
-fetch('https://smartfarm-app-production.up.railway.app/api/daily-tips/today')
+fetch('https://web-production-86d39.up.railway.app/api/daily-tips/today')
   .then(res => res.json())
   .then(data => console.log(data.tip));
 
 // Get tips by category
-fetch('https://smartfarm-app-production.up.railway.app/api/daily-tips/category/gardening')
+fetch('https://web-production-86d39.up.railway.app/api/daily-tips/category/gardening')
   .then(res => res.json())
   .then(data => console.log(data.tips));
 ```
@@ -150,13 +150,13 @@ The system includes 25+ carefully curated tips:
 ### Test Backend API:
 ```bash
 # Get today's tip
-curl https://smartfarm-app-production.up.railway.app/api/daily-tips/today
+curl https://web-production-86d39.up.railway.app/api/daily-tips/today
 
 # Get gardening tips
-curl https://smartfarm-app-production.up.railway.app/api/daily-tips/category/gardening
+curl https://web-production-86d39.up.railway.app/api/daily-tips/category/gardening
 
 # Get all tips
-curl https://smartfarm-app-production.up.railway.app/api/daily-tips/all
+curl https://web-production-86d39.up.railway.app/api/daily-tips/all
 ```
 
 ### Test Web Widget:

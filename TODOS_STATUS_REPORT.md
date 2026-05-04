@@ -55,7 +55,7 @@
 - Configured Netlify API redirects
 
 **Results**:
-- All frontend API URLs correct: `https://smartfarm-app-production.up.railway.app`
+- All frontend API URLs correct: `https://web-production-86d39.up.railway.app`
 - CORS headers properly configured
 - Frontend ready to connect once Railway deploys
 - API service has fallback mechanisms
@@ -121,11 +121,11 @@ Once Railway deploys successfully:
 
 ```powershell
 # 1. Test Railway backend
-Invoke-WebRequest https://smartfarm-app-production.up.railway.app/api/health
+Invoke-WebRequest https://web-production-86d39.up.railway.app/api/health
 
 # 2. Test with CORS
 $headers = @{"Origin"="https://www.smartfarm-app.com"}
-Invoke-WebRequest https://smartfarm-app-production.up.railway.app/api/health -Headers $headers
+Invoke-WebRequest https://web-production-86d39.up.railway.app/api/health -Headers $headers
 
 # 3. Open frontend
 # Visit: https://www.smartfarm-app.com

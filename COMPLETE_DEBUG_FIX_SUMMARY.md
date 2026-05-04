@@ -129,7 +129,7 @@
    🐄 saveDashboardNewLivestock called
    ✅ All validation checks passed
    🌐 Using API to add livestock
-   🌐 API Request: POST https://smartfarm-app-production.up.railway.app/api/livestock
+   🌐 API Request: POST https://web-production-86d39.up.railway.app/api/livestock
    ✅ API Response: [data]
    ✅ Livestock added successfully via API
    ```
@@ -156,7 +156,7 @@
    🌾 saveFeedMixPlan called
    Feed mix plan data: {...}
    🌐 Using API to save feed mix plan
-   🌐 API Request: POST https://smartfarm-app-production.up.railway.app/api/feed-mixes
+   🌐 API Request: POST https://web-production-86d39.up.railway.app/api/feed-mixes
    ✅ API Response: [data]
    ✅ Feed mix plan saved to API successfully
    ```
@@ -311,8 +311,8 @@ git push
 ## 🔗 Quick Links
 
 - **Frontend**: https://www.smartfarm-app.com
-- **Backend**: https://smartfarm-app-production.up.railway.app
-- **Health Check**: https://smartfarm-app-production.up.railway.app/api/health
+- **Backend**: https://web-production-86d39.up.railway.app
+- **Health Check**: https://web-production-86d39.up.railway.app/api/health
 
 ---
 

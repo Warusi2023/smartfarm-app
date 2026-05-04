@@ -8,8 +8,8 @@
 ## Root Causes Found
 
 ### 1. Incorrect API URLs in netlify.toml
-- **Before:** `https://smartfarm-backend.railway.app` ❌
-- **After:** `https://smartfarm-app-production.up.railway.app` ✅
+- **Before:** `https://web-production-86d39.up.railway.app` ❌
+- **After:** `https://web-production-86d39.up.railway.app` ✅
 
 ### 2. Wrong Build Configuration
 - **Before:** `publish = "dist"` and `base = "web-project"` ❌
@@ -28,7 +28,7 @@
   command = "echo 'No build needed - serving static files'"
 
 [build.environment]
-  VITE_API_URL = "https://smartfarm-app-production.up.railway.app"
+  VITE_API_URL = "https://web-production-86d39.up.railway.app"
 ```
 
 ### 2. Added GitHub Actions Workflow

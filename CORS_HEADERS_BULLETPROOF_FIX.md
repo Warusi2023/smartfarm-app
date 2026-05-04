@@ -132,8 +132,8 @@ Status: 204 No Content
 const ALLOWED_ORIGINS = new Set([
     'https://www.smartfarm-app.com',                      // Production domain
     'https://smartfarm-app.netlify.app',                  // Netlify
-    'https://smartfarm-backend.railway.app',              // Railway API
-    'https://smartfarm-app-production.up.railway.app',    // Railway default
+    'https://web-production-86d39.up.railway.app',              // Railway API
+    'https://web-production-86d39.up.railway.app',    // Railway default
     'https://railway.com',                                // Railway itself
     'https://www.railway.com',                            // Railway www
     'http://localhost:3000',                              // Local dev
@@ -173,7 +173,7 @@ const ALLOWED_ORIGINS = new Set([
 3. **Test Endpoints:**
    ```bash
    curl -H "Origin: https://www.smartfarm-app.com" \
-        https://smartfarm-app-production.up.railway.app/api/health
+        https://web-production-86d39.up.railway.app/api/health
    ```
 
 4. **Expected Railway Logs:**

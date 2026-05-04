@@ -82,9 +82,9 @@ Go to **Settings** → **Variables** and add:
 
 ```bash
 NODE_ENV=production
-VITE_API_URL=https://smartfarm-app-production.up.railway.app/api
-NEXT_PUBLIC_API_URL=https://smartfarm-app-production.up.railway.app/api
-REACT_APP_API_URL=https://smartfarm-app-production.up.railway.app/api
+VITE_API_URL=https://web-production-86d39.up.railway.app/api
+NEXT_PUBLIC_API_URL=https://web-production-86d39.up.railway.app/api
+REACT_APP_API_URL=https://web-production-86d39.up.railway.app/api
 ```
 
 ### **3.4 Configure Health Check**
@@ -100,7 +100,7 @@ Go to **Settings** → **Health** and set:
 1. Go to the `smartfarm-app` service
 2. Click **"Deploy"**
 3. Wait for deployment to complete
-4. Note the generated URL (e.g., `https://smartfarm-app-production.up.railway.app`)
+4. Note the generated URL (e.g., `https://web-production-86d39.up.railway.app`)
 
 ### **4.2 Update Frontend Environment Variables**
 1. Go to the `web` service settings
@@ -124,7 +124,7 @@ Go to **Settings** → **Health** and set:
 ### **5.1 Test Backend API**
 1. Open your backend URL + `/api/health`
 2. You should see: `{"ok":true,"service":"SmartFarm","ts":1234567890}`
-3. Example: `https://smartfarm-app-production.up.railway.app/api/health`
+3. Example: `https://web-production-86d39.up.railway.app/api/health`
 
 ### **5.2 Test Frontend**
 1. Open your frontend URL
@@ -190,8 +190,8 @@ After both services are deployed, update the backend CORS configuration:
 After successful deployment:
 
 ✅ **Backend Service**:
-- URL: `https://smartfarm-app-production.up.railway.app`
-- Health check: `https://smartfarm-app-production.up.railway.app/api/health`
+- URL: `https://web-production-86d39.up.railway.app`
+- Health check: `https://web-production-86d39.up.railway.app/api/health`
 - CORS configured for frontend
 
 ✅ **Frontend Service**:

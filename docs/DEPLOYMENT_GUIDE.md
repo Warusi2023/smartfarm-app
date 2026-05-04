@@ -93,7 +93,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 
 **Required:**
 ```bash
-VITE_API_URL=https://smartfarm-app-production.up.railway.app
+VITE_API_URL=https://web-production-86d39.up.railway.app
 ```
 
 **Optional:**
@@ -181,7 +181,7 @@ npx playwright test --project=chromium
 ```
 
 ### Manual Testing Checklist
-- [ ] Backend health check: `curl https://smartfarm-app-production.up.railway.app/api/health`
+- [ ] Backend health check: `curl https://web-production-86d39.up.railway.app/api/health`
 - [ ] Frontend loads: Open `https://dulcet-sawine-92d6a8.netlify.app`
 - [ ] Login works
 - [ ] Dashboard displays correctly
@@ -218,7 +218,7 @@ railway logs
 ### Health Check
 ```bash
 # Backend
-curl https://smartfarm-app-production.up.railway.app/api/health
+curl https://web-production-86d39.up.railway.app/api/health
 
 # Should return:
 {
@@ -378,7 +378,7 @@ After each deployment, verify:
 
 **Issues:** https://github.com/Warusi2023/smartfarm-app/issues  
 **Documentation:** `docs/` folder  
-**API Docs:** https://smartfarm-app-production.up.railway.app/api/docs
+**API Docs:** https://web-production-86d39.up.railway.app/api/docs
 
 ---
 

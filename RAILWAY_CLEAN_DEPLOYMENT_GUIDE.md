@@ -107,7 +107,7 @@ Since I've pushed the clean backend to GitHub, Railway should automatically trig
 Once deployed successfully:
 1. Go to your service **"Settings"** tab
 2. Scroll down to **"Domains"** section
-3. You'll see your Railway URL (e.g., `https://smartfarm-app-production.up.railway.app`)
+3. You'll see your Railway URL (e.g., `https://web-production-86d39.up.railway.app`)
 
 ### **4. Test Your Railway Backend:**
 ```bash

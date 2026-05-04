@@ -9,7 +9,7 @@ if (!BACKEND_DIR || !WEB_DIR) {
   process.exit(2);
 }
 
-const BACKEND_URL = process.env.BACKEND_URL || "https://smartfarm-app-production.up.railway.app";
+const BACKEND_URL = process.env.BACKEND_URL || "https://web-production-86d39.up.railway.app";
 const WEB_URL     = process.env.WEB_URL     || "https://web-production-86d39.up.railway.app";
 const NETLIFY_URL = process.env.NETLIFY_URL || "https://<YOUR-NETLIFY-DOMAIN>";
 

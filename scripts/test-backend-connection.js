@@ -5,7 +5,7 @@
 
 const https = require('https');
 
-const BACKEND_URL = process.env.BACKEND_URL || 'https://smartfarm-app-production.up.railway.app';
+const BACKEND_URL = process.env.BACKEND_URL || 'https://web-production-86d39.up.railway.app';
 
 console.log('🔍 Testing backend connection...');
 console.log('URL:', BACKEND_URL);

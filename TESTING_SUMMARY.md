@@ -35,7 +35,7 @@
 - **Expected**: Console output showing alerts generated
 
 #### ⚠️ API Endpoints
-- **Base URL**: Production API endpoint (e.g., `https://smartfarm-app-production.up.railway.app`)
+- **Base URL**: Production API endpoint (e.g., `https://web-production-86d39.up.railway.app`)
 - **Endpoints to Test**:
   - `GET /api/weather-alerts` - List alerts
   - `GET /api/weather-alerts/stats` - Statistics

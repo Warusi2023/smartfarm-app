@@ -27,7 +27,7 @@ As the lead engineer for SmartFarm, I have successfully completed all phases (A-
 2. ✅ **API Base URL Resolution:**
    - Already implemented in `web-project/public/js/config.js`
    - Uses `window.SmartFarmConfig.API_BASE_URL`
-   - Fallback: `https://smartfarm-app-production.up.railway.app`
+   - Fallback: `https://web-production-86d39.up.railway.app`
    
 3. ✅ **Interaction Inventory:**
    - Created: `docs/interaction-inventory.json`

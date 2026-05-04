@@ -41,7 +41,7 @@
 
 ### Monitor Setup
 - [ ] Backend monitor added
-  - URL: `https://smartfarm-app-production.up.railway.app/api/health`
+  - URL: `https://web-production-86d39.up.railway.app/api/health`
   - Status: [ ] Up  [ ] Down
 - [ ] Frontend monitor added
   - URL: `https://________________.netlify.app`

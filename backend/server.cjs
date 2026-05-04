@@ -20,7 +20,7 @@ const ALLOWED_ORIGINS = [...new Set([...DEFAULT_ORIGINS, ...EXTRA_ORIGINS])];
 
 // Add localhost for development only
 if (process.env.NODE_ENV !== 'production') {
-  ALLOWED_ORIGINS.push('http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:3000');
+  ALLOWED_ORIGINS.push('http://localhost:5173', 'http://127.0.0.1:5173');
 }
 
 console.log('[server] CORS allowed origins:', ALLOWED_ORIGINS);

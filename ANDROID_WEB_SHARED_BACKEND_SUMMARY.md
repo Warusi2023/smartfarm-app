@@ -4,7 +4,7 @@
 
 Both your **Android app** and **Web app** now use the **same Railway backend**:
 
-**Backend URL:** `https://smartfarm-app-production.up.railway.app`
+**Backend URL:** `https://web-production-86d39.up.railway.app`
 
 ---
 
@@ -14,7 +14,7 @@ Both your **Android app** and **Web app** now use the **same Railway backend**:
 
 **Updated Files:**
 - ✅ `shared/src/commonMain/kotlin/com/yourcompany/smartfarm/shared/config/ApiConfig.kt`
-  - Production URL: `https://smartfarm-app-production.up.railway.app/api`
+  - Production URL: `https://web-production-86d39.up.railway.app/api`
   - Development URL: `http://10.0.2.2:3000/api` (for Android Emulator)
 
 **Already Configured:**
@@ -175,7 +175,7 @@ Authorization: Bearer <jwt-token>
 
 **From Terminal:**
 ```bash
-curl https://smartfarm-app-production.up.railway.app/api/health
+curl https://web-production-86d39.up.railway.app/api/health
 ```
 
 **From Android App:**
@@ -187,7 +187,7 @@ println("Backend connected: $connected")
 
 **From Web App:**
 ```javascript
-fetch('https://smartfarm-app-production.up.railway.app/api/health')
+fetch('https://web-production-86d39.up.railway.app/api/health')
   .then(r => r.json())
   .then(console.log)
 ```

@@ -55,8 +55,8 @@ Your Netlify frontend deployment issues have been identified and fixed. Here's w
 4. **Set Environment Variables**
    ```
    NODE_ENV=production
-   VITE_API_URL=https://smartfarm-backend.railway.app
-   VITE_API_BASE_URL=https://smartfarm-backend.railway.app
+   VITE_API_URL=https://web-production-86d39.up.railway.app
+   VITE_API_BASE_URL=https://web-production-86d39.up.railway.app
    VITE_OPENWEATHER_API_KEY=your_weather_api_key
    VITE_MAPS_API_KEY=your_maps_api_key
    ```
@@ -103,8 +103,8 @@ Your Netlify frontend deployment issues have been identified and fixed. Here's w
 ```bash
 NODE_ENV=production
 NODE_VERSION=18
-VITE_API_URL=https://smartfarm-backend.railway.app
-VITE_API_BASE_URL=https://smartfarm-backend.railway.app
+VITE_API_URL=https://web-production-86d39.up.railway.app
+VITE_API_BASE_URL=https://web-production-86d39.up.railway.app
 VITE_OPENWEATHER_API_KEY=your_openweather_api_key
 VITE_MAPS_API_KEY=your_google_maps_api_key
 VITE_LOG_LEVEL=info

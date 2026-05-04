@@ -210,7 +210,7 @@ Phase 2 focuses on comprehensive testing to ensure your application is productio
 
 ```bash
 # Test health endpoint
-curl https://smartfarm-app-production.up.railway.app/api/health
+curl https://web-production-86d39.up.railway.app/api/health
 ```
 
 **Expected:**
@@ -229,7 +229,7 @@ curl https://smartfarm-app-production.up.railway.app/api/health
 
 **Registration:**
 ```bash
-curl -X POST https://smartfarm-app-production.up.railway.app/api/auth/register \
+curl -X POST https://web-production-86d39.up.railway.app/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{"email":"test@example.com","password":"Test123!@#","name":"Test","firstName":"Test","lastName":"User"}'
 ```
@@ -258,13 +258,13 @@ curl -X POST https://web-production-86d39.up.railway.app \
 **Get User Profile (requires token):**
 ```bash
 # First get token from login, then:
-curl https://smartfarm-app-production.up.railway.app/api/auth/me \
+curl https://web-production-86d39.up.railway.app/api/auth/me \
   -H "Authorization: Bearer YOUR_TOKEN_HERE"
 ```
 
 **Get Farms (requires token):**
 ```bash
-curl https://smartfarm-app-production.up.railway.app/api/farms \
+curl https://web-production-86d39.up.railway.app/api/farms \
   -H "Authorization: Bearer YOUR_TOKEN_HERE"
 ```
 
@@ -387,8 +387,8 @@ curl https://smartfarm-app-production.up.railway.app/api/farms \
 **Test multiple endpoints:**
 ```bash
 # Time the responses
-time curl https://smartfarm-app-production.up.railway.app/api/health
-time curl https://smartfarm-app-production.up.railway.app/api/farms \
+time curl https://web-production-86d39.up.railway.app/api/health
+time curl https://web-production-86d39.up.railway.app/api/farms \
   -H "Authorization: Bearer TOKEN"
 ```
 
@@ -738,7 +738,7 @@ Once Phase 2 is complete:
 
 ## 🔗 Quick Reference
 
-**Backend Health:** https://smartfarm-app-production.up.railway.app/api/health  
+**Backend Health:** https://web-production-86d39.up.railway.app/api/health  
 **Frontend URL:** https://your-site.netlify.app  
 **Railway Dashboard:** https://railway.app/dashboard  
 **Netlify Dashboard:** https://app.netlify.com

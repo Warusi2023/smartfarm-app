@@ -4,7 +4,7 @@
 
 Your API Configuration Debug shows:
 - ✅ Frontend: `https://www.smartfarm-app.com` (correct)
-- ✅ API URL: `https://smartfarm-app-production.up.railway.app` (correct)
+- ✅ API URL: `https://web-production-86d39.up.railway.app` (correct)
 - ❌ Railway Backend: **502 Bad Gateway** (failing)
 
 **This confirms Railway is NOT deploying our updated backend code.**
@@ -104,7 +104,7 @@ Our fixes are already committed and pushed:
 
 ### **Test Railway After Redeploy:**
 ```bash
-curl https://smartfarm-app-production.up.railway.app/api/health
+curl https://web-production-86d39.up.railway.app/api/health
 ```
 
 ### **Expected Success Response:**
@@ -129,7 +129,7 @@ curl https://smartfarm-app-production.up.railway.app/api/health
 
 Your API Configuration Debug shows everything is correctly configured:
 - ✅ Frontend domain: `https://www.smartfarm-app.com`
-- ✅ API base URL: `https://smartfarm-app-production.up.railway.app`
+- ✅ API base URL: `https://web-production-86d39.up.railway.app`
 - ✅ All endpoints properly configured
 
 **The ONLY issue is Railway backend deployment.**

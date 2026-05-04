@@ -92,7 +92,7 @@ node scripts\ping.mjs
 **Expected:** Status 200 (not 502)
 
 ### **Test 2: Browser Test**
-Open: `https://smartfarm-app-production.up.railway.app/api/health`
+Open: `https://web-production-86d39.up.railway.app/api/health`
 
 **Expected:** JSON response with `{"ok":true}`
 

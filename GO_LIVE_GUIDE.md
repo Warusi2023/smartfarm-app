@@ -3,7 +3,7 @@
 ## Quick Overview
 Your SmartFarm website has two parts:
 - **Frontend** (Static HTML/JS files in `public/` folder) → Deploy to **Netlify** (FREE)
-- **Backend** (API server) → Already on **Railway** at `https://smartfarm-app-production.up.railway.app`
+- **Backend** (API server) → Already on **Railway** at `https://web-production-86d39.up.railway.app`
 
 ---
 
@@ -35,8 +35,8 @@ Your SmartFarm website has two parts:
 1. Go to your site dashboard → **Site settings** → **Environment variables**
 2. Add these variables (if needed):
    ```
-   VITE_API_BASE_URL=https://smartfarm-app-production.up.railway.app
-   VITE_API_URL=https://smartfarm-app-production.up.railway.app
+   VITE_API_BASE_URL=https://web-production-86d39.up.railway.app
+   VITE_API_URL=https://web-production-86d39.up.railway.app
    ```
 
 ### Step 4: Customize Your Domain (Optional)
@@ -163,7 +163,7 @@ After deploying, verify:
 
 - **Netlify Docs:** https://docs.netlify.com
 - **Railway Docs:** https://docs.railway.app
-- **Your Backend API:** https://smartfarm-app-production.up.railway.app
+- **Your Backend API:** https://web-production-86d39.up.railway.app
 
 ---
 

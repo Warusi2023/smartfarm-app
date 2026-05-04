@@ -48,7 +48,7 @@ Value: 0
 ```
 Variable 1:
 Key:   VITE_API_URL
-Value: https://smartfarm-app-production.up.railway.app
+Value: https://web-production-86d39.up.railway.app
 
 Variable 2:
 Key:   NODE_VERSION
@@ -69,7 +69,7 @@ Value: true
 ### **Test 1: Backend Health**
 Open in browser:
 ```
-https://smartfarm-app-production.up.railway.app/api/health
+https://web-production-86d39.up.railway.app/api/health
 ```
 ✅ Should see: `{"ok":true,"service":"SmartFarm Backend",...}`  
 ❌ Should NOT see: 502 error
@@ -87,7 +87,7 @@ https://your-site-name.netlify.app/dashboard.html
 2. Press F12 → Console
 3. Run:
 ```javascript
-fetch('https://smartfarm-app-production.up.railway.app/api/health')
+fetch('https://web-production-86d39.up.railway.app/api/health')
   .then(r => r.json())
   .then(d => console.log('✅ SUCCESS:', d))
   .catch(e => console.error('❌ FAILED:', e))

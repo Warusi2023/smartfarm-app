@@ -5,7 +5,7 @@
  * Tests the actual Railway production backend
  */
 
-const BACKEND_URL = 'https://smartfarm-app-production.up.railway.app';
+const BACKEND_URL = 'https://web-production-86d39.up.railway.app';
 const ORIGINS = [
   'https://www.smartfarm-app.com',
   'https://smartfarm-app.netlify.app'

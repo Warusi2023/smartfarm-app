@@ -4,7 +4,7 @@
 
 The SmartFarm API provides a comprehensive RESTful interface for managing agricultural data including farms, crops, livestock, and analytics.
 
-**Base URL**: `https://smartfarm-backend.railway.app/api`
+**Base URL**: `https://web-production-86d39.up.railway.app/api`
 
 ## Authentication
 
@@ -890,7 +890,7 @@ API requests are rate limited to prevent abuse:
 
 1. **Register User**
 ```bash
-curl -X POST https://smartfarm-backend.railway.app/api/auth/register \
+curl -X POST https://web-production-86d39.up.railway.app/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{
     "username": "farmer123",
@@ -903,7 +903,7 @@ curl -X POST https://smartfarm-backend.railway.app/api/auth/register \
 
 2. **Login**
 ```bash
-curl -X POST https://smartfarm-backend.railway.app/api/auth/login \
+curl -X POST https://web-production-86d39.up.railway.app/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "username": "farmer123",
@@ -913,7 +913,7 @@ curl -X POST https://smartfarm-backend.railway.app/api/auth/login \
 
 3. **Create Farm**
 ```bash
-curl -X POST https://smartfarm-backend.railway.app/api/farms \
+curl -X POST https://web-production-86d39.up.railway.app/api/farms \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer <token>" \
   -d '{
@@ -927,7 +927,7 @@ curl -X POST https://smartfarm-backend.railway.app/api/farms \
 
 4. **Add Crop**
 ```bash
-curl -X POST https://smartfarm-backend.railway.app/api/crops \
+curl -X POST https://web-production-86d39.up.railway.app/api/crops \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer <token>" \
   -d '{
@@ -943,7 +943,7 @@ curl -X POST https://smartfarm-backend.railway.app/api/crops \
 
 5. **Add Livestock**
 ```bash
-curl -X POST https://smartfarm-backend.railway.app/api/livestock \
+curl -X POST https://web-production-86d39.up.railway.app/api/livestock \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer <token>" \
   -d '{
@@ -964,7 +964,7 @@ curl -X POST https://smartfarm-backend.railway.app/api/livestock \
 const SmartFarmAPI = require('smartfarm-api-client');
 
 const client = new SmartFarmAPI({
-  baseURL: 'https://smartfarm-backend.railway.app/api',
+  baseURL: 'https://web-production-86d39.up.railway.app/api',
   token: 'your-jwt-token'
 });
 
@@ -998,7 +998,7 @@ class SmartFarmAPI:
         return response.json()
 
 # Usage
-api = SmartFarmAPI('https://smartfarm-backend.railway.app/api', 'your-token')
+api = SmartFarmAPI('https://web-production-86d39.up.railway.app/api', 'your-token')
 farm = api.create_farm({
     'name': 'My Farm',
     'location': '123 Farm Road',

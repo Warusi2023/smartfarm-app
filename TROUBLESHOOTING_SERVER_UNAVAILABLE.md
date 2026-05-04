@@ -67,7 +67,7 @@ If service keeps restarting:
 ### **Test Your Backend API:**
 ```bash
 # Test if the API is responding
-curl https://smartfarm-app-production.up.railway.app/api/health
+curl https://web-production-86d39.up.railway.app/api/health
 
 # Expected response:
 # {"ok": true, "service": "SmartFarm Backend", "timestamp": "...", "version": "1.0.0"}
@@ -76,7 +76,7 @@ curl https://smartfarm-app-production.up.railway.app/api/health
 ### **Check Service Status:**
 ```bash
 # Check if the service is reachable
-ping smartfarm-app-production.up.railway.app
+ping web-production-86d39.up.railway.app
 ```
 
 ## 📋 **Environment Variables Checklist**
@@ -115,7 +115,7 @@ Make sure these are set in Railway:
 ## 📊 **Monitoring Your Service**
 
 ### **Health Check Endpoint:**
-- **URL**: `https://smartfarm-app-production.up.railway.app/api/health`
+- **URL**: `https://web-production-86d39.up.railway.app/api/health`
 - **Expected**: `{"ok": true, "service": "SmartFarm Backend"}`
 - **If 404**: Service not running
 - **If 500**: Service error

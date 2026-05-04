@@ -4,7 +4,7 @@
 
 **Test result:**
 ```
-https://smartfarm-app-production.up.railway.app/api/health
+https://web-production-86d39.up.railway.app/api/health
 Status: 502 Bad Gateway
 Message: "Application failed to respond"
 ```
@@ -92,7 +92,7 @@ ECONNREFUSED
 
 **Test the health endpoint in your browser:**
 ```
-https://smartfarm-app-production.up.railway.app/api/health
+https://web-production-86d39.up.railway.app/api/health
 ```
 
 **Expected:**
@@ -135,14 +135,14 @@ If you see this JSON, the backend is running! ✅
 
 ```powershell
 # Test health endpoint
-Invoke-WebRequest -Uri "https://smartfarm-app-production.up.railway.app/api/health"
+Invoke-WebRequest -Uri "https://web-production-86d39.up.railway.app/api/health"
 
 # Should return 200 OK with JSON
 ```
 
 ```powershell
 # Test CORS
-Invoke-WebRequest -Uri "https://smartfarm-app-production.up.railway.app/api/health" -Method OPTIONS -Headers @{"Origin"="https://www.smartfarm-app.com"}
+Invoke-WebRequest -Uri "https://web-production-86d39.up.railway.app/api/health" -Method OPTIONS -Headers @{"Origin"="https://www.smartfarm-app.com"}
 
 # Should return 204 No Content with CORS headers
 ```

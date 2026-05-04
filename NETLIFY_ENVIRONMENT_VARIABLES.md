@@ -6,7 +6,7 @@ To ensure Netlify deployment matches Railway backend and GitHub configuration, s
 
 ### API Configuration
 ```
-VITE_API_URL=https://smartfarm-app-production.up.railway.app
+VITE_API_URL=https://web-production-86d39.up.railway.app
 ```
 
 ### Build Configuration
@@ -55,8 +55,8 @@ After setting environment variables:
 If API calls still fail:
 
 1. **Check browser console** for CORS errors
-2. **Verify Railway backend** is running at `https://smartfarm-app-production.up.railway.app`
-3. **Test API endpoint** directly: `https://smartfarm-app-production.up.railway.app/api/health`
+2. **Verify Railway backend** is running at `https://web-production-86d39.up.railway.app`
+3. **Test API endpoint** directly: `https://web-production-86d39.up.railway.app/api/health`
 4. **Clear browser cache** and refresh the page
 
 ## API Redirects
@@ -66,7 +66,7 @@ Netlify is configured with API redirects to proxy requests to Railway:
 ```toml
 [[redirects]]
   from = "/api/*"
-  to = "https://smartfarm-app-production.up.railway.app/api/:splat"
+  to = "https://web-production-86d39.up.railway.app/api/:splat"
   status = 200
   force = true
   headers = {X-From = "Netlify Edge"}

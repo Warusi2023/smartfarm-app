@@ -67,7 +67,7 @@ TOKEN=$(curl -X POST https://web-production-86d39.up.railway.app \
   | jq -r '.data.token')
 
 # Get alerts
-curl -X GET https://smartfarm-app-production.up.railway.app/api/weather-alerts \
+curl -X GET https://web-production-86d39.up.railway.app/api/weather-alerts \
   -H "Authorization: Bearer $TOKEN" \
   | jq '.'
 ```
@@ -76,7 +76,7 @@ curl -X GET https://smartfarm-app-production.up.railway.app/api/weather-alerts \
 
 #### Test 2: Get Alert Statistics
 ```bash
-curl -X GET https://smartfarm-app-production.up.railway.app/api/weather-alerts/stats \
+curl -X GET https://web-production-86d39.up.railway.app/api/weather-alerts/stats \
   -H "Authorization: Bearer $TOKEN" \
   | jq '.'
 ```
@@ -87,7 +87,7 @@ curl -X GET https://smartfarm-app-production.up.railway.app/api/weather-alerts/s
 ```bash
 ALERT_ID="your-alert-id"
 
-curl -X PATCH https://smartfarm-app-production.up.railway.app/api/weather-alerts/$ALERT_ID/read \
+curl -X PATCH https://web-production-86d39.up.railway.app/api/weather-alerts/$ALERT_ID/read \
   -H "Authorization: Bearer $TOKEN" \
   | jq '.'
 ```
@@ -96,7 +96,7 @@ curl -X PATCH https://smartfarm-app-production.up.railway.app/api/weather-alerts
 
 #### Test 4: Dismiss Alert
 ```bash
-curl -X PATCH https://smartfarm-app-production.up.railway.app/api/weather-alerts/$ALERT_ID/dismiss \
+curl -X PATCH https://web-production-86d39.up.railway.app/api/weather-alerts/$ALERT_ID/dismiss \
   -H "Authorization: Bearer $TOKEN" \
   | jq '.'
 ```
@@ -105,7 +105,7 @@ curl -X PATCH https://smartfarm-app-production.up.railway.app/api/weather-alerts
 
 #### Test 5: Get Preferences
 ```bash
-curl -X GET https://smartfarm-app-production.up.railway.app/api/weather-alerts/preferences \
+curl -X GET https://web-production-86d39.up.railway.app/api/weather-alerts/preferences \
   -H "Authorization: Bearer $TOKEN" \
   | jq '.'
 ```

@@ -188,13 +188,13 @@ GET /api/daily-tips/personalized?crops=[...]&livestock=[...]
 ### Test Personalized Tips:
 ```bash
 # With crops
-curl "https://smartfarm-app-production.up.railway.app/api/daily-tips/personalized?crops=[{\"name\":\"Tomato\",\"status\":\"fruiting\"}]"
+curl "https://web-production-86d39.up.railway.app/api/daily-tips/personalized?crops=[{\"name\":\"Tomato\",\"status\":\"fruiting\"}]"
 
 # With livestock
-curl "https://smartfarm-app-production.up.railway.app/api/daily-tips/personalized?livestock=[{\"type\":\"cattle\"}]"
+curl "https://web-production-86d39.up.railway.app/api/daily-tips/personalized?livestock=[{\"type\":\"cattle\"}]"
 
 # With both
-curl "https://smartfarm-app-production.up.railway.app/api/daily-tips/personalized?crops=[{\"name\":\"Corn\"}]&livestock=[{\"type\":\"chicken\"}]"
+curl "https://web-production-86d39.up.railway.app/api/daily-tips/personalized?crops=[{\"name\":\"Corn\"}]&livestock=[{\"type\":\"chicken\"}]"
 ```
 
 ### Test in Web Dashboard:

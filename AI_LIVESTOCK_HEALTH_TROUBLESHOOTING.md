@@ -18,7 +18,7 @@ The system attempts to fetch AI Health advice via `/api/ai-advisory/livestock-he
 
 **Test Endpoint:**
 ```bash
-curl https://smartfarm-app-production.up.railway.app/api/ai-advisory/livestock-health/3?type=Cattle&age=12&healthStatus=healthy
+curl https://web-production-86d39.up.railway.app/api/ai-advisory/livestock-health/3?type=Cattle&age=12&healthStatus=healthy
 ```
 
 Expected response:
@@ -69,7 +69,7 @@ Expected response:
 
 **Expected URL Format:**
 ```
-https://smartfarm-app-production.up.railway.app/api/ai-advisory/livestock-health/3?type=Cattle&age=12&healthStatus=healthy
+https://web-production-86d39.up.railway.app/api/ai-advisory/livestock-health/3?type=Cattle&age=12&healthStatus=healthy
 ```
 
 ---

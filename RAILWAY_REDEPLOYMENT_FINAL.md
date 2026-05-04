@@ -23,7 +23,7 @@
      ✅ Docker build successful
      ```
 
-### **For Backend Service (smartfarm-app-production.up.railway.app):**
+### **For Backend Service (web-production-86d39.up.railway.app):**
 
 1. **Go to Railway Dashboard:**
    - Navigate to your backend service
@@ -86,11 +86,11 @@ Docker build failed
 
 ### **Test Backend API:**
 1. **Health Check:**
-   - Visit: `https://smartfarm-app-production.up.railway.app/api/health`
+   - Visit: `https://web-production-86d39.up.railway.app/api/health`
    - Should return: `{"ok": true, "service": "SmartFarm Backend"}`
 
 2. **API Endpoints:**
-   - Test: `https://smartfarm-app-production.up.railway.app/api`
+   - Test: `https://web-production-86d39.up.railway.app/api`
    - Should return API information
 
 ## 🔧 **Step 4: Verify Environment Variables**
@@ -100,7 +100,7 @@ Docker build failed
 - [ ] `CI=1`
 - [ ] `HUSKY=0`
 - [ ] `CORS_ORIGIN=https://web-production-86d39.up.railway.app`
-- [ ] `VITE_API_URL=https://smartfarm-app-production.up.railway.app/api`
+- [ ] `VITE_API_URL=https://web-production-86d39.up.railway.app/api`
 - [ ] `APP_BUILD_TAG=railway`
 
 ### **Backend Service Variables:**

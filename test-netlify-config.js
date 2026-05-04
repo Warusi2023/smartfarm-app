@@ -47,7 +47,7 @@ function testNetlifyToml() {
         hasProblems = true;
     }
     
-    if (content.includes('smartfarm-app-production.up.railway.app')) {
+    if (content.includes('web-production-86d39.up.railway.app')) {
         console.log('✅ Correct API URL configured');
     } else {
         console.log('❌ Incorrect API URL');

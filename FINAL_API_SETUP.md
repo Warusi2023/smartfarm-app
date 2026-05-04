@@ -39,7 +39,7 @@ SMARTFARM_API_KEY=your_smartfarm_api_key_here
 
 ### **Step 2: Add These Environment Variables**
 ```
-VITE_API_URL=https://smartfarm-app-production.up.railway.app
+VITE_API_URL=https://web-production-86d39.up.railway.app
 VITE_GOOGLE_MAPS_API_KEY=your_google_maps_api_key_here
 VITE_OPENWEATHER_API_KEY=your_openweather_api_key_here
 VITE_OPENAI_API_KEY=your_openai_api_key_here
@@ -50,7 +50,7 @@ VITE_SMARTFARM_API_KEY=your_smartfarm_api_key_here
 
 ### **Step 1: Test Railway Backend**
 ```bash
-curl https://smartfarm-app-production.up.railway.app/api/health
+curl https://web-production-86d39.up.railway.app/api/health
 ```
 
 ### **Step 2: Test Netlify Frontend**

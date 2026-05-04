@@ -140,7 +140,7 @@
 - [ ] Create account at https://uptimerobot.com
 - [ ] Verify email
 - [ ] Add Backend Monitor:
-  - URL: `https://smartfarm-app-production.up.railway.app/api/health`
+  - URL: `https://web-production-86d39.up.railway.app/api/health`
   - Type: HTTP(s)
   - Interval: 5 minutes
 - [ ] Add Frontend Monitor:

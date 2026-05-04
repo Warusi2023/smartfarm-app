@@ -4,12 +4,12 @@
 
 **Backend Health**: ✅ Working (200 OK)
 ```
-https://smartfarm-app-production.up.railway.app/api/health
+https://web-production-86d39.up.railway.app/api/health
 ```
 
 **Weather Alerts Route**: ❌ Still 404
 ```
-https://smartfarm-app-production.up.railway.app/api/weather-alerts
+https://web-production-86d39.up.railway.app/api/weather-alerts
 Status: 404 Not Found
 ```
 
@@ -122,14 +122,14 @@ If you see:
 
 **Test Health Endpoint**:
 ```bash
-curl https://smartfarm-app-production.up.railway.app/api/health
+curl https://web-production-86d39.up.railway.app/api/health
 ```
 
 **Expected**: `{"ok":true,"service":"SmartFarm",...}`
 
 **Test Weather Alerts**:
 ```bash
-curl -I https://smartfarm-app-production.up.railway.app/api/weather-alerts
+curl -I https://web-production-86d39.up.railway.app/api/weather-alerts
 ```
 
 **Expected**: HTTP 401 (Unauthorized) - Route exists!

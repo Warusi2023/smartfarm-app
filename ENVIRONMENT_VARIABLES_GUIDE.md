@@ -1,14 +1,14 @@
 # SmartFarm Environment Variables Guide
 
 ## Backend URL Choice
-**Chosen Backend URL:** `https://smartfarm-backend.railway.app`
+**Chosen Backend URL:** `https://web-production-86d39.up.railway.app`
 
 ## Netlify (Frontend) Environment Variables
 
 Set these in your Netlify dashboard under Site Settings > Environment Variables:
 
 ```
-VITE_API_URL=https://smartfarm-backend.railway.app
+VITE_API_URL=https://web-production-86d39.up.railway.app
 APP_BUILD_TAG=netlify
 NODE_VERSION=18
 CI=true
@@ -49,10 +49,10 @@ After deployment, verify with:
 
 ```bash
 # Test backend health
-curl -sS https://smartfarm-backend.railway.app/api/health
+curl -sS https://web-production-86d39.up.railway.app/api/health
 
 # Test from browser console at https://www.smartfarm-app.com
-fetch('https://smartfarm-backend.railway.app/api/health', { mode: 'cors' })
+fetch('https://web-production-86d39.up.railway.app/api/health', { mode: 'cors' })
   .then(r => r.json()).then(console.log).catch(console.error);
 ```
 

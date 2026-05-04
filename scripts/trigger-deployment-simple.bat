@@ -49,7 +49,7 @@ echo.
 echo 📋 Next Steps:
 echo   1. Monitor: https://github.com/Warusi2023/smartfarm-app/actions
 echo   2. Wait 5-10 minutes for deployment
-echo   3. Check backend: https://smartfarm-app-production.up.railway.app/api/health
+echo   3. Check backend: https://web-production-86d39.up.railway.app/api/health
 echo   4. Check frontend: https://dulcet-sawine-92d6a8.netlify.app
 echo.
 

@@ -37,7 +37,7 @@ function setDefault(v, fallback) {
  */
 const BACKEND_PUBLIC_URL = setDefault(
   process.env.BACKEND_PUBLIC_URL,
-  "https://smartfarm-app-production.up.railway.app"
+  "https://web-production-86d39.up.railway.app"
 ); // change if your actual host differs
 const FRONTEND_PUBLIC_URL = setDefault(
   process.env.FRONTEND_PUBLIC_URL,

@@ -3,7 +3,7 @@
 ## Current API Configuration Across Platforms
 
 ### ✅ **CONSISTENT API URL FOUND**
-All platforms are correctly configured to use: `https://smartfarm-app-production.up.railway.app`
+All platforms are correctly configured to use: `https://web-production-86d39.up.railway.app`
 
 ---
 
@@ -13,12 +13,12 @@ All platforms are correctly configured to use: `https://smartfarm-app-production
 **File:** `netlify.toml`
 ```toml
 # Environment variables
-VITE_API_URL = "https://smartfarm-app-production.up.railway.app"
+VITE_API_URL = "https://web-production-86d39.up.railway.app"
 
 # API redirects to Railway backend
 [[redirects]]
   from = "/api/*"
-  to = "https://smartfarm-app-production.up.railway.app/api/:splat"
+  to = "https://web-production-86d39.up.railway.app/api/:splat"
 ```
 **Status:** ✅ CORRECT
 
@@ -48,7 +48,7 @@ VITE_API_URL = "https://smartfarm-app-production.up.railway.app"
 ### 4. **JavaScript Configuration** ✅
 **File:** `public/js/config.js`
 ```javascript
-API_BASE_URL: window.VITE_API_URL || 'https://smartfarm-app-production.up.railway.app'
+API_BASE_URL: window.VITE_API_URL || 'https://web-production-86d39.up.railway.app'
 ```
 **Status:** ✅ CORRECT
 
@@ -58,7 +58,7 @@ API_BASE_URL: window.VITE_API_URL || 'https://smartfarm-app-production.up.railwa
 return window.VITE_API_BASE_URL || 
        window.NEXT_PUBLIC_API_BASE_URL || 
        window.SmartFarmConfig?.API_BASE_URL || 
-       'https://smartfarm-app-production.up.railway.app';
+       'https://web-production-86d39.up.railway.app';
 ```
 **Status:** ✅ CORRECT
 
@@ -74,12 +74,12 @@ return window.VITE_API_BASE_URL ||
 
 | Platform | API URL | Status |
 |----------|---------|--------|
-| **Netlify** | `https://smartfarm-app-production.up.railway.app` | ✅ |
+| **Netlify** | `https://web-production-86d39.up.railway.app` | ✅ |
 | **Railway Web** | Uses environment variables | ✅ |
 | **Railway Backend** | Hosts the API | ✅ |
 | **GitHub Actions** | Inherits from netlify.toml | ✅ |
-| **JavaScript Config** | `https://smartfarm-app-production.up.railway.app` | ✅ |
-| **API Service** | `https://smartfarm-app-production.up.railway.app` | ✅ |
+| **JavaScript Config** | `https://web-production-86d39.up.railway.app` | ✅ |
+| **API Service** | `https://web-production-86d39.up.railway.app` | ✅ |
 
 ---
 
@@ -109,7 +109,7 @@ return window.VITE_API_BASE_URL ||
 
 - **Frontend (Netlify):** Serves static files and redirects API calls
 - **Web Service (Railway):** Serves static files with CORS configuration
-- **Backend Service (Railway):** Hosts the actual API at `smartfarm-app-production.up.railway.app`
+- **Backend Service (Railway):** Hosts the actual API at `web-production-86d39.up.railway.app`
 
 The API URLs are consistent across all platforms. If you're still experiencing issues, they might be related to:
 
@@ -123,7 +123,7 @@ The API URLs are consistent across all platforms. If you're still experiencing i
 
 1. **Check Railway Backend Health:**
    ```bash
-   curl https://smartfarm-app-production.up.railway.app/api/health
+   curl https://web-production-86d39.up.railway.app/api/health
    ```
 
 2. **Verify CORS Configuration:**

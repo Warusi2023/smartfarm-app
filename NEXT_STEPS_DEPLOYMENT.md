@@ -5,7 +5,7 @@ Based on your current setup, here's what you need to do:
 ## ✅ What's Already Done
 
 1. **Backend (Railway)**: ✅ Already deployed
-   - URL: `https://smartfarm-app-production.up.railway.app`
+   - URL: `https://web-production-86d39.up.railway.app`
    - Status: Running
 
 2. **Frontend (Netlify)**: ✅ Already deployed
@@ -24,7 +24,7 @@ Based on your current setup, here's what you need to do:
 ### Step 1: Verify Your Sites Are Working
 
 **Check Backend (Railway):** ✅ **VERIFIED - WORKING!**
-1. ✅ URL: https://smartfarm-app-production.up.railway.app/api/health
+1. ✅ URL: https://web-production-86d39.up.railway.app/api/health
 2. ✅ Response: `{"ok":true,"service": "SmartFarm", "ts":1763022054321}`
 3. ✅ **Backend is live and responding correctly!**
 
@@ -70,8 +70,8 @@ GOOGLE_MAPS_API_KEY=your_key_here
 4. **Add these variables:**
 
 ```
-VITE_API_BASE_URL=https://smartfarm-app-production.up.railway.app
-VITE_API_URL=https://smartfarm-app-production.up.railway.app
+VITE_API_BASE_URL=https://web-production-86d39.up.railway.app
+VITE_API_URL=https://web-production-86d39.up.railway.app
 ```
 
 5. **Trigger a new deploy** (Deploys → Trigger deploy)
@@ -154,7 +154,7 @@ NETLIFY_SITE_ID=your_netlify_site_id
 
 ## ✅ Quick Checklist
 
-- [ ] Backend health check works: https://smartfarm-app-production.up.railway.app/api/health
+- [ ] Backend health check works: https://web-production-86d39.up.railway.app/api/health
 - [ ] Frontend loads: https://dulcet-sawine-92d6a8.netlify.app
 - [ ] Railway environment variables configured
 - [ ] Netlify environment variables configured
@@ -172,7 +172,7 @@ Once all checkboxes are checked, your website is live and ready to use!
 
 **Your Live URLs:**
 - **Frontend**: https://dulcet-sawine-92d6a8.netlify.app
-- **Backend API**: https://smartfarm-app-production.up.railway.app
+- **Backend API**: https://web-production-86d39.up.railway.app
 
 **Share these URLs with your users!**
 

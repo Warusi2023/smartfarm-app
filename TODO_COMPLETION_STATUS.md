@@ -40,7 +40,7 @@
    ```
 4. Wait for auto-deployment (2-3 minutes)
 
-**Verification:** Test https://smartfarm-app-production.up.railway.app/api/health
+**Verification:** Test https://web-production-86d39.up.railway.app/api/health
 
 ### **4. Test CORS configuration after Railway deployment**
 **Status:** ⏳ PENDING - Depends on TODO #3

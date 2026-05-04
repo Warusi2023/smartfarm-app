@@ -6,7 +6,7 @@ Your Android app is **already set up** to use the shared Railway backend!
 
 ### Current Configuration
 
-1. **API Base URL:** `https://smartfarm-app-production.up.railway.app/api`
+1. **API Base URL:** `https://web-production-86d39.up.railway.app/api`
 2. **Service Type:** `REAL_API` (configured in `ServiceFactory.kt`)
 3. **Environment:** `PRODUCTION`
 
@@ -20,7 +20,7 @@ Your Android app is **already set up** to use the shared Railway backend!
 
 ```kotlin
 val currentEnvironment = Environment.PRODUCTION
-// Base URL: https://smartfarm-app-production.up.railway.app/api
+// Base URL: https://web-production-86d39.up.railway.app/api
 ```
 
 ### 2. Check Service Factory
@@ -42,7 +42,7 @@ val currentServiceType = ServiceType.REAL_API
 2. **Check Logcat** for API calls:
    ```
    🌐 Using Real API Service
-   🌐 HTTP GET: https://smartfarm-app-production.up.railway.app/api/farms
+   🌐 HTTP GET: https://web-production-86d39.up.railway.app/api/farms
    ```
 
 3. **Test Health Endpoint:**
@@ -74,7 +74,7 @@ val currentServiceType = ServiceType.REAL_API
 
 ```kotlin
 val currentEnvironment = Environment.PRODUCTION
-// Uses: https://smartfarm-app-production.up.railway.app/api
+// Uses: https://web-production-86d39.up.railway.app/api
 ```
 
 ---
@@ -106,7 +106,7 @@ Since Android and Web use the same backend:
 ## 🐛 Common Issues
 
 ### "Connection refused"
-- ✅ Check Railway backend is running: `curl https://smartfarm-app-production.up.railway.app/api/health`
+- ✅ Check Railway backend is running: `curl https://web-production-86d39.up.railway.app/api/health`
 - ✅ Verify Internet permission in `AndroidManifest.xml`
 
 ### "401 Unauthorized"

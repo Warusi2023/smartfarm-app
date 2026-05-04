@@ -10,7 +10,7 @@ class EmailService {
     constructor() {
         this.transporter = null;
         this.fromEmail = process.env.EMAIL_FROM || 'SmartFarm <noreply@smartfarm.com>';
-        this.frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+        this.frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
         this.isConfigured = false;
         
         this.initializeTransporter();

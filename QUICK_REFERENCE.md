@@ -56,7 +56,7 @@ Railway backend returns **502 Bad Gateway**
 
 Test health endpoint:
 ```powershell
-Invoke-WebRequest https://smartfarm-app-production.up.railway.app/api/health
+Invoke-WebRequest https://web-production-86d39.up.railway.app/api/health
 ```
 
 Expected: `200 OK` with `{"ok":true,"service":"SmartFarm",...}`

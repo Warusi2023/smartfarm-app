@@ -71,7 +71,7 @@
 - [ ] Click "+ Add New Monitor" in UptimeRobot dashboard
 - [ ] Monitor Type: Select **"HTTP(s)"**
 - [ ] Friendly Name: `SmartFarm Backend API`
-- [ ] URL: `https://smartfarm-app-production.up.railway.app/api/health`
+- [ ] URL: `https://web-production-86d39.up.railway.app/api/health`
   - Replace with your actual Railway backend URL
   - Make sure to include `/api/health` endpoint
 - [ ] Monitoring Interval: **5 minutes** (default)

@@ -3,7 +3,7 @@
 Write-Host "SmartFarm Railway Backend Verification" -ForegroundColor Cyan
 Write-Host "=======================================" -ForegroundColor Cyan
 
-$railwayUrl = "https://smartfarm-app-production.up.railway.app"
+$railwayUrl = "https://web-production-86d39.up.railway.app"
 
 # Test 1: Check if Railway backend is accessible
 Write-Host "`n[TEST 1] Checking Railway Backend Accessibility..." -ForegroundColor Yellow

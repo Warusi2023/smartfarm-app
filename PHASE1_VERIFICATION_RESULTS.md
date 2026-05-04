@@ -1,7 +1,7 @@
 # 📊 Phase 1 Verification Results Analysis
 
 **Date:** January 2025  
-**Backend URL:** `https://smartfarm-app-production.up.railway.app`
+**Backend URL:** `https://web-production-86d39.up.railway.app`
 
 ---
 
@@ -54,7 +54,7 @@ The registration endpoint works, but the script marked it as FAIL. This is likel
 **To verify auth:**
 ```bash
 # Test registration manually
-curl -X POST https://smartfarm-app-production.up.railway.app/api/auth/register \
+curl -X POST https://web-production-86d39.up.railway.app/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{"email":"test@example.com","password":"Test123!@#","name":"Test User","firstName":"Test","lastName":"User"}'
 

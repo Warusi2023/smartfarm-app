@@ -76,7 +76,7 @@ HUSKY = 0
 ### **Step 3: Configure Netlify** (5 minutes)
 Add these environment variables in Netlify dashboard:
 ```
-VITE_API_URL = https://smartfarm-app-production.up.railway.app
+VITE_API_URL = https://web-production-86d39.up.railway.app
 NODE_VERSION = 18
 CI = true
 ```
@@ -164,10 +164,10 @@ Possible reasons:
 After deployment, verify:
 
 - [ ] Backend health check returns 200 OK
-  - Test: `https://smartfarm-app-production.up.railway.app/api/health`
+  - Test: `https://web-production-86d39.up.railway.app/api/health`
   
 - [ ] Backend API list works
-  - Test: `https://smartfarm-app-production.up.railway.app/api`
+  - Test: `https://web-production-86d39.up.railway.app/api`
   
 - [ ] CORS requests succeed from Netlify
   - Test: Browser console fetch command

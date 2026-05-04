@@ -3,7 +3,7 @@
 ## ✅ Successfully Implemented Steps
 
 ### Step 0: Choose Canonical Backend URL ✅
-**Decision**: `https://smartfarm-backend.railway.app`
+**Decision**: `https://web-production-86d39.up.railway.app`
 - Single source of truth for all API calls
 - Environment variable support via `VITE_API_BASE_URL`
 - Fallback to canonical URL if env not set
@@ -84,7 +84,7 @@ NODE_ENV=production
 Set these in Netlify dashboard (Site Settings → Environment Variables):
 
 ```bash
-VITE_API_BASE_URL=https://smartfarm-backend.railway.app
+VITE_API_BASE_URL=https://web-production-86d39.up.railway.app
 APP_BUILD_TAG=netlify
 CI=true
 HUSKY=0
@@ -129,7 +129,7 @@ Result: `200 OK` on http://localhost:3000/api/health
 
 ### ⏳ Railway Backend Test (PENDING)
 ```powershell
-Invoke-WebRequest https://smartfarm-backend.railway.app/api/health
+Invoke-WebRequest https://web-production-86d39.up.railway.app/api/health
 ```
 Expected: `200 OK` with `{"ok":true,"service":"SmartFarm","ts":...}`
 Current: `502 Bad Gateway` (Railway deployment in progress)
@@ -137,7 +137,7 @@ Current: `502 Bad Gateway` (Railway deployment in progress)
 ### ⏳ CORS Test (PENDING - After Railway Deploys)
 ```powershell
 $headers = @{"Origin"="https://www.smartfarm-app.com"}
-Invoke-WebRequest https://smartfarm-backend.railway.app/api/health -Headers $headers
+Invoke-WebRequest https://web-production-86d39.up.railway.app/api/health -Headers $headers
 ```
 Expected: Response should include `Access-Control-Allow-Origin: https://www.smartfarm-app.com`
 
@@ -155,7 +155,7 @@ Expected: Response should include `Access-Control-Allow-Origin: https://www.smar
 
 ✅ **CORS Policy**: Properly configured with origin validation  
 ✅ **502 Errors**: Backend binds to 0.0.0.0:PORT correctly  
-✅ **API URLs**: Single source of truth (smartfarm-backend.railway.app)  
+✅ **API URLs**: Single source of truth (web-production-86d39.up.railway.app)  
 ✅ **QR Code CDN Failures**: Removed, using stub instead  
 ✅ **Service Worker**: Individual file caching with error handling  
 ✅ **Error Suppression**: Railway errors limited to 5 occurrences  
@@ -209,7 +209,7 @@ If Railway still fails after auto-deployment:
 
 | Step | Description | Status | Notes |
 |------|-------------|--------|-------|
-| 0 | Choose canonical backend URL | ✅ Done | smartfarm-backend.railway.app |
+| 0 | Choose canonical backend URL | ✅ Done | web-production-86d39.up.railway.app |
 | 1-3 | Bulletproof CORS + PORT | ✅ Done | Tested locally, pushed to GitHub |
 | 4 | Unify API URLs | ✅ Done | Single source of truth created |
 | 5 | Remove QR CDN | ✅ Done | Using stub, no CDN errors |
@@ -222,7 +222,7 @@ If Railway still fails after auto-deployment:
 
 Once Railway successfully deploys the backend:
 
-✅ **Health Endpoint**: `https://smartfarm-backend.railway.app/api/health` returns 200  
+✅ **Health Endpoint**: `https://web-production-86d39.up.railway.app/api/health` returns 200  
 ✅ **No CORS Errors**: Access-Control-Allow-Origin set correctly  
 ✅ **No 502 Errors**: Backend responds properly  
 ✅ **No QR Errors**: QR code stub prevents CDN failures  
@@ -234,7 +234,7 @@ Once Railway successfully deploys the backend:
 
 ### Immediate:
 1. **Wait 2-3 minutes** for Railway auto-deployment
-2. **Test health endpoint**: `https://smartfarm-backend.railway.app/api/health`
+2. **Test health endpoint**: `https://web-production-86d39.up.railway.app/api/health`
 3. **If 200 OK**: Test frontend at `https://www.smartfarm-app.com`
 4. **If still 502**: Check Railway dashboard logs and clear build cache
 

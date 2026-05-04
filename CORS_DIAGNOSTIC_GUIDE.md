@@ -116,7 +116,7 @@ In Railway Dashboard → Your Backend Service → **Settings**
 ### **Test 1: Check if any backend is responding**
 Open in browser:
 ```
-https://smartfarm-app-production.up.railway.app/api/health
+https://web-production-86d39.up.railway.app/api/health
 ```
 
 **Expected:** JSON response with service info
@@ -125,7 +125,7 @@ https://smartfarm-app-production.up.railway.app/api/health
 ### **Test 2: Check CORS headers**
 In browser DevTools → Console, run:
 ```javascript
-fetch('https://smartfarm-app-production.up.railway.app/api/health', {
+fetch('https://web-production-86d39.up.railway.app/api/health', {
   method: 'GET',
   headers: {
     'Origin': 'https://www.smartfarm-app.com'

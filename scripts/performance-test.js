@@ -21,7 +21,7 @@ function log(message, color = 'reset') {
 }
 
 // Configuration
-const API_URL = process.env.API_URL || 'https://smartfarm-app-production.up.railway.app';
+const API_URL = process.env.API_URL || 'https://web-production-86d39.up.railway.app';
 const MAX_RESPONSE_TIME = 2000; // 2 seconds
 const MAX_PAGE_LOAD_TIME = 3000; // 3 seconds
 

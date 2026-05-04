@@ -56,7 +56,7 @@ npm install @sentry/node @sentry/profiling-node
 3. **Add Backend Monitor:**
    - Type: HTTP(s)
    - Name: SmartFarm Backend
-   - URL: `https://smartfarm-app-production.up.railway.app/api/health`
+   - URL: `https://web-production-86d39.up.railway.app/api/health`
    - Interval: 5 minutes
 4. **Add Frontend Monitor:**
    - Type: HTTP(s)

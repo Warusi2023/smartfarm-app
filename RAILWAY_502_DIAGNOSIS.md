@@ -121,13 +121,13 @@ Once Railway deploys properly:
 
 ### **Test Railway Backend:**
 ```bash
-curl https://smartfarm-app-production.up.railway.app/api/health
+curl https://web-production-86d39.up.railway.app/api/health
 ```
 
 ### **Test with CORS:**
 ```bash
 curl -H "Origin: https://www.smartfarm-app.com" \
-     https://smartfarm-app-production.up.railway.app/api/health
+     https://web-production-86d39.up.railway.app/api/health
 ```
 
 ### **Check Railway Logs:**

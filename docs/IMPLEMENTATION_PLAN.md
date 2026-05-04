@@ -106,7 +106,7 @@ This is a **static HTML/JavaScript** project (not React/Next/Vite), which means:
 
 ### API Base URL Strategy
 - Use `window.SmartFarmConfig.API_BASE_URL` in frontend JS
-- Default: `https://smartfarm-app-production.up.railway.app`
+- Default: `https://web-production-86d39.up.railway.app`
 - Override via environment variable at build time (if needed)
 - Already implemented in `js/config.js`
 

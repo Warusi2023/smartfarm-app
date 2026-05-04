@@ -137,12 +137,12 @@
 **Required Variables:**
 ```
 ✅ VITE_API_URL
-   - Value: https://smartfarm-app-production.up.railway.app
+   - Value: https://web-production-86d39.up.railway.app
    - ⚠️ NO /api at the end!
    - Status: [ ] Set  [ ] Missing
 
 ✅ VITE_API_BASE_URL (optional but recommended)
-   - Value: https://smartfarm-app-production.up.railway.app
+   - Value: https://web-production-86d39.up.railway.app
    - Status: [ ] Set  [ ] Missing
 
 ✅ VITE_APP_NAME
@@ -214,7 +214,7 @@ From Step 2.2, note your Netlify URL:
 ```powershell
 # Set your actual frontend URL
 $env:FRONTEND_URL="https://your-actual-site.netlify.app"
-$env:BACKEND_URL="https://smartfarm-app-production.up.railway.app"
+$env:BACKEND_URL="https://web-production-86d39.up.railway.app"
 
 # Run verification
 node scripts/verify-pre-launch-status.js
@@ -225,7 +225,7 @@ node scripts/verify-pre-launch-status.js
 1. **Test Backend Health:**
    ```powershell
    # Should return: {"ok": true, ...}
-   Invoke-WebRequest -Uri "https://smartfarm-app-production.up.railway.app/api/health"
+   Invoke-WebRequest -Uri "https://web-production-86d39.up.railway.app/api/health"
    ```
 
 2. **Test Frontend:**

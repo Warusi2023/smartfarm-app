@@ -116,7 +116,7 @@ HUSKY = 0
 
 ### **Netlify Environment Variables:**
 ```
-VITE_API_URL = https://smartfarm-app-production.up.railway.app
+VITE_API_URL = https://web-production-86d39.up.railway.app
 NODE_VERSION = 18
 CI = true
 ```

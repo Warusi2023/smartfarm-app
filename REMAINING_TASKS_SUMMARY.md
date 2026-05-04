@@ -46,7 +46,7 @@
 5. Check Railway logs for "Database connected successfully"
 
 #### Netlify Frontend Variables (Check Netlify Dashboard → Site Settings → Environment Variables)
-- [ ] `VITE_API_URL` - Should be `https://smartfarm-app-production.up.railway.app`
+- [ ] `VITE_API_URL` - Should be `https://web-production-86d39.up.railway.app`
 - [ ] `VITE_APP_NAME=SmartFarm`
 - [ ] `VITE_APP_VERSION=1.0.0`
 - [ ] `VITE_SENTRY_DSN` - Optional but recommended
@@ -71,7 +71,7 @@ WEATHER_API_KEY=<if used>
 
 **Netlify (Frontend) → Set these variables:**
 ```bash
-VITE_API_URL=https://smartfarm-app-production.up.railway.app
+VITE_API_URL=https://web-production-86d39.up.railway.app
 VITE_APP_NAME=SmartFarm
 VITE_APP_VERSION=1.0.0
 ```
@@ -134,7 +134,7 @@ VITE_APP_VERSION=1.0.0
 - [ ] Create account at https://uptimerobot.com
 - [ ] Verify email
 - [ ] Add Backend Monitor:
-  - URL: `https://smartfarm-app-production.up.railway.app/api/health`
+  - URL: `https://web-production-86d39.up.railway.app/api/health`
   - Type: HTTP(s)
   - Interval: 5 minutes
 - [ ] Add Frontend Monitor:

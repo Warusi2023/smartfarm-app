@@ -5,7 +5,7 @@ echo.
 
 echo 📋 Configuration Status Check:
 echo   ✅ JWT Secret: dc9fd018ef76c1e7065698adecdb551dbe3baa002cdbd4f8ae35a52211e65516
-echo   ✅ Backend URL: https://smartfarm-app-production.up.railway.app
+echo   ✅ Backend URL: https://web-production-86d39.up.railway.app
 echo   ✅ Frontend URL: https://dulcet-sawine-92d6a8.netlify.app
 echo.
 
@@ -62,7 +62,7 @@ echo 🎉 DEPLOYMENT TRIGGERED SUCCESSFULLY!
 echo.
 echo 📊 Monitoring Information:
 echo   🔗 GitHub Actions: https://github.com/Warusi2023/smartfarm-app/actions
-echo   🔗 Backend Health: https://smartfarm-app-production.up.railway.app/api/health
+echo   🔗 Backend Health: https://web-production-86d39.up.railway.app/api/health
 echo   🔗 Frontend: https://dulcet-sawine-92d6a8.netlify.app
 echo.
 

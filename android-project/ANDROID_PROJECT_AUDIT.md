@@ -208,7 +208,7 @@ interface SmartFarmApi {
 android {
     defaultConfig {
         // ... existing config
-        buildConfigField("String", "API_BASE_URL", "\"https://smartfarm-app-production.up.railway.app\"")
+        buildConfigField("String", "API_BASE_URL", "\"https://web-production-86d39.up.railway.app\"")
     }
 }
 ```
@@ -461,7 +461,7 @@ plugins {
 android {
     // ... existing config
     defaultConfig {
-        buildConfigField("String", "API_BASE_URL", "\"https://smartfarm-app-production.up.railway.app\"")
+        buildConfigField("String", "API_BASE_URL", "\"https://web-production-86d39.up.railway.app\"")
     }
 }
 

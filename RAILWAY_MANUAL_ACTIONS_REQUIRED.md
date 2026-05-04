@@ -179,14 +179,14 @@ railway variables
 
 ### Test 1: Health Endpoint
 ```powershell
-Invoke-WebRequest https://smartfarm-app-production.up.railway.app/api/health
+Invoke-WebRequest https://web-production-86d39.up.railway.app/api/health
 ```
 Expected: `200 OK` with `{"ok":true,"service":"SmartFarm","ts":...}`
 
 ### Test 2: CORS Headers
 ```powershell
 $headers = @{"Origin"="https://www.smartfarm-app.com"}
-Invoke-WebRequest https://smartfarm-app-production.up.railway.app/api/health -Headers $headers
+Invoke-WebRequest https://web-production-86d39.up.railway.app/api/health -Headers $headers
 ```
 Expected: Response includes `Access-Control-Allow-Origin: https://www.smartfarm-app.com`
 

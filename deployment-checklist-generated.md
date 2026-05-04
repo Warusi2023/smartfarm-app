@@ -21,7 +21,7 @@
 - [ ] FEATURE_GEOFENCING=true
 
 ### 3. Netlify Variables (Required)
-- [ ] VITE_API_BASE_URL=https://smartfarm-app-production.up.railway.app/api
+- [ ] VITE_API_BASE_URL=https://web-production-86d39.up.railway.app/api
 - [ ] VITE_OPENWEATHER_API_KEY=your_openweather_api_key_here
 - [ ] VITE_ENVIRONMENT=production
 
@@ -39,7 +39,7 @@ git push origin main
 - [ ] Fix any failed jobs
 
 ### 6. Verify Deployment
-- [ ] Backend health: https://smartfarm-app-production.up.railway.app/api/health
+- [ ] Backend health: https://web-production-86d39.up.railway.app/api/health
 - [ ] Frontend: https://dulcet-sawine-92d6a8.netlify.app
 - [ ] Test login and dashboard functionality
 

@@ -9,7 +9,7 @@ const https = require('https');
 const http = require('http');
 
 // Configuration - Update these with your URLs
-const BACKEND_URL = process.env.BACKEND_URL || 'https://smartfarm-app-production.up.railway.app';
+const BACKEND_URL = process.env.BACKEND_URL || 'https://web-production-86d39.up.railway.app';
 const FRONTEND_URL = process.env.FRONTEND_URL || 'https://your-site.netlify.app';
 
 const colors = {

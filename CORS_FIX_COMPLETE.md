@@ -4,7 +4,7 @@
 
 The "Application Error" is caused by **CORS (Cross-Origin Resource Sharing) blocking**:
 
-**Error:** `Access to fetch at 'https://smartfarm-app-production.up.railway.app/api/health' from origin 'https://www.smartfarm-app.com' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.`
+**Error:** `Access to fetch at 'https://web-production-86d39.up.railway.app/api/health' from origin 'https://www.smartfarm-app.com' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.`
 
 ## Root Cause
 
@@ -73,7 +73,7 @@ curl -H "Origin: https://www.smartfarm-app.com" \
      -H "Access-Control-Request-Method: GET" \
      -H "Access-Control-Request-Headers: X-Requested-With" \
      -X OPTIONS \
-     https://smartfarm-app-production.up.railway.app/api/health
+     https://web-production-86d39.up.railway.app/api/health
 ```
 
 Should return headers including:

@@ -8,7 +8,7 @@
 
 - ✅ Netlify account (sign up at https://app.netlify.com if needed)
 - ✅ GitHub repository connected
-- ✅ Backend URL: `https://smartfarm-app-production.up.railway.app`
+- ✅ Backend URL: `https://web-production-86d39.up.railway.app`
 
 ---
 
@@ -67,7 +67,7 @@
    **Variable 1:**
    ```
    Variable name: VITE_API_URL
-   Value: https://smartfarm-app-production.up.railway.app
+   Value: https://web-production-86d39.up.railway.app
    Scope: All scopes (or Production)
    ```
    Click **"Add variable"**
@@ -75,7 +75,7 @@
    **Variable 2:**
    ```
    Variable name: VITE_API_BASE_URL
-   Value: https://smartfarm-app-production.up.railway.app
+   Value: https://web-production-86d39.up.railway.app
    Scope: All scopes (or Production)
    ```
    Click **"Add variable"**
@@ -167,7 +167,7 @@
    - Open DevTools (F12)
    - Go to **Console** tab
    - Look for:
-     - ✅ `[API Config] Using environment URL: https://smartfarm-app-production.up.railway.app`
+     - ✅ `[API Config] Using environment URL: https://web-production-86d39.up.railway.app`
      - ✅ No CORS errors
      - ✅ No API connection errors
 
@@ -175,7 +175,7 @@
    - Go to **Network** tab in DevTools
    - Try to register/login
    - Check if API calls succeed (status 200)
-   - Verify API calls go to: `https://smartfarm-app-production.up.railway.app`
+   - Verify API calls go to: `https://web-production-86d39.up.railway.app`
 
 ---
 
@@ -265,8 +265,8 @@ After Netlify is configured:
 
 **Required Variables:**
 ```
-VITE_API_URL=https://smartfarm-app-production.up.railway.app
-VITE_API_BASE_URL=https://smartfarm-app-production.up.railway.app
+VITE_API_URL=https://web-production-86d39.up.railway.app
+VITE_API_BASE_URL=https://web-production-86d39.up.railway.app
 VITE_APP_NAME=SmartFarm
 VITE_APP_VERSION=1.0.0
 NODE_ENV=production

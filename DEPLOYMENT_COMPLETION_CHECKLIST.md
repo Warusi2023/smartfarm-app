@@ -13,7 +13,7 @@
 - [ ] Monitor GitHub Actions: https://github.com/Warusi2023/smartfarm-app/actions
 
 ## ✅ Post-Deployment Verification
-- [ ] Backend health check: https://smartfarm-app-production.up.railway.app/api/health
+- [ ] Backend health check: https://web-production-86d39.up.railway.app/api/health
 - [ ] Frontend access: https://dulcet-sawine-92d6a8.netlify.app
 - [ ] Login functionality test
 - [ ] Dashboard functionality test

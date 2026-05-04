@@ -177,7 +177,7 @@ GitHub Secrets:
 # Railway
 RAILWAY_TOKEN=your_railway_api_token
 RAILWAY_SERVICE_NAME=smartfarm-backend
-RAILWAY_PUBLIC_URL=https://smartfarm-app-production.up.railway.app
+RAILWAY_PUBLIC_URL=https://web-production-86d39.up.railway.app
 
 # Netlify
 NETLIFY_AUTH_TOKEN=your_netlify_personal_access_token
@@ -239,7 +239,7 @@ FEATURE_AI_ADVISORY=true
 **Add these:**
 ```bash
 # API Base URL (important!)
-VITE_API_URL=https://smartfarm-app-production.up.railway.app
+VITE_API_URL=https://web-production-86d39.up.railway.app
 
 # Optional
 LOG_LEVEL=info
@@ -262,7 +262,7 @@ git push origin main
 **Verify:**
 ```bash
 # Backend health check
-curl https://smartfarm-app-production.up.railway.app/api/health
+curl https://web-production-86d39.up.railway.app/api/health
 
 # Should return:
 {
@@ -328,7 +328,7 @@ npx playwright test
 
 **1. Create a Zone**
 ```bash
-curl -X POST https://smartfarm-app-production.up.railway.app/api/geofencing/zones \
+curl -X POST https://web-production-86d39.up.railway.app/api/geofencing/zones \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -351,13 +351,13 @@ curl -X POST https://smartfarm-app-production.up.railway.app/api/geofencing/zone
 
 **2. List All Zones**
 ```bash
-curl -X GET https://smartfarm-app-production.up.railway.app/api/geofencing/zones \
+curl -X GET https://web-production-86d39.up.railway.app/api/geofencing/zones \
   -H "Authorization: Bearer YOUR_TOKEN"
 ```
 
 **3. Update a Zone**
 ```bash
-curl -X PUT https://smartfarm-app-production.up.railway.app/api/geofencing/zones/ZONE_ID \
+curl -X PUT https://web-production-86d39.up.railway.app/api/geofencing/zones/ZONE_ID \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -368,13 +368,13 @@ curl -X PUT https://smartfarm-app-production.up.railway.app/api/geofencing/zones
 
 **4. Delete a Zone**
 ```bash
-curl -X DELETE https://smartfarm-app-production.up.railway.app/api/geofencing/zones/ZONE_ID \
+curl -X DELETE https://web-production-86d39.up.railway.app/api/geofencing/zones/ZONE_ID \
   -H "Authorization: Bearer YOUR_TOKEN"
 ```
 
 **5. Log an Event**
 ```bash
-curl -X POST https://smartfarm-app-production.up.railway.app/api/geofencing/events \
+curl -X POST https://web-production-86d39.up.railway.app/api/geofencing/events \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{

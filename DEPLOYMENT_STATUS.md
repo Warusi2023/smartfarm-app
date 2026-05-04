@@ -3,7 +3,7 @@
 ## 🔍 Automated Verification Results
 
 **Date**: 2025-01-30
-**Backend URL**: https://smartfarm-app-production.up.railway.app
+**Backend URL**: https://web-production-86d39.up.railway.app
 
 ### Task 1: Backend Deployment Status
 

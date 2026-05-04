@@ -12,7 +12,7 @@ Cursor's Postgres database interface is stuck "attempting to connect" and hasn't
 
 ### Test 1: Health Check Endpoint
 ```bash
-curl https://smartfarm-app-production.up.railway.app/api/health
+curl https://web-production-86d39.up.railway.app/api/health
 ```
 
 Should return database status:
@@ -234,7 +234,7 @@ app.get('/api/db-test', async (req, res) => {
 
 Then test:
 ```bash
-curl https://smartfarm-app-production.up.railway.app/api/db-test
+curl https://web-production-86d39.up.railway.app/api/db-test
 ```
 
 ---

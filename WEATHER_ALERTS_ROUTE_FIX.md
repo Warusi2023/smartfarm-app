@@ -92,7 +92,7 @@ This will help identify any remaining issues.
 
 **Test Weather Alerts Route**:
 ```bash
-curl -I https://smartfarm-app-production.up.railway.app/api/weather-alerts
+curl -I https://web-production-86d39.up.railway.app/api/weather-alerts
 ```
 
 **Expected Results**:
@@ -102,7 +102,7 @@ curl -I https://smartfarm-app-production.up.railway.app/api/weather-alerts
 
 **With Auth Token** (if you have one):
 ```bash
-curl -X GET https://smartfarm-app-production.up.railway.app/api/weather-alerts \
+curl -X GET https://web-production-86d39.up.railway.app/api/weather-alerts \
   -H "Authorization: Bearer YOUR_TOKEN"
 ```
 

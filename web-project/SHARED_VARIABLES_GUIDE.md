@@ -4,9 +4,9 @@
 
 ### **API Configuration**
 ```
-VITE_API_URL = https://smartfarm-backend.railway.app
-VITE_API_BASE_URL = https://smartfarm-backend.railway.app
-NEXT_PUBLIC_API_BASE_URL = https://smartfarm-backend.railway.app
+VITE_API_URL = https://web-production-86d39.up.railway.app
+VITE_API_BASE_URL = https://web-production-86d39.up.railway.app
+NEXT_PUBLIC_API_BASE_URL = https://web-production-86d39.up.railway.app
 ```
 
 ### **External Services (Same API Keys)**
@@ -61,7 +61,7 @@ PORT = 8080 (smartfarm-app component)
 
 ### **Component-Specific URLs**
 ```
-VITE_API_URL = https://smartfarm-backend.railway.app (web connects TO smartfarm-app)
+VITE_API_URL = https://web-production-86d39.up.railway.app (web connects TO smartfarm-app)
 # smartfarm-app doesn't need this - it IS the API
 ```
 
@@ -92,7 +92,7 @@ VITE_API_URL = https://smartfarm-backend.railway.app (web connects TO smartfarm-
 ```
 NODE_ENV = production
 PORT = 3000
-VITE_API_URL = https://smartfarm-backend.railway.app
+VITE_API_URL = https://web-production-86d39.up.railway.app
 WEATHER_API_KEY = [same as smartfarm-app]
 GOOGLE_MAPS_API_KEY = [same as smartfarm-app]
 JWT_SECRET = [same as smartfarm-app]

@@ -12,7 +12,7 @@ console.log('🔍 SmartFarm Configuration Checker\n');
 // Configuration values
 const config = {
   jwtSecret: 'dc9fd018ef76c1e7065698adecdb551dbe3baa002cdbd4f8ae35a52211e65516',
-  backendUrl: 'https://smartfarm-app-production.up.railway.app',
+  backendUrl: 'https://web-production-86d39.up.railway.app',
   frontendUrl: 'https://dulcet-sawine-92d6a8.netlify.app',
   githubRepo: 'Warusi2023/smartfarm-app'
 };

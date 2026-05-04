@@ -74,7 +74,7 @@ git log --oneline -5
 ### Test API Endpoint
 After redeploy, test:
 ```bash
-curl https://smartfarm-app-production.up.railway.app/api/health
+curl https://web-production-86d39.up.railway.app/api/health
 ```
 
 Should return:

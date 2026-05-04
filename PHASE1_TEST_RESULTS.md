@@ -1,7 +1,7 @@
 # ✅ Phase 1 Test Results
 
 **Date:** January 2025  
-**Backend URL:** `https://smartfarm-app-production.up.railway.app`
+**Backend URL:** `https://web-production-86d39.up.railway.app`
 
 ---
 
@@ -183,7 +183,7 @@ If this works, database is connected!
 
 **Set Netlify Environment Variables:**
 - Netlify → Site → Environment Variables
-- Add: `VITE_API_URL=https://smartfarm-app-production.up.railway.app`
+- Add: `VITE_API_URL=https://web-production-86d39.up.railway.app`
 - Redeploy frontend
 
 **Update CORS_ORIGINS:**

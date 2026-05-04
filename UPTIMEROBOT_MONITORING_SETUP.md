@@ -45,7 +45,7 @@ UptimeRobot is a free uptime monitoring service that checks your services every 
 
 **Monitor Details:**
 - **Friendly Name:** `SmartFarm Backend API`
-- **URL:** `https://smartfarm-app-production.up.railway.app/api/health`
+- **URL:** `https://web-production-86d39.up.railway.app/api/health`
   - Replace with your actual Railway backend URL
   - Make sure to include `/api/health` endpoint
 
@@ -128,7 +128,7 @@ UptimeRobot is a free uptime monitoring service that checks your services every 
 
 **Test Backend Health Endpoint:**
 ```bash
-curl https://smartfarm-app-production.up.railway.app/api/health
+curl https://web-production-86d39.up.railway.app/api/health
 ```
 
 **Expected Response:**

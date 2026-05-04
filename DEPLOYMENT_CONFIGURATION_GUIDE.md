@@ -11,7 +11,7 @@
 - **NETLIFY_SITE_ID**: Get from Netlify → Site Settings → General → Site information → Site ID
 - **NETLIFY_SITE_ID_STAGING**: Create staging site in Netlify and get Site ID
 - **NETLIFY_PRODUCTION_URL**: https://dulcet-sawine-92d6a8.netlify.app
-- **RAILWAY_PRODUCTION_URL**: https://smartfarm-app-production.up.railway.app
+- **RAILWAY_PRODUCTION_URL**: https://web-production-86d39.up.railway.app
 - **RAILWAY_MIGRATION_TOKEN**: e3b65bed85523fbb9a2ae082a7e29491e8f7862df3431efc1851661d4aaad6b1
 
 ### How to Add Secrets:
@@ -53,7 +53,7 @@
 🔗 **URL**: https://app.netlify.com → Your Site → Environment variables
 
 ### Required Variables:
-- **VITE_API_BASE_URL** = `https://smartfarm-app-production.up.railway.app/api`
+- **VITE_API_BASE_URL** = `https://web-production-86d39.up.railway.app/api`
 - **VITE_OPENWEATHER_API_KEY** = `your_openweather_api_key_here`
 - **VITE_ENVIRONMENT** = `production`
 
@@ -97,7 +97,7 @@ git push origin main
 ## Step 6: Verify Deployment
 
 ### Backend Health Check:
-🔗 **URL**: https://smartfarm-app-production.up.railway.app/api/health
+🔗 **URL**: https://web-production-86d39.up.railway.app/api/health
 
 **Expected Response:**
 ```json

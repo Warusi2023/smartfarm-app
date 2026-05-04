@@ -118,7 +118,7 @@ In Railway, go to Settings → Build:
 
 3. **Get Backend URL**
    - Copy the Railway-provided URL
-   - Example: `https://smartfarm-backend-production.up.railway.app`
+   - Example: `https://web-production-86d39.up.railway.app`
 
 ---
 
@@ -151,7 +151,7 @@ In Netlify dashboard, go to Site settings → Environment variables:
 
 ```bash
 # Backend API URL
-VITE_API_URL=https://smartfarm-backend-production.up.railway.app
+VITE_API_URL=https://web-production-86d39.up.railway.app
 
 # Ads Configuration
 VITE_ADSENSE_CLIENT_ID=ca-pub-xxxxxxxxxxxxxxxx
@@ -196,13 +196,13 @@ Test all critical endpoints:
 
 ```bash
 # Backend health check
-curl https://smartfarm-backend-production.up.railway.app/api/health
+curl https://web-production-86d39.up.railway.app/api/health
 
 # Ads configuration
-curl https://smartfarm-backend-production.up.railway.app/api/ads/config
+curl https://web-production-86d39.up.railway.app/api/ads/config
 
 # Affiliate products
-curl https://smartfarm-backend-production.up.railway.app/api/ads/affiliate/seeds
+curl https://web-production-86d39.up.railway.app/api/ads/affiliate/seeds
 ```
 
 ### **Step 2: Frontend Testing**
@@ -230,7 +230,7 @@ curl https://smartfarm-backend-production.up.railway.app/api/ads/affiliate/seeds
 curl -w "@curl-format.txt" -o /dev/null -s "https://your-site.netlify.app"
 
 # Test API response times
-curl -w "@curl-format.txt" -o /dev/null -s "https://smartfarm-backend-production.up.railway.app/api/health"
+curl -w "@curl-format.txt" -o /dev/null -s "https://web-production-86d39.up.railway.app/api/health"
 ```
 
 ---
@@ -383,7 +383,7 @@ echo $VITE_ADSENSE_CLIENT_ID
 #### **2. API Connection Issues**
 ```bash
 # Test API connectivity
-curl https://smartfarm-backend-production.up.railway.app/api/health
+curl https://web-production-86d39.up.railway.app/api/health
 
 # Check CORS configuration
 # Verify environment variables
@@ -406,7 +406,7 @@ railway logs
 # Go to Netlify dashboard → Deploys → View logs
 
 # Test API endpoints
-curl -X GET https://smartfarm-backend-production.up.railway.app/api/ads/config
+curl -X GET https://web-production-86d39.up.railway.app/api/ads/config
 ```
 
 ---

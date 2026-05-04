@@ -20,7 +20,7 @@ Railway is still running code from **5 days ago**. The AI Nutrition Advice endpo
 ### Step 3: Verify Deployment
 After deployment completes, test the endpoint:
 ```
-https://smartfarm-app-production.up.railway.app/api/ai-advisory/test
+https://web-production-86d39.up.railway.app/api/ai-advisory/test
 ```
 
 Should return:

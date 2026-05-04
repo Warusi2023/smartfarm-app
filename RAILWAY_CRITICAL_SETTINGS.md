@@ -122,7 +122,7 @@ node scripts\ping.mjs
 ```
 
 ### **Test in Browser:**
-Open: `https://smartfarm-app-production.up.railway.app/api/health`
+Open: `https://web-production-86d39.up.railway.app/api/health`
 
 **Should return:**
 ```json

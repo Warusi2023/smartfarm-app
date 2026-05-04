@@ -1,7 +1,7 @@
 // Test API connectivity across all platforms
 const https = require('https');
 
-const API_URL = 'https://smartfarm-app-production.up.railway.app';
+const API_URL = 'https://web-production-86d39.up.railway.app';
 
 console.log('🔗 Testing API Connectivity...\n');
 

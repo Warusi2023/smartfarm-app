@@ -13,7 +13,7 @@
 **Status**: ✅ Backend is deployed and running
 
 **Verification**:
-- Health endpoint: `https://smartfarm-app-production.up.railway.app/api/health` ✅
+- Health endpoint: `https://web-production-86d39.up.railway.app/api/health` ✅
 - Weather alerts route: Check if returns 401 (route exists) or 404 (needs fix)
 
 **Next**: Proceed to database migration
@@ -193,7 +193,7 @@ curl -X POST https://web-production-86d39.up.railway.app \
 
 **Test 1: Get Alerts**
 ```bash
-curl -X GET https://smartfarm-app-production.up.railway.app/api/weather-alerts \
+curl -X GET https://web-production-86d39.up.railway.app/api/weather-alerts \
   -H "Authorization: Bearer YOUR_TOKEN_HERE" \
   -H "Content-Type: application/json"
 ```
@@ -202,7 +202,7 @@ curl -X GET https://smartfarm-app-production.up.railway.app/api/weather-alerts \
 
 **Test 2: Get Statistics**
 ```bash
-curl -X GET https://smartfarm-app-production.up.railway.app/api/weather-alerts/stats \
+curl -X GET https://web-production-86d39.up.railway.app/api/weather-alerts/stats \
   -H "Authorization: Bearer YOUR_TOKEN_HERE" \
   -H "Content-Type: application/json"
 ```
@@ -211,7 +211,7 @@ curl -X GET https://smartfarm-app-production.up.railway.app/api/weather-alerts/s
 
 **Test 3: Manual Alert Generation**
 ```bash
-curl -X POST https://smartfarm-app-production.up.railway.app/api/weather-alerts/generate \
+curl -X POST https://web-production-86d39.up.railway.app/api/weather-alerts/generate \
   -H "Authorization: Bearer YOUR_TOKEN_HERE" \
   -H "Content-Type: application/json"
 ```
@@ -380,7 +380,7 @@ Feature 1 is **LIVE IN PRODUCTION** when:
 
 **Deployed By**: _______________
 
-**Production URL**: `https://smartfarm-app-production.up.railway.app`
+**Production URL**: `https://web-production-86d39.up.railway.app`
 
 **Cron Schedule**: Every 6 hours (`0 */6 * * *`)
 

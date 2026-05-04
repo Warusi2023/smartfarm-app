@@ -17,9 +17,9 @@ Click **"+ New Variable"** and add each one:
 NODE_ENV = production
 PORT = 3000
 LOG_LEVEL = info
-VITE_API_URL = https://smartfarm-backend.railway.app
-VITE_API_BASE_URL = https://smartfarm-backend.railway.app
-NEXT_PUBLIC_API_BASE_URL = https://smartfarm-backend.railway.app
+VITE_API_URL = https://web-production-86d39.up.railway.app
+VITE_API_BASE_URL = https://web-production-86d39.up.railway.app
+NEXT_PUBLIC_API_BASE_URL = https://web-production-86d39.up.railway.app
 ```
 
 #### **Method B: Raw Editor (Faster)**
@@ -32,9 +32,9 @@ NEXT_PUBLIC_API_BASE_URL = https://smartfarm-backend.railway.app
   "NODE_ENV": "production",
   "PORT": "3000",
   "LOG_LEVEL": "info",
-  "VITE_API_URL": "https://smartfarm-backend.railway.app",
-  "VITE_API_BASE_URL": "https://smartfarm-backend.railway.app",
-  "NEXT_PUBLIC_API_BASE_URL": "https://smartfarm-backend.railway.app"
+  "VITE_API_URL": "https://web-production-86d39.up.railway.app",
+  "VITE_API_BASE_URL": "https://web-production-86d39.up.railway.app",
+  "NEXT_PUBLIC_API_BASE_URL": "https://web-production-86d39.up.railway.app"
 }
 ```
 

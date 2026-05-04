@@ -85,7 +85,7 @@ In Railway dashboard:
 
 Open in your browser:
 ```
-https://smartfarm-app-production.up.railway.app/api/health
+https://web-production-86d39.up.railway.app/api/health
 ```
 
 **Expected result:**
@@ -128,7 +128,7 @@ If you see this JSON → ✅ Backend is working!
 
 ### **Test CORS in browser console:**
 ```javascript
-fetch('https://smartfarm-app-production.up.railway.app/api/health', {
+fetch('https://web-production-86d39.up.railway.app/api/health', {
   method: 'GET',
   headers: {
     'Origin': 'https://www.smartfarm-app.com'

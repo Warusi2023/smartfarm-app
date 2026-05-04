@@ -14,10 +14,10 @@ This error means the backend server is not responding or the connection was rese
 
 ```bash
 # Test Railway backend
-curl https://smartfarm-app-production.up.railway.app/api/health
+curl https://web-production-86d39.up.railway.app/api/health
 
 # Or open in browser:
-https://smartfarm-app-production.up.railway.app/api/health
+https://web-production-86d39.up.railway.app/api/health
 ```
 
 **Expected Response:**
@@ -79,7 +79,7 @@ https://smartfarm-app-production.up.railway.app/api/health
 Open browser DevTools → Console and run:
 
 ```javascript
-fetch('https://smartfarm-app-production.up.railway.app/api/health', {
+fetch('https://web-production-86d39.up.railway.app/api/health', {
   method: 'GET',
   headers: {
     'Content-Type': 'application/json'
@@ -236,7 +236,7 @@ fetch('https://smartfarm-app-production.up.railway.app/api/health', {
 
 **Solution:**
 1. Check Netlify environment variables:
-   - `VITE_API_URL` should be: `https://smartfarm-app-production.up.railway.app`
+   - `VITE_API_URL` should be: `https://web-production-86d39.up.railway.app`
 2. Verify frontend config files
 3. Redeploy frontend
 
@@ -250,7 +250,7 @@ Create a test script to diagnose the issue:
 // test-backend-connection.js
 const https = require('https');
 
-const BACKEND_URL = 'https://smartfarm-app-production.up.railway.app';
+const BACKEND_URL = 'https://web-production-86d39.up.railway.app';
 
 console.log('🔍 Testing backend connection...');
 console.log('URL:', BACKEND_URL);
@@ -336,7 +336,7 @@ After fixing, verify:
 
 1. **Backend Health Check:**
    ```bash
-   curl https://smartfarm-app-production.up.railway.app/api/health
+   curl https://web-production-86d39.up.railway.app/api/health
    ```
 
 2. **Frontend Connection:**

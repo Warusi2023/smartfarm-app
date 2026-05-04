@@ -6,7 +6,7 @@
 
 | Variable | Value | Description |
 |----------|-------|-------------|
-| `VITE_API_URL` | `https://smartfarm-app-production.up.railway.app/api` | Backend API URL for frontend to connect to |
+| `VITE_API_URL` | `https://web-production-86d39.up.railway.app/api` | Backend API URL for frontend to connect to |
 | `APP_BUILD_TAG` | `railway` | Build identifier for tracking deployments |
 
 ### **CI/CD Configuration Variables**
@@ -28,8 +28,8 @@
 
 | Variable | Value | Description |
 |----------|-------|-------------|
-| `NEXT_PUBLIC_API_URL` | `https://smartfarm-app-production.up.railway.app/api` | Alternative API URL (for compatibility) |
-| `REACT_APP_API_URL` | `https://smartfarm-app-production.up.railway.app/api` | Alternative API URL (for compatibility) |
+| `NEXT_PUBLIC_API_URL` | `https://web-production-86d39.up.railway.app/api` | Alternative API URL (for compatibility) |
+| `REACT_APP_API_URL` | `https://web-production-86d39.up.railway.app/api` | Alternative API URL (for compatibility) |
 
 ## 📋 **How to Add These Variables in Railway**
 
@@ -52,7 +52,7 @@
 
 ### **Essential Variables (Minimum Required):**
 ```
-VITE_API_URL=https://smartfarm-app-production.up.railway.app/api
+VITE_API_URL=https://web-production-86d39.up.railway.app/api
 APP_BUILD_TAG=railway
 CI=1
 HUSKY=0
@@ -61,13 +61,13 @@ NODE_ENV=production
 
 ### **Complete Configuration (Recommended):**
 ```
-VITE_API_URL=https://smartfarm-app-production.up.railway.app/api
+VITE_API_URL=https://web-production-86d39.up.railway.app/api
 APP_BUILD_TAG=railway
 CI=1
 HUSKY=0
 NODE_ENV=production
-NEXT_PUBLIC_API_URL=https://smartfarm-app-production.up.railway.app/api
-REACT_APP_API_URL=https://smartfarm-app-production.up.railway.app/api
+NEXT_PUBLIC_API_URL=https://web-production-86d39.up.railway.app/api
+REACT_APP_API_URL=https://web-production-86d39.up.railway.app/api
 ```
 
 ## ⚠️ **Important Notes**

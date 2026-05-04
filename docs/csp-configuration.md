@@ -11,7 +11,7 @@ This document outlines the Content Security Policy configuration for the SmartFa
 ### **Netlify Configuration** (`web-project/netlify.toml`)
 
 ```toml
-Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https:; connect-src 'self' https://api.openweathermap.org https://smartfarm-backend.railway.app https://cdn.jsdelivr.net;"
+Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https:; connect-src 'self' https://api.openweathermap.org https://web-production-86d39.up.railway.app https://cdn.jsdelivr.net;"
 ```
 
 ---
@@ -60,7 +60,7 @@ Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline'
 - **Allowed Sources**:
   - `'self'`: Same origin API calls
   - `https://api.openweathermap.org`: Weather API
-  - `https://smartfarm-backend.railway.app`: Backend API
+  - `https://web-production-86d39.up.railway.app`: Backend API
   - `https://cdn.jsdelivr.net`: Source map requests
 
 ---
@@ -123,7 +123,7 @@ Refused to load [resource] because it violates the following Content Security Po
 | Service | Domain | Purpose | CSP Directive |
 |---------|--------|---------|---------------|
 | OpenWeather | `api.openweathermap.org` | Weather Data | `connect-src` |
-| SmartFarm Backend | `smartfarm-backend.railway.app` | Application API | `connect-src` |
+| SmartFarm Backend | `web-production-86d39.up.railway.app` | Application API (canonical) | `connect-src` |
 
 ---
 

@@ -80,7 +80,7 @@ Edit `shared-api-config.json` to change API endpoints:
 {
   "api": {
     "production": {
-      "baseUrl": "https://smartfarm-app-production.up.railway.app",
+      "baseUrl": "https://web-production-86d39.up.railway.app",
       "endpoints": {
         "auth": {
           "login": "/api/auth/login",
@@ -131,7 +131,7 @@ window.SmartFarmApiConfig.debug()
 **Android:**
 ```kotlin
 // Check SharedKoinModule.kt
-const val API_BASE_URL = "https://smartfarm-app-production.up.railway.app"
+const val API_BASE_URL = "https://web-production-86d39.up.railway.app"
 ```
 
 ### Test Synchronization

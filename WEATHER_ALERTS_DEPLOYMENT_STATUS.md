@@ -83,7 +83,7 @@
 **Wait 2-3 minutes after deployment completes**, then test:
 
 ```bash
-curl -I https://smartfarm-app-production.up.railway.app/api/weather-alerts
+curl -I https://web-production-86d39.up.railway.app/api/weather-alerts
 ```
 
 **Expected**: **401 Unauthorized** (confirms route exists!)

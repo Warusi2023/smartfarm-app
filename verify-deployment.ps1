@@ -43,7 +43,7 @@ Write-Host "Web Service:" -ForegroundColor White
 Write-Host "  - NODE_ENV=production" -ForegroundColor White
 Write-Host "  - CI=1" -ForegroundColor White
 Write-Host "  - HUSKY=0" -ForegroundColor White
-Write-Host "  - VITE_API_URL=https://smartfarm-app-production.up.railway.app/api" -ForegroundColor White
+Write-Host "  - VITE_API_URL=https://web-production-86d39.up.railway.app/api" -ForegroundColor White
 Write-Host "  - CORS_ORIGIN=https://web-production-86d39.up.railway.app" -ForegroundColor White
 
 Write-Host "`nBackend Service:" -ForegroundColor White

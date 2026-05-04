@@ -11,14 +11,14 @@ const testOrigins = [
     'https://127.0.0.1:8080'
 ];
 
-const API_URL = 'https://smartfarm-app-production.up.railway.app';
+const API_URL = 'https://web-production-86d39.up.railway.app';
 
 async function testCORSFromOrigin(origin) {
     return new Promise((resolve) => {
         console.log(`Testing CORS from: ${origin}`);
         
         const options = {
-            hostname: 'smartfarm-app-production.up.railway.app',
+            hostname: 'web-production-86d39.up.railway.app',
             port: 443,
             path: '/api/health',
             method: 'GET',

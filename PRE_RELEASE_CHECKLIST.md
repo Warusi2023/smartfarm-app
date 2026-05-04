@@ -26,7 +26,7 @@
 
 #### Netlify Frontend (https://app.netlify.com)
 - [ ] **VITE_API_URL** - Must be your Railway backend URL
-  - Example: `https://smartfarm-app-production.up.railway.app`
+  - Example: `https://web-production-86d39.up.railway.app`
 - [ ] **VITE_APP_NAME** - Set to `SmartFarm`
 - [ ] **VITE_APP_VERSION** - Set to `1.0.0`
 - [ ] **VITE_SENTRY_DSN** - Optional but recommended
@@ -111,7 +111,7 @@
 - [ ] Create account at https://uptimerobot.com
 - [ ] Verify email
 - [ ] Add Backend Monitor:
-  - URL: `https://smartfarm-app-production.up.railway.app/api/health`
+  - URL: `https://web-production-86d39.up.railway.app/api/health`
   - Type: HTTP(s)
   - Interval: 5 minutes
 - [ ] Add Frontend Monitor:

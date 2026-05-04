@@ -136,13 +136,13 @@
 **Action:**
 1. [ ] Test backend health:
    ```powershell
-   Invoke-WebRequest -Uri "https://smartfarm-app-production.up.railway.app/api/health"
+   Invoke-WebRequest -Uri "https://web-production-86d39.up.railway.app/api/health"
    ```
 2. [ ] Go to Sentry dashboard → "Issues" tab
 3. [ ] Check if any events appear (may take 1-2 minutes)
 4. [ ] Trigger test error:
    ```
-   Visit: https://smartfarm-app-production.up.railway.app/api/nonexistent
+   Visit: https://web-production-86d39.up.railway.app/api/nonexistent
    ```
 5. [ ] Check Sentry dashboard again - should see error
 
@@ -184,7 +184,7 @@
 2. [ ] Fill in:
    - **Monitor Type:** `HTTP(s)`
    - **Friendly Name:** `SmartFarm Backend`
-   - **URL:** `https://smartfarm-app-production.up.railway.app/api/health`
+   - **URL:** `https://web-production-86d39.up.railway.app/api/health`
    - **Monitoring Interval:** `5 minutes`
    - **Alert Contacts:** Select your email
 3. [ ] Click **"Create Monitor"**

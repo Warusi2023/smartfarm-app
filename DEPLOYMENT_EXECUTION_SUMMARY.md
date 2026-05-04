@@ -30,12 +30,12 @@ All deployment documentation is complete and ready for execution:
 
 **Backend Health**:
 ```bash
-curl https://smartfarm-app-production.up.railway.app/api/health
+curl https://web-production-86d39.up.railway.app/api/health
 ```
 
 **Weather Alerts Route**:
 ```bash
-curl -I https://smartfarm-app-production.up.railway.app/api/weather-alerts
+curl -I https://web-production-86d39.up.railway.app/api/weather-alerts
 # Should return 401 (not 404) - confirms route exists
 ```
 

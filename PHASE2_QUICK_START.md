@@ -11,7 +11,7 @@
 ```powershell
 # Set your URLs
 $env:FRONTEND_URL="https://your-site.netlify.app"
-$env:BACKEND_URL="https://smartfarm-app-production.up.railway.app"
+$env:BACKEND_URL="https://web-production-86d39.up.railway.app"
 
 # Run tests
 node scripts/run-phase2-tests.js

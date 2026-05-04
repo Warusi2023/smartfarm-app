@@ -30,13 +30,13 @@ I've made the following fixes to resolve the CORS errors:
 ### **Step 2: Check API URL**
 1. Open Developer Tools → **Console** tab
 2. Refresh the page
-3. Look for: `[API Service] Using SmartFarmApiConfig URL: https://smartfarm-app-production.up.railway.app`
-4. If you see `smartfarm-backend.railway.app`, the cache is still active
+3. Look for: `[API Service] Using SmartFarmApiConfig URL: https://web-production-86d39.up.railway.app`
+4. If Network requests still show an **old** API hostname (cached bundle), hard refresh or clear site data
 
 ### **Step 3: Test API Calls**
 1. Go to **Network** tab in Developer Tools
 2. Try to login or access the dashboard
-3. Check if API calls go to: `https://smartfarm-app-production.up.railway.app`
+3. Check if API calls go to: `https://web-production-86d39.up.railway.app`
 4. Verify CORS headers are correct
 
 ---
@@ -55,7 +55,7 @@ navigator.serviceWorker.getRegistrations().then(function(registrations) {
 ```
 
 ### **Check Railway Backend:**
-1. Test: `https://smartfarm-app-production.up.railway.app/api/health`
+1. Test: `https://web-production-86d39.up.railway.app/api/health`
 2. Should return: `{"ok":true,"service":"SmartFarm",...}`
 
 ### **Verify CORS Headers:**

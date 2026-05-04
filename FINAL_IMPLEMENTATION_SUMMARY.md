@@ -10,12 +10,12 @@ This document confirms that **ALL** requirements from the plan have been success
 
 ### **Chosen URL:**
 ```
-https://smartfarm-app-production.up.railway.app
+https://web-production-86d39.up.railway.app
 ```
 
 ### **✅ What Was Done:**
 - ✅ Standardized across ALL files
-- ✅ Removed all references to `smartfarm-backend.railway.app`
+- ✅ Removed legacy hostnames (`smartfarm-app-production.up.railway.app`, `smartfarm-backend.railway.app`); canonical backend is `https://web-production-86d39.up.railway.app`
 - ✅ Updated configuration files
 - ✅ Updated test files
 - ✅ Updated documentation
@@ -111,7 +111,7 @@ export const API_BASE_URL =
 window.SmartFarmConfig = {
     API_BASE_URL: window.VITE_API_URL || 
                   (window as any).__SMARTFARM_API_BASE__ ||
-                  'https://smartfarm-app-production.up.railway.app',
+                  'https://web-production-86d39.up.railway.app',
     // ... rest of config
 };
 ```
@@ -122,7 +122,7 @@ getApiBaseUrl() {
     return window.VITE_API_URL || 
            (window as any).__SMARTFARM_API_BASE__ ||
            window.SmartFarmConfig?.API_BASE_URL || 
-           'https://smartfarm-app-production.up.railway.app';
+           'https://web-production-86d39.up.railway.app';
 }
 ```
 
@@ -130,16 +130,16 @@ getApiBaseUrl() {
 ```javascript
 API_BASE_URL: window.VITE_API_URL || 
              (window as any).__SMARTFARM_API_BASE__ ||
-             'https://smartfarm-app-production.up.railway.app',
+             'https://web-production-86d39.up.railway.app',
 ```
 
 ### **✅ Netlify Environment Variable:**
 ```
-VITE_API_URL=https://smartfarm-app-production.up.railway.app
+VITE_API_URL=https://web-production-86d39.up.railway.app
 ```
 
 ### **✅ Verified:**
-- ✅ No more references to `smartfarm-backend.railway.app`
+- ✅ No stray references to obsolete Railway API hosts outside the canonical URL
 - ✅ Consistent URL across all files
 - ✅ Single source of truth for API base
 
@@ -311,7 +311,7 @@ curl -i -X OPTIONS \
   -H "Origin: https://www.smartfarm-app.com" \
   -H "Access-Control-Request-Method: GET" \
   -H "Access-Control-Request-Headers: Content-Type" \
-  https://smartfarm-app-production.up.railway.app/api/health
+  https://web-production-86d39.up.railway.app/api/health
 
 Expected:
 ✅ Status: 204 No Content or 200 OK
@@ -322,7 +322,7 @@ Expected:
 ### **✅ Real Requests (GET):**
 ```bash
 curl -i -H "Origin: https://www.smartfarm-app.com" \
-  https://smartfarm-app-production.up.railway.app/api/health
+  https://web-production-86d39.up.railway.app/api/health
 
 Expected:
 ✅ Status: 200 OK
@@ -333,7 +333,7 @@ Expected:
 ### **✅ Browser Network Panel:**
 - ✅ Preflight requests (OPTIONS) succeed
 - ✅ Responses include correct `Access-Control-Allow-Origin`
-- ✅ No calls to `smartfarm-backend.railway.app`
+- ✅ All production API traffic targets `https://web-production-86d39.up.railway.app` (API base `/api`)
 - ✅ Dashboard renders even if endpoint is down
 - ✅ No "Cannot set properties of null" errors
 
@@ -362,7 +362,7 @@ Expected:
 - [x] UI crash prevention implemented
 - [ ] **Verify environment variable in Netlify:**
   ```
-  VITE_API_URL=https://smartfarm-app-production.up.railway.app
+  VITE_API_URL=https://web-production-86d39.up.railway.app
   ```
 - [ ] **Redeploy site**
 - [ ] **Test dashboard in browser**

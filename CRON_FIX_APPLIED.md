@@ -51,13 +51,13 @@ The node-cron block in `backend/server.js` was causing a syntax error that preve
 
 **Health Check** (should still work):
 ```bash
-curl https://smartfarm-app-production.up.railway.app/api/health
+curl https://web-production-86d39.up.railway.app/api/health
 ```
 **Expected**: `{"ok":true,"service":"SmartFarm",...}`
 
 **Weather Alerts Route** (should now work):
 ```bash
-curl -I https://smartfarm-app-production.up.railway.app/api/weather-alerts
+curl -I https://web-production-86d39.up.railway.app/api/weather-alerts
 ```
 **Expected**: 
 - ✅ **401 Unauthorized** (confirms route exists!)

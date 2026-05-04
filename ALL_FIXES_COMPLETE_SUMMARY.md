@@ -64,7 +64,7 @@ app.listen(PORT, '0.0.0.0', () => {
 **File**: `public/js/api-config.js` (NEW)
 
 ```javascript
-const PRODUCTION_API_BASE = 'https://smartfarm-app-production.up.railway.app';
+const PRODUCTION_API_BASE = 'https://web-production-86d39.up.railway.app';
 window.SmartFarmApiConfig = {
   baseUrl: getApiBaseUrl(), // Single source of truth
   url: buildApiUrl,

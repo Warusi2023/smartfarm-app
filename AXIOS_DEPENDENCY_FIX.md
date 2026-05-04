@@ -52,7 +52,7 @@ The weather alerts route was failing to load with error:
 
 2. **Test Endpoint**:
    ```bash
-   curl -I https://smartfarm-app-production.up.railway.app/api/weather-alerts
+   curl -I https://web-production-86d39.up.railway.app/api/weather-alerts
    ```
    - **Expected**: HTTP 401 (Unauthorized) - Route exists!
    - **If 404**: Check logs for other errors

@@ -96,7 +96,7 @@ After adding all variables, check:
 ## 🚀 **After Setup**
 
 1. **Redeploy**: Trigger a new deployment
-2. **Test**: Visit `https://smartfarm-app-production.up.railway.app/api/health`
+2. **Test**: Visit `https://web-production-86d39.up.railway.app/api/health`
 3. **Check Logs**: Verify no API key errors in Railway logs
 
 ## 🛡️ **Security Best Practices**

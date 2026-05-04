@@ -2,7 +2,7 @@
  * Live production smoke: verifies deployed API responds on /api/health.
  * Set SMARTFARM_API_BASE to override (no trailing slash).
  */
-const PROD_BASE = (process.env.SMARTFARM_API_BASE || 'https://smartfarm-app-production.up.railway.app').replace(
+const PROD_BASE = (process.env.SMARTFARM_API_BASE || 'https://web-production-86d39.up.railway.app').replace(
     /\/$/,
     ''
 );

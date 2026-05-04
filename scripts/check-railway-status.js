@@ -66,7 +66,7 @@ function main() {
     log('   Step 2: Click your site → Site settings → Environment variables', 'blue');
     log('   Step 3: Add these variables:', 'blue');
     log('', 'reset');
-    log('   VITE_API_URL = https://smartfarm-app-production.up.railway.app', 'green');
+    log('   VITE_API_URL = https://web-production-86d39.up.railway.app', 'green');
     log('   VITE_APP_NAME = SmartFarm', 'green');
     log('   VITE_APP_VERSION = 1.0.0', 'green');
     log('', 'reset');
@@ -103,7 +103,7 @@ function main() {
     log('='.repeat(60), 'cyan');
     log('Railway Dashboard: https://railway.app/dashboard', 'blue');
     log('Netlify Dashboard: https://app.netlify.com', 'blue');
-    log('Backend Health: https://smartfarm-app-production.up.railway.app/api/health', 'blue');
+    log('Backend Health: https://web-production-86d39.up.railway.app/api/health', 'blue');
     
     log('\n🎯 Estimated Time: 15-20 minutes', 'cyan');
     log('='.repeat(60), 'cyan');

@@ -5,7 +5,7 @@ Write-Host ""
 # Test 1: Backend Health Check
 Write-Host "1. Testing Backend Health..." -ForegroundColor Yellow
 try {
-    $response = Invoke-WebRequest -Uri "https://smartfarm-app-production.up.railway.app/api/health" -UseBasicParsing
+    $response = Invoke-WebRequest -Uri "https://web-production-86d39.up.railway.app/api/health" -UseBasicParsing
     Write-Host "Backend is running (Status: $($response.StatusCode))" -ForegroundColor Green
 } catch {
     Write-Host "Backend health check failed: $($_.Exception.Message)" -ForegroundColor Red
@@ -19,7 +19,7 @@ try {
     $headers = @{
         "Origin" = "https://dulcet-sawine-92d6a8.netlify.app"
     }
-    $response = Invoke-WebRequest -Uri "https://smartfarm-app-production.up.railway.app/api/health" -Headers $headers -UseBasicParsing
+    $response = Invoke-WebRequest -Uri "https://web-production-86d39.up.railway.app/api/health" -Headers $headers -UseBasicParsing
     Write-Host "CORS is working correctly" -ForegroundColor Green
 } catch {
     Write-Host "CORS test failed: $($_.Exception.Message)" -ForegroundColor Red

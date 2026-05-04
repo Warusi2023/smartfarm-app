@@ -25,7 +25,7 @@ This document summarizes the implementation of the Android project refactor plan
 - Configured API base URL via `BuildConfig.API_BASE_URL`
 
 **1.4 Added BuildConfig API URL**
-- Set production API URL: `https://smartfarm-app-production.up.railway.app`
+- Set production API URL: `https://web-production-86d39.up.railway.app`
 
 ### ✅ Phase 2: Architecture & Data Layer
 

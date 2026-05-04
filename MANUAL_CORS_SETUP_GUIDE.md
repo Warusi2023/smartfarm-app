@@ -89,7 +89,7 @@
 4. Add these variables:
    - **Variable 1:**
      - Key: `VITE_API_URL`
-     - Value: `https://smartfarm-app-production.up.railway.app`
+     - Value: `https://web-production-86d39.up.railway.app`
    
    - **Variable 2:**
      - Key: `NODE_VERSION`
@@ -147,7 +147,7 @@ Once you know your Netlify domain:
 
 ### **Test 1: Check Backend is Running**
 1. Open a new browser tab
-2. Go to: `https://smartfarm-app-production.up.railway.app/api/health`
+2. Go to: `https://web-production-86d39.up.railway.app/api/health`
 3. You should see JSON response (not a 502 error)
 
 ### **Test 2: Test from Netlify Site**
@@ -155,7 +155,7 @@ Once you know your Netlify domain:
 2. Open browser console (F12 → Console tab)
 3. Paste this code:
    ```javascript
-   fetch('https://smartfarm-app-production.up.railway.app/api/health')
+   fetch('https://web-production-86d39.up.railway.app/api/health')
      .then(r => r.json())
      .then(data => console.log('✅ CORS Working!', data))
      .catch(err => console.error('❌ CORS Blocked!', err))
@@ -193,7 +193,7 @@ HUSKY = 0
 
 ### **Netlify Environment Variables:**
 ```
-VITE_API_URL = https://smartfarm-app-production.up.railway.app
+VITE_API_URL = https://web-production-86d39.up.railway.app
 NODE_VERSION = 18
 CI = true
 HUSKY = 0
@@ -250,7 +250,7 @@ HUSKY = 0
 
 **Provide these details:**
 1. Your Netlify domain: `https://______.netlify.app`
-2. Railway backend URL: `https://smartfarm-app-production.up.railway.app`
+2. Railway backend URL: `https://web-production-86d39.up.railway.app`
 3. What error you're seeing (screenshot helps!)
 4. Browser console errors (F12 → Console)
 

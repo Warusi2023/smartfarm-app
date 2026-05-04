@@ -151,7 +151,7 @@ Then test: `http://localhost:3000/api/health`
 
 ### Test Railway Backend (Currently Fails)
 ```powershell
-Invoke-WebRequest https://smartfarm-app-production.up.railway.app/api/health
+Invoke-WebRequest https://web-production-86d39.up.railway.app/api/health
 ```
 
 ### Check Railway Service Status
@@ -202,14 +202,14 @@ After successful redeploy:
 
 ### 1. Test Health Endpoint
 ```powershell
-Invoke-WebRequest https://smartfarm-app-production.up.railway.app/api/health
+Invoke-WebRequest https://web-production-86d39.up.railway.app/api/health
 ```
 Expected: `200 OK` with `{"ok":true,"service":"SmartFarm","ts":...}`
 
 ### 2. Test CORS
 ```powershell
 $headers = @{"Origin"="https://www.smartfarm-app.com"}
-Invoke-WebRequest https://smartfarm-app-production.up.railway.app/api/health -Headers $headers
+Invoke-WebRequest https://web-production-86d39.up.railway.app/api/health -Headers $headers
 ```
 Expected: `200 OK` with `Access-Control-Allow-Origin` header
 

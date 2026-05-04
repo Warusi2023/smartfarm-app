@@ -22,8 +22,8 @@
   const ALLOWED_ORIGINS = new Set([
       'https://www.smartfarm-app.com',
       'https://smartfarm-app.netlify.app',
-      'https://smartfarm-backend.railway.app',
-      'https://smartfarm-app-production.up.railway.app',
+      'https://web-production-86d39.up.railway.app',
+      'https://web-production-86d39.up.railway.app',
       'https://railway.com',
       'https://www.railway.com',
       'http://localhost:3000',
@@ -157,7 +157,7 @@ CORS_ORIGINS=https://www.smartfarm-app.com,https://smartfarm-app.netlify.app
   
   [build.environment]
     NODE_VERSION = "18"
-    VITE_API_URL = "https://smartfarm-app-production.up.railway.app"
+    VITE_API_URL = "https://web-production-86d39.up.railway.app"
     APP_BUILD_TAG = "netlify"
     CI = "true"
     HUSKY = "0"

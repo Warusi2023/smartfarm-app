@@ -5,7 +5,7 @@
 **Date**: 2025-01-30
 **Executor**: Deployment Automation
 **Environment**: Production (Railway)
-**Backend URL**: https://smartfarm-app-production.up.railway.app
+**Backend URL**: https://web-production-86d39.up.railway.app
 
 ---
 
@@ -46,7 +46,7 @@
 **Health Endpoint Test**:
 ```bash
 # Command executed:
-Invoke-WebRequest -Uri "https://smartfarm-app-production.up.railway.app/api/health"
+Invoke-WebRequest -Uri "https://web-production-86d39.up.railway.app/api/health"
 
 # Result:
 Status Code: 200 ✅
@@ -56,7 +56,7 @@ Response: {"ok":true,"service":"SmartFarm","ts":1764520312606}
 **Weather Alerts Route Test**:
 ```bash
 # Command executed:
-Invoke-WebRequest -Uri "https://smartfarm-app-production.up.railway.app/api/weather-alerts"
+Invoke-WebRequest -Uri "https://web-production-86d39.up.railway.app/api/weather-alerts"
 
 # Result:
 Status Code: 404 ⚠️
@@ -233,7 +233,7 @@ WHERE created_at > NOW() - INTERVAL '10 minutes';
 
 **Test 1: Get Alerts**
 ```bash
-curl -X GET https://smartfarm-app-production.up.railway.app/api/weather-alerts \
+curl -X GET https://web-production-86d39.up.railway.app/api/weather-alerts \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -244,7 +244,7 @@ curl -X GET https://smartfarm-app-production.up.railway.app/api/weather-alerts \
 
 **Test 2: Get Statistics**
 ```bash
-curl -X GET https://smartfarm-app-production.up.railway.app/api/weather-alerts/stats \
+curl -X GET https://web-production-86d39.up.railway.app/api/weather-alerts/stats \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -254,7 +254,7 @@ curl -X GET https://smartfarm-app-production.up.railway.app/api/weather-alerts/s
 
 **Test 3: Manual Alert Generation**
 ```bash
-curl -X POST https://smartfarm-app-production.up.railway.app/api/weather-alerts/generate \
+curl -X POST https://web-production-86d39.up.railway.app/api/weather-alerts/generate \
   -H "Authorization: Bearer $TOKEN"
 ```
 

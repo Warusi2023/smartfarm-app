@@ -10,7 +10,7 @@ The Cursor IDE interface being stuck is **NOT** a database problem. Your Railway
 
 ### Method 1: Health Check Endpoint (Easiest)
 ```bash
-curl https://smartfarm-app-production.up.railway.app/api/health
+curl https://web-production-86d39.up.railway.app/api/health
 ```
 
 Look for:

@@ -20,8 +20,8 @@
 **Add these 5 variables:**
 
 ```
-1. VITE_API_URL = https://smartfarm-app-production.up.railway.app
-2. VITE_API_BASE_URL = https://smartfarm-app-production.up.railway.app
+1. VITE_API_URL = https://web-production-86d39.up.railway.app
+2. VITE_API_BASE_URL = https://web-production-86d39.up.railway.app
 3. VITE_APP_NAME = SmartFarm
 4. VITE_APP_VERSION = 1.0.0
 5. NODE_ENV = production
@@ -60,7 +60,7 @@ After deployment, note your URL:
 
 1. Visit your Netlify URL
 2. Open DevTools (F12) → Console
-3. Look for: `[API Config] Using environment URL: https://smartfarm-app-production.up.railway.app`
+3. Look for: `[API Config] Using environment URL: https://web-production-86d39.up.railway.app`
 4. Should see no errors
 
 ---

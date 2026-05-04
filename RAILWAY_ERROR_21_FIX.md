@@ -149,7 +149,7 @@ node scripts\ping.mjs
 ```
 
 ### **Test 3: Browser Test**
-Open: `https://smartfarm-app-production.up.railway.app/api/health`
+Open: `https://web-production-86d39.up.railway.app/api/health`
 
 ---
 

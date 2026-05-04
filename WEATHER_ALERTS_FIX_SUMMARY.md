@@ -100,7 +100,7 @@ Look for these success messages:
 
 ### Step 3: Test API Endpoint
 ```bash
-curl -I https://smartfarm-app-production.up.railway.app/api/weather-alerts
+curl -I https://web-production-86d39.up.railway.app/api/weather-alerts
 ```
 
 **Expected Results**:

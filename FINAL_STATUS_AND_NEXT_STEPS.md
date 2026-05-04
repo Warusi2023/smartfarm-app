@@ -159,7 +159,7 @@ Once Railway deploys successfully, you should be able to:
 
 ### Test 1: Health Endpoint
 ```powershell
-Invoke-WebRequest https://smartfarm-app-production.up.railway.app/api/health
+Invoke-WebRequest https://web-production-86d39.up.railway.app/api/health
 ```
 **Expected**: `200 OK` with `{"ok":true,"service":"SmartFarm","ts":...}`
 

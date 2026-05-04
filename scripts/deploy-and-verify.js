@@ -11,7 +11,7 @@ const fs = require('fs');
 
 class SmartFarmDeployment {
   constructor() {
-    this.backendUrl = 'https://smartfarm-app-production.up.railway.app';
+    this.backendUrl = 'https://web-production-86d39.up.railway.app';
     this.frontendUrl = 'https://dulcet-sawine-92d6a8.netlify.app';
     this.githubRepo = 'Warusi2023/smartfarm-app';
     this.deploymentStartTime = null;

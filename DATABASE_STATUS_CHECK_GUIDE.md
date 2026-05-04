@@ -99,7 +99,7 @@ SELECT version();
 Test via your backend API:
 ```bash
 # Check if backend can connect to DB
-curl https://smartfarm-app-production.up.railway.app/api/health
+curl https://web-production-86d39.up.railway.app/api/health
 
 # Should show database connection status
 ```

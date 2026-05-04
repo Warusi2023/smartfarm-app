@@ -38,7 +38,7 @@
 ┌─────────────────────────────────────────────────────────────┐
 │                                                             │
 │  Railway Backend (API server)                              │
-│  https://smartfarm-app-production.up.railway.app           │
+│  https://web-production-86d39.up.railway.app           │
 │                                                             │
 │  Needs CORS_ORIGIN variable set to:                        │
 │  "Accept requests from Netlify domain"                     │
@@ -52,7 +52,7 @@
 |----------|--------------|-------|---------|
 | **Railway Backend** | `CORS_ORIGIN` | `https://smartfarm-app.netlify.app` | "Allow requests FROM this domain" |
 | **Railway Web** | `CORS_ORIGINS` | `https://smartfarm-app.netlify.app` | Same purpose |
-| **Netlify** | `VITE_API_URL` | `https://smartfarm-app-production.up.railway.app` | "Send requests TO this domain" |
+| **Netlify** | `VITE_API_URL` | `https://web-production-86d39.up.railway.app` | "Send requests TO this domain" |
 
 **They are DIFFERENT domains but must REFERENCE each other correctly!**
 
@@ -93,7 +93,7 @@ Variable Value: https://smartfarm-app.netlify.app,https://web-production-86d39.u
 
 **Add These Variables:**
 ```
-VITE_API_URL = https://smartfarm-app-production.up.railway.app
+VITE_API_URL = https://web-production-86d39.up.railway.app
 NODE_VERSION = 18
 CI = true
 ```
@@ -151,7 +151,7 @@ I've created **3 comprehensive guides** for you:
 You'll know everything is working when:
 
 - [ ] Backend health check shows JSON (not 502)
-  - Test: `https://smartfarm-app-production.up.railway.app/api/health`
+  - Test: `https://web-production-86d39.up.railway.app/api/health`
 
 - [ ] Browser console test shows "SUCCESS"
   - Test: Run fetch command in console

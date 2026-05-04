@@ -136,7 +136,7 @@ DATABASE_URL=postgresql://...
 WEATHER_API_KEY=your_openweather_api_key
 
 # Frontend (optional, uses backend API)
-VITE_API_BASE_URL=https://smartfarm-app-production.up.railway.app
+VITE_API_BASE_URL=https://web-production-86d39.up.railway.app
 ```
 
 ## How to Access Alerts

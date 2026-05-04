@@ -31,7 +31,7 @@
 ## 🎯 **Test It (30 seconds)**
 After redeploy completes, test:
 ```
-https://smartfarm-app-production.up.railway.app/api/health
+https://web-production-86d39.up.railway.app/api/health
 ```
 **Expected**: `{"ok":true,"service":"SmartFarm",...}`
 

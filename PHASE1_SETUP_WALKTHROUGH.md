@@ -2,7 +2,7 @@
 
 **Your Generated JWT_SECRET:** `bb2a4fc5abc7bf4ccf661e1835e227c6f22c7280c62ca5f19aed95d49a8220d7`
 
-**Your Railway Backend URL:** `https://smartfarm-app-production.up.railway.app`
+**Your Railway Backend URL:** `https://web-production-86d39.up.railway.app`
 
 ---
 
@@ -85,7 +85,7 @@ OPENAI_API_KEY = <your-openai-api-key>
 #### 1.6: Test Backend Health
 Open a new terminal and run:
 ```bash
-curl https://smartfarm-app-production.up.railway.app/api/health
+curl https://web-production-86d39.up.railway.app/api/health
 ```
 
 Expected response:
@@ -113,7 +113,7 @@ Expected response:
 
 **Required Variables:**
 ```
-VITE_API_URL = https://smartfarm-app-production.up.railway.app
+VITE_API_URL = https://web-production-86d39.up.railway.app
 VITE_APP_NAME = SmartFarm
 VITE_APP_VERSION = 1.0.0
 ```
@@ -150,10 +150,10 @@ VITE_APP_VERSION = 1.0.0
 #### 3.1: Test Backend
 ```bash
 # Test health endpoint
-curl https://smartfarm-app-production.up.railway.app/api/health
+curl https://web-production-86d39.up.railway.app/api/health
 
 # Test registration (replace email with unique email)
-curl -X POST https://smartfarm-app-production.up.railway.app/api/auth/register \
+curl -X POST https://web-production-86d39.up.railway.app/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{"email":"test@example.com","password":"Test123!@#","name":"Test User","firstName":"Test","lastName":"User"}'
 ```
@@ -170,7 +170,7 @@ curl -X POST https://smartfarm-app-production.up.railway.app/api/auth/register \
 #### 3.3: Run Verification Script
 ```bash
 # Set your URLs
-$env:BACKEND_URL="https://smartfarm-app-production.up.railway.app"
+$env:BACKEND_URL="https://web-production-86d39.up.railway.app"
 $env:FRONTEND_URL="https://your-site.netlify.app"
 
 # Run verification

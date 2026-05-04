@@ -172,7 +172,7 @@ ENABLE_SWAGGER_DOCS=false
 
 3. **Verify Deployment**
    - Check service status (should be "Running")
-   - Note your Railway URL (e.g., `https://smartfarm-app-production.up.railway.app`)
+   - Note your Railway URL (e.g., `https://web-production-86d39.up.railway.app`)
 
 ---
 

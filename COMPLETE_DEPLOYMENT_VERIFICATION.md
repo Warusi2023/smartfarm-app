@@ -35,7 +35,7 @@ You need to deploy the backend to Railway with environment variables.
 ### **Verification:**
 After deployment, test this URL in your browser:
 ```
-https://smartfarm-app-production.up.railway.app/api/health
+https://web-production-86d39.up.railway.app/api/health
 ```
 
 **Expected result:**
@@ -59,7 +59,7 @@ https://smartfarm-app-production.up.railway.app/api/health
 2. Open DevTools (F12) → Console tab
 3. Run this test:
 ```javascript
-fetch('https://smartfarm-app-production.up.railway.app/api/health', {
+fetch('https://web-production-86d39.up.railway.app/api/health', {
   method: 'GET',
   headers: {
     'Origin': 'https://www.smartfarm-app.com'
@@ -215,12 +215,12 @@ Run this command in your terminal:
 
 **Test backend health:**
 ```bash
-curl -i https://smartfarm-app-production.up.railway.app/api/health
+curl -i https://web-production-86d39.up.railway.app/api/health
 ```
 
 **Test CORS:**
 ```bash
-curl -i -H "Origin: https://www.smartfarm-app.com" https://smartfarm-app-production.up.railway.app/api/health
+curl -i -H "Origin: https://www.smartfarm-app.com" https://web-production-86d39.up.railway.app/api/health
 ```
 
 **PowerShell CORS test:**

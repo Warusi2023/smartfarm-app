@@ -87,13 +87,13 @@ These tasks require access to Railway dashboard and cannot be automated:
 
 **Health Check**: ✅ Working
 ```
-https://smartfarm-app-production.up.railway.app/api/health
+https://web-production-86d39.up.railway.app/api/health
 Status: 200 OK
 ```
 
 **Weather Alerts Route**: ⚠️ Still returning 404
 ```
-https://smartfarm-app-production.up.railway.app/api/weather-alerts
+https://web-production-86d39.up.railway.app/api/weather-alerts
 Status: 404 Not Found
 ```
 

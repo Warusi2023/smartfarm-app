@@ -61,7 +61,7 @@
 **Action**:
 - Test the endpoint again:
 ```bash
-curl -I https://smartfarm-app-production.up.railway.app/api/weather-alerts
+curl -I https://web-production-86d39.up.railway.app/api/weather-alerts
 ```
 - Should return **401** (Unauthorized) - confirms route exists!
 - If still 404, wait a few minutes for deployment to fully propagate

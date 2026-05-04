@@ -47,7 +47,7 @@ npm install @sentry/react
 ```
 Type: HTTP(s)
 Name: SmartFarm Backend
-URL: https://smartfarm-app-production.up.railway.app/api/health
+URL: https://web-production-86d39.up.railway.app/api/health
 Interval: 5 minutes
 ```
 

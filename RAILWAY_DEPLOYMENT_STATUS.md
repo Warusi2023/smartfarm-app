@@ -109,7 +109,7 @@ curl -X POST https://YOUR-RAILWAY-URL.up.railway.app/api/auth/login \
 
 ### **2. Get Your Railway URL:**
 - Go to Settings → Domains
-- Copy your Railway URL (e.g., `https://smartfarm-app-production.up.railway.app`)
+- Copy your Railway URL (e.g., `https://web-production-86d39.up.railway.app`)
 
 ### **3. Test Your Backend:**
 ```bash

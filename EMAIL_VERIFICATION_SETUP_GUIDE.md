@@ -130,7 +130,7 @@ https://dulcet-sawine-92d6a8.netlify.app/verify-email?token=abc123...
 
 ### **1. Test Registration**
 ```bash
-curl -X POST https://smartfarm-app-production.up.railway.app/api/auth/register \
+curl -X POST https://web-production-86d39.up.railway.app/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{
     "username": "testuser",
@@ -143,7 +143,7 @@ curl -X POST https://smartfarm-app-production.up.railway.app/api/auth/register \
 
 ### **2. Test Email Verification**
 ```bash
-curl -X POST https://smartfarm-app-production.up.railway.app/api/auth/verify-email \
+curl -X POST https://web-production-86d39.up.railway.app/api/auth/verify-email \
   -H "Content-Type: application/json" \
   -d '{"token": "your-verification-token"}'
 ```

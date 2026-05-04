@@ -36,7 +36,7 @@ echo 📋 Step 3: Configure Netlify Variables
 echo 🔗 Open: https://app.netlify.com → Your Site → Environment variables
 echo.
 echo Required Variables:
-echo   VITE_API_BASE_URL = https://smartfarm-app-production.up.railway.app/api
+echo   VITE_API_BASE_URL = https://web-production-86d39.up.railway.app/api
 echo   VITE_OPENWEATHER_API_KEY = your_openweather_api_key_here
 echo   VITE_ENVIRONMENT = production
 echo.

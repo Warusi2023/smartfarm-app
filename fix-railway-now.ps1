@@ -100,7 +100,7 @@ if (Test-Path "backend/package.json") {
 Write-Host "`n[Step 5] Testing Railway Backend..." -ForegroundColor Yellow
 
 try {
-    $response = Invoke-WebRequest https://smartfarm-app-production.up.railway.app/api/health -UseBasicParsing -TimeoutSec 10
+    $response = Invoke-WebRequest https://web-production-86d39.up.railway.app/api/health -UseBasicParsing -TimeoutSec 10
     Write-Host "[PASS] Railway backend is accessible!" -ForegroundColor Green
     Write-Host "Status: $($response.StatusCode)" -ForegroundColor Green
     Write-Host "Response: $($response.Content)" -ForegroundColor Green

@@ -126,7 +126,7 @@ $body = @{
     lastName = "User"
 } | ConvertTo-Json
 
-Invoke-RestMethod -Uri "https://smartfarm-app-production.up.railway.app/api/auth/register" `
+Invoke-RestMethod -Uri "https://web-production-86d39.up.railway.app/api/auth/register" `
     -Method Post `
     -ContentType "application/json" `
     -Body $body
@@ -197,7 +197,7 @@ ORDER BY table_name;
 ```powershell
 # Set your actual frontend URL
 $env:FRONTEND_URL="https://your-actual-site.netlify.app"
-$env:BACKEND_URL="https://smartfarm-app-production.up.railway.app"
+$env:BACKEND_URL="https://web-production-86d39.up.railway.app"
 
 # Run verification
 node scripts/verify-phase1.js

@@ -113,7 +113,7 @@ CORS_ORIGIN=https://staging-frontend.netlify.app
 ### Production
 ```bash
 # Frontend
-VITE_API_URL=https://smartfarm-backend.railway.app
+VITE_API_URL=https://web-production-86d39.up.railway.app
 VITE_APP_NAME=SmartFarm
 
 # Backend

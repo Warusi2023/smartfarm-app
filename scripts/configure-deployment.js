@@ -50,7 +50,7 @@ const config = {
 // Generate configuration values
 const jwtSecret = 'e3b65bed85523fbb9a2ae082a7e29491e8f7862df3431efc1851661d4aaad6b1';
 const productionUrls = {
-  backend: 'https://smartfarm-app-production.up.railway.app',
+  backend: 'https://web-production-86d39.up.railway.app',
   frontend: 'https://dulcet-sawine-92d6a8.netlify.app'
 };
 
@@ -289,7 +289,7 @@ echo 📋 Step 3: Configure Netlify Variables
 echo 🔗 Open: https://app.netlify.com → Your Site → Environment variables
 echo.
 echo Required Variables:
-echo   VITE_API_BASE_URL = https://smartfarm-app-production.up.railway.app/api
+echo   VITE_API_BASE_URL = https://web-production-86d39.up.railway.app/api
 echo   VITE_OPENWEATHER_API_KEY = your_openweather_api_key_here
 echo   VITE_ENVIRONMENT = production
 echo.

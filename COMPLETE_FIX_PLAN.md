@@ -151,23 +151,23 @@ if (response && response.ok) {
 
 **Frontend** (`public/js/api-service.js`, `public/js/config.js`, `public/js/environment.js`):
 ```javascript
-'https://smartfarm-app-production.up.railway.app'
+'https://web-production-86d39.up.railway.app'
 ```
 
 **Netlify** (`netlify.toml`):
 ```toml
-VITE_API_URL = "https://smartfarm-app-production.up.railway.app"
+VITE_API_URL = "https://web-production-86d39.up.railway.app"
 ```
 
 #### Step 3.2: Test API Connectivity
 
 ```powershell
 # Test Railway backend
-Invoke-WebRequest https://smartfarm-app-production.up.railway.app/api/health
+Invoke-WebRequest https://web-production-86d39.up.railway.app/api/health
 
 # Test with CORS headers
 $headers = @{"Origin"="https://www.smartfarm-app.com"}
-Invoke-WebRequest https://smartfarm-app-production.up.railway.app/api/health -Headers $headers
+Invoke-WebRequest https://web-production-86d39.up.railway.app/api/health -Headers $headers
 ```
 
 ### Phase 4: Fix Authentication Flow
@@ -208,7 +208,7 @@ If this fails, fix backend first.
 
 ### 3. Test Health Endpoint (NOW)
 ```powershell
-Invoke-WebRequest https://smartfarm-app-production.up.railway.app/api/health
+Invoke-WebRequest https://web-production-86d39.up.railway.app/api/health
 ```
 
 If 502: Backend not starting on Railway
@@ -241,7 +241,7 @@ cd backend; node server-simple.cjs
 
 ### Test Railway Backend:
 ```powershell
-Invoke-WebRequest https://smartfarm-app-production.up.railway.app/api/health
+Invoke-WebRequest https://web-production-86d39.up.railway.app/api/health
 ```
 
 ### Check Frontend Errors:
@@ -253,7 +253,7 @@ Invoke-WebRequest https://smartfarm-app-production.up.railway.app/api/health
 ### Test CORS:
 ```powershell
 $headers = @{"Origin"="https://www.smartfarm-app.com"}
-Invoke-WebRequest https://smartfarm-app-production.up.railway.app/api/health -Headers $headers -UseBasicParsing
+Invoke-WebRequest https://web-production-86d39.up.railway.app/api/health -Headers $headers -UseBasicParsing
 ```
 
 ### Check Railway Logs:

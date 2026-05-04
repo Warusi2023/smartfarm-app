@@ -27,12 +27,11 @@ const ALLOWED_ORIGINS = new Set([
     'https://www.smartfarm-app.com',                      // your Netlify/custom domain (PRIMARY)
     'https://smartfarm-app.com',                          // your Netlify/custom domain (no www)
     'https://smartfarm-app.netlify.app',                  // Netlify preview
-    'https://smartfarm-app-production.up.railway.app',    // default Railway domain (if used)
-    'https://smartfarm-backend.railway.app',              // if you use this domain for API
+    'https://web-production-86d39.up.railway.app',    // Railway backend (canonical)
     'https://railway.com',                                // Railway's own domain (required)
     'https://www.railway.com',                            // Railway's www domain
     'https://railway.app',                                // Railway app domain
-    'http://localhost:3000',                              // local dev
+    'http://localhost:5173',                              // local Vite dev
     'http://localhost:8080',                              // local dev
     'http://localhost:4173',                              // local dev (vite preview)
 ]);

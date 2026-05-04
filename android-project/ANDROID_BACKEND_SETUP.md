@@ -4,7 +4,7 @@
 
 The SmartFarm Android app uses the **same backend API** as the web application. Both clients connect to the Railway-hosted backend at:
 
-**Production Backend:** `https://smartfarm-app-production.up.railway.app`
+**Production Backend:** `https://web-production-86d39.up.railway.app`
 
 This ensures:
 - ✅ **Data Synchronization** - Android and Web see the same farms, crops, livestock
@@ -53,8 +53,8 @@ val currentEnvironment = Environment.PRODUCTION
 
 private val baseUrls = mapOf(
     Environment.DEVELOPMENT to "http://10.0.2.2:3000/api",  // Android Emulator localhost
-    Environment.STAGING to "https://smartfarm-app-production.up.railway.app/api",
-    Environment.PRODUCTION to "https://smartfarm-app-production.up.railway.app/api"
+    Environment.STAGING to "https://web-production-86d39.up.railway.app/api",
+    Environment.PRODUCTION to "https://web-production-86d39.up.railway.app/api"
 )
 ```
 
@@ -203,7 +203,7 @@ println("Base URL: ${info["Base URL"]}")
 2. Run the app on emulator/device
 3. Check Logcat for API calls:
    ```
-   🌐 HTTP GET: https://smartfarm-app-production.up.railway.app/api/farms
+   🌐 HTTP GET: https://web-production-86d39.up.railway.app/api/farms
    ```
 
 ---
@@ -215,7 +215,7 @@ println("Base URL: ${info["Base URL"]}")
 **Solutions:**
 1. **Check Railway backend is running:**
    ```bash
-   curl https://smartfarm-app-production.up.railway.app/api/health
+   curl https://web-production-86d39.up.railway.app/api/health
    ```
 
 2. **Verify API URL in `ApiConfig.kt`:**

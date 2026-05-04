@@ -11,8 +11,8 @@ This document provides comprehensive guidance for configuring and testing the co
 Add the following environment variables in your Netlify dashboard:
 
 ```env
-VITE_API_BASE_URL=https://smartfarm-backend.railway.app
-NEXT_PUBLIC_API_BASE_URL=https://smartfarm-backend.railway.app
+VITE_API_BASE_URL=https://web-production-86d39.up.railway.app
+NEXT_PUBLIC_API_BASE_URL=https://web-production-86d39.up.railway.app
 VITE_WEATHER_API_KEY=your_openweather_api_key_here
 ```
 
@@ -27,7 +27,7 @@ VITE_WEATHER_API_KEY=your_openweather_api_key_here
 The Content Security Policy in `netlify.toml` allows connections to the Railway backend:
 
 ```toml
-Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https:; connect-src 'self' https://api.openweathermap.org https://smartfarm-backend.railway.app https://smartfarm-app-production.up.railway.app https://cdn.jsdelivr.net https://cdnjs.cloudflare.com;"
+Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https:; connect-src 'self' https://api.openweathermap.org https://web-production-86d39.up.railway.app https://web-production-86d39.up.railway.app https://cdn.jsdelivr.net https://cdnjs.cloudflare.com;"
 ```
 
 ### 3. Railway CORS Configuration
@@ -57,7 +57,7 @@ app.use(cors({
 Test backend connectivity:
 
 ```bash
-curl https://smartfarm-backend.railway.app/api/health
+curl https://web-production-86d39.up.railway.app/api/health
 ```
 
 Expected response:
@@ -76,13 +76,13 @@ Test core endpoints:
 
 ```bash
 # Test farms endpoint
-curl https://smartfarm-backend.railway.app/api/farms
+curl https://web-production-86d39.up.railway.app/api/farms
 
 # Test crops endpoint
-curl https://smartfarm-backend.railway.app/api/crops
+curl https://web-production-86d39.up.railway.app/api/crops
 
 # Test livestock endpoint
-curl https://smartfarm-backend.railway.app/api/livestock
+curl https://web-production-86d39.up.railway.app/api/livestock
 ```
 
 ### 3. Frontend Integration Testing
@@ -107,13 +107,13 @@ curl https://smartfarm-backend.railway.app/api/livestock
 
 #### 1. CORS Errors
 
-**Error:** `Access to fetch at 'https://smartfarm-backend.railway.app/api/farms' from origin 'https://your-site.netlify.app' has been blocked by CORS policy`
+**Error:** `Access to fetch at 'https://web-production-86d39.up.railway.app/api/farms' from origin 'https://your-site.netlify.app' has been blocked by CORS policy`
 
 **Solution:** Update Railway backend CORS configuration to include your Netlify domain.
 
 #### 2. CSP Violations
 
-**Error:** `Refused to connect to 'https://smartfarm-backend.railway.app/api/farms' because it violates the following Content Security Policy directive`
+**Error:** `Refused to connect to 'https://web-production-86d39.up.railway.app/api/farms' because it violates the following Content Security Policy directive`
 
 **Solution:** Add the Railway backend URL to the `connect-src` directive in `netlify.toml`.
 

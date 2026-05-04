@@ -47,7 +47,7 @@ Variable Value: https://smartfarm-app.netlify.app,https://web-production-86d39.u
 **Variable 1:**
 ```
 Key:   VITE_API_URL
-Value: https://smartfarm-app-production.up.railway.app
+Value: https://web-production-86d39.up.railway.app
 ```
 
 **Variable 2:**
@@ -74,7 +74,7 @@ Value: true
 ### **Test 1: Backend Health (Should NOT be 502)**
 Open in browser:
 ```
-https://smartfarm-app-production.up.railway.app/api/health
+https://web-production-86d39.up.railway.app/api/health
 ```
 ✅ Should see JSON, NOT "502 - Application failed to respond"
 
@@ -83,7 +83,7 @@ https://smartfarm-app-production.up.railway.app/api/health
 2. Press F12 → Console tab
 3. Paste this:
 ```javascript
-fetch('https://smartfarm-app-production.up.railway.app/api/health')
+fetch('https://web-production-86d39.up.railway.app/api/health')
   .then(r => r.json())
   .then(data => console.log('✅ SUCCESS:', data))
   .catch(err => console.error('❌ FAILED:', err))
@@ -152,7 +152,7 @@ https://smartfarm-app.netlify.app,https://web-production-86d39.up.railway.app
 
 ### **For Netlify VITE_API_URL:**
 ```
-https://smartfarm-app-production.up.railway.app
+https://web-production-86d39.up.railway.app
 ```
 
 ---

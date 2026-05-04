@@ -4,7 +4,7 @@
 Write-Host "🔍 SmartFarm Deployment Status Check" -ForegroundColor Cyan
 Write-Host "=" * 50
 
-$BACKEND_URL = "https://smartfarm-app-production.up.railway.app"
+$BACKEND_URL = "https://web-production-86d39.up.railway.app"
 $FRONTEND_URL = "https://www.smartfarm-app.com"
 
 Write-Host ""

@@ -126,7 +126,7 @@ System Status:
 ```javascript
 // System status check
 function checkSystemStatus() {
-    fetch('https://smartfarm-app-production.up.railway.app/api/health')
+    fetch('https://web-production-86d39.up.railway.app/api/health')
         .then(response => {
             // Update status indicator
         });

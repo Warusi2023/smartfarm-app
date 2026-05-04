@@ -162,7 +162,7 @@ if (import.meta.env.VITE_SENTRY_DSN) {
    ```
    Monitor Type:     HTTP(s)
    Friendly Name:    SmartFarm Backend
-   URL:              https://smartfarm-app-production.up.railway.app/api/health
+   URL:              https://web-production-86d39.up.railway.app/api/health
    Monitoring Interval: 5 minutes
    Alert Contacts:   (select your email)
    ```
@@ -239,7 +239,7 @@ if (import.meta.env.VITE_SENTRY_DSN) {
 **Backend Test:**
 ```powershell
 # This should trigger an error in Sentry
-Invoke-WebRequest -Uri "https://smartfarm-app-production.up.railway.app/api/nonexistent"
+Invoke-WebRequest -Uri "https://web-production-86d39.up.railway.app/api/nonexistent"
 ```
 
 **Frontend Test:**

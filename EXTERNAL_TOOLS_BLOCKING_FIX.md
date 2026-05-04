@@ -4,7 +4,7 @@
 
 External tools (crawlers, API clients, monitoring services) were failing to fetch `https://www.smartfarm-app.com` because:
 
-1. **`public/_headers` had restrictive CORS headers**: The file contained `Access-Control-Allow-Origin: https://smartfarm-app-production.up.railway.app` which, while not directly blocking GET requests, was causing confusion for external tools that don't send Origin headers.
+1. **`public/_headers` had restrictive CORS headers**: The file contained `Access-Control-Allow-Origin: https://web-production-86d39.up.railway.app` which, while not directly blocking GET requests, was causing confusion for external tools that don't send Origin headers.
 
 2. **Conflicting headers files**: There were two `_headers` files (root and `public/`), and Netlify was using `public/_headers` which had the wrong configuration for public pages.
 
@@ -24,7 +24,7 @@ External tools (crawlers, API clients, monitoring services) were failing to fetc
 **Before:**
 ```
 /*
-  Access-Control-Allow-Origin: https://smartfarm-app-production.up.railway.app
+  Access-Control-Allow-Origin: https://web-production-86d39.up.railway.app
   Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS
   Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With
   Access-Control-Allow-Credentials: true

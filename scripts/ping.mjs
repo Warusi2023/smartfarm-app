@@ -1,8 +1,8 @@
 import https from 'https';
 const urls = [
-  'https://smartfarm-app-production.up.railway.app/api/health',
-  'https://smartfarm-app-production.up.railway.app/api',
-  'https://smartfarm-app-production.up.railway.app/'
+  'https://web-production-86d39.up.railway.app/api/health',
+  'https://web-production-86d39.up.railway.app/api',
+  'https://web-production-86d39.up.railway.app/'
 ];
 for (const url of urls) {
   await new Promise((resolve) => {
