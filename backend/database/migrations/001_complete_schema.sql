@@ -536,40 +536,51 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Apply triggers to all tables with updated_at
+DROP TRIGGER IF EXISTS update_users_updated_at ON users;
 CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_farms_updated_at ON farms;
 CREATE TRIGGER update_farms_updated_at BEFORE UPDATE ON farms
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_fields_updated_at ON fields;
 CREATE TRIGGER update_fields_updated_at BEFORE UPDATE ON fields
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_crops_updated_at ON crops;
 CREATE TRIGGER update_crops_updated_at BEFORE UPDATE ON crops
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_livestock_updated_at ON livestock;
 CREATE TRIGGER update_livestock_updated_at BEFORE UPDATE ON livestock
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_pets_updated_at ON pets;
 CREATE TRIGGER update_pets_updated_at BEFORE UPDATE ON pets
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_inventory_updated_at ON inventory;
 CREATE TRIGGER update_inventory_updated_at BEFORE UPDATE ON inventory
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_tasks_updated_at ON tasks;
 CREATE TRIGGER update_tasks_updated_at BEFORE UPDATE ON tasks
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_watering_schedules_updated_at ON watering_schedules;
 CREATE TRIGGER update_watering_schedules_updated_at BEFORE UPDATE ON watering_schedules
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_geofences_updated_at ON geofences;
 CREATE TRIGGER update_geofences_updated_at BEFORE UPDATE ON geofences
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_financial_records_updated_at ON financial_records;
 CREATE TRIGGER update_financial_records_updated_at BEFORE UPDATE ON financial_records
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_subscriptions_updated_at ON subscriptions;
 CREATE TRIGGER update_subscriptions_updated_at BEFORE UPDATE ON subscriptions
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
