@@ -61,7 +61,7 @@ LIMIT 10;
 #### Test 1: Get Alerts (Requires Authentication)
 ```bash
 # Get auth token first (login)
-TOKEN=$(curl -X POST https://smartfarm-app-production.up.railway.app/api/auth/login \
+TOKEN=$(curl -X POST https://web-production-86d39.up.railway.app \
   -H "Content-Type: application/json" \
   -d '{"email":"test@example.com","password":"password"}' \
   | jq -r '.data.token')

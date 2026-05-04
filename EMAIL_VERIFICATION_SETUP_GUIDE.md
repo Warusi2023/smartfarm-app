@@ -150,7 +150,7 @@ curl -X POST https://smartfarm-app-production.up.railway.app/api/auth/verify-ema
 
 ### **3. Test Login (Should Fail Until Verified)**
 ```bash
-curl -X POST https://smartfarm-app-production.up.railway.app/api/auth/login \
+curl -X POST https://web-production-86d39.up.railway.app \
   -H "Content-Type: application/json" \
   -d '{
     "email": "test@example.com",

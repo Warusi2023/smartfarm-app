@@ -184,7 +184,7 @@ WHERE created_at > NOW() - INTERVAL '10 minutes';
 **Get Auth Token**:
 ```bash
 # Login first (replace with your test credentials)
-curl -X POST https://smartfarm-app-production.up.railway.app/api/auth/login \
+curl -X POST https://web-production-86d39.up.railway.app \
   -H "Content-Type: application/json" \
   -d '{"email":"your_test_email@example.com","password":"your_password"}'
 

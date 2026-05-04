@@ -236,7 +236,7 @@ curl -X POST https://smartfarm-app-production.up.railway.app/api/auth/register \
 
 **Login:**
 ```bash
-curl -X POST https://smartfarm-app-production.up.railway.app/api/auth/login \
+curl -X POST https://web-production-86d39.up.railway.app \
   -H "Content-Type: application/json" \
   -d '{"email":"test@example.com","password":"Test123!@#"}'
 ```

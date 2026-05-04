@@ -152,7 +152,7 @@ $body = @{
     password = "Test123!@#"
 } | ConvertTo-Json
 
-Invoke-RestMethod -Uri "https://smartfarm-app-production.up.railway.app/api/auth/login" `
+Invoke-RestMethod -Uri "https://web-production-86d39.up.railway.app" `
     -Method Post `
     -ContentType "application/json" `
     -Body $body
