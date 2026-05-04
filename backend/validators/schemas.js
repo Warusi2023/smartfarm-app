@@ -14,7 +14,7 @@ const commonSchemas = {
     strongPassword: z.string()
         .min(8)
         .max(128)
-        .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/, 
+        .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
             'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'),
     uuid: z.string().uuid('Invalid UUID format'),
     phone: z.string().regex(/^\+?[\d\s\-\(\)]+$/, 'Invalid phone number format').optional(),
@@ -335,6 +335,33 @@ const validationSchemas = {
         getCurrent: {
             // No params needed - uses auth token
         },
+        subscribe: {
+            body: z.object({
+                planName: z.string().min(1).max(100).optional(),
+                planType: z.string().min(1).max(50).optional(),
+                billingCycle: z.enum(['monthly', 'yearly']).optional(),
+                paymentMethodId: z.string().optional(),
+            }).optional(),
+        },
+        cancel: {
+            body: z.object({
+                reason: z.string().max(500).optional(),
+                immediate: z.boolean().optional(),
+            }).optional(),
+        },
+        update: {
+            body: z.object({
+                planName: z.string().min(1).max(100).optional(),
+                planType: z.string().min(1).max(50).optional(),
+                billingCycle: z.enum(['monthly', 'yearly']).optional(),
+            }).optional(),
+        },
+        getHistory: {
+            query: z.object({
+                page: z.coerce.number().int().positive().optional().default(1),
+                limit: z.coerce.number().int().min(1).max(100).optional().default(20),
+            }).optional(),
+        },
     },
 };
 
@@ -342,4 +369,3 @@ module.exports = {
     validationSchemas,
     commonSchemas,
 };
-
