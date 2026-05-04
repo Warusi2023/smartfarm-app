@@ -45,6 +45,7 @@ try {
 }
 
 const app = express();
+const appVersion = process.env.APP_VERSION || 'dev';
 
 // --- CORS SETUP (bulletproof origin handling) ---
 const rawOrigins = process.env.ALLOWED_ORIGINS || process.env.CORS_ORIGINS || '';
@@ -536,6 +537,7 @@ try {
   const biologicalFarmingRoutes = require('./routes/biological-farming');
   app.use('/api/biological-farming', biologicalFarmingRoutes);
   logger.info('Biological farming routes loaded');
+  logger.info('Biological farming mounted at /api/biological-farming');
 } catch (bioError) {
   logger.warnWithContext('Could not load biological farming routes', {
     message: bioError.message,
@@ -1024,6 +1026,8 @@ async function startServer() {
   await verifyStartupDependencies();
 
   server = app.listen(PORT, '0.0.0.0', () => {
+    logger.info(`SmartFarm API version ${appVersion} started`);
+    logger.info('Database URL present', { hasDatabaseUrl: !!process.env.DATABASE_URL });
     logger.info('SmartFarm API Server Started', {
       environment: process.env.NODE_ENV || 'development',
       port: PORT,

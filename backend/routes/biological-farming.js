@@ -4,9 +4,19 @@
  */
 
 const express = require('express');
-const router = express.Router();
 const { cacheMiddleware } = require('../middleware/cache-middleware');
 const { CACHE_TTL } = require('../config/cache-config');
+const { validate } = require('../middleware/validator');
+
+const router = express.Router();
+
+router.get('/_ping', (req, res) => {
+    res.json({
+        success: true,
+        route: 'biological-farming/_ping',
+        timestamp: new Date().toISOString()
+    });
+});
 
 // Good Insects Database
 const goodInsects = [
@@ -268,8 +278,6 @@ const cropGuides = {
  * GET /api/biological-farming/good-insects
  * Get all beneficial insects
  */
-const { validate } = require('../middleware/validator');
-
 router.get('/good-insects', 
     cacheMiddleware('biological-farming:good-insects', CACHE_TTL.BIOLOGICAL_FARMING),
     validate('biologicalFarming.goodInsects'), 
