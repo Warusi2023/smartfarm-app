@@ -1,85 +1,90 @@
 /**
- * API URL Fix Script
- * Forces the correct Railway backend URL and clears cached configurations
+ * API URL fix — single source of truth for backend origin (no trailing /api).
+ * Exposes window.__SMARTFARM_RESOLVE_API_ORIGIN__ for api-client.js and sets globals.
  */
+(function () {
+  'use strict';
 
-(function() {
-    'use strict';
-    
-    console.log('🔧 API URL Fix Script - Starting...');
-    
-    // Force the correct API URL
-    const CORRECT_API_URL = 'https://web-production-86d39.up.railway.app';
-    
-    // Override any existing configuration
-    window.VITE_API_BASE_URL = CORRECT_API_URL;
-    window.VITE_API_URL = CORRECT_API_URL;
-    window.__SMARTFARM_API_BASE__ = CORRECT_API_URL;
-    
-    console.log('✅ Forced API URL to:', CORRECT_API_URL);
-    
-    // Clear any cached API configurations
-    if (window.SmartFarmApiConfig) {
-        window.SmartFarmApiConfig.baseUrl = CORRECT_API_URL;
-        console.log('✅ Updated SmartFarmApiConfig.baseUrl');
+  var CANONICAL_ORIGIN = 'https://web-production-86d39.up.railway.app';
+  var LEGACY_HOST_RE =
+    /(?:^|\.)smartfarm-app-production\.up\.railway\.app|smartfarm-backend\.railway\.app/i;
+
+  function normalizeToOrigin(url) {
+    if (!url || typeof url !== 'string') {
+      return '';
     }
-    
-    // Clear localStorage API configurations
-    const keysToRemove = [];
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && (key.includes('api') || key.includes('url') || key.includes('backend'))) {
-            keysToRemove.push(key);
-        }
+    var s = url.trim().replace(/\/+$/, '');
+    if (/\/api$/i.test(s)) {
+      s = s.replace(/\/api$/i, '');
     }
-    
-    keysToRemove.forEach(key => {
-        localStorage.removeItem(key);
-        console.log('🗑️ Removed cached config:', key);
-    });
-    
-    // Clear sessionStorage API configurations
-    const sessionKeysToRemove = [];
-    for (let i = 0; i < sessionStorage.length; i++) {
-        const key = sessionStorage.key(i);
-        if (key && (key.includes('api') || key.includes('url') || key.includes('backend'))) {
-            sessionKeysToRemove.push(key);
-        }
+    return s;
+  }
+
+  function isLegacyOrBlocked(origin) {
+    if (!origin) {
+      return true;
     }
-    
-    sessionKeysToRemove.forEach(key => {
-        sessionStorage.removeItem(key);
-        console.log('🗑️ Removed cached session config:', key);
-    });
-    
-    // Force update API service if it exists
-    if (window.SmartFarmAPI) {
-        window.SmartFarmAPI.baseURL = CORRECT_API_URL;
-        console.log('✅ Updated SmartFarmAPI.baseURL');
+    if (LEGACY_HOST_RE.test(origin)) {
+      return true;
     }
-    
-    // Create a global function to verify the fix
-    window.verifyApiUrl = function() {
-        console.log('🔍 API URL Verification:');
-        console.log('  VITE_API_BASE_URL:', window.VITE_API_BASE_URL);
-        console.log('  VITE_API_URL:', window.VITE_API_URL);
-        console.log('  __SMARTFARM_API_BASE__:', window.__SMARTFARM_API_BASE__);
-        console.log('  SmartFarmApiConfig.baseUrl:', window.SmartFarmApiConfig?.baseUrl);
-        console.log('  SmartFarmAPI.baseURL:', window.SmartFarmAPI?.baseURL);
-        
-        const allCorrect = [
-            window.VITE_API_BASE_URL,
-            window.VITE_API_URL,
-            window.__SMARTFARM_API_BASE__,
-            window.SmartFarmApiConfig?.baseUrl,
-            window.SmartFarmAPI?.baseURL
-        ].every(url => url === CORRECT_API_URL);
-        
-        console.log(allCorrect ? '✅ All API URLs are correct!' : '❌ Some API URLs are still wrong');
-        return allCorrect;
-    };
-    
-    console.log('🎉 API URL Fix Script - Complete!');
-    console.log('Run verifyApiUrl() in console to check the fix');
-    
+    try {
+      var host = window.location && window.location.hostname;
+      var onLocalPage = host === 'localhost' || host === '127.0.0.1';
+      var originIsLocal =
+        /^https?:\/\/localhost\b/i.test(origin) ||
+        /^https?:\/\/127\.0\.0\.1\b/i.test(origin);
+      if (!onLocalPage && originIsLocal) {
+        return true;
+      }
+    } catch (_) {}
+    return false;
+  }
+
+  window.__SMARTFARM_RESOLVE_API_ORIGIN__ = function resolveApiOrigin() {
+    var candidates = [
+      window.__SMARTFARM_API_BASE__,
+      window.VITE_API_BASE_URL,
+      window.VITE_API_URL,
+      CANONICAL_ORIGIN,
+    ];
+    var i;
+    var resolved = CANONICAL_ORIGIN;
+    for (i = 0; i < candidates.length; i++) {
+      var o = normalizeToOrigin(candidates[i]);
+      if (!o) {
+        continue;
+      }
+      if (isLegacyOrBlocked(o)) {
+        continue;
+      }
+      resolved = o;
+      break;
+    }
+    return resolved;
+  };
+
+  var CORRECT_API_URL = window.__SMARTFARM_RESOLVE_API_ORIGIN__();
+
+  window.VITE_API_BASE_URL = CORRECT_API_URL;
+  window.VITE_API_URL = CORRECT_API_URL;
+  window.__SMARTFARM_API_BASE__ = CORRECT_API_URL;
+
+  console.log('API URL fix: forced backend origin to', CORRECT_API_URL);
+
+  if (window.SmartFarmApiConfig) {
+    window.SmartFarmApiConfig.baseUrl = CORRECT_API_URL;
+  }
+
+  if (window.SmartFarmAPI) {
+    window.SmartFarmAPI.baseURL = CORRECT_API_URL;
+  }
+
+  window.verifyApiUrl = function () {
+    var r = window.__SMARTFARM_RESOLVE_API_ORIGIN__();
+    console.log('Resolved API origin:', r);
+    console.log('  VITE_API_BASE_URL:', window.VITE_API_BASE_URL);
+    console.log('  VITE_API_URL:', window.VITE_API_URL);
+    console.log('  __SMARTFARM_API_BASE__:', window.__SMARTFARM_API_BASE__);
+    return r === CANONICAL_ORIGIN || !isLegacyOrBlocked(r);
+  };
 })();

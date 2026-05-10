@@ -80,7 +80,7 @@
     Permissions-Policy = "camera=(), microphone=(), geolocation=()"
     X-Robots-Tag = "index, follow"
     Cache-Control = "public, max-age=3600"
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; img-src 'self' data: https:; font-src 'self' https://cdnjs.cloudflare.com; connect-src 'self' https://api.railway.app https://smartfarm-api.railway.app; frame-ancestors 'none';"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com https://connect.facebook.net; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; img-src 'self' data: https:; font-src 'self' https://cdnjs.cloudflare.com; connect-src 'self' https://web-production-86d39.up.railway.app https://api.railway.app https://smartfarm-api.railway.app https://accounts.google.com; frame-ancestors 'none';"
 
 # Headers for static assets
 [[headers]]
@@ -88,7 +88,13 @@
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
-# Headers for JS files
+# Unhashed public/ JS must not be cached for a year (stale api-client breaks auth)
+[[headers]]
+  for = "/js/*"
+  [headers.values]
+    Cache-Control = "public, max-age=3600, must-revalidate"
+
+# Headers for JS files (root-level hashed bundles only — avoid catching /js/*)
 [[headers]]
   for = "*.js"
   [headers.values]

@@ -2,7 +2,7 @@
   "NODE_ENV": "production",
   "PORT": "3000",
   "LOG_LEVEL": "info",
-  "VITE_API_URL": "https://web-production-86d39.up.railway.app/api",
-  "VITE_API_BASE_URL": "https://web-production-86d39.up.railway.app/api",
-  "NEXT_PUBLIC_API_BASE_URL": "https://web-production-86d39.up.railway.app/api"
+  "VITE_API_URL": "https://web-production-86d39.up.railway.app",
+  "VITE_API_BASE_URL": "https://web-production-86d39.up.railway.app",
+  "NEXT_PUBLIC_API_BASE_URL": "https://web-production-86d39.up.railway.app"
 }

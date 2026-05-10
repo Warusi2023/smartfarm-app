@@ -891,6 +891,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/api-url-fix.js?v=sfm20260510"></script>
     <script>
         // Form validation and submission
         document.getElementById('registerForm').addEventListener('submit', function(e) {
@@ -1093,7 +1094,12 @@
                 formData.country = countryEl.value;
             }
 
-            const apiBase = window.__SMARTFARM_API_BASE__ || window.VITE_API_URL || 'https://web-production-86d39.up.railway.app';
+            const apiBase =
+                typeof window.__SMARTFARM_RESOLVE_API_ORIGIN__ === 'function'
+                    ? window.__SMARTFARM_RESOLVE_API_ORIGIN__()
+                    : window.__SMARTFARM_API_BASE__ ||
+                      window.VITE_API_URL ||
+                      'https://web-production-86d39.up.railway.app';
             const apiUrl = apiBase.replace(/\/$/, '') + '/api/auth/register';
             
             console.log('Sending registration data:', formData);
