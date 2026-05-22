@@ -22,47 +22,40 @@
      * Get API Base URL from environment or use production default
      */
     function getApiBaseUrl() {
-        // Priority order:
-        // 1. VITE_API_BASE_URL (Netlify env var)
-        // 2. VITE_API_URL (legacy support)
-        // 3. window.__SMARTFARM_API_BASE__ (runtime injection)
-        // 4. Production default
-        
-        const envUrl = window.VITE_API_BASE_URL || 
-                      window.VITE_API_URL || 
+        // BASE_API_ORIGIN only (no /api suffix). See js/api-origin.js and WEB_RELEASE_CHECKLIST.md.
+        const envUrl = window.VITE_API_BASE_URL ||
+                      window.VITE_API_URL ||
                       (window).__SMARTFARM_API_BASE__ ||
                       null;
-        
+
         if (envUrl) {
-            console.log('[API Config] Using environment URL:', envUrl);
-            return envUrl.replace(/\/$/, ''); // Remove trailing slash
+            const origin = window.SmartFarmApiOrigin
+                ? window.SmartFarmApiOrigin.normalizeApiOrigin(envUrl)
+                : envUrl.replace(/\/+$/, '').replace(/\/api$/i, '');
+            console.log('[API Config] Using environment URL (normalized origin):', origin || envUrl);
+            return origin || PRODUCTION_API_BASE;
         }
-        
+
         console.log('[API Config] Using production URL:', PRODUCTION_API_BASE);
-        return PRODUCTION_API_BASE;
+        return window.SmartFarmApiOrigin
+            ? window.SmartFarmApiOrigin.normalizeApiOrigin(PRODUCTION_API_BASE)
+            : PRODUCTION_API_BASE;
     }
-    
+
     /**
-     * Build full API URL for endpoint
+     * Build full API URL for endpoint path (e.g. /api/health or health).
      */
     function buildApiUrl(path) {
-        const base = getApiBaseUrl();
-        // Remove trailing slash from base
-        const cleanBase = base.replace(/\/$/, '');
-        // Remove leading slash from path
-        const cleanPath = path.replace(/^\//, '');
-        
-        // Check if base already includes /api, if so don't add it again
-        if (cleanBase.endsWith('/api')) {
-            return `${cleanBase}/${cleanPath}`;
-        } else {
-            // If path already starts with /api, use it as-is
-            if (cleanPath.startsWith('api/')) {
-                return `${cleanBase}/${cleanPath}`;
-            }
-            // Otherwise add /api prefix
-            return `${cleanBase}/api/${cleanPath}`;
+        const origin = getApiBaseUrl();
+        if (window.SmartFarmApiOrigin) {
+            return window.SmartFarmApiOrigin.joinApiPath(origin, path || '');
         }
+        const cleanPath = (path || '').replace(/^\//, '');
+        const cleanBase = origin.replace(/\/$/, '');
+        if (cleanPath.startsWith('api/') || cleanPath === 'api') {
+            return cleanBase + '/' + cleanPath;
+        }
+        return cleanBase + '/api/' + cleanPath;
     }
     
     /**

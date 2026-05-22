@@ -452,21 +452,9 @@
                             </button>
                         </form>
 
-                        <div class="divider">
-                            <span>or continue with</span>
-                        </div>
-
-                        <div class="social-login">
-                            <a href="#" class="btn-social" onclick="socialLogin('google')">
-                                <i class="fab fa-google"></i> Google
-                            </a>
-                            <a href="#" class="btn-social" onclick="socialLogin('facebook')">
-                                <i class="fab fa-facebook-f"></i> Facebook
-                            </a>
-                        </div>
-
                         <div class="login-footer">
-                            <p>Don't have an account? <a href="register.html">Sign up</a></p>
+                            <p>Don't have an account? <a href="register.html"><strong>Create your free account</strong></a></p>
+                            <p class="text-muted small mb-0">Open registration — verify your email after signing up, then log in here.</p>
                             <p><a href="forgot-password.html">Forgot your password?</a></p>
                         </div>
                     </div>
@@ -644,10 +632,6 @@
                 passwordIcon.classList.remove('fa-eye-slash');
                 passwordIcon.classList.add('fa-eye');
             }
-        }
-
-        function socialLogin(provider) {
-            showAlert(`Signing in with ${provider}... This feature is coming soon!`, 'success');
         }
 
         // Check for remembered user

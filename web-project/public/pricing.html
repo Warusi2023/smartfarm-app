@@ -278,7 +278,7 @@
                             <li><i class="fas fa-check"></i> API access</li>
                         </ul>
                         <button class="btn btn-success pricing-btn" onclick="selectPlan('professional')">
-                            Subscribe Now
+                            Contact Us
                         </button>
                     </div>
                 </div>
@@ -427,15 +427,11 @@
     
     <script>
         function selectPlan(plan) {
-            // Store selected plan in localStorage
             localStorage.setItem('selectedPlan', plan);
-            
-            // Redirect to checkout or registration
             if (plan === 'trial') {
-                // Start free trial - redirect to registration
                 window.location.href = 'register.html?plan=trial';
             } else if (plan === 'professional') {
-                window.location.href = 'checkout.html?plan=professional';
+                window.location.href = 'contact.html?plan=professional';
             } else if (plan === 'enterprise') {
                 window.location.href = 'contact.html?plan=enterprise';
             }

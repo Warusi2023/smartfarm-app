@@ -1,6 +1,14 @@
-# Netlify redirects file
-# This ensures all routes are handled by index.html for SPA routing
-# Root path explicitly allowed for external tools
+# Production redirects (listed before SPA fallback)
+/signup.html /register.html 301
+/debug-login.html /index.html 301
+/test-api.html /index.html 301
+/button-debugger.html /index.html 301
+/login-diagnostic.html /index.html 301
+/test-server-connection.html /index.html 301
+/test-cors-bypass.html /index.html 301
+/test-modal-accessibility.html /index.html 301
+/navigation-test.html /index.html 301
 
+# SPA fallback
 /    /index.html   200
 /*    /index.html   200

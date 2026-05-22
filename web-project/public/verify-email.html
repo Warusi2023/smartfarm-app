@@ -163,7 +163,8 @@
     </div>
 
     <script>
-        const API_BASE_URL = 'https://web-production-86d39.up.railway.app/api';
+        // Origin only; append /api/... on each fetch (same convention as web-project/.env.example)
+        const API_BASE_URL = 'https://web-production-86d39.up.railway.app';
         
         // Get token from URL parameters
         const urlParams = new URLSearchParams(window.location.search);
@@ -190,7 +191,7 @@
         
         async function verifyEmail(token) {
             try {
-                const response = await fetch(`${API_BASE_URL}/auth/verify-email/${token}`, {
+                const response = await fetch(`${API_BASE_URL}/api/auth/verify-email/${token}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -262,7 +263,7 @@
             resendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
             
             try {
-                const response = await fetch(`${API_BASE_URL}/auth/resend-verification`, {
+                const response = await fetch(`${API_BASE_URL}/api/auth/resend-verification`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

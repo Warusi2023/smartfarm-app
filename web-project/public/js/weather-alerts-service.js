@@ -6,9 +6,15 @@
 
 class WeatherAlertsService {
     constructor() {
-        this.baseURL = window.SmartFarmApiConfig?.baseUrl || 
-                      window.SmartFarmConfig?.getApiUrl('') || 
-                      'https://web-production-86d39.up.railway.app';
+        const rawBase =
+            window.SmartFarmApiConfig?.baseUrl ||
+            window.VITE_API_BASE_URL ||
+            window.VITE_API_URL ||
+            window.__SMARTFARM_API_BASE__ ||
+            'https://web-production-86d39.up.railway.app';
+        this.baseURL = window.SmartFarmApiOrigin
+            ? window.SmartFarmApiOrigin.normalizeApiOrigin(rawBase)
+            : String(rawBase).trim().replace(/\/+$/, '').replace(/\/api$/i, '');
         this.alertsCache = null;
         this.cacheTimestamp = null;
         this.cacheDuration = 60000; // 1 minute cache
@@ -18,9 +24,13 @@ class WeatherAlertsService {
      * Get API URL for weather alerts endpoints
      */
     getApiUrl(endpoint) {
+        const tail = endpoint.startsWith('/') ? endpoint.slice(1) : (endpoint || '');
+        const sub = tail ? `weather-alerts/${tail}` : 'weather-alerts';
+        if (window.SmartFarmApiOrigin) {
+            return window.SmartFarmApiOrigin.joinApiPath(this.baseURL, sub);
+        }
         const base = this.baseURL.replace(/\/$/, '');
-        const path = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
-        return `${base}/api/weather-alerts${path}`;
+        return `${base}/api/${sub}`;
     }
 
     /**

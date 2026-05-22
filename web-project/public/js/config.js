@@ -1,24 +1,40 @@
 // SmartFarm Unified API Configuration
+// BASE_API_ORIGIN: https://host only (VITE_API_URL). Load js/api-origin.js first when possible.
+(function () {
+    var raw =
+        window.SmartFarmApiConfig?.baseUrl ||
+        window.VITE_API_BASE_URL ||
+        window.VITE_API_URL ||
+        window.__SMARTFARM_API_BASE__ ||
+        'https://web-production-86d39.up.railway.app';
+    var origin = window.SmartFarmApiOrigin
+        ? window.SmartFarmApiOrigin.normalizeApiOrigin(raw)
+        : String(raw)
+            .trim()
+            .replace(/\/+$/, '')
+            .replace(/\/api$/i, '');
+    window.__SMARTFARM_CONFIG_API_ORIGIN__ = origin || raw;
+})();
+
 window.SmartFarmConfig = {
-    // API Base URL - use single source of truth
-        API_BASE_URL: window.SmartFarmApiConfig?.baseUrl || 
-                        window.VITE_API_BASE_URL || 
-                        window.VITE_API_URL || 
-                        (window).__SMARTFARM_API_BASE__ ||
-                        'https://web-production-86d39.up.railway.app',
-    
+    API_BASE_URL: window.__SMARTFARM_CONFIG_API_ORIGIN__,
+
     // Get full API URL for a given endpoint
     getApiUrl: function(endpoint) {
         try {
             const baseUrl = this.API_BASE_URL;
             if (baseUrl) {
-                // Remove trailing slash from base URL and leading slash from endpoint
+                if (window.SmartFarmApiOrigin) {
+                    return window.SmartFarmApiOrigin.joinApiPath(baseUrl, endpoint || '');
+                }
                 const cleanBaseUrl = baseUrl.replace(/\/$/, '');
-                const cleanEndpoint = endpoint.replace(/^\//, '');
+                const cleanEndpoint = (endpoint || '').replace(/^\//, '');
+                if (cleanEndpoint.startsWith('api/') || cleanEndpoint === 'api') {
+                    return `${cleanBaseUrl}/${cleanEndpoint}`;
+                }
                 return `${cleanBaseUrl}/api/${cleanEndpoint}`;
             } else {
-                // Fallback to relative URL
-                return `/api${endpoint}`;
+                return `/api${endpoint && endpoint.startsWith('/') ? endpoint : '/' + (endpoint || '')}`;
             }
         } catch (error) {
             if (window.SmartFarmLogger) {
@@ -26,7 +42,10 @@ window.SmartFarmConfig = {
             } else {
                 console.error('[SmartFarm] Error in getApiUrl:', error);
             }
-            return `/api${endpoint}`;
+            var tail = endpoint && String(endpoint).startsWith('/')
+                ? String(endpoint)
+                : '/' + (endpoint || '');
+            return '/api' + tail;
         }
     },
     

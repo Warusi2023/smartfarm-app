@@ -43,7 +43,8 @@ jobs:
       env:
         CI: true
         HUSKY: 0
-        VITE_API_URL: https://test-api.example.com/api
+        # Origin only — matches web-project/.env.example (avoid /api/api in URL builders)
+        VITE_API_URL: https://test-api.example.com
     
     - name: Test backend
       run: npm test --if-present

@@ -1,8 +1,23 @@
-# 🚀 SmartFarm Demo → Production SaaS Transformation Plan
+# SmartFarm demo → production SaaS transformation plan
 
-## 📊 **STEP 1: Current Demo Analysis**
+## Status as of 2026-05-13
 
-### **✅ What We Have (Demo Strengths):**
+- **Railway API health:** `GET https://web-production-86d39.up.railway.app/api/health` returns **HTTP 200**. Treat the hosted API as **healthy** unless Railway or monitoring shows a **current** problem.
+- **Web release (today):** Follow **[`WEB_RELEASE_CHECKLIST.md`](./WEB_RELEASE_CHECKLIST.md)** for **web-only** cut criteria (build artifact, env, smoke tests). This transformation plan is a **longer-term product/roadmap** document, not the day-to-day release checklist.
+
+---
+
+## How to read this document
+
+- **`WEB_RELEASE_CHECKLIST.md`** — **Current** operational checklist for shipping the **web** app.
+- **Below** — **Historical / strategic** plan: gaps that were identified when comparing a “demo” story to a full **SaaS** target. Some bullets **contradict** the present codebase (e.g. root `README.md` already describes JWT and PostgreSQL). Those roadmap lines are **aspirational or outdated relative to the repo**; they are kept for context.
+
+---
+
+## Historical STEP 1: demo-era analysis (preserved)
+
+### **✅ What we had (demo strengths) — original list**
+
 - ✅ **Working frontend** - React/Vanilla JS dashboard with full UI
 - ✅ **Backend API** - Node.js with CORS, health endpoints, error handling
 - ✅ **Deployment ready** - Railway + Netlify setup
@@ -10,7 +25,10 @@
 - ✅ **Accessibility** - Form labels, unique IDs, ARIA compliance
 - ✅ **Offline mode** - Cached data fallback system
 
-### **❌ What's Missing (Production Gaps):**
+### **❌ What was framed as missing (production gaps) — may be stale**
+
+**Warning:** These bullets were written as a **demo vs SaaS** gap list. Several conflict with the **current** codebase (`README.md`: JWT, PostgreSQL, etc.). Keep for **historical context** only.
+
 - ❌ **No real authentication** - Hardcoded/mock login system
 - ❌ **No persistent database** - Data stored in localStorage only
 - ❌ **Free tier hosting** - Railway/Netlify can sleep/reset
@@ -21,6 +39,20 @@
 - ❌ **No user management** - No real user accounts or permissions
 
 ---
+
+## STEP 2–4: roadmap (unchanged intent)
+
+The sections that follow (production requirements, phased roadmap, target architecture, metrics, principles) describe **long-term** goals. Execution order and completion should be tracked in issues/PRs and **`WEB_RELEASE_CHECKLIST.md`** for near-term **web** releases.
+
+### Current vs target architecture (note)
+
+Older diagram text mentioned `localStorage` as the primary store for a demo story. Production web flows should use the **live API** and server-side persistence where implemented; confirm in code and staging before marketing claims.
+
+---
+
+## Historical: full roadmap text (original plan body)
+
+The subsections below are **preserved verbatim** from the earlier transformation write-up. Treat checklist items as **aspirational**; some conflict with the current repo (see root `README.md`).
 
 ## 🎯 **STEP 2: Production Requirements Definition**
 
@@ -119,7 +151,7 @@
 
 ## 📋 **STEP 4: Technical Architecture**
 
-### **Current Architecture:**
+### **Current Architecture (historical diagram):**
 ```
 Frontend (Netlify) → Backend (Railway) → localStorage
 ```
@@ -159,7 +191,7 @@ External Services:
 
 ---
 
-## 🚀 **Next Steps**
+## 🚀 **Next Steps (roadmap)**
 
 1. **Start with Phase 1** - Environment and database setup
 2. **Set up development workflow** - Separate dev/staging/prod environments
@@ -179,4 +211,11 @@ External Services:
 
 ---
 
-**Ready to transform SmartFarm from demo to production SaaS! 🎉**
+## Next steps (current vs roadmap)
+
+1. Use **`WEB_RELEASE_CHECKLIST.md`** before each **web** release.
+2. Use the **historical roadmap** sections above for **long-term product** prioritization, not as live deploy status.
+
+---
+
+**Ready to transform SmartFarm from demo to production SaaS! 🎉** — **Web** go/no-go remains **`WEB_RELEASE_CHECKLIST.md`**.

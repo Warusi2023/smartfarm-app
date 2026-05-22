@@ -12,6 +12,7 @@
     "dev": "vite --host --port 5173",
     "preview": "vite preview --strictPort --port 4173",
     "start": "npx --yes serve -s dist -l ${PORT:-4173}",
+    "test": "npx playwright test",
     "test:e2e": "npx playwright test",
     "test:e2e:headed": "npx playwright test --headed"
   },

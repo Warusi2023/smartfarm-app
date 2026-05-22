@@ -1,6 +1,9 @@
 /**
  * SmartFarm Environment Management
  * Centralized environment variable access and validation
+ *
+ * API base: origin only (https://host). Per-request paths use /api/...
+ * Load js/api-origin.js before this file when possible; joinApiPath avoids /api/api.
  */
 
 class SmartFarmEnvironment {
@@ -10,13 +13,22 @@ class SmartFarmEnvironment {
     }
 
     loadConfiguration() {
+        const rawApiBase =
+            window.SmartFarmApiConfig?.baseUrl ||
+            window.VITE_API_BASE_URL ||
+            window.VITE_API_URL ||
+            (window).__SMARTFARM_API_BASE__ ||
+            'https://web-production-86d39.up.railway.app';
+        const apiOrigin = window.SmartFarmApiOrigin
+            ? window.SmartFarmApiOrigin.normalizeApiOrigin(rawApiBase)
+            : String(rawApiBase)
+                .trim()
+                .replace(/\/+$/, '')
+                .replace(/\/api$/i, '');
+
         return {
-            // API Configuration - unified approach (single source of truth)
-                  API_BASE_URL: window.SmartFarmApiConfig?.baseUrl || 
-                                window.VITE_API_BASE_URL || 
-                                window.VITE_API_URL || 
-                                (window).__SMARTFARM_API_BASE__ ||
-                                'https://web-production-86d39.up.railway.app',
+            // API host origin only (no trailing /api)
+            API_BASE_URL: apiOrigin || rawApiBase,
             
             // Environment Detection
             IS_PRODUCTION: window.location.hostname === 'www.smartfarm-app.com' || 
@@ -141,16 +153,21 @@ class SmartFarmEnvironment {
         return this.config[`FEATURE_${feature.toUpperCase()}`] === true;
     }
 
-    // API URL builder
+    // API URL builder (robust if env wrongly includes /api or endpoint includes api/)
     getApiUrl(endpoint) {
         const baseUrl = this.config.API_BASE_URL;
+        if (baseUrl && window.SmartFarmApiOrigin) {
+            return window.SmartFarmApiOrigin.joinApiPath(baseUrl, endpoint || '');
+        }
         if (baseUrl) {
             const cleanBaseUrl = baseUrl.replace(/\/$/, '');
-            const cleanEndpoint = endpoint.replace(/^\//, '');
+            const cleanEndpoint = (endpoint || '').replace(/^\//, '');
+            if (cleanEndpoint.startsWith('api/') || cleanEndpoint === 'api') {
+                return `${cleanBaseUrl}/${cleanEndpoint}`;
+            }
             return `${cleanBaseUrl}/api/${cleanEndpoint}`;
-        } else {
-            return `/api${endpoint}`;
         }
+        return `/api${endpoint && endpoint.startsWith('/') ? endpoint : '/' + (endpoint || '')}`;
     }
 
     // Debug information

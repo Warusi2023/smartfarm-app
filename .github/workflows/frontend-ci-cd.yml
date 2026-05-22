@@ -151,23 +151,29 @@ jobs:
     - name: Install dependencies
       working-directory: ./web-project
       run: npm ci
-      
-    - name: Build application
-      working-directory: ./web-project
-      run: npm run build
-      
-    - name: Optimize images
+
+    # Compress source images before Vite copies public/ → dist/ (matches Netlify/Vite flow)
+    - name: Optimize images (public/, before Vite build)
       uses: calibreapp/image-actions@main
       with:
         githubToken: ${{ secrets.GITHUB_TOKEN }}
         compress: true
         path: web-project/public/images
-      
+
+    # Vite writes production assets to web-project/dist/ (see web-project/vite.config.ts outDir)
+    - name: Build application
+      working-directory: ./web-project
+      run: npm run build
+      env:
+        VITE_API_URL: https://web-production-86d39.up.railway.app
+        VITE_API_BASE_URL: https://web-production-86d39.up.railway.app
+
+    # Netlify must publish this folder — not web-project/public/ (pre-build sources only)
     - name: Upload build artifacts
       uses: actions/upload-artifact@v3
       with:
         name: frontend-build
-        path: web-project/public/
+        path: web-project/dist/
 
   deploy-staging:
     name: Deploy to Staging
@@ -184,11 +190,15 @@ jobs:
       uses: actions/download-artifact@v3
       with:
         name: frontend-build
-        
+
+    - name: Verify Vite output exists
+      run: test -f web-project/dist/index.html
+
+    # Artifact is web-project/dist/ contents; publish-dir is that directory on the runner
     - name: Deploy to Netlify Staging
       uses: nwtgck/actions-netlify@v2.0
       with:
-        publish-dir: './web-project/public'
+        publish-dir: './web-project/dist'
         production-branch: develop
         github-token: ${{ secrets.GITHUB_TOKEN }}
         deploy-message: "Deploy from GitHub Actions - Staging"
@@ -214,11 +224,14 @@ jobs:
       uses: actions/download-artifact@v3
       with:
         name: frontend-build
-        
+
+    - name: Verify Vite output exists
+      run: test -f web-project/dist/index.html
+
     - name: Deploy to Netlify Production
       uses: nwtgck/actions-netlify@v2.0
       with:
-        publish-dir: './web-project/public'
+        publish-dir: './web-project/dist'
         production-branch: main
         github-token: ${{ secrets.GITHUB_TOKEN }}
         deploy-message: "Deploy from GitHub Actions - Production"
