@@ -1,4 +1,4 @@
-# Production redirects (listed before SPA fallback)
+# Production redirects (Netlify: more specific rules first; static files win unless forced)
 /signup.html /register.html 301
 /debug-login.html /index.html 301
 /test-api.html /index.html 301
@@ -8,7 +8,6 @@
 /test-cors-bypass.html /index.html 301
 /test-modal-accessibility.html /index.html 301
 /navigation-test.html /index.html 301
-
-# SPA fallback
-/    /index.html   200
-/*    /index.html   200
+/ads-testing.html /index.html 301
+/api-test.html /index.html 301
+/backend-test.html /index.html 301

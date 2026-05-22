@@ -11,6 +11,7 @@ Allow: /contact.html
 Allow: /help.html
 Allow: /register.html
 Allow: /login.html
+Disallow: /signup.html
 Disallow: /debug-login.html
 Disallow: /test-api.html
 Disallow: /button-debugger.html
@@ -19,6 +20,9 @@ Disallow: /test-server-connection.html
 Disallow: /test-cors-bypass.html
 Disallow: /test-modal-accessibility.html
 Disallow: /navigation-test.html
+Disallow: /ads-testing.html
+Disallow: /api-test.html
+Disallow: /backend-test.html
 Disallow: /checkout.html
 Allow: /privacy-policy.html
 Allow: /terms-of-service.html

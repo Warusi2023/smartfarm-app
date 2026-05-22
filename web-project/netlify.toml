@@ -27,51 +27,7 @@
   port = 4173
   publish = "dist"
 
-# Open launch: legacy beta signup and internal test pages
-[[redirects]]
-  from = "/signup.html"
-  to = "/register.html"
-  status = 301
-
-[[redirects]]
-  from = "/debug-login.html"
-  to = "/index.html"
-  status = 301
-
-[[redirects]]
-  from = "/test-api.html"
-  to = "/index.html"
-  status = 301
-
-[[redirects]]
-  from = "/button-debugger.html"
-  to = "/index.html"
-  status = 301
-
-[[redirects]]
-  from = "/login-diagnostic.html"
-  to = "/index.html"
-  status = 301
-
-[[redirects]]
-  from = "/test-server-connection.html"
-  to = "/index.html"
-  status = 301
-
-[[redirects]]
-  from = "/test-cors-bypass.html"
-  to = "/index.html"
-  status = 301
-
-[[redirects]]
-  from = "/test-modal-accessibility.html"
-  to = "/index.html"
-  status = 301
-
-[[redirects]]
-  from = "/navigation-test.html"
-  to = "/index.html"
-  status = 301
+# Legacy signup + test/debug redirects live in public/_redirects (copied to dist/)
 
 # API redirects to Railway backend
 [[redirects]]

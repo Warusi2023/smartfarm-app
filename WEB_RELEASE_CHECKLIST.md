@@ -35,7 +35,7 @@ Concise audit of **web frontend + hosted API** readiness (Android out of scope).
    Netlify (or your host) **`VITE_API_URL` / `VITE_API_BASE_URL`** match `web-project/.env.production` and use **origin only** (see `/api/api` below).
 
 3. **Railway secrets**  
-   `DATABASE_URL`, `JWT_SECRET`, `CORS_ORIGINS`, mail keys, etc. set in Railway — not only in local `backend/.env`. Reconcile with `docs/setup-deployment/ENVIRONMENT_VARIABLES.md` if you use it.
+   `DATABASE_URL`, `JWT_SECRET`, `CORS_ORIGINS`, mail keys, etc. set in Railway — not only in local `backend/.env`. Set **`PUBLIC_FRONTEND_URL`** to one canonical origin for email links (never copy `CORS_ORIGINS` into it). See `backend/EMAIL_LINKS_PRODUCTION.md`. Reconcile with `docs/setup-deployment/ENVIRONMENT_VARIABLES.md` if you use it.
 
 4. **CORS for every public web origin**  
    Run `scripts/check-deployment-status.ps1` or `scripts/complete-todo-verification.ps1` (both assume `https://www.smartfarm-app.com`). Add any extra origins (e.g. Netlify preview URLs) to backend `CORS_ORIGINS` if needed.

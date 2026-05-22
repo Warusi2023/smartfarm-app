@@ -51,6 +51,14 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+
+  <!-- Pricing Page -->
+  <url>
+    <loc>https://www.smartfarm-app.com/pricing.html</loc>
+    <lastmod>2025-05-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
   
   <!-- Privacy Policy -->
   <url>
