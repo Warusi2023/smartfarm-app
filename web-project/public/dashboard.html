@@ -1977,7 +1977,7 @@
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label class="form-label">Location</label>
-                                        <input type="text" class="form-control" id="farmLocation" value="Sydney, Australia">
+                                        <input type="text" class="form-control" id="farmLocation" value="" placeholder="Add your farm location">
                                     </div>
                                 </div>
                             </div>
@@ -3832,61 +3832,108 @@
         }
 
         // Initialize weather service
+        function getFarmLocationLabel() {
+            const farmLocationField = document.getElementById('farmLocation');
+            if (farmLocationField) {
+                const fieldValue = farmLocationField.value.trim();
+                if (fieldValue && !isPlaceholderLocationName(fieldValue)) {
+                    return fieldValue;
+                }
+            }
+            try {
+                const savedFarmData = localStorage.getItem('farmData');
+                if (!savedFarmData) {
+                    return null;
+                }
+                const farmData = JSON.parse(savedFarmData);
+                const location = (farmData.location || '').trim();
+                if (location && !isPlaceholderLocationName(location)) {
+                    return location;
+                }
+            } catch (e) {
+                return null;
+            }
+            return null;
+        }
+
+        function isPlaceholderLocationName(name) {
+            if (!name) {
+                return true;
+            }
+            const normalized = String(name).toLowerCase().trim();
+            if (normalized === 'australia' || normalized === 'unknown' || normalized === 'unknown location') {
+                return true;
+            }
+            return normalized.includes('sydney') && normalized.includes('australia');
+        }
+
+        function escapeLocationHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text == null ? '' : String(text);
+            return div.innerHTML;
+        }
+
         function initializeWeatherService() {
-            // Auto-migrate any cached Fiji locations to Australia
             try {
                 const savedLocation = localStorage.getItem('smartfarm_user_location');
                 if (savedLocation) {
                     const location = JSON.parse(savedLocation);
-                    if ((location.name && (location.name.includes('Fiji') || location.name.includes('Suva'))) ||
-                        (location.lat === -18.1248 && location.lng === 178.4501)) {
-                        console.log('🔄 Auto-migrating cached Fiji location to Australia');
-                        const newLocation = {
-                            lat: -33.8688,
-                            lng: 151.2093,
-                            name: 'Sydney, NSW, Australia'
-                        };
-                        localStorage.setItem('smartfarm_user_location', JSON.stringify(newLocation));
+                    if (isPlaceholderLocationName(location.name) ||
+                        (location.name && (location.name.includes('Fiji') || location.name.includes('Suva'))) ||
+                        (location.lat === -18.1248 && location.lng === 178.4501) ||
+                        (location.lat === -33.8688 && location.lng === 151.2093)) {
+                        localStorage.removeItem('smartfarm_user_location');
                     }
                 }
             } catch (e) {
-                console.warn('Error migrating location:', e);
+                console.warn('Error clearing placeholder location cache:', e);
             }
-            
+
             if (window.WeatherService) {
                 weatherService = window.WeatherService;
-                
-                // Subscribe to weather updates
+
                 weatherService.subscribe((weatherData) => {
                     updateLocationDisplay(weatherData);
                 });
-                
-                // Update location display immediately if data is available
-                if (weatherService.weatherData) {
-                    updateLocationDisplay(weatherService.weatherData);
-                }
-                
+
+                updateLocationDisplay(weatherService.weatherData || null);
+
                 console.log('✅ Weather Service initialized');
             } else {
                 console.warn('⚠️ Weather Service not available');
-                updateLocationDisplay({ location: { name: 'Australia' }, source: 'Demo' });
+                updateLocationDisplay(null);
             }
         }
 
-        // Update location display in navbar
         function updateLocationDisplay(weatherData) {
             const locationDisplay = document.getElementById('currentLocationDisplay');
-            if (locationDisplay && weatherData) {
-                const locationName = weatherData.location?.name || 'Unknown';
-                const isRealData = weatherData.source === 'OpenWeatherMap';
-                
-                locationDisplay.innerHTML = `
-                    ${locationName}
-                    <span class="badge ${isRealData ? 'bg-success' : 'bg-warning'} ms-1" style="font-size: 0.7rem;">
-                        ${isRealData ? 'Live' : 'Demo'}
-                    </span>
-                `;
+            if (!locationDisplay) {
+                return;
             }
+
+            const farmLocation = getFarmLocationLabel();
+            if (farmLocation) {
+                locationDisplay.textContent = farmLocation;
+                return;
+            }
+
+            const locationName = weatherData && weatherData.location ? weatherData.location.name : null;
+            const isLiveWeather = weatherData && weatherData.source === 'OpenWeatherMap';
+
+            if (isLiveWeather && locationName && !isPlaceholderLocationName(locationName)) {
+                locationDisplay.innerHTML = `
+                    ${escapeLocationHtml(locationName)}
+                    <span class="badge bg-success ms-1" style="font-size: 0.7rem;">Live</span>
+                `;
+                return;
+            }
+
+            if (locationName && !isPlaceholderLocationName(locationName)) {
+                locationDisplay.textContent = locationName;
+                return;
+            }
+
+            locationDisplay.textContent = 'Location not set';
         }
 
         // Global error handler
@@ -4051,14 +4098,10 @@
                         const location = JSON.parse(savedLocation);
                         if ((location.name && (location.name.includes('Fiji') || location.name.includes('Suva'))) ||
                             (location.lat === -18.1248 && location.lng === 178.4501)) {
-                            console.log('🔄 Clearing cached Fiji location - will default to Australia');
+                            console.log('🔄 Clearing cached placeholder location');
                             localStorage.removeItem('smartfarm_user_location');
-                            // Force WeatherService to use Australia default
-                            if (window.WeatherService && window.WeatherService.currentLocation) {
-                                if (window.WeatherService.currentLocation.name && window.WeatherService.currentLocation.name.includes('Fiji')) {
-                                    window.WeatherService.currentLocation = { lat: -33.8688, lng: 151.2093, name: 'Sydney, NSW, Australia' };
-                                    window.WeatherService.saveLocationPreference(window.WeatherService.currentLocation);
-                                }
+                            if (window.WeatherService && typeof window.WeatherService.setLocationUnsetState === 'function') {
+                                window.WeatherService.setLocationUnsetState();
                             }
                         }
                     }
@@ -7141,9 +7184,11 @@
                     const farmTypeField = document.getElementById('farmType');
                     
                     if (farmNameField) farmNameField.value = farmData.name || 'Green Valley Farm';
-                    if (farmLocationField) farmLocationField.value = farmData.location || 'Sydney, Australia';
+                    if (farmLocationField) farmLocationField.value = farmData.location || '';
                     if (farmAreaField) farmAreaField.value = farmData.area || '25.5';
                     if (farmTypeField) farmTypeField.value = farmData.type || 'Mixed Farming';
+
+                    updateLocationDisplay(weatherService && weatherService.weatherData ? weatherService.weatherData : null);
                     
                     console.log('Farm data loaded from localStorage:', farmData);
                 } catch (e) {
@@ -7851,6 +7896,8 @@
                 safeValue('#farmArea', farm.area || '');
                 safeValue('#farmType', farm.type || '');
                 safeText('#farm-count', farmData.length.toString());
+
+                updateLocationDisplay(weatherService && weatherService.weatherData ? weatherService.weatherData : null);
                 
                 console.log('✅ Farm display updated successfully');
             } catch (error) {

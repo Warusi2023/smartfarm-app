@@ -58,8 +58,13 @@ class WeatherService {
 
     async detectLocationAndFetchWeather() {
         try {
-            // First, try to get user's current location
-            const location = await this.getCurrentLocation();
+            let location = null;
+            try {
+                location = await this.getCurrentLocation();
+            } catch (geoError) {
+                console.warn('Geolocation unavailable:', geoError.message || geoError);
+            }
+
             if (location) {
                 this.currentLocation = location;
                 await this.fetchWeatherData(location);
@@ -68,32 +73,67 @@ class WeatherService {
                 // Fallback to saved location or default
                 const savedLocation = this.getSavedLocation();
                 if (savedLocation) {
-                    // Migrate old Fiji locations to Australia
-                    if (savedLocation.name && (savedLocation.name.includes('Fiji') || savedLocation.name.includes('Suva'))) {
-                        console.log('Migrating saved Fiji location to Australia');
-                        this.currentLocation = { lat: -33.8688, lng: 151.2093, name: 'Sydney, NSW, Australia' };
-                        this.saveLocationPreference(this.currentLocation);
-                        await this.fetchWeatherData(this.currentLocation);
-                    } else if (savedLocation.lat && savedLocation.lat === -18.1248 && savedLocation.lng === 178.4501) {
-                        // Check coordinates for Fiji
-                        console.log('Migrating saved Fiji coordinates to Australia');
-                        this.currentLocation = { lat: -33.8688, lng: 151.2093, name: 'Sydney, NSW, Australia' };
-                        this.saveLocationPreference(this.currentLocation);
-                        await this.fetchWeatherData(this.currentLocation);
+                    if (this.isPlaceholderLocation(savedLocation) ||
+                        (savedLocation.name && (savedLocation.name.includes('Fiji') || savedLocation.name.includes('Suva'))) ||
+                        (savedLocation.lat === -18.1248 && savedLocation.lng === 178.4501)) {
+                        localStorage.removeItem('smartfarm_user_location');
+                        this.currentLocation = null;
+                        this.setLocationUnsetState();
                     } else {
                         this.currentLocation = savedLocation;
                         await this.fetchWeatherData(savedLocation);
                     }
                 } else {
-                    // Default to Australia
-                    this.currentLocation = { lat: -33.8688, lng: 151.2093, name: 'Sydney, NSW, Australia' };
-                    await this.fetchWeatherData(this.currentLocation);
+                    this.currentLocation = null;
+                    this.setLocationUnsetState();
                 }
             }
         } catch (error) {
             console.error('Error detecting location:', error);
-            this.useDemoData();
+            const savedLocation = this.getSavedLocation();
+            if (!this.currentLocation && savedLocation && !this.isPlaceholderLocation(savedLocation)) {
+                this.currentLocation = savedLocation;
+                try {
+                    await this.fetchWeatherData(savedLocation);
+                    return;
+                } catch (fetchError) {
+                    console.warn('Saved location weather fetch failed:', fetchError);
+                }
+            }
+            if (this.currentLocation && !this.isPlaceholderLocation(this.currentLocation)) {
+                this.useDemoData();
+            } else {
+                this.setLocationUnsetState();
+            }
         }
+    }
+
+    isPlaceholderLocation(location) {
+        if (!location) {
+            return true;
+        }
+        const name = (location.name || '').toLowerCase().trim();
+        if (!name || name === 'australia' || name === 'unknown location') {
+            return true;
+        }
+        if (name.includes('sydney') && name.includes('australia')) {
+            return true;
+        }
+        const lat = Number(location.lat);
+        const lng = Number(location.lng);
+        return lat === -33.8688 && lng === 151.2093;
+    }
+
+    setLocationUnsetState() {
+        this.weatherData = {
+            location: null,
+            current: null,
+            forecast: [],
+            season: null,
+            lastUpdate: new Date(),
+            source: 'unavailable'
+        };
+        this.notifySubscribers();
     }
 
     getCurrentLocation() {
@@ -347,8 +387,12 @@ class WeatherService {
             return forecast;
         };
         
+        const demoLocation = this.currentLocation && !this.isPlaceholderLocation(this.currentLocation)
+            ? this.currentLocation
+            : null;
+
         this.weatherData = {
-            location: { lat: -33.8688, lng: 151.2093, name: 'Australia' },
+            location: demoLocation,
             current: {
                 temperature: 22,
                 humidity: 65,
