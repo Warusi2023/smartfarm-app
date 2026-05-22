@@ -136,10 +136,10 @@
                 </a>
             </li>
             
-            <!-- Subscription -->
+            <!-- Billing (manual / contact only during beta) -->
             <li class="nav-item">
-                <a class="nav-link" href="subscription-management.html">
-                    <i class="fas fa-credit-card me-2"></i>Subscription
+                <a class="nav-link" href="contact.html?topic=billing">
+                    <i class="fas fa-envelope me-2"></i>Billing &amp; Plans
                 </a>
             </li>
             

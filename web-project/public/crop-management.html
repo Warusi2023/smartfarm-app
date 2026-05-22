@@ -294,6 +294,20 @@
             </div>
         </div>
 
+        <!-- Recommendation action alerts (from action log API) -->
+        <div class="card-custom mb-4" id="cropRecAlertsCard">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5 class="mb-0"><i class="fas fa-bell me-2 text-warning"></i>Farm action reminders</h5>
+                <button type="button" class="btn btn-sm btn-outline-primary" onclick="CropRecommendationLog.refreshAlertsPanel()">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+            </div>
+            <p class="text-muted small mb-2">Based on logged AI recommendations — watering, fertilizer, soil checks, and follow-ups.</p>
+            <div id="cropRecAlertsPanel" class="small">
+                <p class="text-muted mb-0">Loading reminders…</p>
+            </div>
+        </div>
+
         <!-- Filter and Search -->
         <div class="card-custom">
             <div class="row align-items-center">
@@ -550,6 +564,7 @@
     <!-- Include config -->
     <script src="js/api-origin.js"></script>
     <script src="js/config.js"></script>
+    <script src="js/crop-recommendation-log.js"></script>
     
     <script>
         // Sample crops data
@@ -754,6 +769,12 @@
 
         // Initialize page
         document.addEventListener('DOMContentLoaded', async function() {
+            if (window.CropRecommendationLog) {
+                CropRecommendationLog.init({
+                    showAlert: showAlert,
+                    formatDate: formatDate
+                });
+            }
             await preloadCatalogGrowthData();
 
             // Check authentication first
@@ -1751,7 +1772,10 @@
                     return;
                 }
 
-                // Show AI advice modal
+                if (window.CropRecommendationLog) {
+                    CropRecommendationLog.setAdviceContext(crop, recommendations);
+                    CropRecommendationLog.saveSnapshot(crop, recommendations);
+                }
                 showAIAdviceModal(crop, recommendations);
             } catch (error) {
                 console.error('❌ Error getting AI crop advice:', error);
@@ -1882,12 +1906,20 @@
                                                 </div>
                                             </div>
                                         ` : ''}
+
+                                        <div id="aiAdjustedAdviceSection" class="card mb-3 d-none border-secondary">
+                                            <div class="card-header bg-secondary text-white">
+                                                <h6 class="mb-0"><i class="fas fa-flask me-2"></i>Adjusted advice (soil test)</h6>
+                                            </div>
+                                            <div class="card-body"></div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="modal-footer">
+                            <div class="modal-footer flex-wrap justify-content-end gap-1">
+                                ${window.CropRecommendationLog ? CropRecommendationLog.enhanceAdviceModalFooter(crop) : `
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                <button type="button" class="btn btn-primary" onclick="applyAIRecommendations(${crop.id})">Apply Recommendations</button>
+                                <button type="button" class="btn btn-primary" onclick="applyAIRecommendations(${crop.id})">Apply Recommendations</button>`}
                             </div>
                         </div>
                     </div>
@@ -1909,8 +1941,12 @@
         }
 
         function applyAIRecommendations(cropId) {
-            showAlert('AI recommendations applied! Consider scheduling fertilizer application.', 'success');
-            // Close modal
+            if (window.CropRecommendationLog) {
+                CropRecommendationLog.openLogForm(0);
+                showAlert('Log what you applied — the next reminder will be estimated from the recommendation timing.', 'info');
+            } else {
+                showAlert('AI recommendations noted. Schedule fertilizer application manually.', 'success');
+            }
             const modal = bootstrap.Modal.getInstance(document.getElementById('aiAdviceModal'));
             if (modal) {
                 modal.hide();
@@ -1979,7 +2015,10 @@
                 fallbackRecommendations.fertilizer[0].name = 'High Potassium Fertilizer (NPK 5-15-30)';
             }
 
-            // Show modal with fallback data
+            if (window.CropRecommendationLog) {
+                CropRecommendationLog.setAdviceContext(crop, fallbackRecommendations);
+                CropRecommendationLog.saveSnapshot(crop, fallbackRecommendations);
+            }
             showAIAdviceModal(crop, fallbackRecommendations);
             
             // Add a notice that this is fallback data

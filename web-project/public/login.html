@@ -469,6 +469,14 @@
     <script src="js/login-fix.js?v=sfm20260510"></script>
     <script src="js/navigation-dropdown.js?v=sfm20260510"></script>
     <script>
+        function isDemoLoginAllowed() {
+            if (window.SMARTFARM_DEMO_MODE !== true) {
+                return false;
+            }
+            const host = window.location.hostname;
+            return host === 'localhost' || host === '127.0.0.1';
+        }
+
         // Form validation and submission
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -524,7 +532,7 @@
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const rememberMe = document.getElementById('rememberMe').checked;
-            const demo = window.SMARTFARM_DEMO_MODE === true;
+            const demo = isDemoLoginAllowed();
 
             btnText.style.display = 'none';
             loading.classList.add('show');
@@ -968,17 +976,15 @@
             }
         });
 
-        // Social Login Configuration and Implementation
+        // Social Login Configuration (demo only on localhost when SMARTFARM_DEMO_MODE=true)
         window.socialLoginConfig = {
             google: {
                 clientId: 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com',
-                // For demo purposes, we'll use a mock implementation
-                demo: true
+                demo: isDemoLoginAllowed()
             },
             facebook: {
                 appId: 'YOUR_FACEBOOK_APP_ID',
-                // For demo purposes, we'll use a mock implementation
-                demo: true
+                demo: isDemoLoginAllowed()
             }
         };
 

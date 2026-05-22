@@ -313,3 +313,6 @@ id_*
 # Kotlin/Android project (not part of JS/TS app)
 web-project/web/
 web-project/kotlin-js-store/
+
+# Runtime crop recommendation action log (file-backed store)
+backend/data/crop_recommendation_data.json

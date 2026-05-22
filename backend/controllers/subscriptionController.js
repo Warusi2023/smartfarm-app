@@ -12,6 +12,17 @@ class SubscriptionController {
         this.subscriptionService = new SubscriptionService(dbPool);
     }
 
+    /** Paid self-serve billing is disabled until a payment provider is integrated. */
+    billingNotEnabled(res) {
+        return res.status(503).json({
+            success: false,
+            error: 'Online subscription billing is not enabled',
+            code: 'BILLING_NOT_ENABLED',
+            message:
+                'Paid plans are arranged manually during beta. Register for a 30-day free trial, or contact us for Professional or Enterprise.'
+        });
+    }
+
     /**
      * Get available subscription plans
      * GET /api/subscriptions/plans
@@ -44,20 +55,7 @@ class SubscriptionController {
      * POST /api/subscriptions/subscribe
      */
     async subscribe(req, res) {
-        const userId = req.user.id;
-        const { planId, paymentMethod } = req.body;
-
-        if (!planId || !['free', 'professional', 'enterprise'].includes(planId)) {
-            throw new BadRequestError('Invalid plan ID');
-        }
-
-        const subscription = await this.subscriptionService.subscribe(userId, planId, paymentMethod);
-
-        res.json({
-            success: true,
-            message: `Successfully subscribed to ${planId} plan`,
-            data: subscription
-        });
+        return this.billingNotEnabled(res);
     }
 
     /**
@@ -65,22 +63,7 @@ class SubscriptionController {
      * POST /api/subscriptions/cancel
      */
     async cancelSubscription(req, res) {
-        const userId = req.user.id;
-
-        try {
-            const result = await this.subscriptionService.cancelSubscription(userId);
-
-            res.json({
-                success: true,
-                message: 'Subscription cancelled successfully',
-                data: result
-            });
-        } catch (error) {
-            if (error.message === 'No active paid subscription to cancel') {
-                throw new BadRequestError(error.message);
-            }
-            throw error;
-        }
+        return this.billingNotEnabled(res);
     }
 
     /**
@@ -88,18 +71,18 @@ class SubscriptionController {
      * PUT /api/subscriptions/update
      */
     async updateSubscription(req, res) {
+        const { planId } = req.body;
+        if (planId) {
+            return this.billingNotEnabled(res);
+        }
         const userId = req.user.id;
-        const { planId, autoRenew } = req.body;
-
         try {
             const subscription = await this.subscriptionService.updateSubscription(userId, {
-                planId,
-                autoRenew
+                autoRenew: req.body.autoRenew
             });
-
             res.json({
                 success: true,
-                message: 'Subscription updated successfully',
+                message: 'Subscription preferences updated',
                 data: subscription
             });
         } catch (error) {
