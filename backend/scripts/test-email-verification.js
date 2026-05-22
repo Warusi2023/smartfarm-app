@@ -160,7 +160,7 @@ async function testUserRegistration() {
         log('✅ Test user created successfully', 'green');
         log(`   User ID: ${userId}`, 'blue');
         log(`   Email: ${testUser.email}`, 'blue');
-        log(`   Verification Token: ${verificationToken.substring(0, 20)}...`, 'blue');
+        log('   Verification Token: [redacted]', 'blue');
         log(`   Is Verified: ${result.rows[0].is_verified}`, 'blue');
         
         return true;
@@ -202,13 +202,15 @@ async function testEmailService() {
         
         // Try to send a test email
         try {
-            const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5500';
-            const verificationLink = `${frontendUrl}/verify-email.html?token=${verificationToken}`;
+            const { buildPublicFrontendUrl } = require('../utils/frontendUrl');
+            const verificationLink = buildPublicFrontendUrl('/verify-email.html', {
+                token: verificationToken
+            });
             
             log('   Attempting to send verification email...', 'blue');
             await EmailService.sendVerificationEmail(testUser.email, verificationToken, testUser.firstName);
             log('✅ Verification email sent successfully', 'green');
-            log(`   Verification link: ${verificationLink}`, 'blue');
+            log('   Verification link: /verify-email.html?token=[redacted]', 'blue');
             return true;
         } catch (emailError) {
             log('⚠️  Email send failed: ' + emailError.message, 'yellow');
@@ -316,7 +318,7 @@ async function testLoginAfterVerification() {
         
         if (response.status === 200 && data.success && data.token) {
             log('✅ Login successful after email verification', 'green');
-            log(`   Token received: ${data.token.substring(0, 20)}...`, 'blue');
+            log('   JWT received: [redacted]', 'blue');
             return true;
         } else if (response.status === 403 && data.code === 'EMAIL_NOT_VERIFIED') {
             log('❌ Login still blocked after verification', 'red');

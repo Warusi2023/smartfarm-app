@@ -36,10 +36,11 @@ EMAIL_SERVICE=gmail
 EMAIL_USER=your-email@gmail.com
 EMAIL_PASS=abcdefghijklmnop
 EMAIL_FROM="SmartFarm <noreply@smartfarm.com>"
-FRONTEND_URL=https://smartfarm-app.netlify.app
+PUBLIC_FRONTEND_URL=https://www.smartfarm-app.com
 ```
 
-**Important:** 
+**Important:**
+- `PUBLIC_FRONTEND_URL` must be **one** URL (the domain users open in the browser). Never paste your `CORS_ORIGINS` list here. See `EMAIL_LINKS_PRODUCTION.md`.
 - Use the **App Password** (16 characters, no spaces)
 - NOT your regular Gmail password
 
@@ -133,8 +134,11 @@ EMAIL_SERVICE=gmail
 EMAIL_USER=your-email@gmail.com
 EMAIL_PASS=abcdefghijklmnop
 EMAIL_FROM="SmartFarm <noreply@smartfarm.com>"
-FRONTEND_URL=https://smartfarm-app.netlify.app
+PUBLIC_FRONTEND_URL=https://www.smartfarm-app.com
+CORS_ORIGINS=https://www.smartfarm-app.com,https://smartfarm-app.com,https://smartfarm-app.netlify.app
 ```
+
+(`CORS_ORIGINS` is separate from `PUBLIC_FRONTEND_URL`.)
 
 ---
 

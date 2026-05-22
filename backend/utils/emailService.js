@@ -5,15 +5,23 @@
 
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
+const { resolvePublicFrontendUrl, buildPublicFrontendUrl } = require('./frontendUrl');
 
 class EmailService {
     constructor() {
         this.transporter = null;
         this.fromEmail = process.env.EMAIL_FROM || 'SmartFarm <noreply@smartfarm.com>';
-        this.frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
         this.isConfigured = false;
-        
+
+        const frontendOrigin = resolvePublicFrontendUrl();
+        console.log(`📧 Email links will use frontend origin: ${frontendOrigin}`);
+
         this.initializeTransporter();
+    }
+
+    /** Single canonical origin for transactional email links (resolved per send). */
+    getPublicFrontendOrigin() {
+        return resolvePublicFrontendUrl();
     }
 
     /**
@@ -119,8 +127,14 @@ class EmailService {
             return false;
         }
 
-        const verificationUrl = `${this.frontendUrl}/verify-email.html?token=${token}`;
-        const emailHtml = this.getVerificationEmailTemplate(firstName, verificationUrl, token);
+        let verificationUrl;
+        try {
+            verificationUrl = buildPublicFrontendUrl('/verify-email.html', { token });
+        } catch (err) {
+            console.error(`❌ Failed to build verification link for ${email}:`, err.message);
+            return false;
+        }
+        const emailHtml = this.getVerificationEmailTemplate(firstName, verificationUrl);
 
         try {
             const info = await this.transporter.sendMail({
@@ -148,7 +162,13 @@ class EmailService {
             return false;
         }
 
-        const resetUrl = `${this.frontendUrl}/reset-password.html?token=${resetToken}`;
+        let resetUrl;
+        try {
+            resetUrl = buildPublicFrontendUrl('/reset-password.html', { token: resetToken });
+        } catch (err) {
+            console.error(`❌ Failed to build password reset link for ${email}:`, err.message);
+            return false;
+        }
         const emailHtml = `
 <!DOCTYPE html>
 <html lang="en">
@@ -222,7 +242,7 @@ class EmailService {
     /**
      * Get verification email HTML template
      */
-    getVerificationEmailTemplate(firstName, verificationUrl, token) {
+    getVerificationEmailTemplate(firstName, verificationUrl) {
         return `
 <!DOCTYPE html>
 <html lang="en">
@@ -429,7 +449,7 @@ class EmailService {
             <p>Your email has been successfully verified. Your SmartFarm account is now active and ready to use!</p>
             
             <div style="text-align: center;">
-                <a href="${this.frontendUrl}/dashboard.html" class="button">Go to Dashboard</a>
+                <a href="${buildPublicFrontendUrl('/dashboard.html')}" class="button">Go to Dashboard</a>
             </div>
             
             <div class="features">

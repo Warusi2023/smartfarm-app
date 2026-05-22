@@ -9,6 +9,7 @@
   - `API_SECRET`
   - `NODE_ENV=production`
 - **Feature env vars:** Email, weather, Sentry, Redis, and other optional integrations as needed by enabled features.
+- **Email verification links:** Set `PUBLIC_FRONTEND_URL` to one public origin (not a comma-separated list). See [`EMAIL_LINKS_PRODUCTION.md`](./EMAIL_LINKS_PRODUCTION.md). Restart/redeploy after changing.
 - **DATABASE_URL wiring:**
   - Railway Postgres reference (example): `${{Postgres.DATABASE_URL}}`
   - or set directly to Neon connection URL.

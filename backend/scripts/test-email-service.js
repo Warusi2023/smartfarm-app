@@ -15,7 +15,8 @@ async function testEmailService() {
     console.log(`EMAIL_USER: ${process.env.EMAIL_USER ? 'SET (hidden)' : 'NOT SET'}`);
     console.log(`EMAIL_PASS: ${process.env.EMAIL_PASS ? 'SET (hidden)' : 'NOT SET'}`);
     console.log(`EMAIL_FROM: ${process.env.EMAIL_FROM || 'NOT SET'}`);
-    console.log(`FRONTEND_URL: ${process.env.FRONTEND_URL || 'NOT SET'}`);
+    console.log(`PUBLIC_FRONTEND_URL: ${process.env.PUBLIC_FRONTEND_URL || 'NOT SET'}`);
+    console.log(`FRONTEND_URL (fallback): ${process.env.FRONTEND_URL || 'NOT SET'}`);
     
     // Initialize email service
     console.log('\n📧 Initializing Email Service...');
@@ -50,7 +51,9 @@ async function testEmailService() {
             if (sent) {
                 console.log(`✅ Test email sent successfully to ${testEmail}`);
                 console.log('   Check your inbox (and spam folder) for verification email');
-                console.log(`   Verification link: ${process.env.FRONTEND_URL || 'http://localhost:5500'}/verify-email.html?token=${token}`);
+                const { buildPublicFrontendUrl } = require('../utils/frontendUrl');
+                buildPublicFrontendUrl('/verify-email.html', { token });
+                console.log('   Verification link: /verify-email.html?token=[redacted]');
             } else {
                 console.log('❌ Failed to send test email');
                 console.log('   Check email service configuration and credentials');
@@ -66,7 +69,7 @@ async function testEmailService() {
         console.log('2. Set EMAIL_USER in .env');
         console.log('3. Set EMAIL_PASS in .env');
         console.log('4. Set EMAIL_FROM in .env');
-        console.log('5. Set FRONTEND_URL in .env');
+        console.log('5. Set PUBLIC_FRONTEND_URL in .env (single URL; not CORS_ORIGINS)');
         console.log('\nFor Gmail:');
         console.log('- Enable 2-Step Verification in Google Account');
         console.log('- Generate App Password: Security → App Passwords');
@@ -76,7 +79,8 @@ async function testEmailService() {
         console.log('EMAIL_USER=your-email@gmail.com');
         console.log('EMAIL_PASS=abcdefghijklmnop');
         console.log('EMAIL_FROM="SmartFarm <noreply@smartfarm.com>"');
-        console.log('FRONTEND_URL=https://smartfarm-app.netlify.app');
+        console.log('PUBLIC_FRONTEND_URL=https://www.smartfarm-app.com');
+        console.log('See backend/EMAIL_LINKS_PRODUCTION.md');
     }
     
     console.log('\n' + '='.repeat(60) + '\n');

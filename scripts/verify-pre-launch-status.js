@@ -385,6 +385,7 @@ function generateSummary() {
     });
     log('   ⚠️  Verify JWT_SECRET is set in Railway', 'yellow');
     log('   ⚠️  Verify CORS_ORIGINS includes frontend URL', 'yellow');
+    log('   ⚠️  Set PUBLIC_FRONTEND_URL (single URL) for email links — not CORS_ORIGINS', 'yellow');
     
     const testingTotal = status.critical.testing.total;
     const testingCompleted = status.critical.testing.completed;

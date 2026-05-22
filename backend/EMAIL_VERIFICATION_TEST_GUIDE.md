@@ -43,7 +43,7 @@ EMAIL_SERVICE=gmail
 EMAIL_USER=your-email@gmail.com
 EMAIL_PASS=your-app-password
 EMAIL_FROM="SmartFarm <noreply@smartfarm.com>"
-FRONTEND_URL=http://localhost:5500
+PUBLIC_FRONTEND_URL=http://localhost:5173
 
 # API Base URL (for login tests)
 API_BASE_URL=http://localhost:3000/api
@@ -95,7 +95,7 @@ The test suite covers:
 ✅ Test user created successfully
    User ID: 123e4567-e89b-12d3-a456-426614174000
    Email: test-1234567890@smartfarm-test.com
-   Verification Token: a1b2c3d4e5f6g7h8i9j0...
+   Verification Token: [redacted]
    Is Verified: false
 
 ============================================================
@@ -105,7 +105,7 @@ The test suite covers:
    Email User: your-email@gmail.com
    Attempting to send verification email...
 ✅ Verification email sent successfully
-   Verification link: http://localhost:5500/verify-email.html?token=...
+   Verification link: /verify-email.html?token=[redacted]
 
 ============================================================
 4. Testing Login Before Verification (Should Fail)

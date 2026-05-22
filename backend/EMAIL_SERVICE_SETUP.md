@@ -28,8 +28,10 @@ EMAIL_SERVICE=gmail
 EMAIL_USER=your-email@gmail.com
 EMAIL_PASS=your-app-password
 EMAIL_FROM="SmartFarm <noreply@smartfarm.com>"
-FRONTEND_URL=https://smartfarm-app.netlify.app
+PUBLIC_FRONTEND_URL=https://www.smartfarm-app.com
 ```
+
+Use **one** canonical public URL for `PUBLIC_FRONTEND_URL`. Do not copy comma-separated `CORS_ORIGINS` into email link variables. Details: `EMAIL_LINKS_PRODUCTION.md`.
 
 ### Step 2: Choose Email Provider
 
@@ -49,7 +51,7 @@ EMAIL_SERVICE=gmail
 EMAIL_USER=your-email@gmail.com
 EMAIL_PASS=abcdefghijklmnop  # 16 chars, no spaces
 EMAIL_FROM="SmartFarm <noreply@smartfarm.com>"
-FRONTEND_URL=https://smartfarm-app.netlify.app
+PUBLIC_FRONTEND_URL=https://www.smartfarm-app.com
 ```
 
 #### Option 2: SendGrid (Production)
@@ -66,7 +68,7 @@ EMAIL_SERVICE=sendgrid
 EMAIL_USER=apikey
 EMAIL_PASS=your-sendgrid-api-key
 EMAIL_FROM="SmartFarm <noreply@smartfarm.com>"
-FRONTEND_URL=https://smartfarm-app.netlify.app
+PUBLIC_FRONTEND_URL=https://www.smartfarm-app.com
 ```
 
 #### Option 3: Mailgun (Production)
@@ -84,7 +86,7 @@ EMAIL_PASS=your-mailgun-smtp-password
 SMTP_HOST=smtp.mailgun.org
 SMTP_PORT=587
 EMAIL_FROM="SmartFarm <noreply@smartfarm.com>"
-FRONTEND_URL=https://smartfarm-app.netlify.app
+PUBLIC_FRONTEND_URL=https://www.smartfarm-app.com
 ```
 
 #### Option 4: AWS SES (Production)
@@ -103,7 +105,7 @@ SMTP_HOST=email-smtp.us-east-1.amazonaws.com
 SMTP_PORT=587
 AWS_REGION=us-east-1
 EMAIL_FROM="SmartFarm <noreply@smartfarm.com>"
-FRONTEND_URL=https://smartfarm-app.netlify.app
+PUBLIC_FRONTEND_URL=https://www.smartfarm-app.com
 ```
 
 ---
@@ -230,7 +232,8 @@ When someone registers, you should see:
    - `EMAIL_USER`
    - `EMAIL_PASS`
    - `EMAIL_FROM`
-   - `FRONTEND_URL`
+   - `PUBLIC_FRONTEND_URL` (single canonical origin)
+   - `CORS_ORIGINS` (comma-separated — separate from email links)
 
 ### Example Railway Variables:
 
@@ -239,7 +242,8 @@ EMAIL_SERVICE=sendgrid
 EMAIL_USER=apikey
 EMAIL_PASS=SG.xxxxxxxxxxxxx
 EMAIL_FROM=SmartFarm <noreply@smartfarm.com>
-FRONTEND_URL=https://smartfarm-app.netlify.app
+PUBLIC_FRONTEND_URL=https://www.smartfarm-app.com
+CORS_ORIGINS=https://www.smartfarm-app.com,https://smartfarm-app.com,https://smartfarm-app.netlify.app
 ```
 
 ---
