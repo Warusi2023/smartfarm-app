@@ -4340,15 +4340,19 @@
                     }
                 } catch (calcError) {
                     console.error('Error calculating feed mix:', calcError);
-                    showAlert('Error calculating feed mix: ' + calcError.message, 'error');
+                    showAlert(calcError.message || 'Error calculating feed mix.', 'error');
                     return;
                 }
-                
-                // Save feed mix to API or localStorage
+
+                try {
+                    displayFeedMixResults(result);
+                } catch (displayError) {
+                    console.error('Error displaying feed mix results:', displayError);
+                    showAlert(displayError.message || 'Error displaying feed mix results.', 'error');
+                    return;
+                }
+
                 await saveFeedMix(result);
-                
-                // Display results
-                displayFeedMixResults(result);
                 
                 // Show results section
                 const resultsDiv = document.getElementById('feedMixResults');
@@ -4422,30 +4426,30 @@
                 return;
             }
             
-            requirementsDiv.innerHTML = `
+            const reqs = window.FeedMixCalculator && typeof window.FeedMixCalculator.normalizeRequirementBlock === 'function'
+                ? window.FeedMixCalculator.normalizeRequirementBlock(result.requirements)
+                : (result.requirements && result.requirements.dailyRequirements) || result.requirements || {};
+
+            if (!reqs || !reqs.protein || typeof reqs.protein.min === 'undefined') {
+                requirementsDiv.innerHTML =
+                    '<div class="col-12"><p class="text-muted mb-0">Nutritional requirements could not be displayed. Please complete species and lifecycle, then calculate again.</p></div>';
+            } else {
+                const row = (label, nutrient, unit) => {
+                    if (!nutrient || typeof nutrient.min === 'undefined') return '';
+                    return `<div class="mb-2"><strong>${label}:</strong> ${nutrient.min}-${nutrient.max}${unit}</div>`;
+                };
+                requirementsDiv.innerHTML = `
                 <div class="col-md-6">
-                    <div class="mb-2">
-                        <strong>Protein:</strong> ${result.requirements.dailyRequirements.protein.min}-${result.requirements.dailyRequirements.protein.max}%
-                    </div>
-                    <div class="mb-2">
-                        <strong>Energy:</strong> ${result.requirements.dailyRequirements.energy.min}-${result.requirements.dailyRequirements.energy.max} Mcal/kg
-                    </div>
-                    <div class="mb-2">
-                        <strong>Fiber:</strong> ${result.requirements.dailyRequirements.fiber.min}-${result.requirements.dailyRequirements.fiber.max}%
-                    </div>
+                    ${row('Protein', reqs.protein, '%')}
+                    ${row('Energy', reqs.energy, ' Mcal/kg')}
+                    ${row('Fiber', reqs.fiber, '%')}
                 </div>
                 <div class="col-md-6">
-                    <div class="mb-2">
-                        <strong>Calcium:</strong> ${result.requirements.dailyRequirements.calcium.min}-${result.requirements.dailyRequirements.calcium.max}%
-                    </div>
-                    <div class="mb-2">
-                        <strong>Phosphorus:</strong> ${result.requirements.dailyRequirements.phosphorus.min}-${result.requirements.dailyRequirements.phosphorus.max}%
-                    </div>
-                    <div class="mb-2">
-                        <strong>Daily Intake:</strong> ${result.requirements.dailyRequirements.dailyIntake.min}-${result.requirements.dailyRequirements.dailyIntake.max}% of body weight
-                    </div>
-                </div>
-            `;
+                    ${row('Calcium', reqs.calcium, '%')}
+                    ${row('Phosphorus', reqs.phosphorus, '%')}
+                    ${row('Daily Intake', reqs.dailyIntake, '% of body weight')}
+                </div>`;
+            }
 
             // Display feed mix composition
             const compositionDiv = document.getElementById('feedMixComposition');

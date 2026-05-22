@@ -265,6 +265,92 @@ class FeedMixCalculator {
         };
     }
 
+    /**
+     * Accept flat or nested dailyRequirements shapes from API/localStorage.
+     * @returns {object|null}
+     */
+    normalizeRequirementBlock(reqs) {
+        if (!reqs || typeof reqs !== 'object') {
+            return null;
+        }
+        if (reqs.dailyRequirements && typeof reqs.dailyRequirements === 'object') {
+            return reqs.dailyRequirements;
+        }
+        return reqs;
+    }
+
+    /**
+     * Read numeric nutrient % from ingredient profile (supports alias field names).
+     */
+    getIngredientNutrient(profile, nutrient) {
+        if (!profile || typeof profile !== 'object') {
+            return null;
+        }
+        if (profile[nutrient] !== undefined && profile[nutrient] !== null) {
+            const n = Number(profile[nutrient]);
+            return Number.isFinite(n) ? n : null;
+        }
+        const aliases = {
+            protein: ['crudeProtein', 'proteinPercent', 'protein_content', 'crude_protein'],
+            energy: ['energyContent', 'metabolizableEnergy', 'me'],
+            fiber: ['fiberPercent', 'crudeFiber', 'fiber_content'],
+            calcium: ['ca', 'calciumPercent'],
+            phosphorus: ['p', 'phosphorusPercent']
+        };
+        const keys = aliases[nutrient] || [];
+        for (const key of keys) {
+            if (profile[key] !== undefined && profile[key] !== null) {
+                const n = Number(profile[key]);
+                if (Number.isFinite(n)) return n;
+            }
+        }
+        return nutrient === 'protein' || nutrient === 'fiber' || nutrient === 'calcium' || nutrient === 'phosphorus'
+            ? 0
+            : null;
+    }
+
+    getIngredientProfile(ingredientName) {
+        if (!ingredientName) return null;
+        for (const category of Object.values(this.feedIngredients)) {
+            if (category[ingredientName]) {
+                return category[ingredientName];
+            }
+        }
+        return null;
+    }
+
+    validateFeedMixIngredients(feedMix) {
+        const missing = [];
+        const missingProtein = [];
+        for (const [ingredient, percentage] of Object.entries(feedMix || {})) {
+            const pct = Number(percentage);
+            if (!Number.isFinite(pct) || pct <= 0) continue;
+            const profile = this.getIngredientProfile(ingredient);
+            if (!profile) {
+                missing.push(ingredient);
+                continue;
+            }
+            const proteinVal = this.getIngredientNutrient(profile, 'protein');
+            if (proteinVal === null) {
+                missingProtein.push(ingredient);
+            }
+        }
+        if (missing.length) {
+            throw new Error(
+                'One or more feed ingredients are not in the nutrient catalog: ' + missing.join(', ')
+            );
+        }
+        if (missingProtein.length) {
+            throw new Error(
+                'One or more feed ingredients are missing protein values: ' + missingProtein.join(', ') +
+                '. Please complete feed ingredient nutrient data before calculating.'
+            );
+        }
+        if (!Object.keys(feedMix || {}).length) {
+            throw new Error('No feed ingredients in the mix. Add ingredients before calculating.');
+        }
+    }
+
     calculateFeedMix(animalData) {
         console.log('FeedMixCalculator.calculateFeedMix called with:', animalData);
         
@@ -292,9 +378,7 @@ class FeedMixCalculator {
             throw new Error(errorMsg);
         }
 
-        // Some requirement entries store nutrients under `dailyRequirements`
-        // Normalize to a flat shape so downstream code can use requirements.protein.min, etc.
-        let normalizedReq = requirements.dailyRequirements ? requirements.dailyRequirements : requirements;
+        let normalizedReq = this.normalizeRequirementBlock(requirements);
         
         console.log('Normalized requirements:', normalizedReq);
 
@@ -322,9 +406,9 @@ class FeedMixCalculator {
         
         console.log('Daily intake calculated:', dailyIntake);
         
-        // Generate feed mix
         const feedMix = this.generateOptimalMix(normalizedReq, dailyIntake, species);
-        
+        this.validateFeedMixIngredients(feedMix);
+
         console.log('Feed mix generated:', feedMix);
         
         // Calculate costs
@@ -365,9 +449,31 @@ class FeedMixCalculator {
             }
         }
 
-        // Try to find the requirements
+        const lifecycleAliases = {
+            growing: 'grower',
+            grower: 'grower',
+            finishing: 'finisher',
+            finisher: 'finisher',
+            finishing_stage: 'finisher',
+            laying: 'layer',
+            layer: 'layer',
+            cow: 'cow_dairy'
+        };
+        if (category === 'adult') {
+            const adultBySpecies = {
+                cattle: 'cow_beef',
+                sheep: 'ewe',
+                goats: 'doe',
+                pigs: 'finisher',
+                chickens: 'layer'
+            };
+            category = adultBySpecies[species.toLowerCase()] || category;
+        } else if (category && lifecycleAliases[category]) {
+            category = lifecycleAliases[category];
+        }
+
         let requirements = null;
-        
+
         if (category) {
             requirements = speciesReqs[category];
         }
@@ -598,12 +704,12 @@ class FeedMixCalculator {
     }
 
     getNutrientValue(ingredientName, nutrient) {
-        for (const category of Object.values(this.feedIngredients)) {
-            if (category[ingredientName]) {
-                return category[ingredientName][nutrient] || 0;
-            }
+        const profile = this.getIngredientProfile(ingredientName);
+        if (!profile) {
+            return 0;
         }
-        return 0;
+        const value = this.getIngredientNutrient(profile, nutrient);
+        return value === null ? 0 : value;
     }
 
     // Get available lifecycle stages for a species
