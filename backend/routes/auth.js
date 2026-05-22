@@ -950,7 +950,9 @@ class AuthRoutes {
             if (!token) {
                 return res.status(400).json({
                     success: false,
+                    status: 'invalid_token',
                     error: 'Verification token is required',
+                    message: 'No verification token was provided.',
                     code: 'MISSING_TOKEN'
                 });
             }
@@ -960,8 +962,19 @@ class AuthRoutes {
             if (!user) {
                 return res.status(400).json({
                     success: false,
-                    error: 'Invalid verification token',
+                    status: 'invalid_token',
+                    error: 'Invalid verification link',
+                    message: 'This verification link is invalid or has already been replaced. Request a new verification email or sign in if you already verified.',
                     code: 'INVALID_TOKEN'
+                });
+            }
+
+            if (user.isVerified) {
+                return res.json({
+                    success: true,
+                    status: 'already_verified',
+                    message: 'Your email is already verified. You can sign in now.',
+                    data: { email: user.email }
                 });
             }
 
@@ -969,27 +982,32 @@ class AuthRoutes {
             if (user.verificationExpires && new Date() > new Date(user.verificationExpires)) {
                 return res.status(400).json({
                     success: false,
-                    error: 'Verification token has expired',
+                    status: 'expired',
+                    error: 'Verification link has expired',
+                    message: 'This verification link has expired. Enter your email below to receive a new one.',
                     code: 'TOKEN_EXPIRED'
                 });
             }
 
-            // Verify user email
+            // Verify user email (keep token so repeat visits to the same link stay idempotent)
             await this.dbHelpers.updateUser(user.id, {
                 isVerified: true,
-                verificationToken: null,
                 verificationExpires: null
             });
 
             res.json({
                 success: true,
-                message: 'Email verified successfully'
+                status: 'verified',
+                message: 'Email verified successfully. You can sign in now.',
+                data: { email: user.email }
             });
         } catch (error) {
             logger.errorWithContext('Email verification error', { error });
             res.status(500).json({
                 success: false,
+                status: 'server_error',
                 error: 'Email verification failed',
+                message: 'Something went wrong while verifying your email. Please try again shortly or request a new verification email.',
                 code: 'VERIFICATION_ERROR'
             });
         }

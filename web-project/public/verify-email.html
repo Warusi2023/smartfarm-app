@@ -162,90 +162,225 @@
         </div>
     </div>
 
+    <script src="js/api-origin.js"></script>
+    <script src="js/api-config.js"></script>
     <script>
-        // Origin only; append /api/... on each fetch (same convention as web-project/.env.example)
-        const API_BASE_URL = 'https://web-production-86d39.up.railway.app';
-        
-        // Get token from URL parameters
+        function apiUrl(path) {
+            return window.SmartFarmApiConfig
+                ? window.SmartFarmApiConfig.url(path)
+                : 'https://web-production-86d39.up.railway.app/api/' + path.replace(/^\//, '');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text == null ? '' : String(text);
+            return div.innerHTML;
+        }
+
         const urlParams = new URLSearchParams(window.location.search);
-        const token = urlParams.get('token');
-        
-        // Elements
+        const token = (urlParams.get('token') || '').trim();
+
         const statusCard = document.getElementById('status-card');
-        const statusTitle = document.getElementById('status-title');
-        const statusMessage = document.getElementById('status-message');
-        const statusDetails = document.getElementById('status-details');
         const actionButtons = document.getElementById('action-buttons');
         const loginBtn = document.getElementById('login-btn');
         const registerBtn = document.getElementById('register-btn');
         const resendSection = document.getElementById('resend-section');
         const resendEmail = document.getElementById('resend-email');
         const resendBtn = document.getElementById('resend-btn');
-        
-        // Verify email on page load
+
+        let verifyRequestStarted = false;
+
         if (token) {
-            verifyEmail(token);
+            runVerification(token);
         } else {
-            showError('No verification token found', 'Please check your email and click the verification link again.');
+            showFailureState(
+                'missing_token',
+                'Invalid verification link',
+                'No verification token was found in this link. Open the link from your email or request a new verification email below.'
+            );
         }
-        
-        async function verifyEmail(token) {
+
+        async function runVerification(token) {
+            if (verifyRequestStarted) {
+                return;
+            }
+            verifyRequestStarted = true;
+
+            let data;
             try {
-                const response = await fetch(`${API_BASE_URL}/api/auth/verify-email/${token}`, {
+                const response = await fetch(apiUrl('auth/verify-email/' + encodeURIComponent(token)), {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    }
+                    headers: { 'Content-Type': 'application/json' }
                 });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showSuccess(data.message, data.data);
-                } else {
-                    showError(data.error || 'Verification failed', data.message || 'Please try requesting a new verification email.');
+
+                try {
+                    data = await response.json();
+                } catch (parseError) {
+                    showFailureState(
+                        'unexpected_response',
+                        'Could not verify your email',
+                        'The server returned an unexpected response. Please try again or request a new verification email.'
+                    );
+                    return;
                 }
-                
+
+                const status = data.status || inferStatusFromLegacy(data, response.ok);
+                if (status === 'verified' || status === 'already_verified') {
+                    showSuccessState(status, data.message, data.data);
+                    return;
+                }
+                if (
+                    status === 'expired' ||
+                    status === 'invalid_token' ||
+                    status === 'missing_token' ||
+                    status === 'network_error' ||
+                    status === 'unexpected_response' ||
+                    status === 'server_error'
+                ) {
+                    showFailureState(
+                        status,
+                        data.error || defaultFailureTitle(status),
+                        data.message || defaultFailureMessage(status)
+                    );
+                    return;
+                }
+                if (data.success) {
+                    showSuccessState('verified', data.message, data.data);
+                    return;
+                }
+
+                showFailureState(
+                    'invalid_token',
+                    data.error || 'Could not verify your email',
+                    data.message || defaultFailureMessage('invalid_token')
+                );
             } catch (error) {
                 console.error('Verification error:', error);
-                showError('Verification failed', 'There was a problem verifying your email. Please try again.');
+                showFailureState(
+                    'network_error',
+                    'Network error',
+                    'We could not reach the server to verify your email. Check your connection and try opening the link again.'
+                );
             }
         }
-        
-        function showSuccess(message, userData) {
+
+        function inferStatusFromLegacy(data, responseOk) {
+            if (data.status) {
+                return data.status;
+            }
+            if (data.success && responseOk) {
+                return 'verified';
+            }
+            const code = (data.code || '').toUpperCase();
+            if (code === 'TOKEN_EXPIRED') {
+                return 'expired';
+            }
+            if (code === 'VERIFICATION_ERROR') {
+                return 'server_error';
+            }
+            if (code === 'MISSING_TOKEN') {
+                return 'missing_token';
+            }
+            if (code === 'INVALID_TOKEN') {
+                return 'invalid_token';
+            }
+            return data.success ? 'verified' : 'invalid_token';
+        }
+
+        function defaultFailureTitle(status) {
+            switch (status) {
+                case 'expired':
+                    return 'Verification link expired';
+                case 'missing_token':
+                    return 'Invalid verification link';
+                case 'network_error':
+                    return 'Network error';
+                case 'unexpected_response':
+                    return 'Could not verify your email';
+                case 'server_error':
+                    return 'Verification temporarily unavailable';
+                default:
+                    return 'Invalid verification link';
+            }
+        }
+
+        function defaultFailureMessage(status) {
+            switch (status) {
+                case 'expired':
+                    return 'This verification link has expired. Enter your email below to receive a new one.';
+                case 'missing_token':
+                    return 'No verification token was found in this link. Open the link from your email or request a new verification email below.';
+                case 'network_error':
+                    return 'We could not reach the server to verify your email. Check your connection and try opening the link again.';
+                case 'unexpected_response':
+                    return 'The server returned an unexpected response. Please try again or request a new verification email.';
+                case 'server_error':
+                    return 'Something went wrong while verifying your email. Please try again shortly or request a new verification email.';
+                default:
+                    return 'This verification link is invalid. Enter your email below to request a new one, or sign in if you already verified.';
+            }
+        }
+
+        function showSuccessState(status, message, userData) {
+            const isAlready = status === 'already_verified';
+            const title = isAlready ? 'Email Already Verified' : 'Email Verified Successfully!';
+            const email = userData && userData.email ? userData.email : null;
+            const emailBlock = email
+                ? `<p class="mb-0"><strong>Email:</strong> ${escapeHtml(email)}</p>`
+                : '';
+
             statusCard.className = 'status-card success';
             statusCard.innerHTML = `
                 <div class="status-icon success">
                     <i class="fas fa-check-circle"></i>
                 </div>
-                <h3>Email Verified Successfully!</h3>
-                <p>${message}</p>
-                <div class="mt-3">
-                    <p><strong>Welcome!</strong></p>
-                    <p>Email: ${userData.email}</p>
-                    <p>Your account is now verified and ready to use.</p>
-                </div>
+                <h3>${escapeHtml(title)}</h3>
+                <p>${escapeHtml(message || (isAlready
+                    ? 'Your email is already verified. You can sign in now.'
+                    : 'Your account is verified. You can sign in now.'))}</p>
+                ${emailBlock ? `<div class="mt-3">${emailBlock}</div>` : ''}
             `;
-            
+
             actionButtons.style.display = 'block';
             loginBtn.style.display = 'inline-block';
+            registerBtn.style.display = 'none';
+            resendSection.style.display = 'none';
         }
-        
-        function showError(title, message) {
+
+        function shouldShowResend(status) {
+            return (
+                status === 'expired' ||
+                status === 'invalid_token' ||
+                status === 'missing_token' ||
+                status === 'network_error' ||
+                status === 'unexpected_response' ||
+                status === 'server_error'
+            );
+        }
+
+        function shouldShowRegister(status) {
+            return status === 'expired' || status === 'invalid_token' || status === 'missing_token';
+        }
+
+        function showFailureState(status, title, message) {
+            const showResend = shouldShowResend(status);
+            const showRegister = shouldShowRegister(status);
+
             statusCard.className = 'status-card error';
             statusCard.innerHTML = `
                 <div class="status-icon error">
                     <i class="fas fa-exclamation-triangle"></i>
                 </div>
-                <h3>${title}</h3>
-                <p>${message}</p>
+                <h3>${escapeHtml(title)}</h3>
+                <p>${escapeHtml(message)}</p>
             `;
-            
+
             actionButtons.style.display = 'block';
-            registerBtn.style.display = 'inline-block';
-            resendSection.style.display = 'block';
+            loginBtn.style.display = 'inline-block';
+            registerBtn.style.display = showRegister ? 'inline-block' : 'none';
+            resendSection.style.display = showResend ? 'block' : 'none';
         }
-        
+
         async function resendVerification() {
             const email = resendEmail.value.trim();
             
@@ -263,7 +398,7 @@
             resendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
             
             try {
-                const response = await fetch(`${API_BASE_URL}/api/auth/resend-verification`, {
+                const response = await fetch(apiUrl('auth/resend-verification'), {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -295,11 +430,11 @@
         }
         
         function goToLogin() {
-            window.location.href = 'app.html#login';
+            window.location.href = 'login.html';
         }
         
         function goToRegister() {
-            window.location.href = 'app.html#register';
+            window.location.href = 'register.html';
         }
         
         // Handle Enter key in email input
