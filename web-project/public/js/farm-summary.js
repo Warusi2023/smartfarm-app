@@ -91,12 +91,39 @@
         if (formData.cropName) payload.cropName = formData.cropName;
         if (formData.livestockType) payload.livestockType = formData.livestockType;
 
-        return global.SmartFarmAPI.createFarmRevenue(payload);
+        const res = await global.SmartFarmAPI.createFarmRevenue(payload);
+        if (res && res.queued) {
+            return {
+                success: true,
+                queued: true,
+                message:
+                    res.message ||
+                    'Revenue saved on this device and will sync when back online.'
+            };
+        }
+        if (!res || !res.success) {
+            throw new Error((res && res.error) || 'Could not save revenue.');
+        }
+        return res;
+    }
+
+    function setupFinancialReplayRefresh(refreshFn) {
+        if (typeof refreshFn !== 'function') return;
+        global.addEventListener('smartfarm:write-replayed', function (ev) {
+            const entry = ev.detail && ev.detail.entry;
+            if (
+                entry &&
+                (entry.type === 'farm-revenue' || entry.type === 'feed-mix-cost')
+            ) {
+                refreshFn();
+            }
+        });
     }
 
     global.FarmSummary = {
         loadFinancials: loadFinancials,
         submitRevenue: submitRevenue,
+        setupFinancialReplayRefresh: setupFinancialReplayRefresh,
         todayIsoDate: todayIsoDate,
         ZERO_SUMMARY: ZERO_SUMMARY
     };

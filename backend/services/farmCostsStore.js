@@ -95,6 +95,12 @@ async function insertFeedMixFarmCost(pool, params) {
         livestockType: livestockType,
         group: group
     };
+    if (params.clientRequestId) {
+        links.clientRequestId = String(params.clientRequestId).trim();
+    }
+    if (params.clientRequestPayloadHash) {
+        links.clientRequestPayloadHash = String(params.clientRequestPayloadHash);
+    }
 
     Object.keys(links).forEach((key) => {
         if (links[key] == null || links[key] === '') delete links[key];
@@ -153,8 +159,40 @@ async function insertCropActionFarmCost(pool, params) {
     });
 }
 
+/**
+ * Idempotent replay lookup (W3-03) — clientRequestId stored in links JSONB.
+ */
+async function findByClientRequestId(pool, userId, clientRequestId) {
+    if (!pool || !userId || !clientRequestId) {
+        return null;
+    }
+    const key = String(clientRequestId).trim();
+    const result = await pool.query(
+        `SELECT id, user_id, farm_id, type, amount, links, created_at, updated_at
+         FROM farmcosts
+         WHERE user_id = $1 AND links->>'clientRequestId' = $2
+         LIMIT 1`,
+        [userId, key]
+    );
+    if (!result.rows[0]) {
+        return null;
+    }
+    const row = result.rows[0];
+    const links =
+        row.links && typeof row.links === 'object'
+            ? row.links
+            : typeof row.links === 'string'
+              ? JSON.parse(row.links)
+              : {};
+    return {
+        row: row,
+        storedPayloadHash: links.clientRequestPayloadHash || null
+    };
+}
+
 module.exports = {
     insertFarmCost,
     insertFeedMixFarmCost,
-    insertCropActionFarmCost
+    insertCropActionFarmCost,
+    findByClientRequestId
 };

@@ -8,6 +8,9 @@ const { asyncHandler } = require('../middleware/error-handler');
 const { BadRequestError, ServiceUnavailableError } = require('../utils/errors');
 const farmRevenueStore = require('../services/farmRevenueStore');
 const farmSummaryFinancials = require('../services/farmSummaryFinancials');
+const writeIdempotency = require('../services/writeIdempotency');
+const { ConflictError } = require('../utils/errors');
+const logger = require('../utils/logger');
 
 class FarmSummaryRoutes {
     constructor(dbPool = null) {
@@ -83,20 +86,62 @@ class FarmSummaryRoutes {
         if (body.livestockType) links.livestockType = String(body.livestockType).trim();
         if (body.note) links.note = String(body.note).trim();
 
-        const row = await farmRevenueStore.insertFarmRevenue(this.dbPool, {
-            userId: req.user.id,
-            farmId: farmId,
-            type: String(body.type || 'manual').trim() || 'manual',
-            amount: amount,
-            description: description,
-            date: entryDate,
-            links: Object.keys(links).length ? links : null
+        const userId = req.user.id;
+        const clientRequestId = body.clientRequestId;
+
+        const out = await writeIdempotency.runIdempotent({
+            userId,
+            operation: 'farm-revenue',
+            clientRequestId,
+            payload: body,
+            execute: async () => {
+                const payloadHash = writeIdempotency.hashPayload('farm-revenue', body);
+
+                if (clientRequestId) {
+                    const existing = await farmRevenueStore.findByClientRequestId(
+                        this.dbPool,
+                        userId,
+                        clientRequestId
+                    );
+                    if (existing) {
+                        if (
+                            existing.storedPayloadHash &&
+                            existing.storedPayloadHash !== payloadHash
+                        ) {
+                            throw new ConflictError(
+                                'This clientRequestId was already used with a different payload'
+                            );
+                        }
+                        logger.info('Farm revenue idempotent hit (Postgres)', {
+                            revenueId: existing.row.id,
+                            clientRequestId,
+                            userId
+                        });
+                        return existing.row;
+                    }
+                }
+
+                return farmRevenueStore.insertFarmRevenue(this.dbPool, {
+                    userId: userId,
+                    farmId: farmId,
+                    type: String(body.type || 'manual').trim() || 'manual',
+                    amount: amount,
+                    description: description,
+                    date: entryDate,
+                    links: Object.keys(links).length ? links : null,
+                    clientRequestId: clientRequestId,
+                    clientRequestPayloadHash: payloadHash
+                });
+            }
         });
 
-        res.status(201).json({
+        res.status(out.replayed ? 200 : 201).json({
             success: true,
-            message: 'Revenue recorded',
-            data: row
+            message: out.replayed
+                ? 'Revenue already recorded (idempotent replay)'
+                : 'Revenue recorded',
+            data: out.result,
+            idempotentReplay: out.replayed
         });
     }
 

@@ -40,7 +40,15 @@ async function insertFarmRevenue(pool, row) {
         throw new BadRequestError('amount must be a non-negative number');
     }
 
-    const links = row.links && typeof row.links === 'object' ? row.links : null;
+    const links =
+        row.links && typeof row.links === 'object' ? { ...row.links } : {};
+    if (row.clientRequestId) {
+        links.clientRequestId = String(row.clientRequestId).trim();
+    }
+    if (row.clientRequestPayloadHash) {
+        links.clientRequestPayloadHash = String(row.clientRequestPayloadHash);
+    }
+    const linksParam = Object.keys(links).length ? links : null;
 
     const result = await pool.query(
         `INSERT INTO farmrevenue (user_id, farm_id, type, amount, description, links, date)
@@ -52,7 +60,7 @@ async function insertFarmRevenue(pool, row) {
             type,
             amount,
             description || null,
-            links ? JSON.stringify(links) : null,
+            linksParam ? JSON.stringify(linksParam) : null,
             entryDate
         ]
     );
@@ -60,8 +68,40 @@ async function insertFarmRevenue(pool, row) {
     return result.rows[0];
 }
 
+/**
+ * Idempotent replay lookup (W3-03).
+ */
+async function findByClientRequestId(pool, userId, clientRequestId) {
+    if (!pool || !userId || !clientRequestId) {
+        return null;
+    }
+    const key = String(clientRequestId).trim();
+    const result = await pool.query(
+        `SELECT id, user_id, farm_id, type, amount, description, links, date, created_at, updated_at
+         FROM farmrevenue
+         WHERE user_id = $1 AND links->>'clientRequestId' = $2
+         LIMIT 1`,
+        [userId, key]
+    );
+    if (!result.rows[0]) {
+        return null;
+    }
+    const row = result.rows[0];
+    const links =
+        row.links && typeof row.links === 'object'
+            ? row.links
+            : typeof row.links === 'string'
+              ? JSON.parse(row.links)
+              : {};
+    return {
+        row: row,
+        storedPayloadHash: links.clientRequestPayloadHash || null
+    };
+}
+
 module.exports = {
     insertFarmRevenue,
+    findByClientRequestId,
     parseDateOnly,
     MAX_DESCRIPTION_LENGTH
 };

@@ -12,10 +12,12 @@
 
     const QUEUE_TYPES = {
         CROP_ACTION: 'crop-action',
-        SOIL_TEST: 'soil-test'
+        SOIL_TEST: 'soil-test',
+        FEED_MIX_COST: 'feed-mix-cost',
+        FARM_REVENUE: 'farm-revenue'
     };
 
-    /** POST paths enabled in W3-01 */
+    /** POST paths enabled for offline queue (W3-01 / W3-03) */
     const ENABLED = {
         [QUEUE_TYPES.CROP_ACTION]: {
             method: 'POST',
@@ -26,6 +28,16 @@
             method: 'POST',
             path: '/crop-recommendations/soil-tests',
             label: 'soil test'
+        },
+        [QUEUE_TYPES.FEED_MIX_COST]: {
+            method: 'POST',
+            path: '/farm-costs/feed-mix',
+            label: 'feed mix cost'
+        },
+        [QUEUE_TYPES.FARM_REVENUE]: {
+            method: 'POST',
+            path: '/farm-summary/revenue',
+            label: 'revenue'
         }
     };
 
@@ -105,7 +117,9 @@
     }
 
     function isPermanentClientError(msg) {
-        return /invalid|required|sign in|unauthorized|401|403|404|not found|must be a/i.test(msg);
+        return /invalid|required|sign in|unauthorized|401|403|404|409|conflict|not found|must be a|different payload/i.test(
+            msg
+        );
     }
 
     function enqueue(entry) {

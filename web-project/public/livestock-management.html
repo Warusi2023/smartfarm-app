@@ -1202,6 +1202,7 @@
     <!-- Include config -->
     <script src="js/api-origin.js"></script>
     <script src="js/config.js"></script>
+    <script src="js/offline-write-queue.js"></script>
     <script src="js/api-service.js"></script>
     <!-- Include Feed Mix Calculator -->
     <script src="js/feed-mix-calculator.js"></script>
@@ -4454,7 +4455,9 @@
                 if (!isAvailable) return;
 
                 const res = await window.SmartFarmAPI.recordFeedMixFarmCost(payload);
-                if (res && res.success) {
+                if (res && res.queued) {
+                    console.log('💰 Feed mix cost queued for sync:', res.message || res.clientRequestId);
+                } else if (res && res.success) {
                     console.log('💰 Feed mix cost recorded in farmcosts', res.data && res.data.id);
                 } else if (res && res.error) {
                     console.warn('Feed mix cost not saved:', res.error);

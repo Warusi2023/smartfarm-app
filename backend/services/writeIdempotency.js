@@ -47,6 +47,32 @@ const PAYLOAD_KEYS = {
         'source',
         'farmId',
         'farm_id'
+    ],
+    'feed-mix-cost': [
+        'amount',
+        'dailyCost',
+        'farmId',
+        'farm_id',
+        'feedMixId',
+        'id',
+        'livestockType',
+        'species',
+        'group',
+        'lifecycle',
+        'growthStage',
+        'purpose'
+    ],
+    'farm-revenue': [
+        'date',
+        'amount',
+        'description',
+        'type',
+        'farmId',
+        'farm_id',
+        'category',
+        'cropName',
+        'livestockType',
+        'note'
     ]
 };
 

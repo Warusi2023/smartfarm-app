@@ -579,14 +579,58 @@ class SmartFarmAPIService {
     }
 
     /**
+     * POST with offline queue when enabled (W3-03).
+     */
+    async postWithOfflineQueue(endpoint, payload, queueType, label) {
+        const body = Object.assign({}, payload || {});
+        if (
+            typeof window !== 'undefined' &&
+            window.OfflineWriteQueue &&
+            window.OfflineWriteQueue.isEnabledType(queueType)
+        ) {
+            const result = await window.OfflineWriteQueue.submit({
+                type: queueType,
+                body: body,
+                label: label,
+                requestFn: async () => {
+                    const res = await this.request(endpoint, {
+                        method: 'POST',
+                        body: JSON.stringify(body)
+                    });
+                    if (!res || !res.success) {
+                        throw new Error((res && res.error) || 'Request failed');
+                    }
+                    return res;
+                }
+            });
+            if (result.queued) {
+                return {
+                    success: true,
+                    queued: true,
+                    clientRequestId: result.clientRequestId,
+                    message:
+                        label + ' saved on this device and will sync when back online.'
+                };
+            }
+            return result.response;
+        }
+        return await this.request(endpoint, {
+            method: 'POST',
+            body: JSON.stringify(body)
+        });
+    }
+
+    /**
      * Record feed mix daily cost in durable farmcosts (W2-06). Requires auth token.
      * @param {object} payload - amount/dailyCost, farmId, species, lifecycle, feedMixId, etc.
      */
     async recordFeedMixFarmCost(payload) {
-        return await this.request('/farm-costs/feed-mix', {
-            method: 'POST',
-            body: JSON.stringify(payload)
-        });
+        return await this.postWithOfflineQueue(
+            '/farm-costs/feed-mix',
+            payload,
+            window.OfflineWriteQueue && window.OfflineWriteQueue.QUEUE_TYPES.FEED_MIX_COST,
+            'Feed mix cost'
+        );
     }
 
     /** POST /api/farm-costs/crop-action (W2-05). Usually sent via crop-recommendations/actions. */
@@ -605,10 +649,12 @@ class SmartFarmAPIService {
 
     /** POST /api/farm-summary/revenue (W2-08) */
     async createFarmRevenue(payload) {
-        return await this.request('/farm-summary/revenue', {
-            method: 'POST',
-            body: JSON.stringify(payload)
-        });
+        return await this.postWithOfflineQueue(
+            '/farm-summary/revenue',
+            payload,
+            window.OfflineWriteQueue && window.OfflineWriteQueue.QUEUE_TYPES.FARM_REVENUE,
+            'Revenue'
+        );
     }
 
     async updateFeedMix(id, feedMixData) {
@@ -936,6 +982,39 @@ class SmartFarmAPIService {
 
 // Initialize global API service
 window.SmartFarmAPI = new SmartFarmAPIService();
+
+function initOfflineWriteQueueForApi() {
+    if (typeof window === 'undefined' || !window.OfflineWriteQueue || !window.SmartFarmAPI) {
+        return;
+    }
+    window.OfflineWriteQueue.init({
+        request: async function (method, path, body) {
+            const res = await window.SmartFarmAPI.request(path, {
+                method: method,
+                body: JSON.stringify(body)
+            });
+            if (!res || !res.success) {
+                throw new Error((res && res.error) || 'Request failed');
+            }
+            return res;
+        },
+        showNotice: function (message, type) {
+            if (typeof window.showNotification === 'function') {
+                window.showNotification(message, type === 'success' ? 'success' : 'warning');
+            } else {
+                console.warn('[OfflineWriteQueue]', message);
+            }
+        }
+    });
+}
+
+if (typeof document !== 'undefined') {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initOfflineWriteQueueForApi);
+    } else {
+        initOfflineWriteQueueForApi();
+    }
+}
 
 // Export for module systems
 if (typeof module !== 'undefined' && module.exports) {

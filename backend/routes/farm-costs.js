@@ -7,6 +7,9 @@ const AuthMiddleware = require('../middleware/auth');
 const { asyncHandler } = require('../middleware/error-handler');
 const { BadRequestError, ServiceUnavailableError } = require('../utils/errors');
 const farmCostsStore = require('../services/farmCostsStore');
+const writeIdempotency = require('../services/writeIdempotency');
+const { ConflictError } = require('../utils/errors');
+const logger = require('../utils/logger');
 
 class FarmCostRoutes {
     constructor(dbPool = null) {
@@ -56,23 +59,65 @@ class FarmCostRoutes {
             farmId = null;
         }
 
-        const row = await farmCostsStore.insertFeedMixFarmCost(this.dbPool, {
-            userId: req.user.id,
-            farmId: farmId,
-            amount: amount,
-            feedMixId: body.feedMixId != null ? body.feedMixId : body.id,
-            livestockType: body.livestockType || body.species,
-            group: body.group,
-            species: body.species || body.livestockType,
-            lifecycle: body.lifecycle || body.growthStage,
-            purpose: body.purpose,
-            dailyCost: amount
+        const userId = req.user.id;
+        const clientRequestId = body.clientRequestId;
+
+        const out = await writeIdempotency.runIdempotent({
+            userId,
+            operation: 'feed-mix-cost',
+            clientRequestId,
+            payload: body,
+            execute: async () => {
+                const payloadHash = writeIdempotency.hashPayload('feed-mix-cost', body);
+
+                if (clientRequestId) {
+                    const existing = await farmCostsStore.findByClientRequestId(
+                        this.dbPool,
+                        userId,
+                        clientRequestId
+                    );
+                    if (existing) {
+                        if (
+                            existing.storedPayloadHash &&
+                            existing.storedPayloadHash !== payloadHash
+                        ) {
+                            throw new ConflictError(
+                                'This clientRequestId was already used with a different payload'
+                            );
+                        }
+                        logger.info('Feed mix cost idempotent hit (Postgres)', {
+                            farmCostId: existing.row.id,
+                            clientRequestId,
+                            userId
+                        });
+                        return existing.row;
+                    }
+                }
+
+                return farmCostsStore.insertFeedMixFarmCost(this.dbPool, {
+                    userId: userId,
+                    farmId: farmId,
+                    amount: amount,
+                    feedMixId: body.feedMixId != null ? body.feedMixId : body.id,
+                    livestockType: body.livestockType || body.species,
+                    group: body.group,
+                    species: body.species || body.livestockType,
+                    lifecycle: body.lifecycle || body.growthStage,
+                    purpose: body.purpose,
+                    dailyCost: amount,
+                    clientRequestId: clientRequestId,
+                    clientRequestPayloadHash: payloadHash
+                });
+            }
         });
 
-        res.status(201).json({
+        res.status(out.replayed ? 200 : 201).json({
             success: true,
-            message: 'Feed mix cost recorded',
-            data: row
+            message: out.replayed
+                ? 'Feed mix cost already recorded (idempotent replay)'
+                : 'Feed mix cost recorded',
+            data: out.result,
+            idempotentReplay: out.replayed
         });
     }
 

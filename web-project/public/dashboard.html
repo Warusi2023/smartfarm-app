@@ -264,6 +264,7 @@
     <script src="js/weather-alerts-service.js"></script>
     <script src="js/farm-action-center.js"></script>
     <script src="js/farm-action-center-panel.js"></script>
+    <script src="js/offline-write-queue.js"></script>
     <script src="js/farm-summary.js"></script>
     <script src="js/weather-alerts-widget.js"></script>
     <style>
@@ -6588,13 +6589,24 @@
                 if (submitBtn) submitBtn.disabled = true;
 
                 try {
-                    await window.FarmSummary.submitRevenue(payload);
+                    const saveResult = await window.FarmSummary.submitRevenue(payload);
                     form.reset();
                     if (dateInput && window.FarmSummary) {
                         dateInput.value = window.FarmSummary.todayIsoDate();
                     }
                     if (categorySelect) categorySelect.dispatchEvent(new Event('change'));
-                    await calculateFinancialMetrics();
+                    if (saveResult && saveResult.queued) {
+                        if (errEl) {
+                            errEl.textContent = saveResult.message;
+                            errEl.className = 'small text-warning mt-2';
+                            errEl.style.display = 'block';
+                        }
+                    } else {
+                        if (errEl) {
+                            errEl.style.display = 'none';
+                        }
+                        await calculateFinancialMetrics();
+                    }
                 } catch (saveErr) {
                     if (errEl) {
                         errEl.textContent = 'Could not save revenue. Please try again.';
@@ -6812,6 +6824,9 @@
         function initializeCompetitiveFeatures() {
             fetchWeatherData();
             setupRevenueEntryForm();
+            if (window.FarmSummary && typeof window.FarmSummary.setupFinancialReplayRefresh === 'function') {
+                window.FarmSummary.setupFinancialReplayRefresh(calculateFinancialMetrics);
+            }
             calculateFinancialMetrics();
             calculatePerformanceMetrics();
             
