@@ -530,6 +530,26 @@ try {
   logger.warnWithContext('Could not load crop recommendation routes', { error: cropRecError });
 }
 
+// 4c) Farm costs (Postgres farmcosts — W2-06)
+try {
+  const FarmCostRoutes = require('./routes/farm-costs');
+  const farmCostRoutes = new FarmCostRoutes(dbPool);
+  app.use('/api/farm-costs', farmCostRoutes.getRouter());
+  logger.info('Farm cost routes loaded');
+} catch (farmCostError) {
+  logger.warnWithContext('Could not load farm cost routes', { error: farmCostError });
+}
+
+// 4d) Farm summary — financials + revenue (W2-07 / W2-08)
+try {
+  const FarmSummaryRoutes = require('./routes/farm-summary');
+  const farmSummaryRoutes = new FarmSummaryRoutes(dbPool);
+  app.use('/api/farm-summary', farmSummaryRoutes.getRouter());
+  logger.info('Farm summary routes loaded');
+} catch (farmSummaryError) {
+  logger.warnWithContext('Could not load farm summary routes', { error: farmSummaryError });
+}
+
 // 5) Daily tips and biological routes (isolated)
 try {
   const DailyTipsRoutes = require('./routes/daily-tips');
@@ -656,6 +676,8 @@ app.get('/api/crops/stats/overview', validate('crops.stats'), (req, res) => {
 // In-memory storage (replace with database in production)
 let livestockStorage = [];
 let feedMixesStorage = [];
+const farmCostsStore = require('./services/farmCostsStore');
+const feedMixAuthMiddleware = new (require('./middleware/auth'))();
 
 // Livestock endpoints
 app.get('/api/livestock', 
@@ -785,34 +807,67 @@ app.get('/api/feed-mixes', (req, res) => {
   });
 });
 
-app.post('/api/feed-mixes', (req, res) => {
+app.post('/api/feed-mixes', feedMixAuthMiddleware.optionalAuth(), async (req, res) => {
   logger.debug('POST /api/feed-mixes', { origin: req.headers.origin, body: req.body });
-  
-  const feedMixData = req.body;
-  
-  // Validate required fields
-  if (!feedMixData.livestockType || !feedMixData.growthStage) {
+
+  const feedMixData = req.body || {};
+  const livestockType = feedMixData.livestockType || feedMixData.species;
+  const growthStage = feedMixData.growthStage || feedMixData.lifecycle;
+
+  if (!livestockType || !growthStage) {
     logger.warn('Validation failed: Missing required fields', { body: req.body });
     return res.status(400).json({
       success: false,
-      error: 'Livestock type and growth stage are required'
+      error: 'Livestock type and growth stage are required (species/lifecycle accepted)'
     });
   }
-  
-  // Create new feed mix entry
+
   const newFeedMix = {
     id: Date.now(),
     ...feedMixData,
+    livestockType,
+    growthStage,
+    species: feedMixData.species || livestockType,
+    lifecycle: feedMixData.lifecycle || growthStage,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   };
-  
+
   feedMixesStorage.push(newFeedMix);
   logger.info('Feed mix added successfully', { id: newFeedMix.id });
-  
+
+  let farmCost = null;
+  const dailyCost =
+    feedMixData.dailyCost != null
+      ? Number(feedMixData.dailyCost)
+      : feedMixData.amount != null
+        ? Number(feedMixData.amount)
+        : null;
+
+  if (dbPool && req.user?.id && dailyCost != null && Number.isFinite(dailyCost) && dailyCost >= 0) {
+    try {
+      farmCost = await farmCostsStore.insertFeedMixFarmCost(dbPool, {
+        userId: req.user.id,
+        farmId: feedMixData.farmId || feedMixData.farm_id || null,
+        amount: dailyCost,
+        feedMixId: newFeedMix.id,
+        livestockType: livestockType,
+        group: growthStage,
+        species: newFeedMix.species,
+        lifecycle: newFeedMix.lifecycle,
+        purpose: feedMixData.purpose,
+        dailyCost: dailyCost
+      });
+      logger.info('Feed mix farmcost recorded', { farmCostId: farmCost.id, feedMixId: newFeedMix.id });
+    } catch (costErr) {
+      logger.warnWithContext('Feed mix saved but farmcosts insert failed', { error: costErr });
+    }
+  }
+
   res.status(201).json({
     success: true,
-    data: newFeedMix
+    data: newFeedMix,
+    farmCost: farmCost || undefined
   });
 });
 

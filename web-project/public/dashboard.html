@@ -264,6 +264,7 @@
     <script src="js/weather-alerts-service.js"></script>
     <script src="js/farm-action-center.js"></script>
     <script src="js/farm-action-center-panel.js"></script>
+    <script src="js/farm-summary.js"></script>
     <script src="js/weather-alerts-widget.js"></script>
     <style>
         :root {
@@ -1676,8 +1677,9 @@
                                         <i class="fas fa-clipboard-check me-2 text-success"></i>Today on farm
                                     </h5>
                                     <div class="d-flex flex-wrap gap-2 align-items-center">
-                                        <a href="crop-management.html" class="btn btn-sm btn-outline-secondary">Crops</a>
+                                        <a href="crop-management.html#cropRecAlertsCard" class="btn btn-sm btn-outline-secondary">Crops</a>
                                         <a href="weather-alerts.html" class="btn btn-sm btn-outline-secondary">Weather</a>
+                                        <a href="weeding-management.html#weedingTasksContainer" class="btn btn-sm btn-outline-secondary">Weeding</a>
                                         <button type="button" class="btn btn-sm btn-outline-primary" id="todayOnFarmRefresh" title="Refresh">
                                             <i class="fas fa-sync-alt"></i> Refresh
                                         </button>
@@ -1732,6 +1734,7 @@
                         <div class="col-lg-4">
                             <div class="dashboard-card">
                                 <h5 class="mb-3">💰 Financial Overview</h5>
+                                <p class="text-muted small mb-2" id="financialHelperText" aria-live="polite"></p>
                                 <div class="financial-metrics">
                                     <div class="metric-row">
                                         <div class="metric-label">Monthly Revenue</div>
@@ -1742,7 +1745,7 @@
                                         <div class="metric-value" id="monthlyCosts">$0</div>
                                     </div>
                                     <div class="metric-row">
-                                        <div class="metric-label">Net Profit</div>
+                                        <div class="metric-label">Net (revenue − costs)</div>
                                         <div class="metric-value profit" id="netProfit">$0</div>
                                     </div>
                                     <div class="metric-row">
@@ -1750,6 +1753,42 @@
                                         <div class="metric-value" id="monthlyROI">0%</div>
                                     </div>
                                 </div>
+                                <form id="revenueEntryForm" class="mt-3 border-top pt-3" novalidate>
+                                    <h6 class="small text-muted mb-2">Log revenue</h6>
+                                    <div class="mb-2">
+                                        <label class="form-label small mb-0" for="revenueDate">Date</label>
+                                        <input type="date" class="form-control form-control-sm" id="revenueDate" name="date" required>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label small mb-0" for="revenueAmount">Amount</label>
+                                        <input type="number" class="form-control form-control-sm" id="revenueAmount" name="amount" min="0" step="0.01" placeholder="0.00" required>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label small mb-0" for="revenueDescription">Description</label>
+                                        <input type="text" class="form-control form-control-sm" id="revenueDescription" name="description" maxlength="500" placeholder="e.g. Market sale">
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label small mb-0" for="revenueCategory">Category (optional)</label>
+                                        <select class="form-select form-select-sm" id="revenueCategory" name="category">
+                                            <option value="">—</option>
+                                            <option value="crop">Crop</option>
+                                            <option value="livestock">Livestock</option>
+                                            <option value="other">Other</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-2" id="revenueCropWrap" style="display:none;">
+                                        <label class="form-label small mb-0" for="revenueCropName">Crop (optional)</label>
+                                        <input type="text" class="form-control form-control-sm" id="revenueCropName" placeholder="e.g. Tomatoes">
+                                    </div>
+                                    <div class="mb-2" id="revenueLivestockWrap" style="display:none;">
+                                        <label class="form-label small mb-0" for="revenueLivestockType">Livestock (optional)</label>
+                                        <input type="text" class="form-control form-control-sm" id="revenueLivestockType" placeholder="e.g. Cattle">
+                                    </div>
+                                    <div id="revenueFormError" class="small text-danger mb-2" style="display:none;" role="alert"></div>
+                                    <button type="submit" class="btn btn-sm btn-primary w-100" id="revenueSubmitBtn">
+                                        <i class="fas fa-plus me-1"></i>Save revenue
+                                    </button>
+                                </form>
                                 <button class="btn btn-sm btn-outline-primary mt-2" onclick="showFinancialDetails()">
                                     <i class="fas fa-chart-line me-1"></i>View Details
                                 </button>
@@ -6440,68 +6479,146 @@
             }
         }
 
-        // Financial Analytics
-        function calculateFinancialMetrics() {
-            const currentDate = new Date();
-            const currentMonth = currentDate.getMonth();
-            const currentYear = currentDate.getFullYear();
-            
-            // Calculate revenue from crops and livestock
-            let monthlyRevenue = 0;
-            let monthlyCosts = 0;
-            
-            // Simulate revenue from crops (harvested crops)
-            crops.forEach(crop => {
-                if (crop.status === 'Harvested') {
-                    // Simulate yield and price
-                    const yield = Math.random() * 1000; // kg
-                    const price = 2 + Math.random() * 5; // per kg
-                    monthlyRevenue += yield * price;
-                }
-            });
-            
-            // Simulate revenue from livestock
-            livestock.forEach(animal => {
-                if (animal.status === 'Healthy') {
-                    // Simulate production value
-                    monthlyRevenue += animal.quantity * (50 + Math.random() * 200);
-                }
-            });
-            
-            // Simulate costs (feed, fertilizer, equipment, etc.)
-            monthlyCosts = (crops.length * 100) + (livestock.length * 50) + (Math.random() * 1000);
-            
-            const netProfit = monthlyRevenue - monthlyCosts;
-            const monthlyROI = monthlyCosts > 0 ? (netProfit / monthlyCosts * 100) : 0;
-            
-            financialData = {
-                monthlyRevenue,
-                monthlyCosts,
-                netProfit,
-                monthlyROI
-            };
-            
+        // Financial summary — real farmcosts + farmrevenue (W2-07 / W2-08)
+        async function calculateFinancialMetrics() {
+            if (window.FarmSummary && typeof window.FarmSummary.loadFinancials === 'function') {
+                financialData = await window.FarmSummary.loadFinancials({ period: 'month' });
+            } else {
+                financialData = window.FarmSummary
+                    ? { ...window.FarmSummary.ZERO_SUMMARY }
+                    : {
+                        monthlyRevenue: 0,
+                        monthlyCosts: 0,
+                        netProfit: 0,
+                        monthlyROI: 0,
+                        helperText: 'Financial summary is loading…',
+                        fromApi: false
+                    };
+            }
             updateFinancialDisplay();
         }
 
         function updateFinancialDisplay() {
             const symbol = window.currencyManager ? window.currencyManager.getSymbol() : '$';
-            
-            document.getElementById('monthlyRevenue').textContent = 
-                `${symbol}${financialData.monthlyRevenue.toFixed(0)}`;
-            document.getElementById('monthlyCosts').textContent = 
-                `${symbol}${financialData.monthlyCosts.toFixed(0)}`;
-            
+            const rev = Number(financialData.monthlyRevenue) || 0;
+            const costs = Number(financialData.monthlyCosts) || 0;
+            const net = Number(financialData.netProfit) || 0;
+            const roi = Number(financialData.monthlyROI) || 0;
+
+            document.getElementById('monthlyRevenue').textContent =
+                `${symbol}${rev.toFixed(0)}`;
+            document.getElementById('monthlyCosts').textContent =
+                `${symbol}${costs.toFixed(0)}`;
+
             const profitElement = document.getElementById('netProfit');
-            const profitValue = financialData.netProfit.toFixed(0);
-            profitElement.textContent = `${symbol}${profitValue}`;
-            profitElement.className = `metric-value profit ${financialData.netProfit < 0 ? 'negative' : ''}`;
-            
-            document.getElementById('monthlyROI').textContent = 
-                `${financialData.monthlyROI.toFixed(1)}%`;
+            profitElement.textContent = `${symbol}${net.toFixed(0)}`;
+            profitElement.className = `metric-value profit ${net < 0 ? 'negative' : ''}`;
+
+            document.getElementById('monthlyROI').textContent =
+                `${roi.toFixed(1)}%`;
+
+            const helperEl = document.getElementById('financialHelperText');
+            if (helperEl) {
+                helperEl.textContent = financialData.helperText || '';
+                helperEl.style.display = financialData.helperText ? 'block' : 'none';
+            }
+        }
+
+        function setupRevenueEntryForm() {
+            const form = document.getElementById('revenueEntryForm');
+            if (!form || form.dataset.bound === '1') return;
+            form.dataset.bound = '1';
+
+            const dateInput = document.getElementById('revenueDate');
+            if (dateInput && window.FarmSummary) {
+                dateInput.value = window.FarmSummary.todayIsoDate();
+            }
+
+            const categorySelect = document.getElementById('revenueCategory');
+            const cropWrap = document.getElementById('revenueCropWrap');
+            const livestockWrap = document.getElementById('revenueLivestockWrap');
+            if (categorySelect) {
+                categorySelect.addEventListener('change', function () {
+                    const v = categorySelect.value;
+                    if (cropWrap) cropWrap.style.display = v === 'crop' ? 'block' : 'none';
+                    if (livestockWrap) livestockWrap.style.display = v === 'livestock' ? 'block' : 'none';
+                });
+            }
+
+            form.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                const errEl = document.getElementById('revenueFormError');
+                const submitBtn = document.getElementById('revenueSubmitBtn');
+                if (errEl) {
+                    errEl.style.display = 'none';
+                    errEl.textContent = '';
+                }
+
+                const amountRaw = document.getElementById('revenueAmount').value;
+                const amount = Number(amountRaw);
+                if (amountRaw === '' || !Number.isFinite(amount) || amount < 0) {
+                    if (errEl) {
+                        errEl.textContent = 'Enter a valid amount (0 or greater).';
+                        errEl.style.display = 'block';
+                    }
+                    return;
+                }
+
+                if (!window.FarmSummary || typeof window.FarmSummary.submitRevenue !== 'function') {
+                    if (errEl) {
+                        errEl.textContent = 'Could not save revenue. Please try again.';
+                        errEl.style.display = 'block';
+                    }
+                    return;
+                }
+
+                const payload = {
+                    date: document.getElementById('revenueDate').value,
+                    amount: amount,
+                    description: document.getElementById('revenueDescription').value,
+                    category: categorySelect ? categorySelect.value : ''
+                };
+                const cat = payload.category;
+                if (cat === 'crop') {
+                    payload.cropName = document.getElementById('revenueCropName').value;
+                } else if (cat === 'livestock') {
+                    payload.livestockType = document.getElementById('revenueLivestockType').value;
+                }
+
+                if (submitBtn) submitBtn.disabled = true;
+
+                try {
+                    await window.FarmSummary.submitRevenue(payload);
+                    form.reset();
+                    if (dateInput && window.FarmSummary) {
+                        dateInput.value = window.FarmSummary.todayIsoDate();
+                    }
+                    if (categorySelect) categorySelect.dispatchEvent(new Event('change'));
+                    await calculateFinancialMetrics();
+                } catch (saveErr) {
+                    if (errEl) {
+                        errEl.textContent = 'Could not save revenue. Please try again.';
+                        errEl.style.display = 'block';
+                    }
+                    console.warn('Revenue save failed:', saveErr);
+                } finally {
+                    if (submitBtn) submitBtn.disabled = false;
+                }
+            });
         }
 
         function showFinancialDetails() {
+            const symbol = window.currencyManager ? window.currencyManager.getSymbol() : '$';
+            const rev = Number(financialData.monthlyRevenue) || 0;
+            const costs = Number(financialData.monthlyCosts) || 0;
+            const net = Number(financialData.netProfit) || 0;
+            const periodNote = financialData.periodStart && financialData.periodEnd
+                ? `<p class="text-muted small">Period: ${financialData.periodStart} — ${financialData.periodEnd}</p>`
+                : '';
+            const honestNote = financialData.fromApi
+                ? '<p class="text-muted small">Totals are sums of logged revenue and farm costs for this month. Detailed category breakdown is not available yet.</p>'
+                : '<p class="text-muted small">Connect to the server to load logged revenue and costs.</p>';
+
             const modal = document.createElement('div');
             modal.className = 'modal fade';
             modal.innerHTML = `
@@ -6514,40 +6631,30 @@
                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body">
+                            ${periodNote}
+                            ${honestNote}
                             <div class="row">
                                 <div class="col-md-6">
-                                    <h6>Revenue Breakdown</h6>
+                                    <h6>Revenue (this month)</h6>
                                     <div class="mb-3">
                                         <div class="d-flex justify-content-between">
-                                            <span>Crop Sales:</span>
-                                            <span>${window.currencyManager ? window.currencyManager.getSymbol() : '$'}${(financialData.monthlyRevenue * 0.6).toFixed(0)}</span>
-                                        </div>
-                                    </div>
-                                    <div class="mb-3">
-                                        <div class="d-flex justify-content-between">
-                                            <span>Livestock Sales:</span>
-                                            <span>${window.currencyManager ? window.currencyManager.getSymbol() : '$'}${(financialData.monthlyRevenue * 0.4).toFixed(0)}</span>
+                                            <span>Total logged revenue:</span>
+                                            <span>${symbol}${rev.toFixed(0)}</span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
-                                    <h6>Cost Breakdown</h6>
+                                    <h6>Costs (this month)</h6>
                                     <div class="mb-3">
                                         <div class="d-flex justify-content-between">
-                                            <span>Feed & Fertilizer:</span>
-                                            <span>${window.currencyManager ? window.currencyManager.getSymbol() : '$'}${(financialData.monthlyCosts * 0.5).toFixed(0)}</span>
+                                            <span>Total logged costs:</span>
+                                            <span>${symbol}${costs.toFixed(0)}</span>
                                         </div>
                                     </div>
                                     <div class="mb-3">
                                         <div class="d-flex justify-content-between">
-                                            <span>Equipment & Maintenance:</span>
-                                            <span>${window.currencyManager ? window.currencyManager.getSymbol() : '$'}${(financialData.monthlyCosts * 0.3).toFixed(0)}</span>
-                                        </div>
-                                    </div>
-                                    <div class="mb-3">
-                                        <div class="d-flex justify-content-between">
-                                            <span>Other Costs:</span>
-                                            <span>${window.currencyManager ? window.currencyManager.getSymbol() : '$'}${(financialData.monthlyCosts * 0.2).toFixed(0)}</span>
+                                            <strong>Net (revenue − costs):</strong>
+                                            <strong>${symbol}${net.toFixed(0)}</strong>
                                         </div>
                                     </div>
                                 </div>
@@ -6704,6 +6811,7 @@
         // Initialize Competitive Features
         function initializeCompetitiveFeatures() {
             fetchWeatherData();
+            setupRevenueEntryForm();
             calculateFinancialMetrics();
             calculatePerformanceMetrics();
             

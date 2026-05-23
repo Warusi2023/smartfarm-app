@@ -17,7 +17,9 @@ const MIGRATION_ORDER = [
     '003_add_weather_alerts.sql',
     'add-email-verification.sql',
     '004_auth_users_columns.sql',
-    '005_subscriptions_user_unique.sql'
+    '005_subscriptions_user_unique.sql',
+    '006_soiltests_farmcosts.sql',
+    '007_farmrevenue.sql'
 ];
 
 async function runMigrations() {

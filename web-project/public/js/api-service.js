@@ -506,6 +506,31 @@ class SmartFarmAPIService {
         });
     }
 
+    /**
+     * Record feed mix daily cost in durable farmcosts (W2-06). Requires auth token.
+     * @param {object} payload - amount/dailyCost, farmId, species, lifecycle, feedMixId, etc.
+     */
+    async recordFeedMixFarmCost(payload) {
+        return await this.request('/farm-costs/feed-mix', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+    }
+
+    /** GET /api/farm-summary/financials?period=month (W2-07 / W2-08) */
+    async getFarmFinancials(params = {}) {
+        const queryString = new URLSearchParams(params).toString();
+        return await this.request(`/farm-summary/financials${queryString ? '?' + queryString : ''}`);
+    }
+
+    /** POST /api/farm-summary/revenue (W2-08) */
+    async createFarmRevenue(payload) {
+        return await this.request('/farm-summary/revenue', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+    }
+
     async updateFeedMix(id, feedMixData) {
         return await this.request(`/feed-mixes/${id}`, {
             method: 'PUT',
