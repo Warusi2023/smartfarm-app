@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **W1-07:** [`docs/BETA_LIMITATIONS.md`](docs/BETA_LIMITATIONS.md) — beta persistence limits for crop recommendation log, Today on farm panel, Railway/Netlify deploy behavior (also at `/docs/BETA_LIMITATIONS.md` on Netlify builds).
+- [`docs/WEEK1_WEB_RELEASE.md`](docs/WEEK1_WEB_RELEASE.md) — Week 1 web beta scope (W1-01–W1-04) with link to beta limitations.
 - Comprehensive project documentation
 - Complete .gitignore for all platforms
 - Contributing guidelines

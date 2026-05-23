@@ -22,6 +22,8 @@ Documentation for individual features and modules.
 - [API Documentation](./api-reference/README.md)
 - [Deployment Guide](./setup-deployment/DEPLOYMENT.md)
 - [Architecture Overview](./architecture/README.md)
+- [**Beta limitations (crop log & Today on farm panel)**](./BETA_LIMITATIONS.md) — W1-07
+- [Week 1 web release notes](./WEEK1_WEB_RELEASE.md)
 
 ## 📖 Contributing to Documentation
 
