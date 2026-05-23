@@ -1205,6 +1205,7 @@
     <script src="js/api-service.js"></script>
     <!-- Include Feed Mix Calculator -->
     <script src="js/feed-mix-calculator.js"></script>
+    <script src="js/farm-action-center.js"></script>
     <!-- Include Modal Validator -->
     <script src="js/modal-validator.js"></script>
     <!-- Include modal accessibility helper -->
@@ -4368,6 +4369,25 @@
             }
         }
 
+        function queueFeedMixFollowUpReminder(feedMixData) {
+            if (!feedMixData || !window.FarmActionCenter) return;
+            if (typeof window.FarmActionCenter.createFeedMixFollowUpReminder !== 'function') return;
+            try {
+                const reminder = window.FarmActionCenter.createFeedMixFollowUpReminder({
+                    id: feedMixData.id,
+                    species: feedMixData.species,
+                    lifecycle: feedMixData.lifecycle,
+                    weight: feedMixData.weight,
+                    age: feedMixData.age,
+                    purpose: feedMixData.purpose,
+                    createdAt: feedMixData.createdAt
+                });
+                console.log('📋 Feed mix follow-up reminder scheduled for', reminder.dueDate);
+            } catch (e) {
+                console.warn('Could not create feed mix follow-up reminder:', e.message);
+            }
+        }
+
         // Save feed mix data
         async function saveFeedMix(feedMixResult) {
             try {
@@ -4393,7 +4413,9 @@
                         const response = await window.SmartFarmAPI.createFeedMix(feedMixData);
                         if (response.success) {
                             console.log('✅ Feed mix saved to API:', response.data);
-                            return response.data;
+                            const saved = response.data || feedMixData;
+                            queueFeedMixFollowUpReminder(saved);
+                            return saved;
                         }
                     }
                 }
@@ -4404,6 +4426,7 @@
                 storedFeedMixes.push(feedMixData);
                 localStorage.setItem('feedMixes', JSON.stringify(storedFeedMixes));
                 console.log('💾 Feed mix saved to localStorage');
+                queueFeedMixFollowUpReminder(feedMixData);
                 
                 return feedMixData;
             } catch (error) {

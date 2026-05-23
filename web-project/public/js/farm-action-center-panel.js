@@ -18,6 +18,27 @@
         local: 'Weeding'
     };
 
+    const DESTINATION_HINT = {
+        crop: 'crop management',
+        weather: 'weather alerts',
+        local: 'weeding management'
+    };
+
+    function isLivestockLocalFollowUp(item) {
+        return (
+            item &&
+            (item.type === 'livestock-followup' || String(item.id || '').indexOf('livestock-local:') === 0)
+        );
+    }
+
+    function localSourceLabel(item) {
+        return isLivestockLocalFollowUp(item) ? 'Livestock' : SOURCE_LABEL.local || 'Local';
+    }
+
+    function localDestinationHint(item) {
+        return isLivestockLocalFollowUp(item) ? 'livestock feed mix' : DESTINATION_HINT.local || 'details';
+    }
+
     const DATE_ONLY_RE = /^\d{4}-\d{2}-\d{2}$/;
     let panelLoading = false;
 
@@ -83,35 +104,89 @@
     function sourceLink(item) {
         if (item.source === 'crop') return 'crop-management.html';
         if (item.source === 'weather') return 'weather-alerts.html';
-        if (item.source === 'local') return 'weeding-management.html';
+        if (item.source === 'local' && !isLivestockLocalFollowUp(item)) return 'weeding-management.html';
         return null;
+    }
+
+    /**
+     * Deep link into destination pages (query + hash where supported).
+     * @param {object} item - FarmAction row
+     * @returns {string|null}
+     */
+    function destinationHref(item) {
+        if (!item || !item.source) return null;
+
+        if (item.source === 'crop') {
+            const alertId = String(item.id || '').replace(/^crop:/, '');
+            const params = new URLSearchParams();
+            if (alertId) params.set('alertId', alertId);
+            if (item.entityId) params.set('cropId', item.entityId);
+            const qs = params.toString();
+            return 'crop-management.html' + (qs ? '?' + qs : '') + '#cropRecAlertsCard';
+        }
+
+        if (item.source === 'weather') {
+            const alertId = String(item.id || '').replace(/^weather:/, '');
+            if (!alertId) return 'weather-alerts.html';
+            return 'weather-alerts.html?id=' + encodeURIComponent(alertId);
+        }
+
+        if (item.source === 'local' && item.entityId) {
+            return (
+                'weeding-management.html?task=' +
+                encodeURIComponent(item.entityId) +
+                '#weedingTasksContainer'
+            );
+        }
+
+        if (item.source === 'local' && isLivestockLocalFollowUp(item) && item.entityId) {
+            return (
+                'livestock-management.html?feedMixReminder=' +
+                encodeURIComponent(item.entityId) +
+                '#feedMixCalculatorModal'
+            );
+        }
+
+        return sourceLink(item);
     }
 
     function renderItemRow(item) {
         const pri = PRIORITY_CLASS[item.priority] || 'secondary';
-        const src = SOURCE_LABEL[item.source] || item.source;
-        const href = sourceLink(item);
+        const src =
+            item.source === 'local' ? localSourceLabel(item) : SOURCE_LABEL[item.source] || item.source;
+        const destHint =
+            item.source === 'local' ? localDestinationHint(item) : DESTINATION_HINT[item.source] || 'details';
+        const href = destinationHref(item);
         const titleHtml = href
-            ? `<a href="${href}" class="text-decoration-none">${escapeHtml(item.title)}</a>`
+            ? `<a href="${escapeHtml(href)}" class="text-decoration-none" ` +
+              `aria-label="${escapeHtml(item.title)} — open in ${destHint}">${escapeHtml(item.title)}</a>`
             : escapeHtml(item.title);
 
         let actionBtn = '';
         if (item.source === 'crop' && item.status === 'pending') {
-            actionBtn = `<button type="button" class="btn btn-link btn-sm p-0 ms-2" data-farm-action-done="${escapeHtml(item.id)}" title="Mark done">Done</button>`;
+            actionBtn = `<button type="button" class="btn btn-link btn-sm p-0 ms-2" data-farm-action-done="${escapeHtml(item.id)}" title="Mark done" aria-label="Mark crop reminder done">Done</button>`;
         } else if (item.source === 'weather' && item.status === 'pending') {
-            actionBtn = `<button type="button" class="btn btn-link btn-sm p-0 ms-2" data-farm-action-read="${escapeHtml(item.id)}" title="Mark read">Read</button>`;
+            actionBtn = `<button type="button" class="btn btn-link btn-sm p-0 ms-2" data-farm-action-read="${escapeHtml(item.id)}" title="Mark read" aria-label="Mark weather alert read">Read</button>`;
         } else if (item.source === 'local' && item.status === 'pending' && item.entityId) {
-            actionBtn =
-                `<button type="button" class="btn btn-link btn-sm p-0 ms-1" data-farm-action-local-done="${escapeHtml(item.entityId)}" title="Mark complete">Done</button>` +
-                `<button type="button" class="btn btn-link btn-sm p-0 ms-1" data-farm-action-local-reschedule="${escapeHtml(item.entityId)}" data-farm-action-due="${escapeHtml(item.dueDate)}" title="Reschedule">Later</button>`;
+            if (isLivestockLocalFollowUp(item)) {
+                actionBtn = `<button type="button" class="btn btn-link btn-sm p-0 ms-2" data-farm-action-livestock-done="${escapeHtml(item.entityId)}" title="Mark done" aria-label="Mark feed mix follow-up done">Done</button>`;
+            } else {
+                actionBtn =
+                    `<button type="button" class="btn btn-link btn-sm p-0 ms-1" data-farm-action-local-done="${escapeHtml(item.entityId)}" title="Mark complete" aria-label="Mark weeding task complete">Done</button>` +
+                    `<button type="button" class="btn btn-link btn-sm p-0 ms-1" data-farm-action-local-reschedule="${escapeHtml(item.entityId)}" data-farm-action-due="${escapeHtml(item.dueDate)}" title="Reschedule" aria-label="Reschedule weeding task">Later</button>`;
+            }
         }
 
+        const metaHint = href
+            ? `<span class="visually-hidden"> Opens ${escapeHtml(destHint)}.</span>`
+            : '';
+
         return `<li class="list-group-item d-flex justify-content-between align-items-start gap-2">
-          <div class="flex-grow-1">
+          <div class="flex-grow-1 min-w-0">
             <div class="fw-semibold">${titleHtml}</div>
-            <small class="text-muted">${escapeHtml(src)} · Due ${formatDisplayDate(item.dueDate)} · <span class="badge bg-${pri}">${escapeHtml(item.type)}</span></small>
+            <small class="text-muted">${escapeHtml(src)} · Due ${formatDisplayDate(item.dueDate)} · <span class="badge bg-${pri}">${escapeHtml(item.type)}</span>${metaHint}</small>
           </div>
-          <div class="flex-shrink-0">${actionBtn}</div>
+          <div class="flex-shrink-0" role="group" aria-label="Quick actions for this item">${actionBtn}</div>
         </li>`;
     }
 
@@ -136,7 +211,7 @@
             return `<div class="text-center py-4 text-muted">
               <i class="fas fa-check-circle fa-2x mb-2 text-success"></i>
               <p class="mb-0">No pending farm actions right now.</p>
-              <p class="small mb-0">Log crop advice or check back when weather alerts are generated.</p>
+              <p class="small mb-0">Log crop advice, save a livestock feed mix, or check back when weather alerts are generated.</p>
             </div>`;
         }
         return (
@@ -224,9 +299,17 @@
         return res;
     }
 
+    function stopNavFromAction(btn, handler) {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            handler(e);
+        });
+    }
+
     function bindPanelActions(container) {
         container.querySelectorAll('[data-farm-action-done]').forEach((btn) => {
-            btn.onclick = async function () {
+            stopNavFromAction(btn, async function () {
                 const id = btn.getAttribute('data-farm-action-done');
                 btn.disabled = true;
                 try {
@@ -238,11 +321,11 @@
                         global.showAlert(errorMessage(e, 'Update failed'), 'danger');
                     }
                 }
-            };
+            });
         });
 
         container.querySelectorAll('[data-farm-action-read]').forEach((btn) => {
-            btn.onclick = async function () {
+            stopNavFromAction(btn, async function () {
                 const id = btn.getAttribute('data-farm-action-read');
                 btn.disabled = true;
                 try {
@@ -254,11 +337,11 @@
                         global.showAlert(errorMessage(e, 'Update failed'), 'danger');
                     }
                 }
-            };
+            });
         });
 
         container.querySelectorAll('[data-farm-action-local-done]').forEach((btn) => {
-            btn.onclick = async function () {
+            stopNavFromAction(btn, async function () {
                 const entityId = btn.getAttribute('data-farm-action-local-done');
                 if (!global.FarmActionCenter || typeof global.FarmActionCenter.markLocalWeedingTaskDone !== 'function') {
                     return;
@@ -273,11 +356,30 @@
                         global.showAlert(errorMessage(e, 'Update failed'), 'danger');
                     }
                 }
-            };
+            });
+        });
+
+        container.querySelectorAll('[data-farm-action-livestock-done]').forEach((btn) => {
+            stopNavFromAction(btn, async function () {
+                const entityId = btn.getAttribute('data-farm-action-livestock-done');
+                if (!global.FarmActionCenter || typeof global.FarmActionCenter.markLocalLivestockReminderDone !== 'function') {
+                    return;
+                }
+                btn.disabled = true;
+                try {
+                    global.FarmActionCenter.markLocalLivestockReminderDone(entityId);
+                    await refreshTodayOnFarmPanel();
+                } catch (e) {
+                    btn.disabled = false;
+                    if (typeof global.showAlert === 'function') {
+                        global.showAlert(errorMessage(e, 'Update failed'), 'danger');
+                    }
+                }
+            });
         });
 
         container.querySelectorAll('[data-farm-action-local-reschedule]').forEach((btn) => {
-            btn.onclick = async function () {
+            stopNavFromAction(btn, async function () {
                 const entityId = btn.getAttribute('data-farm-action-local-reschedule');
                 const currentDue = btn.getAttribute('data-farm-action-due');
                 if (!global.FarmActionCenter || typeof global.FarmActionCenter.rescheduleLocalWeedingTask !== 'function') {
@@ -295,7 +397,7 @@
                         global.showAlert(errorMessage(e, 'Reschedule failed'), 'danger');
                     }
                 }
-            };
+            });
         });
     }
 
@@ -342,7 +444,8 @@
     global.TodayOnFarmPanel = {
         init: initTodayOnFarmPanel,
         refresh: refreshTodayOnFarmPanel,
-        bucketItems
+        bucketItems,
+        destinationHref
     };
 
     document.addEventListener('DOMContentLoaded', function () {
@@ -352,6 +455,12 @@
     });
 
     global.addEventListener('smartfarm:weeding-tasks-changed', function () {
+        if (document.getElementById(CONTAINER_ID) && !panelLoading) {
+            refreshTodayOnFarmPanel();
+        }
+    });
+
+    global.addEventListener('smartfarm:livestock-reminders-changed', function () {
         if (document.getElementById(CONTAINER_ID) && !panelLoading) {
             refreshTodayOnFarmPanel();
         }

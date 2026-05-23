@@ -11,6 +11,9 @@
         LOCAL: 'local'
     };
 
+    const UNIFIED_LIVESTOCK_REMINDERS_KEY = 'unifiedLivestockReminders';
+    const LEGACY_FEED_MIX_FOLLOWUPS_KEY = 'smartfarm_feed_mix_followups';
+
     /**
      * @typedef {Object} FarmAction
      * @property {string} id - Stable unique id (source-prefixed)
@@ -402,11 +405,205 @@
         return localTasks.map(normalizeLocalTask).filter(Boolean);
     }
 
+    function formatSpeciesLabel(species) {
+        const s = String(species || 'livestock').trim();
+        if (!s) return 'Livestock';
+        return s.charAt(0).toUpperCase() + s.slice(1).replace(/_/g, ' ');
+    }
+
+    function formatLifecycleLabel(lifecycle) {
+        const label = String(lifecycle || '')
+            .trim()
+            .replace(/_/g, ' ')
+            .replace(/\b\w/g, (c) => c.toUpperCase());
+        return label || 'General';
+    }
+
+    function buildFeedMixReminderId() {
+        const d = todayDateOnly().replace(/-/g, '_');
+        const suffix = String(Date.now() % 1000).padStart(3, '0');
+        return `feedmix_${d}_${suffix}`;
+    }
+
+    /**
+     * Days until feed-mix follow-up (default 7; 14 when lifecycle clearly longer-cycle).
+     * @param {object} meta - { lifecycle, purpose }
+     * @returns {number}
+     */
+    function feedMixFollowUpDays(meta) {
+        const lifecycle = String(meta.lifecycle || '').toLowerCase();
+        const purpose = String(meta.purpose || '').toLowerCase();
+        if (/dairy|lactat|layer|milking|breed|cow_dairy/.test(lifecycle) || /dairy|lactat/.test(purpose)) {
+            return 14;
+        }
+        return 7;
+    }
+
+    function migrateLegacyFeedMixFollowUps(rows) {
+        try {
+            const legacyRaw = global.localStorage?.getItem(LEGACY_FEED_MIX_FOLLOWUPS_KEY);
+            if (!legacyRaw) return rows;
+            const legacy = JSON.parse(legacyRaw);
+            if (!Array.isArray(legacy) || !legacy.length) return rows;
+
+            legacy.forEach((old) => {
+                if (!old || old.id == null) return;
+                const status = String(old.status || 'pending').toLowerCase();
+                if (status === 'done' || status === 'completed') return;
+                if (rows.some((r) => String(r.id) === String(old.id))) return;
+                rows.push({
+                    id: String(old.id).startsWith('feedmix_') ? String(old.id) : buildFeedMixReminderId(),
+                    livestockType: formatSpeciesLabel(old.species),
+                    group: formatLifecycleLabel(old.lifecycle),
+                    title: 'Review feeding schedule',
+                    dueDate: toDateOnly(old.dueDate) || todayDateOnly(),
+                    status: 'pending',
+                    priority: old.priority || 'medium',
+                    sourceRef: 'feed-mix',
+                    createdAt: old.savedAt || old.createdAt || new Date().toISOString()
+                });
+            });
+            global.localStorage?.removeItem(LEGACY_FEED_MIX_FOLLOWUPS_KEY);
+            writeLocalLivestockRemindersRaw(rows);
+        } catch (e) {
+            if (typeof console !== 'undefined' && console.warn) {
+                console.warn('[FarmActionCenter] Legacy feed mix follow-up migration skipped:', e.message);
+            }
+        }
+        return rows;
+    }
+
+    function readLocalLivestockRemindersRaw() {
+        try {
+            const raw = global.localStorage?.getItem(UNIFIED_LIVESTOCK_REMINDERS_KEY);
+            let rows = raw ? JSON.parse(raw) : [];
+            if (!Array.isArray(rows)) rows = [];
+            if (!rows.length) {
+                rows = migrateLegacyFeedMixFollowUps(rows);
+            }
+            return rows;
+        } catch (e) {
+            if (typeof console !== 'undefined' && console.warn) {
+                console.warn('[FarmActionCenter] Livestock reminders read failed:', e.message);
+            }
+            return [];
+        }
+    }
+
+    function writeLocalLivestockRemindersRaw(items) {
+        global.localStorage?.setItem(UNIFIED_LIVESTOCK_REMINDERS_KEY, JSON.stringify(items));
+        try {
+            global.dispatchEvent(new CustomEvent('smartfarm:livestock-reminders-changed'));
+        } catch (e) {
+            /* ignore */
+        }
+    }
+
+    /**
+     * @param {object} reminder - unifiedLivestockReminders row
+     * @returns {FarmAction|null}
+     */
+    function normalizeLocalLivestockReminder(reminder) {
+        if (!reminder) return null;
+        const status = String(reminder.status || 'pending').toLowerCase();
+        if (status === 'done' || status === 'completed') return null;
+
+        const entityId = reminder.id != null ? String(reminder.id) : null;
+        if (!entityId) return null;
+
+        const baseTitle = String(reminder.title || 'Review feeding schedule').trim();
+        const livestockType = String(reminder.livestockType || 'Livestock').trim();
+        const group = String(reminder.group || '').trim();
+        const title = group
+            ? `${baseTitle} — ${livestockType} (${group})`
+            : `${baseTitle} — ${livestockType}`;
+
+        return {
+            id: `livestock-local:${entityId}`,
+            title: title,
+            dueDate: toDateOnly(reminder.dueDate) || todayDateOnly(),
+            type: 'livestock-followup',
+            source: SOURCES.LOCAL,
+            entityId: entityId,
+            status: 'pending',
+            priority: normalizePriority(reminder.priority)
+        };
+    }
+
+    function normalizeLocalLivestockReminders(reminders) {
+        if (!Array.isArray(reminders)) return [];
+        return reminders.map(normalizeLocalLivestockReminder).filter(Boolean);
+    }
+
+    /**
+     * Create or refresh a follow-up after a successful feed mix save (localStorage only).
+     * @param {object} feedMix - species, lifecycle, purpose, createdAt?, id?
+     * @returns {object} stored reminder row
+     */
+    function createFeedMixFollowUpReminder(feedMix) {
+        const species = String((feedMix && (feedMix.species || feedMix.livestockType)) || '').trim();
+        if (!species) {
+            throw new Error('Feed mix species is required for a follow-up reminder');
+        }
+
+        const lifecycle = String(feedMix.lifecycle || '');
+        const livestockType = formatSpeciesLabel(species);
+        const group = formatLifecycleLabel(lifecycle);
+        const days = feedMixFollowUpDays({ lifecycle: lifecycle, purpose: feedMix.purpose });
+        const dueDate = addDays(todayDateOnly(), days);
+        const createdAt = feedMix.createdAt || new Date().toISOString();
+
+        const rows = readLocalLivestockRemindersRaw();
+        const existingIdx = rows.findIndex(
+            (r) =>
+                String(r.status || 'pending').toLowerCase() === 'pending' &&
+                r.sourceRef === 'feed-mix' &&
+                String(r.livestockType) === livestockType &&
+                String(r.group) === group
+        );
+
+        const reminder = {
+            id: existingIdx >= 0 ? rows[existingIdx].id : buildFeedMixReminderId(),
+            livestockType: livestockType,
+            group: group,
+            title: 'Review feeding schedule',
+            dueDate: dueDate,
+            status: 'pending',
+            priority: 'medium',
+            sourceRef: 'feed-mix',
+            createdAt: createdAt
+        };
+
+        if (existingIdx >= 0) {
+            rows[existingIdx] = { ...rows[existingIdx], ...reminder };
+        } else {
+            rows.unshift(reminder);
+        }
+
+        writeLocalLivestockRemindersRaw(rows.slice(0, 40));
+        return reminder;
+    }
+
+    /**
+     * @param {string} id - raw reminder id (without livestock-local: prefix)
+     */
+    function markLocalLivestockReminderDone(id) {
+        const entityId = String(id || '');
+        if (!entityId) throw new Error('Reminder id required');
+        const rows = readLocalLivestockRemindersRaw();
+        const idx = rows.findIndex((r) => String(r.id) === entityId);
+        if (idx === -1) throw new Error('Livestock reminder not found');
+        rows[idx].status = 'done';
+        rows[idx].completedAt = new Date().toISOString();
+        writeLocalLivestockRemindersRaw(rows);
+        return rows[idx];
+    }
+
     /**
      * Fetch and merge all farm action sources.
      * @param {object} [options]
-     * @param {boolean} [options.includeLocal=false] - include unifiedWeedingTasks from localStorage
-     * @param {object[]} [options.localTasks] - explicit local task list (overrides storage)
+     * @param {boolean} [options.includeLocal=false] - weeding tasks + livestock reminders from localStorage
+     * @param {object[]} [options.localTasks] - explicit local task list (overrides weeding storage only)
      * @returns {Promise<FarmAction[]>}
      */
     async function fetchAllFarmActions(options) {
@@ -423,7 +620,9 @@
         if (Array.isArray(localExplicit)) {
             localItems = normalizeLocalTasks(localExplicit);
         } else if (includeLocal) {
-            localItems = normalizeLocalTasks(readLocalWeedingTasksRaw());
+            localItems = normalizeLocalTasks(readLocalWeedingTasksRaw()).concat(
+                normalizeLocalLivestockReminders(readLocalLivestockRemindersRaw())
+            );
         }
 
         return dedupeAndSort([].concat(cropItems, weatherItems, localItems));
@@ -439,6 +638,14 @@
         readLocalWeedingTasksRaw,
         markLocalWeedingTaskDone,
         rescheduleLocalWeedingTask,
+        UNIFIED_LIVESTOCK_REMINDERS_KEY,
+        feedMixFollowUpDays,
+        readLocalLivestockRemindersRaw,
+        writeLocalLivestockRemindersRaw,
+        normalizeLocalLivestockReminder,
+        normalizeLocalLivestockReminders,
+        createFeedMixFollowUpReminder,
+        markLocalLivestockReminderDone,
         fetchCropAlerts,
         fetchWeatherAlerts,
         fetchAllFarmActions,
