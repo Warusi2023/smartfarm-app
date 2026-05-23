@@ -694,6 +694,267 @@ function buildDailyChecklist({
     };
 }
 
+/** @returns {string[]} inclusive UTC dates from start to end */
+function enumerateDateRange(startDate, endDate) {
+    const days = [];
+    const d = new Date(startDate + 'T12:00:00Z');
+    const end = new Date(endDate + 'T12:00:00Z');
+    while (d <= end) {
+        days.push(d.toISOString().slice(0, 10));
+        d.setUTCDate(d.getUTCDate() + 1);
+    }
+    return days;
+}
+
+function shortWeekdayLabel(isoDate, today) {
+    if (isoDate === today) {
+        return 'Today';
+    }
+    try {
+        return new Date(isoDate + 'T12:00:00Z').toLocaleDateString([], { weekday: 'short' });
+    } catch (_) {
+        return String(isoDate).slice(5);
+    }
+}
+
+/**
+ * @param {number} currentNet
+ * @param {number} previousNet
+ * @returns {'up'|'down'|'flat'}
+ */
+function netDirection(currentNet, previousNet) {
+    const diff = roundMoney((Number(currentNet) || 0) - (Number(previousNet) || 0));
+    if (Math.abs(diff) < 1) {
+        return 'flat';
+    }
+    return diff > 0 ? 'up' : 'down';
+}
+
+async function fetchSoilDatesInRange(pool, userId, startDate, endDate) {
+    const set = new Set();
+    cropStore.listRecentSoilTestsForUser(userId, 200).forEach((t) => {
+        const d = String(t.testDate || t.createdAt || '').slice(0, 10);
+        if (d >= startDate && d <= endDate) {
+            set.add(d);
+        }
+    });
+    try {
+        if (soilTestsStore.isUuid(userId)) {
+            const res = await pool.query(
+                `SELECT DISTINCT test_date::text AS d FROM soiltests
+                 WHERE user_id = $1 AND test_date >= $2::date AND test_date <= $3::date`,
+                [userId, startDate, endDate]
+            );
+            res.rows.forEach((r) => set.add(r.d));
+        }
+    } catch (_) {
+        /* ignore */
+    }
+    return set;
+}
+
+async function fetchFeedMixDatesInRange(pool, userId, startDate, endDate) {
+    const set = new Set();
+    try {
+        const res = await pool.query(
+            `SELECT DISTINCT created_at::date::text AS d FROM farmcosts
+             WHERE user_id = $1 AND type = 'feed-mix'
+               AND created_at::date >= $2::date AND created_at::date <= $3::date`,
+            [userId, startDate, endDate]
+        );
+        res.rows.forEach((r) => set.add(r.d));
+    } catch (_) {
+        /* ignore */
+    }
+    return set;
+}
+
+async function fetchRevenueDatesInRange(pool, userId, startDate, endDate) {
+    const set = new Set();
+    try {
+        const res = await pool.query(
+            `SELECT DISTINCT COALESCE(date, created_at::date)::text AS d FROM farmrevenue
+             WHERE user_id = $1 AND COALESCE(date, created_at::date) >= $2::date
+               AND COALESCE(date, created_at::date) <= $3::date`,
+            [userId, startDate, endDate]
+        );
+        res.rows.forEach((r) => set.add(r.d));
+    } catch (_) {
+        /* ignore */
+    }
+    return set;
+}
+
+/**
+ * Per-day counts for weekly tooltips.
+ * @returns {Record<string, { actions: number, soil: number, costs: number, revenue: number, feed: number }>}
+ */
+async function fetchWeekDayDetails(pool, userId, startDate, endDate) {
+    const details = {};
+    function bump(date, key) {
+        if (!date || date < startDate || date > endDate) {
+            return;
+        }
+        if (!details[date]) {
+            details[date] = { actions: 0, soil: 0, costs: 0, revenue: 0, feed: 0 };
+        }
+        details[date][key] += 1;
+    }
+
+    cropStore.listRecentActionsForUser(userId, 500).forEach((a) => {
+        bump(String(a.completedDate || a.createdAt || '').slice(0, 10), 'actions');
+    });
+    cropStore.listRecentSoilTestsForUser(userId, 200).forEach((t) => {
+        bump(String(t.testDate || t.createdAt || '').slice(0, 10), 'soil');
+    });
+
+    try {
+        const [costs, feed, revenue, soil] = await Promise.all([
+            pool.query(
+                `SELECT created_at::date::text AS d, type FROM farmcosts
+                 WHERE user_id = $1 AND created_at::date >= $2::date AND created_at::date <= $3::date`,
+                [userId, startDate, endDate]
+            ),
+            pool.query(
+                `SELECT created_at::date::text AS d FROM farmcosts
+                 WHERE user_id = $1 AND type = 'feed-mix'
+                   AND created_at::date >= $2::date AND created_at::date <= $3::date`,
+                [userId, startDate, endDate]
+            ),
+            pool.query(
+                `SELECT COALESCE(date, created_at::date)::text AS d FROM farmrevenue
+                 WHERE user_id = $1 AND COALESCE(date, created_at::date) >= $2::date
+                   AND COALESCE(date, created_at::date) <= $3::date`,
+                [userId, startDate, endDate]
+            ),
+            soilTestsStore.isUuid(userId)
+                ? pool.query(
+                      `SELECT test_date::text AS d FROM soiltests
+                       WHERE user_id = $1 AND test_date >= $2::date AND test_date <= $3::date`,
+                      [userId, startDate, endDate]
+                  )
+                : Promise.resolve({ rows: [] })
+        ]);
+        costs.rows.forEach((r) => {
+            bump(r.d, r.type === 'feed-mix' ? 'feed' : 'costs');
+        });
+        feed.rows.forEach((r) => bump(r.d, 'feed'));
+        revenue.rows.forEach((r) => bump(r.d, 'revenue'));
+        soil.rows.forEach((r) => bump(r.d, 'soil'));
+    } catch (_) {
+        /* ignore */
+    }
+    return details;
+}
+
+function buildDayTooltip(date, routines, detail) {
+    const parts = [];
+    if (detail) {
+        if (detail.actions) {
+            parts.push(`${detail.actions} action${detail.actions === 1 ? '' : 's'}`);
+        }
+        if (detail.soil) {
+            parts.push(`${detail.soil} soil`);
+        }
+        if (detail.feed) {
+            parts.push(`${detail.feed} feed`);
+        }
+        if (detail.costs) {
+            parts.push(`${detail.costs} cost`);
+        }
+        if (detail.revenue) {
+            parts.push(`${detail.revenue} revenue`);
+        }
+    }
+    if (!parts.length) {
+        if (routines.activity) {
+            return `${date}: activity logged`;
+        }
+        return `${date}: no activity`;
+    }
+    return `${date}: ${parts.join(' · ')}`;
+}
+
+/**
+ * W5-02 — last 7 days routine lane + week-over-week net.
+ * @param {object} input
+ */
+function buildWeeklySummary({
+    today,
+    weekStart,
+    weekEnd,
+    activityDates,
+    soilDates,
+    feedDates,
+    revenueDates,
+    thisWeekFinancials,
+    lastWeekFinancials,
+    hasLivestockSignal,
+    dayDetails
+}) {
+    const dates = enumerateDateRange(weekStart, weekEnd);
+    const days = dates.map((date) => {
+        const detail = dayDetails && dayDetails[date];
+        const routines = {
+            activity: activityDates.has(date),
+            soil: soilDates.has(date),
+            feed: feedDates.has(date),
+            revenue: revenueDates.has(date)
+        };
+        if (detail && !routines.activity) {
+            routines.activity =
+                (detail.actions || 0) +
+                    (detail.soil || 0) +
+                    (detail.costs || 0) +
+                    (detail.revenue || 0) +
+                    (detail.feed || 0) >
+                0;
+        }
+        return {
+            date: date,
+            weekday: shortWeekdayLabel(date, today),
+            isToday: date === today,
+            routines: routines,
+            tooltip: buildDayTooltip(date, routines, detail)
+        };
+    });
+
+    const activityDays = days.filter((d) => d.routines.activity).length;
+    const soilLoggedThisWeek = days.some((d) => d.routines.soil);
+    const direction = netDirection(thisWeekFinancials.net, lastWeekFinancials.net);
+
+    return {
+        weekStart: weekStart,
+        weekEnd: weekEnd,
+        label: 'Last 7 days',
+        days: days,
+        feedApplicable: !!hasLivestockSignal,
+        net: {
+            thisWeek: {
+                revenue: thisWeekFinancials.revenue,
+                costs: thisWeekFinancials.costs,
+                net: thisWeekFinancials.net
+            },
+            lastWeek: {
+                revenue: lastWeekFinancials.revenue,
+                costs: lastWeekFinancials.costs,
+                net: lastWeekFinancials.net
+            },
+            direction: direction,
+            changeAmount: roundMoney(
+                (Number(thisWeekFinancials.net) || 0) - (Number(lastWeekFinancials.net) || 0)
+            )
+        },
+        summary: {
+            activityDays: activityDays,
+            totalDays: days.length,
+            soilLoggedThisWeek: soilLoggedThisWeek,
+            activityLine: `${activityDays}/${days.length} days with farm activity`,
+            soilLine: soilLoggedThisWeek ? 'Soil logged this week' : 'Soil not logged this week'
+        }
+    };
+}
+
 async function fetchLastSoilTestDate(pool, userId) {
     let last = null;
     if (soilTestsStore.isUuid(userId)) {
@@ -855,6 +1116,40 @@ async function getCommandCenter(pool, userId, opts) {
         activityStreak
     });
 
+    const weekBounds = resolveWindowBounds('7d');
+    const prevWeekBounds = previousPeriodBounds(weekBounds.start, weekBounds.end);
+    const [
+        thisWeekFinancials,
+        lastWeekFinancials,
+        weekActivityDates,
+        weekSoilDates,
+        weekFeedDates,
+        weekRevenueDates,
+        weekDayDetails
+    ] = await Promise.all([
+        buildPeriodFinancials(pool, userId, weekBounds.start, weekBounds.end),
+        buildPeriodFinancials(pool, userId, prevWeekBounds.start, prevWeekBounds.end),
+        fetchActivityDateSet(pool, userId, 7),
+        fetchSoilDatesInRange(pool, userId, weekBounds.start, weekBounds.end),
+        fetchFeedMixDatesInRange(pool, userId, weekBounds.start, weekBounds.end),
+        fetchRevenueDatesInRange(pool, userId, weekBounds.start, weekBounds.end),
+        fetchWeekDayDetails(pool, userId, weekBounds.start, weekBounds.end)
+    ]);
+
+    const weeklySummary = buildWeeklySummary({
+        today,
+        weekStart: weekBounds.start,
+        weekEnd: weekBounds.end,
+        activityDates: weekActivityDates,
+        soilDates: weekSoilDates,
+        feedDates: weekFeedDates,
+        revenueDates: weekRevenueDates,
+        thisWeekFinancials,
+        lastWeekFinancials,
+        hasLivestockSignal,
+        dayDetails: weekDayDetails
+    });
+
     const listLimit = bounds.window === '30d' ? 30 : 20;
 
     const [recentCosts, recentRevenue, recentSoil, recentActions, largestDriver, latestRevenue] =
@@ -928,6 +1223,7 @@ async function getCommandCenter(pool, userId, opts) {
         },
         attention,
         dailyChecklist,
+        weeklySummary,
         generatedAt: new Date().toISOString()
     };
 }
@@ -935,6 +1231,9 @@ async function getCommandCenter(pool, userId, opts) {
 module.exports = {
     getCommandCenter,
     buildDailyChecklist,
+    buildWeeklySummary,
+    netDirection,
+    enumerateDateRange,
     computeActivityStreak,
     normalizeWindow,
     resolveWindowBounds,

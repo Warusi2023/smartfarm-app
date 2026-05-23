@@ -767,6 +767,177 @@
     margin-left: 0.35rem;
 }
 
+/* W5-02 — weekly review strip */
+.fcc-weekly-section {
+    margin-bottom: 1rem;
+}
+
+.fcc-weekly-strip {
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: 10px;
+    padding: 0.85rem 1rem;
+}
+
+.fcc-weekly-empty {
+    padding: 1rem;
+    margin: 0;
+}
+
+.fcc-weekly-net {
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.65rem;
+    border-bottom: 1px dashed #e0e0e0;
+}
+
+.fcc-weekly-net-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.35rem;
+    font-size: 0.82rem;
+}
+
+.fcc-weekly-net-row.sub {
+    font-size: 0.75rem;
+    color: #78909c;
+    margin-top: 0.2rem;
+}
+
+.fcc-weekly-net-label {
+    color: #546e7a;
+    font-weight: 600;
+}
+
+.fcc-weekly-net-value {
+    font-size: 1.05rem;
+    color: #1b5e20;
+}
+
+.fcc-weekly-net-dir {
+    font-weight: 600;
+}
+
+.fcc-weekly-net-dir.up {
+    color: #2e7d32;
+}
+
+.fcc-weekly-net-dir.down {
+    color: #c62828;
+}
+
+.fcc-weekly-net-dir.flat {
+    color: #78909c;
+}
+
+.fcc-weekly-lane {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.35rem;
+    margin-bottom: 0.55rem;
+}
+
+.fcc-week-day {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    min-width: 0;
+}
+
+.fcc-week-day-today .fcc-week-day-label {
+    color: #2e7d32;
+    font-weight: 700;
+}
+
+.fcc-week-day-dots {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    align-items: center;
+}
+
+.fcc-week-dot {
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 50%;
+    border: 1.5px solid #cfd8dc;
+    background: transparent;
+    display: block;
+}
+
+.fcc-week-dot.on {
+    border-color: transparent;
+}
+
+.fcc-week-dot-activity.on {
+    background: #2e7d32;
+}
+
+.fcc-week-dot-soil.on {
+    background: #5e35b1;
+}
+
+.fcc-week-dot-feed.on {
+    background: #e65100;
+}
+
+.fcc-week-dot-revenue.on {
+    background: #1565c0;
+}
+
+.fcc-week-day-label {
+    font-size: 0.62rem;
+    color: #78909c;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.fcc-weekly-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 0.85rem;
+    font-size: 0.68rem;
+    color: #78909c;
+    margin-bottom: 0.45rem;
+}
+
+.fcc-weekly-legend .fcc-week-dot {
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 0.2rem;
+    width: 0.45rem;
+    height: 0.45rem;
+}
+
+.fcc-weekly-summary-text {
+    font-size: 0.78rem;
+    color: #607d8b;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.fcc-weekly-summary-sep {
+    margin: 0 0.35rem;
+    opacity: 0.6;
+}
+
+@media (max-width: 400px) {
+    .fcc-week-day-label {
+        font-size: 0.58rem;
+    }
+
+    .fcc-week-dot {
+        width: 0.5rem;
+        height: 0.5rem;
+    }
+}
+
 /* W5-01 — daily operating checklist */
 .fcc-checklist-section {
     margin-bottom: 1.1rem;

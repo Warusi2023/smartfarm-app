@@ -1,5 +1,5 @@
 /**
- * Farm command center (W4-01–W4-05, W5-01) — inbox, filters, daily checklist.
+ * Farm command center (W4–W5) — inbox, checklist, weekly review.
  */
 (function (global) {
     'use strict';
@@ -584,6 +584,80 @@
             </div>
             ${routines.lastActivityDate || routines.lastSoilTestDate || routines.lastRevenueDate || streak ? freshness : ''}
             <ul class="fcc-checklist-list">${rows}</ul>
+        </div>`;
+    }
+
+    /** W5-02 — weekly review strip (7-day routines + net direction). */
+    function renderRoutineDot(on, type) {
+        const cls = on ? 'fcc-week-dot on' : 'fcc-week-dot';
+        return `<span class="${cls} fcc-week-dot-${type}" aria-hidden="true"></span>`;
+    }
+
+    function renderWeeklyDayColumn(day, feedApplicable) {
+        const r = day.routines || {};
+        const todayClass = day.isToday ? ' fcc-week-day-today' : '';
+        const rows =
+            renderRoutineDot(r.activity, 'activity') +
+            renderRoutineDot(r.soil, 'soil') +
+            (feedApplicable ? renderRoutineDot(r.feed, 'feed') : '') +
+            renderRoutineDot(r.revenue, 'revenue');
+        return `<div class="fcc-week-day${todayClass}" title="${escapeHtml(day.tooltip || day.date)}">
+            <div class="fcc-week-day-dots">${rows}</div>
+            <span class="fcc-week-day-label">${escapeHtml(day.weekday)}</span>
+        </div>`;
+    }
+
+    function renderWeeklyNetBlock(net) {
+        if (!net) {
+            return '';
+        }
+        const tw = net.thisWeek || {};
+        const lw = net.lastWeek || {};
+        const dir = net.direction || 'flat';
+        const dirLabel =
+            dir === 'up' ? 'Better than last week' : dir === 'down' ? 'Below last week' : 'Flat vs last week';
+        const dirIcon = dir === 'up' ? '↑' : dir === 'down' ? '↓' : '→';
+        return `<div class="fcc-weekly-net">
+            <div class="fcc-weekly-net-row">
+                <span class="fcc-weekly-net-label">This week net</span>
+                <strong class="fcc-weekly-net-value">${money(tw.net)}</strong>
+            </div>
+            <div class="fcc-weekly-net-row sub">
+                <span>Last week ${money(lw.net)}</span>
+                <span class="fcc-weekly-net-dir ${dir}">${dirIcon} ${escapeHtml(dirLabel)}</span>
+            </div>
+        </div>`;
+    }
+
+    function renderWeeklyStrip(payload) {
+        const weekly = payload && payload.weeklySummary;
+        if (!weekly || !weekly.days || !weekly.days.length) {
+            return '<div class="fcc-empty fcc-weekly-empty">Sign in to see your weekly review.</div>';
+        }
+        const feedApplicable = !!weekly.feedApplicable;
+        const daysHtml = weekly.days.map(function (d) {
+            return renderWeeklyDayColumn(d, feedApplicable);
+        }).join('');
+        const legendFeed = feedApplicable
+            ? '<span><span class="fcc-week-dot on fcc-week-dot-feed"></span> Feed</span>'
+            : '';
+        const summary = weekly.summary || {};
+        return `<div class="fcc-weekly-strip" role="region" aria-label="Weekly review">
+            ${renderWeeklyNetBlock(weekly.net)}
+            <div class="fcc-weekly-lane" aria-label="Last 7 days routines">
+                ${daysHtml}
+            </div>
+            <div class="fcc-weekly-legend">
+                <span><span class="fcc-week-dot on fcc-week-dot-activity"></span> Activity</span>
+                <span><span class="fcc-week-dot on fcc-week-dot-soil"></span> Soil</span>
+                ${legendFeed}
+                <span><span class="fcc-week-dot on fcc-week-dot-revenue"></span> Revenue</span>
+            </div>
+            <p class="fcc-weekly-summary-text">
+                ${escapeHtml(summary.activityLine || '')}
+                <span class="fcc-weekly-summary-sep">·</span>
+                ${escapeHtml(summary.soilLine || '')}
+            </p>
         </div>`;
     }
 
@@ -1262,6 +1336,10 @@
                     </div>
                 </div>
                 <div id="fcc-offline-mount">${renderOfflinePanel()}</div>
+                <div class="fcc-weekly-section">
+                    <div class="fcc-panel-title">Weekly review</div>
+                    <div id="fcc-weekly-mount">${renderWeeklyStrip(payload)}</div>
+                </div>
                 <div class="fcc-checklist-section">
                     <div class="fcc-panel-title">Today&rsquo;s checklist</div>
                     <div id="fcc-checklist-mount">${renderChecklist(payload)}</div>
@@ -1306,6 +1384,10 @@
                     </div>
                 </div>
                 <div id="fcc-offline-mount">${renderOfflinePanel()}</div>
+                <div class="fcc-weekly-section">
+                    <div class="fcc-panel-title">Weekly review</div>
+                    <div id="fcc-weekly-mount">${renderWeeklyStrip(null)}</div>
+                </div>
                 <div class="fcc-checklist-section">
                     <div class="fcc-panel-title">Today&rsquo;s checklist</div>
                     <div id="fcc-checklist-mount">${renderChecklist(null)}</div>
@@ -1408,6 +1490,9 @@
         _checklist: {
             mergeDailyChecklist: mergeDailyChecklist,
             renderChecklist: renderChecklist
+        },
+        _weekly: {
+            renderWeeklyStrip: renderWeeklyStrip
         }
     };
 

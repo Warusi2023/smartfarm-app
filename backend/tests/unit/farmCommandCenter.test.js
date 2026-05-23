@@ -88,4 +88,47 @@ describe('farmCommandCenter', () => {
             expect(farmCommandCenter.computeActivityStreak(dates, '2026-05-23')).toBe(3);
         });
     });
+
+    describe('buildWeeklySummary (W5-02)', () => {
+        const today = '2026-05-23';
+        const weekStart = '2026-05-17';
+        const weekEnd = '2026-05-23';
+
+        it('enumerateDateRange returns 7 days', () => {
+            const days = farmCommandCenter.enumerateDateRange(weekStart, weekEnd);
+            expect(days.length).toBe(7);
+            expect(days[0]).toBe(weekStart);
+            expect(days[6]).toBe(weekEnd);
+        });
+
+        it('netDirection detects up, down, flat', () => {
+            expect(farmCommandCenter.netDirection(100, 50)).toBe('up');
+            expect(farmCommandCenter.netDirection(40, 80)).toBe('down');
+            expect(farmCommandCenter.netDirection(50, 50.5)).toBe('flat');
+        });
+
+        it('builds day markers and summary lines', () => {
+            const activityDates = new Set(['2026-05-20', '2026-05-23']);
+            const soilDates = new Set(['2026-05-22']);
+            const summary = farmCommandCenter.buildWeeklySummary({
+                today,
+                weekStart,
+                weekEnd,
+                activityDates,
+                soilDates,
+                feedDates: new Set(),
+                revenueDates: new Set(['2026-05-23']),
+                thisWeekFinancials: { revenue: 500, costs: 200, net: 300 },
+                lastWeekFinancials: { revenue: 400, costs: 250, net: 150 },
+                hasLivestockSignal: false,
+                dayDetails: {}
+            });
+            expect(summary.days.length).toBe(7);
+            expect(summary.summary.activityDays).toBe(2);
+            expect(summary.summary.soilLoggedThisWeek).toBe(true);
+            expect(summary.summary.activityLine).toBe('2/7 days with farm activity');
+            expect(summary.net.direction).toBe('up');
+            expect(summary.net.thisWeek.net).toBe(300);
+        });
+    });
 });
