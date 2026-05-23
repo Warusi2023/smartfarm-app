@@ -106,6 +106,22 @@ class WeatherAlertsPage {
         
         // Attach event listeners to alert cards
         this.attachAlertListeners();
+        this.applyAlertDeepLink();
+    }
+
+    applyAlertDeepLink() {
+        const params = new URLSearchParams(window.location.search);
+        const alertId = params.get('id') || params.get('alertId');
+        if (!alertId) return;
+
+        const item = document.querySelector(
+            '.alert-item[data-alert-id="' + CSS.escape(String(alertId)) + '"]'
+        );
+        if (!item) return;
+
+        item.classList.add('farm-action-deep-link-highlight');
+        item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        setTimeout(() => item.classList.remove('farm-action-deep-link-highlight'), 4000);
     }
 
     renderAlertCard(alert) {

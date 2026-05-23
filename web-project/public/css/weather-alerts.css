@@ -435,3 +435,11 @@
     }
 }
 
+/* Deep link highlight from dashboard Today on farm panel */
+.farm-action-deep-link-highlight {
+    outline: 2px solid #0d6efd;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.15);
+    border-radius: 6px;
+}
+
