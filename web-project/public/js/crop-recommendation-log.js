@@ -6,6 +6,10 @@
 
     const LS_KEY = 'smartfarm_crop_rec_cache';
 
+    /** Shared copy — ai-advisory soil tab and crop soil modal use the same disclaimer. */
+    const SOIL_HEURISTIC_DISCLAIMER =
+        'Soil-based fertilizer adjustments are heuristic estimates only. They are not a substitute for lab agronomy or local extension advice. Confirm rates with your soil lab or extension officer before applying.';
+
     let showAlertFn = (msg, type) => console.log(type, msg);
     let formatDateFn = (d) => (d ? String(d).slice(0, 10) : '—');
 
@@ -63,6 +67,47 @@
     function setAdviceContext(crop, recommendations) {
         adviceContext = { crop, recommendations, recommendationId: null };
         return adviceContext;
+    }
+
+    function soilDisclaimerHtml(extraClass) {
+        return `<p class="text-muted small ${extraClass || 'mb-0'}">${SOIL_HEURISTIC_DISCLAIMER}</p>`;
+    }
+
+    /**
+     * Unified refine output (same markup in soil modal, crop advice modal, ai-advisory).
+     * @param {object} refined - API refine-advice payload
+     * @param {{ alertClass?: string }} [opts]
+     */
+    function renderRefinedAdviceHtml(refined, opts) {
+        const alertClass = (opts && opts.alertClass) || 'alert-info';
+        if (!refined) {
+            return '';
+        }
+        let html = `<div class="alert ${alertClass}"><strong>${refined.summary || 'Adjusted advice'}</strong></div>`;
+        if (refined.adjustedFertilizer && refined.adjustedFertilizer.length) {
+            html += '<ul class="mb-2">';
+            refined.adjustedFertilizer.forEach((f) => {
+                html += `<li><strong>${f.name}</strong>: ${f.amount}`;
+                if (f.reason) {
+                    html += ` — <small>${f.reason}</small>`;
+                }
+                html += '</li>';
+            });
+            html += '</ul>';
+        }
+        (refined.notes || []).forEach((n) => {
+            html += `<p class="small text-muted mb-0">${n}</p>`;
+        });
+        html += soilDisclaimerHtml('mt-2');
+        return html;
+    }
+
+    async function refineAdviceWithSoil(soilTest, recommendations) {
+        const res = await apiRequest('POST', '/crop-recommendations/refine-advice', {
+            soilTest,
+            recommendations: recommendations || {}
+        });
+        return res.data;
     }
 
     async function saveSnapshot(crop, recommendations) {
@@ -128,7 +173,8 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
               </div>
               <div class="modal-body">
-                <p class="text-muted small">Record what you did (or plan to do). The next reminder is estimated from the recommendation timing — not a precision schedule. Soil-based adjustments are heuristic estimates only.</p>
+                <p class="text-muted small">Record what you did (or plan to do). The next reminder is estimated from the recommendation timing — not a precision schedule.</p>
+                ${soilDisclaimerHtml('mb-2')}
                 <div class="row g-3">
                   <div class="col-md-6">
                     <label class="form-label">Action type</label>
@@ -218,7 +264,8 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
               </div>
               <div class="modal-body">
-                <p class="text-muted small">Enter lab or field test values to refine fertilizer advice (heuristic estimate, not a replacement for agronomy advice).</p>
+                ${soilDisclaimerHtml('mb-3')}
+                <p class="text-muted small mb-0">Enter lab or field test values, then preview adjusted fertilizer amounts (same refine logic as Crop Management).</p>
                 <div class="row g-2">
                   <div class="col-md-4"><label class="form-label">Test date</label><input type="date" class="form-control" id="rstDate"></div>
                   <div class="col-md-4"><label class="form-label">pH</label><input type="number" step="0.1" class="form-control" id="rstPh"></div>
@@ -329,23 +376,10 @@
         document.getElementById('rstRefineBtn').onclick = async () => {
             const soilTest = collectSoilForm();
             try {
-                const res = await apiRequest('POST', '/crop-recommendations/refine-advice', {
-                    soilTest,
-                    recommendations: adviceContext.recommendations
-                });
+                const d = await refineAdviceWithSoil(soilTest, adviceContext.recommendations);
                 const box = document.getElementById('rstRefinedBox');
                 box.classList.remove('d-none');
-                const d = res.data;
-                let html = `<div class="alert alert-info"><strong>${d.summary}</strong></div>`;
-                if (d.adjustedFertilizer && d.adjustedFertilizer.length) {
-                    html += '<ul class="mb-0">';
-                    d.adjustedFertilizer.forEach((f) => {
-                        html += `<li><strong>${f.name}</strong>: ${f.amount} — <small>${f.reason}</small></li>`;
-                    });
-                    html += '</ul>';
-                }
-                (d.notes || []).forEach((n) => { html += `<p class="small text-muted mb-0">${n}</p>`; });
-                box.innerHTML = html;
+                box.innerHTML = renderRefinedAdviceHtml(d, { alertClass: 'alert-info' });
                 updateAdjustedSectionInAdviceModal(d);
             } catch (e) {
                 showAlertFn('Refine failed: ' + e.message, 'warning');
@@ -390,15 +424,15 @@
         const el = document.getElementById('aiAdjustedAdviceSection');
         if (!el) return;
         el.classList.remove('d-none');
-        let html = `<div class="alert alert-secondary"><strong>${refined.summary}</strong></div><ul class="mb-0">`;
-        (refined.adjustedFertilizer || []).forEach((f) => {
-            html += `<li><strong>${f.name}</strong>: ${f.amount}<br><small>${f.reason}</small></li>`;
-        });
-        html += '</ul>';
-        (refined.notes || []).forEach((n) => { html += `<p class="small text-muted mb-0">${n}</p>`; });
+        const html = renderRefinedAdviceHtml(refined, { alertClass: 'alert-secondary' });
         const body = el.querySelector('.card-body');
         if (body) body.innerHTML = html;
         else el.innerHTML = html;
+    }
+
+    async function openSoilTestFormForCrop(crop, recommendations) {
+        setAdviceContext(crop, recommendations);
+        await openSoilTestForm();
     }
 
     async function openHistory(cropId) {
@@ -462,8 +496,8 @@
                 return `<div class="mb-2"><strong class="text-${cls}">${title}</strong><ul class="small mb-0">${items
                     .map(
                         (a) =>
-                            `<li>${a.title} — due ${formatDateFn(a.dueDate)} 
-              <button class="btn btn-link btn-sm p-0" data-alert-done="${a.id}">done</button></li>`
+                            `<li id="crop-alert-${a.id}" data-alert-id="${a.id}">${a.title} — due ${formatDateFn(a.dueDate)} 
+              <button type="button" class="btn btn-link btn-sm p-0" data-alert-done="${a.id}">done</button></li>`
                     )
                     .join('')}</ul></div>`;
             };
@@ -485,9 +519,32 @@
                     }
                 };
             });
+            applyCropAlertDeepLink();
         } catch (e) {
             el.innerHTML = '<p class="text-muted small">Alerts unavailable (check backend). ' + e.message + '</p>';
         }
+    }
+
+    function applyCropAlertDeepLink() {
+        const params = new URLSearchParams(global.location.search);
+        const alertId = params.get('alertId');
+        if (!alertId) return;
+
+        const card = document.getElementById('cropRecAlertsCard');
+        if (card) {
+            card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        const row =
+            document.getElementById('crop-alert-' + alertId) ||
+            document.querySelector('[data-alert-id="' + CSS.escape(String(alertId)) + '"]');
+        if (!row) return;
+
+        row.classList.add('farm-action-deep-link-highlight');
+        row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        global.setTimeout(function () {
+            row.classList.remove('farm-action-deep-link-highlight');
+        }, 4000);
     }
 
     function enhanceAdviceModalFooter(crop) {
@@ -514,9 +571,15 @@
         saveSnapshot,
         openLogForm,
         openSoilTestForm,
+        openSoilTestFormForCrop,
         openHistory,
         refreshAlertsPanel,
+        applyCropAlertDeepLink,
         enhanceAdviceModalFooter,
-        buildActionPresets
+        buildActionPresets,
+        SOIL_HEURISTIC_DISCLAIMER,
+        soilDisclaimerHtml,
+        renderRefinedAdviceHtml,
+        refineAdviceWithSoil
     };
 })(typeof window !== 'undefined' ? window : global);

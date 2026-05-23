@@ -491,62 +491,111 @@ class AIAdvisorySystem {
         this.updateSoilTestResults();
         this.updateTestingSchedule();
     }
+
+    buildCropNutritionQuery(crop) {
+        const params = new URLSearchParams({
+            name: crop.name || '',
+            variety: crop.variety || '',
+            growthStage: crop.growthStage || crop.status || 'vegetative',
+            plantingDate: crop.plantingDate || '',
+            field: crop.field || ''
+        });
+        return params.toString();
+    }
+
+    async fetchCropNutritionRecommendations(crop) {
+        const qs = this.buildCropNutritionQuery(crop);
+        const data = await window.SmartFarmApiClient.get(
+            `/api/ai-advisory/crop-nutrition/${crop.id}?${qs}`
+        );
+        if (!data || data.success === false) {
+            throw new Error((data && (data.error || data.message)) || 'Failed to load crop nutrition advice');
+        }
+        return data.data || data;
+    }
+
+    async openSoilRefineForSelectedCrop() {
+        const select = document.getElementById('aiAdvisorySoilCrop');
+        const cropId = select && select.value;
+        const crop = this.crops.find((c) => String(c.id) === String(cropId));
+        if (!crop) {
+            this.showError('Select a crop first.');
+            return;
+        }
+        if (!window.CropRecommendationLog || typeof window.CropRecommendationLog.openSoilTestFormForCrop !== 'function') {
+            this.showError('Soil refine tools are not loaded. Refresh the page.');
+            return;
+        }
+        const btn = document.getElementById('aiAdvisorySoilRefineBtn');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Loading advice…';
+        }
+        try {
+            const recommendations = await this.fetchCropNutritionRecommendations(crop);
+            await window.CropRecommendationLog.openSoilTestFormForCrop(crop, recommendations);
+        } catch (error) {
+            console.error('Soil refine setup failed:', error);
+            this.showError('Could not load AI advice for this crop. Try again or use Crop Management.');
+        } finally {
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-flask me-1"></i>Soil test & refine advice';
+            }
+        }
+    }
     
     updateSoilTestResults() {
         const container = document.getElementById('soilTestResults');
-        
-        // Simulate soil test results
-        const soilResults = {
-            ph: 6.2,
-            nitrogen: 45,
-            phosphorus: 25,
-            potassium: 180,
-            organicMatter: 2.5,
-            lastTest: '2024-01-01',
-            recommendations: [
-                'Add 50-75 kg/ha urea for nitrogen',
-                'Apply 10-15 tons/ha compost for organic matter',
-                'pH is optimal - no lime needed'
-            ]
-        };
-        
-        container.innerHTML = `
-            <div class="row">
-                <div class="col-md-6">
-                    <h6>Latest Test Results (${soilResults.lastTest})</h6>
-                    <div class="table-responsive">
-                        <table class="table table-sm">
-                            <tr><td>pH</td><td>${soilResults.ph}</td><td class="text-success">Optimal</td></tr>
-                            <tr><td>Nitrogen (ppm)</td><td>${soilResults.nitrogen}</td><td class="text-warning">Low</td></tr>
-                            <tr><td>Phosphorus (ppm)</td><td>${soilResults.phosphorus}</td><td class="text-success">Good</td></tr>
-                            <tr><td>Potassium (ppm)</td><td>${soilResults.potassium}</td><td class="text-success">Good</td></tr>
-                            <tr><td>Organic Matter (%)</td><td>${soilResults.organicMatter}</td><td class="text-warning">Low</td></tr>
-                        </table>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <h6>AI Recommendations</h6>
-                    <ul class="list-unstyled">
-                        ${soilResults.recommendations.map(rec => `<li><i class="fas fa-check text-success me-2"></i>${rec}</li>`).join('')}
-                    </ul>
-                </div>
+        const log = window.CropRecommendationLog;
+        const disclaimer = log
+            ? log.soilDisclaimerHtml('mb-3')
+            : '<p class="text-muted small mb-3">Soil-based adjustments are heuristic estimates only — confirm with your lab or extension officer.</p>';
+
+        if (this.crops.length === 0) {
+            container.innerHTML =
+                disclaimer +
+                '<p class="text-muted mb-2">No crops on file. Add crops in Crop Management, then return here to refine fertilizer advice with a soil test.</p>' +
+                '<a href="crop-management.html" class="btn btn-sm btn-outline-primary">Open Crop Management</a>';
+            return;
+        }
+
+        const options = this.crops
+            .map(
+                (c) =>
+                    `<option value="${c.id}">${c.name}${c.variety ? ' — ' + c.variety : ''}</option>`
+            )
+            .join('');
+
+        container.innerHTML =
+            disclaimer +
+            `<div class="mb-3">
+                <label class="form-label" for="aiAdvisorySoilCrop">Crop</label>
+                <select class="form-select" id="aiAdvisorySoilCrop">${options}</select>
             </div>
-        `;
+            <button type="button" class="btn btn-primary" id="aiAdvisorySoilRefineBtn">
+                <i class="fas fa-flask me-1"></i>Soil test & refine advice
+            </button>
+            <p class="small text-muted mt-2 mb-0">Opens the same soil test and refine dialog used on the Crop Management AI advice flow.</p>`;
+
+        const refineBtn = document.getElementById('aiAdvisorySoilRefineBtn');
+        if (refineBtn) {
+            refineBtn.onclick = () => this.openSoilRefineForSelectedCrop();
+        }
     }
     
     updateTestingSchedule() {
         const container = document.getElementById('testingSchedule');
-        
-        container.innerHTML = `
-            <div class="card">
-                <div class="card-body">
-                    <h6>Next Soil Test</h6>
-                    <p class="text-muted">Due: March 1, 2024</p>
-                    <p class="small">Last test: January 1, 2024</p>
-                    <button class="btn btn-sm btn-primary">Schedule Test</button>
-                </div>
-            </div>
-        `;
+        const log = window.CropRecommendationLog;
+        const disclaimer = log ? log.soilDisclaimerHtml('mb-2') : '';
+
+        container.innerHTML =
+            disclaimer +
+            `<p class="text-muted small">Save soil tests and log fertilizer actions with your crop records.</p>
+            <a href="crop-management.html#cropRecAlertsCard" class="btn btn-sm btn-outline-primary w-100 mb-2">
+                <i class="fas fa-seedling me-1"></i>Crop Management
+            </a>
+            <p class="small text-muted mb-0">Use <strong>Soil test</strong> on the AI advice modal for the full history and alerts workflow.</p>`;
     }
     
     calculateGrowthStage(cropName, plantingDate) {
