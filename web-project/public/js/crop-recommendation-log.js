@@ -705,21 +705,21 @@
         await openSoilTestForm();
     }
 
-    async function openHistory(cropId) {
+    async function openHistory(cropId, highlightActionId) {
         const id = cropId || (adviceContext && adviceContext.crop.id);
-        if (!id) return;
+        if (!id) return false;
         let history;
         try {
             const res = await apiRequest('GET', '/crop-recommendations/history/crop/' + id);
             history = res.data;
         } catch (e) {
             showAlertFn('Could not load history: ' + e.message, 'warning');
-            return;
+            return false;
         }
 
         const rows = (history.actions || [])
             .map(
-                (a) => `<tr>
+                (a) => `<tr id="crop-action-row-${a.id}" data-crop-action-id="${a.id}">
           <td>${formatDateFn(a.createdAt)}</td>
           <td>${a.actionType}</td>
           <td><span class="badge bg-secondary">${a.status}</span></td>
@@ -749,7 +749,50 @@
         const old = document.getElementById('recHistoryModal');
         if (old) old.remove();
         document.body.insertAdjacentHTML('beforeend', html);
-        new bootstrap.Modal(document.getElementById('recHistoryModal')).show();
+        const modalEl = document.getElementById('recHistoryModal');
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
+
+        if (highlightActionId) {
+            modalEl.addEventListener(
+                'shown.bs.modal',
+                function onShown() {
+                    const row =
+                        document.getElementById('crop-action-row-' + highlightActionId) ||
+                        modalEl.querySelector(
+                            '[data-crop-action-id="' + CSS.escape(String(highlightActionId)) + '"]'
+                        );
+                    if (row && global.CommandCenterFocus) {
+                        global.CommandCenterFocus.highlightElement(row);
+                    } else {
+                        const body = modalEl.querySelector('.modal-body');
+                        if (body) {
+                            const note = document.createElement('p');
+                            note.className = 'small text-warning mb-2';
+                            note.textContent = 'This action is not in the loaded history list.';
+                            body.insertBefore(note, body.firstChild);
+                        }
+                    }
+                    modalEl.removeEventListener('shown.bs.modal', onShown);
+                },
+                { once: true }
+            );
+        }
+        return true;
+    }
+
+    async function focusCropAction(cropId, actionId) {
+        const card = document.querySelector(
+            '[data-crop-card-id="' + CSS.escape(String(cropId)) + '"]'
+        );
+        if (card && global.CommandCenterFocus) {
+            global.CommandCenterFocus.highlightElement(card, { tabFocus: false });
+        }
+        const opened = await openHistory(cropId, actionId);
+        if (global.CommandCenterFocus) {
+            global.CommandCenterFocus.clearFocusFromUrl();
+        }
+        return opened;
     }
 
     async function refreshAlertsPanel() {
@@ -850,6 +893,7 @@
         openSoilTestForm,
         openSoilTestFormForCrop,
         openHistory,
+        focusCropAction,
         refreshAlertsPanel,
         applyCropAlertDeepLink,
         enhanceAdviceModalFooter,

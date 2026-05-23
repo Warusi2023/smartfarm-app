@@ -305,6 +305,28 @@ class CropRecommendationStore {
             .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     }
 
+    listRecentActionsForUser(userId, limit = 10) {
+        const store = readStore();
+        const cap = Math.min(Math.max(Number(limit) || 10, 1), 500);
+        return store.actions
+            .filter((a) => !userId || a.userId === userId)
+            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+            .slice(0, cap);
+    }
+
+    listRecentSoilTestsForUser(userId, limit = 10) {
+        const store = readStore();
+        const cap = Math.min(Math.max(Number(limit) || 10, 1), 500);
+        return store.soilTests
+            .filter((t) => !userId || t.userId === userId)
+            .sort((a, b) => {
+                const da = String(a.testDate || a.createdAt || '');
+                const db = String(b.testDate || b.createdAt || '');
+                return db.localeCompare(da);
+            })
+            .slice(0, cap);
+    }
+
     getLatestSoilTestFromFile(cropId, userId) {
         const tests = this.getHistoryByCrop(cropId, userId).soilTests;
         return tests.length ? tests[0] : null;

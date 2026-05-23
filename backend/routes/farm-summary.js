@@ -8,6 +8,7 @@ const { asyncHandler } = require('../middleware/error-handler');
 const { BadRequestError, ServiceUnavailableError } = require('../utils/errors');
 const farmRevenueStore = require('../services/farmRevenueStore');
 const farmSummaryFinancials = require('../services/farmSummaryFinancials');
+const farmCommandCenter = require('../services/farmCommandCenter');
 const writeIdempotency = require('../services/writeIdempotency');
 const { ConflictError } = require('../utils/errors');
 const logger = require('../utils/logger');
@@ -27,6 +28,12 @@ class FarmSummaryRoutes {
             asyncHandler(this.getFinancials.bind(this))
         );
 
+        this.router.get(
+            '/command-center',
+            this.authMiddleware.authenticate(),
+            asyncHandler(this.getCommandCenter.bind(this))
+        );
+
         this.router.post(
             '/revenue',
             this.authMiddleware.authenticate(),
@@ -37,6 +44,25 @@ class FarmSummaryRoutes {
     /**
      * GET /api/farm-summary/financials?period=month&farmId=
      */
+    /**
+     * GET /api/farm-summary/command-center?window=today|7d|30d (week → 7d)
+     */
+    async getCommandCenter(req, res) {
+        if (!this.dbPool) {
+            throw new ServiceUnavailableError('Command center is not available');
+        }
+
+        const window = farmCommandCenter.normalizeWindow(req.query.window);
+        const data = await farmCommandCenter.getCommandCenter(this.dbPool, req.user.id, {
+            window: window
+        });
+
+        res.json({
+            success: true,
+            data: data
+        });
+    }
+
     async getFinancials(req, res) {
         if (!this.dbPool) {
             throw new ServiceUnavailableError('Financial summary is not available');

@@ -584,6 +584,7 @@
     <script src="js/api-origin.js"></script>
     <script src="js/config.js"></script>
     <script src="js/offline-write-queue.js"></script>
+    <script src="js/command-center-focus.js"></script>
     <script src="js/crop-recommendation-log.js"></script>
     
     <script>
@@ -1031,6 +1032,10 @@
             });
 
             refreshAllCropSoilSummaries();
+
+            if (window.CommandCenterFocus && typeof window.CommandCenterFocus.tryConsume === 'function') {
+                window.CommandCenterFocus.tryConsume();
+            }
         }
 
         async function refreshCropSoilSummary(cropId) {
@@ -1137,7 +1142,7 @@
             const statusText = getStatusText(crop.status);
             
             col.innerHTML = `
-                <div class="crop-card">
+                <div class="crop-card" data-crop-card-id="${crop.id}">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div>
                             <h5 class="mb-1">${crop.name}</h5>

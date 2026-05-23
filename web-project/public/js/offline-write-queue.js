@@ -157,6 +157,19 @@
         return getEntriesForUser().filter((e) => e.status === 'pending' || e.status === 'processing').length;
     }
 
+    /** Pending entries for UI (W4-02) — no request bodies. */
+    function getPendingEntries() {
+        return getEntriesForUser()
+            .filter((e) => e.status === 'pending' || e.status === 'processing')
+            .map((e) => ({
+                id: e.id,
+                type: e.type,
+                label: (ENABLED[e.type] && ENABLED[e.type].label) || e.type,
+                enqueuedAt: e.enqueuedAt || e.createdAt || null,
+                attempts: e.attempts || 0
+            }));
+    }
+
     function showNotice(message, type) {
         if (showNoticeFn) showNoticeFn(message, type || 'info');
         else if (global.console) console.log('[OfflineWriteQueue]', type, message);
@@ -213,14 +226,21 @@
         const text = document.getElementById('sf-offline-queue-text');
         if (n === 0) {
             bar.classList.remove('sf-offline-queue-visible');
-            return;
+        } else {
+            bar.classList.add('sf-offline-queue-visible');
+            if (text) {
+                text.textContent =
+                    n === 1
+                        ? '1 action waiting to sync when back online.'
+                        : n + ' actions waiting to sync when back online.';
+            }
         }
-        bar.classList.add('sf-offline-queue-visible');
-        if (text) {
-            text.textContent =
-                n === 1
-                    ? '1 action waiting to sync when back online.'
-                    : n + ' actions waiting to sync when back online.';
+        try {
+            global.dispatchEvent(
+                new CustomEvent('smartfarm:queue-changed', { detail: { count: n } })
+            );
+        } catch (_) {
+            /* ignore */
         }
     }
 
@@ -403,6 +423,7 @@
         flush,
         clearQueue,
         getPendingCount,
+        getPendingEntries,
         isEnabledType,
         isQueueableError,
         QUEUE_TYPES,

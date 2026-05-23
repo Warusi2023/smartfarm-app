@@ -266,6 +266,9 @@
     <script src="js/farm-action-center-panel.js"></script>
     <script src="js/offline-write-queue.js"></script>
     <script src="js/farm-summary.js"></script>
+    <script src="js/command-center-focus.js"></script>
+    <link href="css/farm-command-center.css" rel="stylesheet">
+    <script src="js/farm-command-center.js"></script>
     <script src="js/weather-alerts-widget.js"></script>
     <style>
         :root {
@@ -1641,6 +1644,13 @@
                         </div>
                     </div>
 
+                    <!-- Farm command center (W4-01) -->
+                    <div id="farm-command-center" class="fcc-root mt-3" aria-live="polite">
+                        <div class="fcc-card">
+                            <p class="text-muted mb-0 small">Loading command center…</p>
+                        </div>
+                    </div>
+
                     <!-- Stats Cards -->
                     <div class="row">
                         <div class="col-lg-3 col-md-6">
@@ -1733,8 +1743,9 @@
                             </div>
                         </div>
                         <div class="col-lg-4">
-                            <div class="dashboard-card">
+                            <div class="dashboard-card" id="financialOverviewCard">
                                 <h5 class="mb-3">💰 Financial Overview</h5>
+                                <p class="text-muted small mb-1">Synced with command center above.</p>
                                 <p class="text-muted small mb-2" id="financialHelperText" aria-live="polite"></p>
                                 <div class="financial-metrics">
                                     <div class="metric-row">
@@ -6606,6 +6617,12 @@
                             errEl.style.display = 'none';
                         }
                         await calculateFinancialMetrics();
+                        if (
+                            window.FarmCommandCenter &&
+                            typeof window.FarmCommandCenter.refresh === 'function'
+                        ) {
+                            window.FarmCommandCenter.refresh();
+                        }
                     }
                 } catch (saveErr) {
                     if (errEl) {

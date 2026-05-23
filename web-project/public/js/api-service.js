@@ -647,6 +647,14 @@ class SmartFarmAPIService {
         return await this.request(`/farm-summary/financials${queryString ? '?' + queryString : ''}`);
     }
 
+    /** GET /api/farm-summary/command-center?window=today|week (W4-01) */
+    async getCommandCenter(params = {}) {
+        const queryString = new URLSearchParams(params).toString();
+        return await this.request(
+            `/farm-summary/command-center${queryString ? '?' + queryString : ''}`
+        );
+    }
+
     /** POST /api/farm-summary/revenue (W2-08) */
     async createFarmRevenue(payload) {
         return await this.postWithOfflineQueue(
