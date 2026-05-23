@@ -1,5 +1,5 @@
 /**
- * Farm command center (W4–W5) — inbox, checklist, weekly review, weather risk.
+ * Farm command center (W4–W5) — inbox, checklist, weekly review, weather, priorities.
  */
 (function (global) {
     'use strict';
@@ -33,7 +33,8 @@
         'farm-cost': { page: 'crop-management.html' },
         'manual-revenue': { scroll: '#revenueEntryForm', focus: '#revenueAmount' },
         'offline-queue': { scroll: '#fcc-offline-panel' },
-        'weather-alerts': { page: 'weather-alerts.html' }
+        'weather-alerts': { page: 'weather-alerts.html' },
+        'fcc-weather-scroll': { scroll: '.fcc-weather-section' }
     };
 
     const ATTENTION_FALLBACK = {
@@ -48,6 +49,7 @@
     /** W4-05 — operator inbox (severity, grouping, session seen state). */
     const SEEN_STORAGE_KEY = 'smartfarm_fcc_seen';
     const REC_DISMISS_KEY = 'smartfarm_fcc_rec_dismissed';
+    const PRIORITY_DONE_KEY = 'smartfarm_fcc_priority_done';
     const FEED_CLUSTER_MS = 6 * 60 * 60 * 1000;
 
     const SEVERITY_ORDER = { high: 0, medium: 1, low: 2 };
@@ -638,6 +640,135 @@
                 ${conditions}
             </div>
             ${actionHtml ? '<div class="fcc-weather-action">' + actionHtml + '</div>' : ''}
+        </div>`;
+    }
+
+    /** W5-04 — this week's priorities (server rules + client done state). */
+    function priorityDoneStorageKey(weekKey) {
+        return PRIORITY_DONE_KEY + ':' + (weekKey || 'unknown');
+    }
+
+    function getPriorityDoneSet(weekKey) {
+        return readJsonSession(priorityDoneStorageKey(weekKey), []);
+    }
+
+    function markPriorityDone(priorityId, weekKey) {
+        if (!priorityId || !weekKey) {
+            return;
+        }
+        const set = getPriorityDoneSet(weekKey);
+        if (set.indexOf(priorityId) < 0) {
+            set.push(priorityId);
+            writeJsonSession(priorityDoneStorageKey(weekKey), set);
+        }
+    }
+
+    function isPriorityDone(priorityId, weekKey) {
+        return getPriorityDoneSet(weekKey).indexOf(priorityId) >= 0;
+    }
+
+    function mergeWeeklyPriorities(payload) {
+        const base = (payload && payload.weeklyPriorities) || { items: [], weekKey: '', weekLabel: '' };
+        const items = (base.items || []).slice();
+        const queue =
+            global.OfflineWriteQueue && typeof global.OfflineWriteQueue.getPendingCount === 'function'
+                ? global.OfflineWriteQueue.getPendingCount()
+                : 0;
+        if (queue > 0 && !items.some(function (i) {
+            return i.id === 'offline-backlog';
+        })) {
+            items.push({
+                id: 'offline-backlog',
+                type: 'sync',
+                title: 'Reduce offline backlog',
+                reason:
+                    queue +
+                    ' write' +
+                    (queue === 1 ? '' : 's') +
+                    ' waiting to sync — clear the queue when you have connectivity.',
+                tag: 'ongoing',
+                state: 'open',
+                sortOrder: 95,
+                suggestedActions: [
+                    { label: 'Sync now', action: 'sync' },
+                    { label: 'View queue', target: 'offline-queue' }
+                ]
+            });
+        }
+        items.sort(function (a, b) {
+            return (b.sortOrder || 0) - (a.sortOrder || 0);
+        });
+        return {
+            weekKey: base.weekKey,
+            weekLabel: base.weekLabel,
+            items: items.slice(0, 5)
+        };
+    }
+
+    function priorityActionHtml(action) {
+        if (!action) {
+            return '';
+        }
+        if (action.action === 'sync') {
+            return actionButtonHtml(action.label, {
+                class: 'btn-primary btn-sm',
+                data: 'data-fcc-cmd="sync-now"'
+            });
+        }
+        return actionButtonHtml(action.label, {
+            class: 'btn-primary btn-sm',
+            data: 'data-fcc-nav="' + escapeHtml(action.target) + '"'
+        });
+    }
+
+    function renderPriorityItem(item, weekKey) {
+        const done = isPriorityDone(item.id, weekKey);
+        const stateClass = done ? 'fcc-priority-done' : 'fcc-priority-open';
+        const tagLabel = item.tag === 'ongoing' ? 'Ongoing' : 'New';
+        const actions = (item.suggestedActions || [])
+            .slice(0, 2)
+            .map(function (a) {
+                if (a.action === 'sync') {
+                    return priorityActionHtml({ label: a.label, action: 'sync' });
+                }
+                return priorityActionHtml(a);
+            })
+            .join('');
+        const doneBtn = done
+            ? ''
+            : '<button type="button" class="btn btn-link btn-sm fcc-priority-done-btn" data-fcc-priority-done="' +
+              escapeHtml(item.id) +
+              '" data-fcc-week-key="' +
+              escapeHtml(weekKey) +
+              '">Mark done for this week</button>';
+        return `<li class="fcc-priority-item ${stateClass}" data-fcc-priority-id="${escapeHtml(item.id)}">
+            <div class="fcc-priority-head">
+                <span class="fcc-priority-tag ${escapeHtml(item.tag || 'new')}">${escapeHtml(tagLabel)}</span>
+                <strong class="fcc-priority-title">${escapeHtml(item.title)}</strong>
+            </div>
+            <p class="fcc-priority-reason">${escapeHtml(item.reason || '')}</p>
+            <div class="fcc-priority-actions">${actions}${doneBtn}</div>
+        </li>`;
+    }
+
+    function renderWeeklyPriorities(payload) {
+        if (!payload) {
+            return '<div class="fcc-empty">Sign in to see this week&rsquo;s priorities.</div>';
+        }
+        const merged = mergeWeeklyPriorities(payload);
+        const weekKey = merged.weekKey || '';
+        const items = merged.items || [];
+        if (!items.length) {
+            return `<div class="fcc-priorities-calm" role="status">
+                <p class="mb-0"><i class="fas fa-check me-2" aria-hidden="true"></i>No extra priorities this week — keep up daily routines and check weather as needed.</p>
+            </div>`;
+        }
+        const lis = items.map(function (item) {
+            return renderPriorityItem(item, weekKey);
+        }).join('');
+        return `<div class="fcc-priorities" role="region" aria-label="This week's priorities">
+            <p class="fcc-priorities-intro text-muted small">${escapeHtml(merged.weekLabel || 'Last 7 days')} · up to ${items.length} focus areas</p>
+            <ul class="fcc-priorities-list">${lis}</ul>
         </div>`;
     }
 
@@ -1259,6 +1390,16 @@
                 }
             });
         });
+
+        root.querySelectorAll('.fcc-priority-done-btn').forEach((btn) => {
+            btn.addEventListener('click', function (e) {
+                e.preventDefault();
+                const id = btn.getAttribute('data-fcc-priority-done');
+                const weekKey = btn.getAttribute('data-fcc-week-key');
+                markPriorityDone(id, weekKey);
+                refreshInboxMounts();
+            });
+        });
     }
 
     function refreshInboxMounts() {
@@ -1266,6 +1407,7 @@
         const nextMount = document.getElementById('fcc-next-step-mount');
         const attentionMount = document.getElementById('fcc-attention-mount');
         const checklistMount = document.getElementById('fcc-checklist-mount');
+        const prioritiesMount = document.getElementById('fcc-priorities-mount');
         if (nextMount) {
             nextMount.innerHTML = renderRecommendedNextStep(grouped);
         }
@@ -1274,6 +1416,9 @@
         }
         if (checklistMount) {
             checklistMount.innerHTML = renderChecklist(lastPayload);
+        }
+        if (prioritiesMount) {
+            prioritiesMount.innerHTML = renderWeeklyPriorities(lastPayload);
         }
         const root = document.getElementById(ROOT_ID);
         if (root) bindActionHandlers(root);
@@ -1398,6 +1543,10 @@
                     <div class="fcc-panel-title">Weekly review</div>
                     <div id="fcc-weekly-mount">${renderWeeklyStrip(payload)}</div>
                 </div>
+                <div class="fcc-priorities-section">
+                    <div class="fcc-panel-title">This week&rsquo;s priorities</div>
+                    <div id="fcc-priorities-mount">${renderWeeklyPriorities(payload)}</div>
+                </div>
                 <div class="fcc-checklist-section">
                     <div class="fcc-panel-title">Today&rsquo;s checklist</div>
                     <div id="fcc-checklist-mount">${renderChecklist(payload)}</div>
@@ -1444,11 +1593,15 @@
                 <div id="fcc-offline-mount">${renderOfflinePanel()}</div>
                 <div class="fcc-weather-section">
                     <div class="fcc-panel-title">Weather &amp; risk</div>
-                    <div id="fcc-weather-mount">${renderWeatherRiskRow(payload)}</div>
+                    <div id="fcc-weather-mount">${renderWeatherRiskRow(null)}</div>
                 </div>
                 <div class="fcc-weekly-section">
                     <div class="fcc-panel-title">Weekly review</div>
                     <div id="fcc-weekly-mount">${renderWeeklyStrip(null)}</div>
+                </div>
+                <div class="fcc-priorities-section">
+                    <div class="fcc-panel-title">This week&rsquo;s priorities</div>
+                    <div id="fcc-priorities-mount">${renderWeeklyPriorities(null)}</div>
                 </div>
                 <div class="fcc-checklist-section">
                     <div class="fcc-panel-title">Today&rsquo;s checklist</div>
@@ -1555,6 +1708,11 @@
         },
         _weekly: {
             renderWeeklyStrip: renderWeeklyStrip
+        },
+        _priorities: {
+            mergeWeeklyPriorities: mergeWeeklyPriorities,
+            renderWeeklyPriorities: renderWeeklyPriorities,
+            markPriorityDone: markPriorityDone
         }
     };
 

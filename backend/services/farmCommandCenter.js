@@ -6,6 +6,7 @@ const cropStore = require('./cropRecommendationStore');
 const soilTestsStore = require('./soilTestsStore');
 const farmSummaryFinancials = require('./farmSummaryFinancials');
 const farmWeatherRisk = require('./farmWeatherRisk');
+const farmWeeklyPriorities = require('./farmWeeklyPriorities');
 
 function todayUtc() {
     return new Date().toISOString().slice(0, 10);
@@ -1197,6 +1198,13 @@ async function getCommandCenter(pool, userId, opts) {
         apiKey: process.env.WEATHER_API_KEY
     });
 
+    const weeklyPriorities = farmWeeklyPriorities.buildWeeklyPriorities({
+        weeklySummary,
+        weatherRisk,
+        attention,
+        lastSoilDate
+    });
+
     return {
         window: bounds.window,
         windowLabel: bounds.label,
@@ -1230,6 +1238,7 @@ async function getCommandCenter(pool, userId, opts) {
         dailyChecklist,
         weeklySummary,
         weatherRisk,
+        weeklyPriorities,
         generatedAt: new Date().toISOString()
     };
 }

@@ -1044,6 +1044,109 @@
     }
 }
 
+/* W5-04 — weekly priorities */
+.fcc-priorities-section {
+    margin-bottom: 1rem;
+}
+
+.fcc-priorities {
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: 10px;
+    padding: 0.85rem 1rem;
+}
+
+.fcc-priorities-intro {
+    margin: 0 0 0.65rem;
+}
+
+.fcc-priorities-calm {
+    background: #f1f8e9;
+    border: 1px solid #c8e6c9;
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+    color: #33691e;
+}
+
+.fcc-priorities-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.fcc-priority-item {
+    padding: 0.65rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.fcc-priority-item:last-child {
+    border-bottom: none;
+}
+
+.fcc-priority-item.fcc-priority-done {
+    opacity: 0.72;
+}
+
+.fcc-priority-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.4rem;
+    margin-bottom: 0.25rem;
+}
+
+.fcc-priority-tag {
+    font-size: 0.62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0.1rem 0.35rem;
+    border-radius: 4px;
+}
+
+.fcc-priority-tag.new {
+    background: #e3f2fd;
+    color: #1565c0;
+}
+
+.fcc-priority-tag.ongoing {
+    background: #fff8e1;
+    color: #e65100;
+}
+
+.fcc-priority-title {
+    font-size: 0.9rem;
+    color: #212529;
+}
+
+.fcc-priority-reason {
+    font-size: 0.8rem;
+    color: #607d8b;
+    margin: 0 0 0.5rem;
+    line-height: 1.35;
+}
+
+.fcc-priority-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    align-items: center;
+}
+
+.fcc-priority-done-btn {
+    font-size: 0.75rem;
+    padding: 0.15rem 0.35rem;
+    color: #78909c;
+    text-decoration: none;
+}
+
+@media (max-width: 575px) {
+    .fcc-priority-actions .btn {
+        width: 100%;
+    }
+}
+
 /* W5-01 — daily operating checklist */
 .fcc-checklist-section {
     margin-bottom: 1.1rem;
