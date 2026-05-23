@@ -1,0 +1,768 @@
+/* W4-01 — Farm command center */
+.fcc-root {
+    margin-bottom: 1.5rem;
+}
+
+.fcc-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(46, 125, 50, 0.12);
+    padding: 1.25rem 1.35rem;
+}
+
+.fcc-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.fcc-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #1b5e20;
+    margin: 0;
+}
+
+.fcc-subtitle {
+    font-size: 0.8rem;
+    color: #6c757d;
+    margin: 0.15rem 0 0;
+}
+
+.fcc-period-toggle .btn {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.65rem;
+}
+
+.fcc-period-toggle .btn.active {
+    background: #2e7d32;
+    border-color: #2e7d32;
+    color: #fff;
+}
+
+.fcc-strip {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.65rem;
+    margin-bottom: 1.25rem;
+}
+
+@media (min-width: 768px) {
+    .fcc-strip {
+        grid-template-columns: repeat(5, 1fr);
+    }
+}
+
+.fcc-chip {
+    background: linear-gradient(135deg, #f1f8e9 0%, #fff 100%);
+    border-radius: 10px;
+    padding: 0.65rem 0.75rem;
+    border-left: 3px solid #4caf50;
+    min-height: 4.5rem;
+}
+
+.fcc-chip-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #558b2f;
+    font-weight: 600;
+    margin-bottom: 0.2rem;
+}
+
+.fcc-chip-value {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #212529;
+    line-height: 1.2;
+}
+
+.fcc-chip-meta {
+    font-size: 0.72rem;
+    color: #6c757d;
+    margin-top: 0.15rem;
+}
+
+.fcc-chip.net-positive {
+    border-left-color: #2e7d32;
+}
+
+.fcc-chip.net-negative {
+    border-left-color: #c62828;
+    background: linear-gradient(135deg, #ffebee 0%, #fff 100%);
+}
+
+.fcc-chip.net-negative .fcc-chip-value {
+    color: #c62828;
+}
+
+.fcc-grid {
+    display: grid;
+    gap: 1rem;
+}
+
+@media (min-width: 992px) {
+    .fcc-grid {
+        grid-template-columns: 1.4fr 1fr;
+    }
+}
+
+.fcc-panel-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #455a64;
+    margin-bottom: 0.75rem;
+}
+
+.fcc-feed {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+.fcc-feed-item {
+    display: flex;
+    gap: 0.65rem;
+    padding: 0.55rem 0;
+    border-bottom: 1px solid #f0f0f0;
+    align-items: flex-start;
+}
+
+.fcc-feed-item:last-child {
+    border-bottom: none;
+}
+
+.fcc-feed-icon {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.fcc-feed-icon.cost {
+    background: #fff3e0;
+    color: #e65100;
+}
+
+.fcc-feed-icon.revenue {
+    background: #e3f2fd;
+    color: #1565c0;
+}
+
+.fcc-feed-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.fcc-feed-title {
+    font-size: 0.88rem;
+    font-weight: 600;
+    margin: 0;
+    color: #212529;
+}
+
+.fcc-feed-sub {
+    font-size: 0.75rem;
+    color: #6c757d;
+    margin: 0.1rem 0 0;
+}
+
+.fcc-feed-amt {
+    font-size: 0.8rem;
+    font-weight: 700;
+    white-space: nowrap;
+    color: #e65100;
+}
+
+.fcc-feed-amt.positive {
+    color: #2e7d32;
+}
+
+.fcc-finance-block {
+    background: #fafafa;
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.fcc-finance-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.35rem 0;
+    font-size: 0.9rem;
+}
+
+.fcc-finance-row strong {
+    font-size: 1rem;
+}
+
+.fcc-net-banner {
+    margin-top: 0.65rem;
+    padding: 0.6rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.fcc-net-banner.up {
+    background: #e8f5e9;
+    color: #1b5e20;
+}
+
+.fcc-net-banner.down {
+    background: #ffebee;
+    color: #b71c1c;
+}
+
+.fcc-net-banner.flat {
+    background: #eceff1;
+    color: #455a64;
+}
+
+.fcc-trend {
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.fcc-trend.up {
+    color: #2e7d32;
+}
+
+.fcc-trend.down {
+    color: #c62828;
+}
+
+.fcc-insight-line {
+    font-size: 0.8rem;
+    color: #546e7a;
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px dashed #e0e0e0;
+}
+
+.fcc-attention-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.fcc-attention-item {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.5rem 0.6rem;
+    margin-bottom: 0.4rem;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    align-items: flex-start;
+}
+
+.fcc-attention-item.warning {
+    background: #fff8e1;
+    border-left: 3px solid #ff9800;
+}
+
+.fcc-attention-item.info {
+    background: #e3f2fd;
+    border-left: 3px solid #2196f3;
+}
+
+.fcc-attention-item.critical {
+    background: #ffebee;
+    border-left: 3px solid #f44336;
+}
+
+.fcc-empty {
+    text-align: center;
+    padding: 1.5rem 1rem;
+    color: #6c757d;
+    font-size: 0.88rem;
+}
+
+.fcc-loading {
+    opacity: 0.65;
+    pointer-events: none;
+}
+
+.fcc-refresh-btn {
+    font-size: 0.8rem;
+}
+
+/* W4-02 — actionable UI */
+.fcc-quick-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+.fcc-quick-actions .btn {
+    min-height: 2.5rem;
+    padding: 0.35rem 0.75rem;
+}
+
+.fcc-empty-actions {
+    justify-content: center;
+}
+
+.fcc-attention-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.fcc-attention-item {
+    align-items: flex-start;
+}
+
+.fcc-attention-icon {
+    flex-shrink: 0;
+    margin-top: 0.15rem;
+    opacity: 0.85;
+}
+
+.fcc-attention-msg {
+    margin: 0 0 0.5rem;
+    font-size: 0.85rem;
+    line-height: 1.35;
+}
+
+.fcc-attention-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.fcc-action-btn {
+    min-height: 2.25rem;
+    font-weight: 600;
+}
+
+.fcc-feed-cards {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 360px;
+    overflow-y: auto;
+}
+
+.fcc-feed-card {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    width: 100%;
+    text-align: left;
+    padding: 0.65rem 0.75rem;
+    margin-bottom: 0.45rem;
+    border: 1px solid #e8e8e8;
+    border-radius: 10px;
+    background: #fff;
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.fcc-feed-card:hover,
+.fcc-feed-card:focus {
+    border-color: #4caf50;
+    box-shadow: 0 2px 8px rgba(46, 125, 50, 0.12);
+    outline: none;
+}
+
+.fcc-feed-card-icon {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.fcc-feed-card-icon.cost {
+    background: #fff3e0;
+    color: #e65100;
+}
+
+.fcc-feed-card-icon.revenue {
+    background: #e3f2fd;
+    color: #1565c0;
+}
+
+.fcc-feed-card-icon.soil {
+    background: #ede7f6;
+    color: #5e35b1;
+}
+
+.fcc-feed-card-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+
+.fcc-feed-card-type {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #78909c;
+    font-weight: 700;
+}
+
+.fcc-feed-card-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #212529;
+}
+
+.fcc-feed-card-meta {
+    font-size: 0.72rem;
+    color: #6c757d;
+}
+
+.fcc-feed-card-amt {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #e65100;
+    white-space: nowrap;
+}
+
+.fcc-feed-card-amt.positive {
+    color: #2e7d32;
+}
+
+.fcc-feed-chevron {
+    color: #bdbdbd;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+}
+
+.fcc-offline-panel {
+    background: #fff8e1;
+    border: 1px solid #ffe082;
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+}
+
+.fcc-queue-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 0.5rem;
+    font-size: 0.82rem;
+}
+
+.fcc-queue-list li {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.25rem 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.fcc-queue-type {
+    font-weight: 600;
+}
+
+.fcc-queue-time {
+    color: #6c757d;
+}
+
+.fcc-highlight {
+    outline: 2px solid #4caf50;
+    outline-offset: 3px;
+    transition: outline 0.2s;
+}
+
+/* W4-03 — filters & drill-down */
+.fcc-feed-filters {
+    gap: 0.25rem;
+}
+
+.fcc-feed-filters .btn {
+    min-height: 2rem;
+    font-size: 0.75rem;
+}
+
+.fcc-scope-badge {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0.1rem 0.35rem;
+    border-radius: 4px;
+    background: #eceff1;
+    color: #546e7a;
+    margin-right: 0.35rem;
+    vertical-align: middle;
+}
+
+.fcc-scope-badge.period {
+    background: #e3f2fd;
+    color: #1565c0;
+}
+
+.fcc-breakdown-panel {
+    margin-top: 0.75rem;
+    padding: 0.75rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background: #fff;
+}
+
+.fcc-breakdown-panel[hidden] {
+    display: none !important;
+}
+
+.fcc-breakdown-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.35rem;
+    margin-bottom: 0.65rem;
+    font-size: 0.85rem;
+}
+
+.fcc-breakdown-cols {
+    display: grid;
+    gap: 0.75rem;
+}
+
+@media (min-width: 576px) {
+    .fcc-breakdown-cols {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.fcc-breakdown-subtitle {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #78909c;
+    margin-bottom: 0.35rem;
+}
+
+.fcc-breakdown-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 160px;
+    overflow-y: auto;
+    font-size: 0.8rem;
+}
+
+.fcc-breakdown-list li {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 0.35rem;
+    padding: 0.3rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.fcc-breakdown-amt {
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.fcc-breakdown-date {
+    color: #6c757d;
+    font-size: 0.72rem;
+}
+
+.fcc-breakdown-empty {
+    font-size: 0.8rem;
+    color: #6c757d;
+    margin: 0;
+}
+
+.fcc-breakdown-toggle {
+    font-weight: 600;
+}
+
+/* W4-04 — entity focus */
+.sf-entity-focus,
+.farm-action-deep-link-highlight.sf-entity-focus {
+    outline: 2px solid #1565c0;
+    outline-offset: 3px;
+    box-shadow: 0 0 0 4px rgba(21, 101, 192, 0.2);
+}
+
+.sf-focus-banner {
+    font-size: 0.85rem;
+    margin-bottom: 0.75rem;
+}
+
+.fcc-breakdown-row {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 0.35rem;
+    width: 100%;
+    text-align: left;
+    padding: 0.35rem 0.25rem;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: inherit;
+    color: inherit;
+}
+
+.fcc-breakdown-row:hover,
+.fcc-breakdown-row:focus {
+    background: #f1f8e9;
+    outline: none;
+}
+
+.fcc-breakdown-list li {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* W4-05 — operator inbox */
+.fcc-next-step {
+    background: linear-gradient(135deg, #e8f5e9 0%, #fff 100%);
+    border: 1px solid rgba(46, 125, 50, 0.25);
+    border-radius: 12px;
+    padding: 1rem 1.1rem;
+    margin-bottom: 0.25rem;
+}
+
+.fcc-next-step-clear {
+    background: #f5f5f5;
+    border-color: #e0e0e0;
+}
+
+.fcc-next-step-clear-msg {
+    margin: 0;
+    font-size: 0.88rem;
+    color: #546e7a;
+}
+
+.fcc-next-step-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #2e7d32;
+    margin-bottom: 0.35rem;
+}
+
+.fcc-next-step-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #1b5e20;
+    margin: 0 0 0.4rem;
+    line-height: 1.25;
+}
+
+.fcc-next-step-reason {
+    font-size: 0.82rem;
+    color: #546e7a;
+    margin: 0 0 0.75rem;
+    line-height: 1.4;
+}
+
+.fcc-next-step-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    align-items: center;
+}
+
+.fcc-next-step-actions .fcc-dismiss-rec {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.5rem;
+    text-decoration: none;
+    color: #78909c;
+}
+
+.fcc-severity-badge {
+    display: inline-block;
+    font-size: 0.62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0.12rem 0.4rem;
+    border-radius: 4px;
+    margin-right: 0.35rem;
+    vertical-align: middle;
+}
+
+.fcc-severity-badge.high {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.fcc-severity-badge.medium {
+    background: #fff8e1;
+    color: #e65100;
+}
+
+.fcc-severity-badge.low {
+    background: #eceff1;
+    color: #546e7a;
+}
+
+.fcc-attention-item.fcc-severity-high {
+    border-left-width: 4px;
+}
+
+.fcc-attention-item.fcc-severity-medium {
+    border-left-width: 3px;
+}
+
+.fcc-attention-item.fcc-severity-low {
+    border-left-width: 3px;
+    border-left-color: #90a4ae;
+}
+
+.fcc-attention-detail {
+    font-size: 0.78rem;
+    color: #607d8b;
+    margin: 0 0 0.45rem;
+    line-height: 1.35;
+}
+
+.fcc-attention-not-now {
+    font-size: 0.75rem;
+    padding: 0.15rem 0.35rem;
+    color: #90a4ae;
+    text-decoration: none;
+}
+
+.fcc-attention-item.fcc-seen,
+.fcc-feed-card.fcc-seen {
+    opacity: 0.72;
+}
+
+.fcc-attention-item.fcc-seen.fcc-severity-high {
+    opacity: 0.88;
+}
+
+.fcc-similar-note {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: #78909c;
+    text-transform: none;
+    letter-spacing: 0;
+    margin-left: 0.35rem;
+}
