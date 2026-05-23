@@ -3,6 +3,7 @@
  */
 
 const farmWeeklyPriorities = require('./farmWeeklyPriorities');
+const farmFocusProgress = require('./farmFocusProgress');
 
 const WEATHER_CARRY_IDS = new Set(['weather-plan']);
 
@@ -179,6 +180,14 @@ function buildWeeklyResetContext({
         tag: p.tag
     }));
 
+    const lastWeekSummary = farmFocusProgress.weeklySummaryFromSnapshot(lastWeekSnapshot);
+    const lastWeekFocusProgress = farmFocusProgress.buildFocusProgress({
+        weeklySummary: lastWeekSummary,
+        dailyChecklist: null,
+        weatherRisk,
+        priorityItems: lastWeekPriorityItems || []
+    });
+
     return {
         currentWeekKey: currentWeekKey,
         weekLabel: (weeklySummary && weeklySummary.label) || 'Last 7 days',
@@ -187,7 +196,8 @@ function buildWeeklyResetContext({
         suggestedFocusOptions: suggestedFocusOptions,
         maxFocusCount: 3,
         suggestReset:
-            carryForwardCandidates.length > 0 || suggestedFocusOptions.length > 0
+            carryForwardCandidates.length > 0 || suggestedFocusOptions.length > 0,
+        lastWeekFocusProgress: lastWeekFocusProgress
     };
 }
 

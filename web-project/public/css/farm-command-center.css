@@ -1167,6 +1167,84 @@
 .fcc-priority-item.fcc-priority-focus {
     border-left: 3px solid #66bb6a;
     padding-left: 0.5rem;
+    background: #f9fbf9;
+}
+
+.fcc-priority-item.fcc-priority-attention {
+    border-left-color: #ef6c00;
+    background: #fffaf5;
+}
+
+.fcc-focus-priorities {
+    margin-bottom: 0.85rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px dashed #e0e0e0;
+}
+
+.fcc-focus-heading {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #2e7d32;
+    margin: 0 0 0.5rem;
+}
+
+.fcc-other-heading {
+    margin: 0 0 0.45rem;
+}
+
+.fcc-focus-list .fcc-priority-item {
+    padding: 0.75rem 0;
+}
+
+.fcc-focus-progress {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 0.12rem 0.4rem;
+    border-radius: 999px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.fcc-focus-progress--not-started {
+    background: #eceff1;
+    color: #546e7a;
+}
+
+.fcc-focus-progress--in-progress {
+    background: #e3f2fd;
+    color: #1565c0;
+}
+
+.fcc-focus-progress--on-track {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.fcc-focus-progress--needs-attention {
+    background: #fff3e0;
+    color: #e65100;
+}
+
+.fcc-focus-progress--completed {
+    background: #f1f8e9;
+    color: #558b2f;
+}
+
+.fcc-reset-focus-retro {
+    margin-top: 0.85rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #eee;
+}
+
+.fcc-reset-focus-retro-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.35rem 0.5rem;
+    margin-bottom: 0.35rem;
 }
 
 .fcc-week-set {

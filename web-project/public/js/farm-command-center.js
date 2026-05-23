@@ -839,7 +839,89 @@
         });
     }
 
-    function renderPriorityItem(item, weekKey, meta) {
+    const FOCUS_PROGRESS_LABELS = {
+        'not-started': 'Not started',
+        'in-progress': 'In progress',
+        'on-track': 'On track',
+        'needs-attention': 'Needs attention',
+        completed: 'Completed'
+    };
+
+    function getPendingOfflineCount() {
+        return global.OfflineWriteQueue && typeof global.OfflineWriteQueue.getPendingCount === 'function'
+            ? global.OfflineWriteQueue.getPendingCount()
+            : 0;
+    }
+
+    function getFocusProgressEntry(payload, priorityId) {
+        const items = (payload && payload.focusProgress && payload.focusProgress.items) || [];
+        return items.find(function (x) {
+            return x.id === priorityId;
+        });
+    }
+
+    function resolveFocusProgress(payload, priorityId, weekKey) {
+        if (isPriorityDone(priorityId, weekKey)) {
+            return {
+                progressState: 'completed',
+                label: 'Completed',
+                hint: 'Marked done for this week.'
+            };
+        }
+        if (priorityId === 'offline-backlog') {
+            const pending = getPendingOfflineCount();
+            if (pending === 0) {
+                return { progressState: 'completed', label: 'Completed', hint: 'Offline queue is clear.' };
+            }
+            if (pending > 3) {
+                return {
+                    progressState: 'needs-attention',
+                    label: 'Needs attention',
+                    hint: pending + ' writes waiting to sync.'
+                };
+            }
+            return {
+                progressState: 'in-progress',
+                label: 'In progress',
+                hint: pending + ' write' + (pending === 1 ? '' : 's') + ' waiting to sync.'
+            };
+        }
+        const entry = getFocusProgressEntry(payload, priorityId);
+        if (entry) {
+            return entry;
+        }
+        return { progressState: 'not-started', label: 'Not started', hint: null };
+    }
+
+    function renderFocusProgressPill(progress) {
+        const state = progress.progressState || 'not-started';
+        const label = progress.label || FOCUS_PROGRESS_LABELS[state] || 'In progress';
+        const hint = progress.hint ? ' title="' + escapeHtml(progress.hint) + '"' : '';
+        return (
+            '<span class="fcc-focus-progress fcc-focus-progress--' +
+            escapeHtml(state) +
+            '"' +
+            hint +
+            '>' +
+            escapeHtml(label) +
+            '</span>'
+        );
+    }
+
+    function getPriorWeekFocusIds(payload) {
+        const snapKey =
+            payload &&
+            payload.weeklyReset &&
+            payload.weeklyReset.lastWeekSnapshot &&
+            payload.weeklyReset.lastWeekSnapshot.weekKey;
+        const s = loadWeeklyResetState();
+        if (s && snapKey && s.weekKey === snapKey && Array.isArray(s.focusPriorityIds)) {
+            return s.focusPriorityIds;
+        }
+        return [];
+    }
+
+    function renderPriorityItem(item, weekKey, meta, payload) {
         const done = isPriorityDone(item.id, weekKey);
         const stateClass = done ? 'fcc-priority-done' : 'fcc-priority-open';
         const tagLabel = item.tag === 'ongoing' ? 'Ongoing' : 'New';
@@ -850,6 +932,13 @@
         const extraBadges =
             (carried ? '<span class="fcc-priority-badge carried">Carried forward</span>' : '') +
             (focus ? '<span class="fcc-priority-badge focus">Focus</span>' : '');
+        const focusProgress =
+            focus && payload ? resolveFocusProgress(payload, item.id, weekKey) : null;
+        const progressPill = focusProgress ? renderFocusProgressPill(focusProgress) : '';
+        const attentionClass =
+            focusProgress && focusProgress.progressState === 'needs-attention'
+                ? ' fcc-priority-attention'
+                : '';
         const actions = (item.suggestedActions || [])
             .slice(0, 2)
             .map(function (a) {
@@ -866,10 +955,11 @@
               '" data-fcc-week-key="' +
               escapeHtml(weekKey) +
               '">Mark done for this week</button>';
-        return `<li class="fcc-priority-item ${stateClass}${focus ? ' fcc-priority-focus' : ''}" data-fcc-priority-id="${escapeHtml(item.id)}">
+        return `<li class="fcc-priority-item ${stateClass}${focus ? ' fcc-priority-focus' : ''}${attentionClass}" data-fcc-priority-id="${escapeHtml(item.id)}">
             <div class="fcc-priority-head">
                 <span class="fcc-priority-tag ${escapeHtml(item.tag || 'new')}">${escapeHtml(tagLabel)}</span>
                 ${extraBadges}
+                ${progressPill}
                 <strong class="fcc-priority-title">${escapeHtml(item.title)}</strong>
             </div>
             <p class="fcc-priority-reason">${escapeHtml(item.reason || '')}</p>
@@ -889,22 +979,50 @@
                 <p class="mb-0"><i class="fas fa-check me-2" aria-hidden="true"></i>No extra priorities this week — keep up daily routines and check weather as needed.</p>
             </div>`;
         }
-        const lis = items.map(function (item) {
-            return renderPriorityItem(item, weekKey, merged);
-        }).join('');
-        const weekSet = isResetCompleteForWeek(weekKey);
         const focusIds = merged.focusPriorityIds || [];
+        const focusItems = items.filter(function (item) {
+            return focusIds.indexOf(item.id) >= 0;
+        });
+        const otherItems = items.filter(function (item) {
+            return focusIds.indexOf(item.id) < 0;
+        });
+        const focusLis = focusItems
+            .map(function (item) {
+                return renderPriorityItem(item, weekKey, merged, payload);
+            })
+            .join('');
+        const otherLis = otherItems
+            .map(function (item) {
+                return renderPriorityItem(item, weekKey, merged, payload);
+            })
+            .join('');
+        const focusBlock =
+            focusItems.length > 0
+                ? `<div class="fcc-focus-priorities" role="group" aria-label="This week's focus priorities">
+                <p class="fcc-focus-heading">This week&rsquo;s focus</p>
+                <ul class="fcc-priorities-list fcc-focus-list">${focusLis}</ul>
+            </div>`
+                : '';
+        const otherBlock =
+            otherItems.length > 0
+                ? `<div class="fcc-other-priorities">
+                <p class="fcc-other-heading text-muted small">Also on your radar</p>
+                <ul class="fcc-priorities-list">${otherLis}</ul>
+            </div>`
+                : '';
+        const weekSet = isResetCompleteForWeek(weekKey);
         const weekSetBanner = weekSet
             ? `<div class="fcc-week-set" role="status">
                 <i class="fas fa-check-circle me-2" aria-hidden="true"></i>
                 <strong>This week is set</strong>
-                ${focusIds.length ? ' · Focus: ' + escapeHtml(focusIds.length) + ' priorities' : ''}
+                ${focusIds.length ? ' · ' + escapeHtml(focusIds.length) + ' focus priorities' : ''}
                 <button type="button" class="btn btn-link btn-sm fcc-reset-reopen" data-fcc-cmd="open-reset">Review reset</button>
             </div>`
             : '';
         return `${weekSetBanner}<div class="fcc-priorities" role="region" aria-label="This week's priorities">
-            <p class="fcc-priorities-intro text-muted small">${escapeHtml(merged.weekLabel || 'Last 7 days')} · up to ${items.length} focus areas</p>
-            <ul class="fcc-priorities-list">${lis}</ul>
+            <p class="fcc-priorities-intro text-muted small">${escapeHtml(merged.weekLabel || 'Last 7 days')}</p>
+            ${focusBlock}${otherBlock}
+            ${!focusBlock && !otherBlock ? '<ul class="fcc-priorities-list"></ul>' : ''}
         </div>`;
     }
 
@@ -948,6 +1066,35 @@
                   .join('') +
               '</ul>'
             : '<p class="text-muted small mb-0">No open priorities carried from last period.</p>';
+        const priorFocusIds = getPriorWeekFocusIds(payload);
+        const lastProgress = (wr.lastWeekFocusProgress && wr.lastWeekFocusProgress.items) || [];
+        const focusRetro =
+            priorFocusIds.length > 0
+                ? '<div class="fcc-reset-focus-retro">' +
+                  '<div class="fcc-reset-subtitle">Last week&rsquo;s focus priorities</div>' +
+                  '<ul class="fcc-reset-list">' +
+                  priorFocusIds
+                      .map(function (id) {
+                          const p = lastProgress.find(function (x) {
+                              return x.id === id;
+                          });
+                          const title = (p && p.title) || id;
+                          const pill = p
+                              ? renderFocusProgressPill(p)
+                              : '<span class="fcc-focus-progress fcc-focus-progress--not-started">Not tracked</span>';
+                          return (
+                              '<li class="fcc-reset-focus-retro-row">' +
+                              pill +
+                              ' <strong>' +
+                              escapeHtml(title) +
+                              '</strong>' +
+                              (p && p.hint ? '<span class="d-block small text-muted">' + escapeHtml(p.hint) + '</span>' : '') +
+                              '</li>'
+                          );
+                      })
+                      .join('') +
+                  '</ul></div>'
+                : '';
         return `<div class="fcc-reset-step" data-reset-step="1">
             <h4 class="fcc-reset-step-title">Review last week</h4>
             <p class="fcc-reset-step-lead">A brief look at the previous 7 days.</p>
@@ -960,6 +1107,7 @@
                 <div class="fcc-reset-subtitle">Still open from last period</div>
                 ${unfinList}
             </div>
+            ${focusRetro}
         </div>`;
     }
 

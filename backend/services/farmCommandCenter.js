@@ -8,6 +8,7 @@ const farmSummaryFinancials = require('./farmSummaryFinancials');
 const farmWeatherRisk = require('./farmWeatherRisk');
 const farmWeeklyPriorities = require('./farmWeeklyPriorities');
 const farmWeeklyReset = require('./farmWeeklyReset');
+const farmFocusProgress = require('./farmFocusProgress');
 
 function todayUtc() {
     return new Date().toISOString().slice(0, 10);
@@ -1256,6 +1257,13 @@ async function getCommandCenter(pool, userId, opts) {
         lastWeekPriorityItems
     });
 
+    const focusProgress = farmFocusProgress.buildFocusProgress({
+        weeklySummary,
+        dailyChecklist,
+        weatherRisk,
+        priorityItems: weeklyPriorities.items
+    });
+
     return {
         window: bounds.window,
         windowLabel: bounds.label,
@@ -1291,6 +1299,7 @@ async function getCommandCenter(pool, userId, opts) {
         weatherRisk,
         weeklyPriorities,
         weeklyReset,
+        focusProgress,
         generatedAt: new Date().toISOString()
     };
 }
