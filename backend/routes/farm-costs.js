@@ -1,0 +1,79 @@
+/**
+ * Farm costs API — durable cost rows (W2-06+).
+ */
+
+const express = require('express');
+const AuthMiddleware = require('../middleware/auth');
+const { asyncHandler } = require('../middleware/error-handler');
+const { BadRequestError, ServiceUnavailableError } = require('../utils/errors');
+const farmCostsStore = require('../services/farmCostsStore');
+
+class FarmCostRoutes {
+    constructor(dbPool = null) {
+        this.router = express.Router();
+        this.dbPool = dbPool;
+        this.authMiddleware = new AuthMiddleware();
+        this.setupRoutes();
+    }
+
+    setupRoutes() {
+        this.router.post(
+            '/feed-mix',
+            this.authMiddleware.authenticate(),
+            asyncHandler(this.recordFeedMixCost.bind(this))
+        );
+    }
+
+    /**
+     * POST /api/farm-costs/feed-mix
+     * Record feed mix daily cost as a farmcosts row.
+     */
+    async recordFeedMixCost(req, res) {
+        if (!this.dbPool) {
+            throw new ServiceUnavailableError('Farm costs storage is not available');
+        }
+
+        const body = req.body || {};
+        const amountRaw =
+            body.amount != null ? body.amount : body.dailyCost != null ? body.dailyCost : null;
+
+        if (amountRaw == null || amountRaw === '') {
+            throw new BadRequestError('amount or dailyCost is required');
+        }
+
+        const amount = Number(amountRaw);
+        if (!Number.isFinite(amount) || amount < 0) {
+            throw new BadRequestError('amount must be a non-negative number');
+        }
+
+        let farmId = body.farmId || body.farm_id || null;
+        if (farmId != null && String(farmId).trim() === '') {
+            farmId = null;
+        }
+
+        const row = await farmCostsStore.insertFeedMixFarmCost(this.dbPool, {
+            userId: req.user.id,
+            farmId: farmId,
+            amount: amount,
+            feedMixId: body.feedMixId != null ? body.feedMixId : body.id,
+            livestockType: body.livestockType || body.species,
+            group: body.group,
+            species: body.species || body.livestockType,
+            lifecycle: body.lifecycle || body.growthStage,
+            purpose: body.purpose,
+            dailyCost: amount
+        });
+
+        res.status(201).json({
+            success: true,
+            message: 'Feed mix cost recorded',
+            data: row
+        });
+    }
+
+    getRouter() {
+        return this.router;
+    }
+}
+
+module.exports = FarmCostRoutes;

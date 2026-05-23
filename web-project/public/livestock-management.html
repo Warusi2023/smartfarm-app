@@ -4388,6 +4388,82 @@
             }
         }
 
+        function resolveFeedMixCostAmount(feedMixData, feedMixResult) {
+            const fromData = feedMixData && feedMixData.dailyCost != null ? Number(feedMixData.dailyCost) : null;
+            if (fromData != null && Number.isFinite(fromData) && fromData >= 0) return fromData;
+            const fromResult =
+                feedMixResult &&
+                feedMixResult.totalCost &&
+                feedMixResult.totalCost.dailyCost != null
+                    ? Number(feedMixResult.totalCost.dailyCost)
+                    : null;
+            if (fromResult != null && Number.isFinite(fromResult) && fromResult >= 0) return fromResult;
+            return null;
+        }
+
+        function formatFeedMixGroupLabel(lifecycle) {
+            const life = String(lifecycle || '')
+                .trim()
+                .replace(/_/g, ' ');
+            if (!life) return '';
+            return life.replace(/\b\w/g, (c) => c.toUpperCase());
+        }
+
+        function formatFeedMixLivestockType(species) {
+            const s = String(species || '').trim();
+            if (!s) return '';
+            return s.charAt(0).toUpperCase() + s.slice(1).replace(/_/g, ' ');
+        }
+
+        async function queueRecordFeedMixFarmCost(feedMixData, feedMixResult) {
+            const amount = resolveFeedMixCostAmount(feedMixData, feedMixResult);
+            if (amount == null) {
+                console.warn('Feed mix cost not recorded: no calculated dailyCost available');
+                return;
+            }
+
+            if (!window.SmartFarmAPI || typeof window.SmartFarmAPI.recordFeedMixFarmCost !== 'function') {
+                return;
+            }
+
+            const farmId =
+                feedMixData.farmId ||
+                sessionStorage.getItem('smartfarm_current_farm_id') ||
+                null;
+
+            const species = feedMixData.species || feedMixData.livestockType;
+            const lifecycle = feedMixData.lifecycle || feedMixData.growthStage;
+
+            const payload = {
+                amount: amount,
+                dailyCost: amount,
+                farmId: farmId,
+                feedMixId: feedMixData.id,
+                livestockType: formatFeedMixLivestockType(species),
+                group: formatFeedMixGroupLabel(lifecycle) || feedMixData.purpose || undefined,
+                species: species,
+                lifecycle: lifecycle,
+                purpose: feedMixData.purpose
+            };
+
+            try {
+                const isAvailable =
+                    typeof window.SmartFarmAPI.isBackendAvailable === 'function'
+                        ? await window.SmartFarmAPI.isBackendAvailable()
+                        : true;
+                if (!isAvailable) return;
+
+                const res = await window.SmartFarmAPI.recordFeedMixFarmCost(payload);
+                if (res && res.success) {
+                    console.log('💰 Feed mix cost recorded in farmcosts', res.data && res.data.id);
+                } else if (res && res.error) {
+                    console.warn('Feed mix cost not saved:', res.error);
+                }
+            } catch (e) {
+                console.warn('Feed mix cost recording failed (feed mix save still OK):', e.message || e);
+            }
+        }
+
         // Save feed mix data
         async function saveFeedMix(feedMixResult) {
             try {
@@ -4414,7 +4490,14 @@
                         if (response.success) {
                             console.log('✅ Feed mix saved to API:', response.data);
                             const saved = response.data || feedMixData;
+                            if (saved.id == null && feedMixData.id != null) saved.id = feedMixData.id;
                             queueFeedMixFollowUpReminder(saved);
+                            if (!response.farmCost) {
+                                await queueRecordFeedMixFarmCost(
+                                    { ...feedMixData, ...saved },
+                                    feedMixResult
+                                );
+                            }
                             return saved;
                         }
                     }
@@ -4427,7 +4510,8 @@
                 localStorage.setItem('feedMixes', JSON.stringify(storedFeedMixes));
                 console.log('💾 Feed mix saved to localStorage');
                 queueFeedMixFollowUpReminder(feedMixData);
-                
+                await queueRecordFeedMixFarmCost(feedMixData, feedMixResult);
+
                 return feedMixData;
             } catch (error) {
                 console.error('Error saving feed mix:', error);
