@@ -589,6 +589,14 @@ class SmartFarmAPIService {
         });
     }
 
+    /** POST /api/farm-costs/crop-action (W2-05). Usually sent via crop-recommendations/actions. */
+    async recordCropActionFarmCost(payload) {
+        return await this.request('/farm-costs/crop-action', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+    }
+
     /** GET /api/farm-summary/financials?period=month (W2-07 / W2-08) */
     async getFarmFinancials(params = {}) {
         const queryString = new URLSearchParams(params).toString();

@@ -359,6 +359,19 @@
                     <label class="form-label">Notes / observations</label>
                     <textarea class="form-control" id="ralNotes" rows="2"></textarea>
                   </div>
+                  <div class="col-12 border-top pt-3">
+                    <p class="small text-muted mb-2 mb-md-1">Optional — adds to dashboard financials when signed in.</p>
+                    <div class="row g-2">
+                      <div class="col-md-4">
+                        <label class="form-label">Cost (FJD)</label>
+                        <input type="number" step="0.01" min="0" class="form-control" id="ralCostAmount" placeholder="Leave blank if none">
+                      </div>
+                      <div class="col-md-8">
+                        <label class="form-label">Cost note</label>
+                        <input type="text" class="form-control" id="ralCostNote" placeholder="e.g. fertilizer purchase, labour">
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div class="modal-footer">
@@ -465,10 +478,27 @@
                 applicationText: sel.dataset.applicationText,
                 frequencyText: sel.dataset.frequencyText
             };
+            const costRaw = document.getElementById('ralCostAmount').value;
+            if (costRaw !== '' && costRaw != null) {
+                body.costAmount = costRaw;
+                const costNote = document.getElementById('ralCostNote').value.trim();
+                if (costNote) body.costNote = costNote;
+            }
             try {
                 const res = await apiRequest('POST', '/crop-recommendations/actions', body);
-                cacheLocal({ actions: [res.data.action], alerts: res.data.alert ? [res.data.alert] : [] });
-                showAlertFn('Action logged. Next reminder: ' + (res.data.schedule?.intervalLabel || res.data.action?.nextDueDate), 'success');
+                const payload = res.data || {};
+                const action = payload.action || payload;
+                const alert = payload.alert;
+                cacheLocal({ actions: [action], alerts: alert ? [alert] : [] });
+                let msg =
+                    'Action logged. Next reminder: ' +
+                    (payload.schedule?.intervalLabel || action?.nextDueDate || '—');
+                if (payload.farmCost && payload.farmCost.amount != null) {
+                    msg += ' Cost FJD ' + payload.farmCost.amount + ' recorded.';
+                } else if (payload.farmCostWarning) {
+                    msg += ' (' + payload.farmCostWarning + ')';
+                }
+                showAlertFn(msg, payload.farmCostWarning ? 'warning' : 'success');
                 bootstrap.Modal.getInstance(document.getElementById('recActionLogModal')).hide();
                 refreshAlertsPanel();
             } catch (e) {

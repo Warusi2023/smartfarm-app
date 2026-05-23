@@ -5,6 +5,7 @@
 const express = require('express');
 const store = require('../services/cropRecommendationStore');
 const soilTestsStore = require('../services/soilTestsStore');
+const farmCostsStore = require('../services/farmCostsStore');
 const { refineRecommendationsWithSoil } = require('../services/soilAdviceRefiner');
 const { asyncHandler } = require('../middleware/error-handler');
 const AuthMiddleware = require('../middleware/auth');
@@ -76,12 +77,76 @@ class CropRecommendationRoutes {
             return res.status(400).json({ success: false, error: 'Invalid actionType' });
         }
         const userId = this.getUserId(req);
+        const costParsed = this.parseOptionalCost(req.body);
+        if (costParsed.error) {
+            return res.status(400).json({ success: false, error: costParsed.error });
+        }
+        if (costParsed.amount > 0 && !soilTestsStore.isUuid(userId)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Sign in to record action costs in farm financials'
+            });
+        }
+
         const result = store.createAction({ ...req.body, cropId, userId });
+
+        let farmCost = null;
+        let farmCostWarning = null;
+        if (costParsed.amount > 0) {
+            if (!this.dbPool) {
+                farmCostWarning = 'Cost was not saved — database unavailable';
+            } else {
+                try {
+                    farmCost = await farmCostsStore.insertCropActionFarmCost(this.dbPool, {
+                        userId: userId,
+                        farmId: req.body.farmId || req.body.farm_id || null,
+                        amount: costParsed.amount,
+                        cropActionId: result.action.id,
+                        cropId: cropId,
+                        actionType: req.body.actionType || 'general',
+                        costNote: costParsed.note,
+                        fieldId: req.body.fieldId || req.body.field_id || '',
+                        alertId: result.alert && result.alert.id
+                    });
+                } catch (costErr) {
+                    logger.warnWithContext('Crop action saved but farmcosts insert failed', {
+                        error: costErr,
+                        cropId,
+                        userId,
+                        actionId: result.action.id
+                    });
+                    farmCostWarning =
+                        costErr.message || 'Cost could not be saved to financial records';
+                }
+            }
+        }
+
         res.status(201).json({
             success: true,
             message: 'Action logged',
-            data: result
+            data: { ...result, farmCost, farmCostWarning }
         });
+    }
+
+    parseOptionalCost(body) {
+        const raw =
+            body && body.costAmount != null
+                ? body.costAmount
+                : body && body.cost != null
+                  ? body.cost
+                  : null;
+        if (raw == null || raw === '') {
+            return { amount: 0, note: null, error: null };
+        }
+        const amount = Number(raw);
+        if (!Number.isFinite(amount) || amount < 0) {
+            return { amount: 0, note: null, error: 'costAmount must be a non-negative number' };
+        }
+        const note =
+            body.costNote != null && String(body.costNote).trim() !== ''
+                ? String(body.costNote).trim()
+                : null;
+        return { amount, note, error: null };
     }
 
     async getActionsByCrop(req, res) {

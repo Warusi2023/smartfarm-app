@@ -22,6 +22,11 @@ class FarmCostRoutes {
             this.authMiddleware.authenticate(),
             asyncHandler(this.recordFeedMixCost.bind(this))
         );
+        this.router.post(
+            '/crop-action',
+            this.authMiddleware.authenticate(),
+            asyncHandler(this.recordCropActionCost.bind(this))
+        );
     }
 
     /**
@@ -67,6 +72,52 @@ class FarmCostRoutes {
         res.status(201).json({
             success: true,
             message: 'Feed mix cost recorded',
+            data: row
+        });
+    }
+
+    /**
+     * POST /api/farm-costs/crop-action
+     * Record crop action spend (W2-05). Prefer POST /crop-recommendations/actions with costAmount when logging.
+     */
+    async recordCropActionCost(req, res) {
+        if (!this.dbPool) {
+            throw new ServiceUnavailableError('Farm costs storage is not available');
+        }
+
+        const body = req.body || {};
+        const amountRaw =
+            body.amount != null ? body.amount : body.costAmount != null ? body.costAmount : null;
+
+        if (amountRaw == null || amountRaw === '') {
+            throw new BadRequestError('amount or costAmount is required');
+        }
+
+        const amount = Number(amountRaw);
+        if (!Number.isFinite(amount) || amount <= 0) {
+            throw new BadRequestError('amount must be a positive number');
+        }
+
+        let farmId = body.farmId || body.farm_id || null;
+        if (farmId != null && String(farmId).trim() === '') {
+            farmId = null;
+        }
+
+        const row = await farmCostsStore.insertCropActionFarmCost(this.dbPool, {
+            userId: req.user.id,
+            farmId: farmId,
+            amount: amount,
+            cropActionId: body.cropActionId || body.actionId,
+            cropId: body.cropId,
+            actionType: body.actionType,
+            costNote: body.costNote || body.description,
+            fieldId: body.fieldId || body.field_id,
+            alertId: body.alertId
+        });
+
+        res.status(201).json({
+            success: true,
+            message: 'Crop action cost recorded',
             data: row
         });
     }

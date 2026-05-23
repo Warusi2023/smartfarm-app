@@ -109,7 +109,52 @@ async function insertFeedMixFarmCost(pool, params) {
     });
 }
 
+/**
+ * Record optional spend from a crop recommendation action log (W2-05).
+ * @param {import('pg').Pool|null} pool
+ * @param {object} params
+ * @returns {Promise<object>}
+ */
+async function insertCropActionFarmCost(pool, params) {
+    const amount =
+        params.amount != null
+            ? Number(params.amount)
+            : params.costAmount != null
+              ? Number(params.costAmount)
+              : NaN;
+
+    if (!Number.isFinite(amount) || amount < 0) {
+        throw new BadRequestError('amount must be a non-negative number');
+    }
+    if (amount === 0) {
+        throw new BadRequestError('amount must be greater than zero');
+    }
+
+    const links = {
+        source: 'crop-action',
+        cropActionId: params.cropActionId != null ? String(params.cropActionId) : null,
+        cropId: params.cropId != null ? String(params.cropId) : null,
+        actionType: params.actionType || null,
+        description: params.description || params.costNote || null,
+        fieldId: params.fieldId != null ? String(params.fieldId) : null,
+        alertId: params.alertId != null ? String(params.alertId) : null
+    };
+
+    Object.keys(links).forEach((key) => {
+        if (links[key] == null || links[key] === '') delete links[key];
+    });
+
+    return insertFarmCost(pool, {
+        userId: params.userId,
+        farmId: params.farmId || null,
+        type: 'crop-action',
+        amount: amount,
+        links: links
+    });
+}
+
 module.exports = {
     insertFarmCost,
-    insertFeedMixFarmCost
+    insertFeedMixFarmCost,
+    insertCropActionFarmCost
 };

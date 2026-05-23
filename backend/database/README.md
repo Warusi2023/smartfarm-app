@@ -149,6 +149,7 @@ node scripts/test-db-connection.js  # Verify connection first
 - ✅ Farm costs (`farmcosts`) — W2-01 migration `006_soiltests_farmcosts.sql`
 - ✅ Farm revenue (`farmrevenue`) — W2-08 migration `007_farmrevenue.sql`
 - ✅ Soil test writes (`soiltests`) — W2-02 `soilTestsStore.js` (Postgres when pool + auth UUID; file fallback)
+- ✅ Crop action costs (`farmcosts` type `crop-action`) — W2-05 via `POST /crop-recommendations/actions` (`costAmount`) or `POST /farm-costs/crop-action`
 - ✅ Weather data
 - ✅ Subscriptions
 - ✅ Analytics & reporting
