@@ -149,10 +149,35 @@ class CropRecommendationStore {
         return { action, alert, schedule };
     }
 
+    createSoilTestAlert(test, payload, storeIn) {
+        const store = storeIn || readStore();
+        const alert = {
+            id: randomUUID(),
+            cropId: String(test.cropId),
+            recommendationActionId: null,
+            recommendationId: null,
+            title: 'Review fertilizer plan after soil test',
+            alertType: 'soil_test',
+            dueDate: test.testDate || (payload && payload.testDate) || nowIso().slice(0, 10),
+            priority: 'medium',
+            status: 'pending',
+            generatedFrom: 'soil_test_saved',
+            notes: 'Soil test recorded — review adjusted fertilizer advice',
+            userId: test.userId || (payload && payload.userId) || 'default-user',
+            createdAt: nowIso(),
+            updatedAt: nowIso()
+        };
+        store.alerts.push(alert);
+        if (!storeIn) {
+            writeStore(store);
+        }
+        return alert;
+    }
+
     saveSoilTest(payload) {
         const store = readStore();
         const test = {
-            id: randomUUID(),
+            id: payload.id || randomUUID(),
             cropId: String(payload.cropId),
             fieldId: payload.fieldId || '',
             testDate: payload.testDate || nowIso().slice(0, 10),
@@ -167,27 +192,11 @@ class CropRecommendationStore {
             notes: payload.notes || '',
             source: payload.source || '',
             userId: payload.userId || 'default-user',
-            createdAt: nowIso()
+            createdAt: payload.createdAt || nowIso(),
+            storage: payload.storage || 'file'
         };
         store.soilTests.push(test);
-
-        const alert = {
-            id: randomUUID(),
-            cropId: test.cropId,
-            recommendationActionId: null,
-            recommendationId: null,
-            title: 'Review fertilizer plan after soil test',
-            alertType: 'soil_test',
-            dueDate: payload.testDate || nowIso().slice(0, 10),
-            priority: 'medium',
-            status: 'pending',
-            generatedFrom: 'soil_test_saved',
-            notes: 'Soil test recorded — review adjusted fertilizer advice',
-            userId: test.userId,
-            createdAt: nowIso(),
-            updatedAt: nowIso()
-        };
-        store.alerts.push(alert);
+        const alert = this.createSoilTestAlert(test, payload, store);
         writeStore(store);
         return { test, alert };
     }
@@ -198,6 +207,11 @@ class CropRecommendationStore {
             .filter((a) => String(a.cropId) === String(cropId))
             .filter((a) => !userId || a.userId === userId)
             .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    }
+
+    getLatestSoilTestFromFile(cropId, userId) {
+        const tests = this.getHistoryByCrop(cropId, userId).soilTests;
+        return tests.length ? tests[0] : null;
     }
 
     getHistoryByCrop(cropId, userId) {

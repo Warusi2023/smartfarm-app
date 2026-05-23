@@ -523,7 +523,7 @@ try {
 // 4b) Crop recommendation action log (file-backed)
 try {
   const CropRecommendationRoutes = require('./routes/crop-recommendations');
-  const cropRecRoutes = new CropRecommendationRoutes();
+  const cropRecRoutes = new CropRecommendationRoutes(dbPool);
   app.use('/api/crop-recommendations', cropRecRoutes.getRouter());
   logger.info('Crop recommendation routes loaded');
 } catch (cropRecError) {

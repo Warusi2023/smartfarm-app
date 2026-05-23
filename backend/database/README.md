@@ -145,6 +145,10 @@ node scripts/test-db-connection.js  # Verify connection first
 - ✅ Inventory management
 - ✅ Supply chain/byproducts
 - ✅ Financial records
+- ✅ Soil tests (`soiltests`) — W2-01 migration `006_soiltests_farmcosts.sql`
+- ✅ Farm costs (`farmcosts`) — W2-01 migration `006_soiltests_farmcosts.sql`
+- ✅ Farm revenue (`farmrevenue`) — W2-08 migration `007_farmrevenue.sql`
+- ✅ Soil test writes (`soiltests`) — W2-02 `soilTestsStore.js` (Postgres when pool + auth UUID; file fallback)
 - ✅ Weather data
 - ✅ Subscriptions
 - ✅ Analytics & reporting
