@@ -11,6 +11,11 @@ class SmartFarmAPIService {
         this.setupInterceptors();
     }
 
+    /** Called after login on another page so the singleton picks up the new JWT */
+    syncAuthFromStorage() {
+        this.authToken = this.getAuthToken();
+    }
+
     getApiBaseUrl() {
         // Use single source of truth from api-config.js
         if (window.SmartFarmApiConfig) {
@@ -30,20 +35,83 @@ class SmartFarmAPIService {
     }
 
     // Authentication token management
+    isUsableJwt(token) {
+        if (!token || typeof token !== 'string') {
+            return false;
+        }
+        const t = token.trim();
+        if (
+            t.startsWith('email-token-') ||
+            t.startsWith('social-token-') ||
+            t.startsWith('demo-token-') ||
+            t === 'test-token-123'
+        ) {
+            return false;
+        }
+        return t.split('.').length === 3;
+    }
+
     getAuthToken() {
-        return localStorage.getItem('smartfarm_token') || sessionStorage.getItem('smartfarm_token');
+        try {
+            const storedAuth = localStorage.getItem('smartfarm_auth');
+            if (storedAuth) {
+                const parsed = JSON.parse(storedAuth);
+                if (parsed && parsed.token && this.isUsableJwt(parsed.token)) {
+                    return parsed.token;
+                }
+            }
+        } catch (_) {
+            /* ignore */
+        }
+
+        const token =
+            localStorage.getItem('smartfarm_token') ||
+            sessionStorage.getItem('smartfarm_token');
+        return this.isUsableJwt(token) ? token : null;
     }
 
     setAuthToken(token) {
-        if (token) {
-            localStorage.setItem('smartfarm_token', token);
+        if (token && this.isUsableJwt(token)) {
             this.authToken = token;
+            const remember =
+                localStorage.getItem('smartfarm_remember') === 'true' ||
+                sessionStorage.getItem('smartfarm_remember') === 'true';
+            if (remember) {
+                localStorage.setItem('smartfarm_token', token);
+                sessionStorage.removeItem('smartfarm_token');
+            } else {
+                sessionStorage.setItem('smartfarm_token', token);
+                localStorage.removeItem('smartfarm_token');
+            }
+            try {
+                let existingUser = null;
+                const storedAuth = localStorage.getItem('smartfarm_auth');
+                if (storedAuth) {
+                    const parsed = JSON.parse(storedAuth);
+                    if (parsed && parsed.user) {
+                        existingUser = parsed.user;
+                    }
+                }
+                localStorage.setItem(
+                    'smartfarm_auth',
+                    JSON.stringify({ token: token, user: existingUser })
+                );
+            } catch (_) {
+                /* ignore */
+            }
+        } else if (token) {
+            this.authToken = null;
         }
     }
 
     clearAuthToken() {
         localStorage.removeItem('smartfarm_token');
         sessionStorage.removeItem('smartfarm_token');
+        try {
+            localStorage.removeItem('smartfarm_auth');
+        } catch (_) {
+            /* ignore */
+        }
         this.authToken = null;
     }
 
@@ -66,9 +134,13 @@ class SmartFarmAPIService {
             ...options
         };
 
-        // Add authentication token if available
-        if (this.authToken) {
-            config.headers.Authorization = `Bearer ${this.authToken}`;
+        // Re-read token each request (login may have run after this instance was created)
+        const token = this.getAuthToken();
+        if (token) {
+            this.authToken = token;
+            config.headers.Authorization = `Bearer ${token}`;
+        } else {
+            this.authToken = null;
         }
 
         try {

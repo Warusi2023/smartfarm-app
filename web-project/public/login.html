@@ -561,6 +561,13 @@
                 if (window.SmartFarmApiClient && token) {
                     window.SmartFarmApiClient.setAuthToken(token, userObj);
                 }
+                if (data.data.refreshToken) {
+                    if (rememberMe) {
+                        localStorage.setItem('smartfarm_refresh_token', data.data.refreshToken);
+                    } else {
+                        sessionStorage.setItem('smartfarm_refresh_token', data.data.refreshToken);
+                    }
+                }
                 setTimeout(() => {
                     window.location.href = 'dashboard.html?login=success';
                 }, 1500);
@@ -1125,38 +1132,13 @@
             // Clear any existing authentication data
             clearAllAuthData();
             
-            // Generate a demo token
-            const token = 'social-token-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
-            
-            // Store authentication data
-            const rememberMe = document.getElementById('rememberMe').checked;
-            const loginTime = new Date().toISOString();
-            
-            if (rememberMe) {
-                localStorage.setItem('smartfarm_remember', 'true');
-                localStorage.setItem('smartfarm_user', JSON.stringify(user));
-                localStorage.setItem('smartfarm_token', token);
-                localStorage.setItem('smartfarm_loginTime', loginTime);
-            } else {
-                sessionStorage.setItem('smartfarm_remember', 'false');
-                sessionStorage.setItem('smartfarm_user', JSON.stringify(user));
-                sessionStorage.setItem('smartfarm_token', token);
-                sessionStorage.setItem('smartfarm_loginTime', loginTime);
-            }
-
-            // Store additional user data
-            const storage = rememberMe ? localStorage : sessionStorage;
-            storage.setItem('smartfarm_userData', JSON.stringify(user));
-            storage.setItem('smartfarm_socialProvider', user.provider);
-
-            // Show success message
-            showAlert(`Login successful with ${user.provider.charAt(0).toUpperCase() + user.provider.slice(1)}! Redirecting to dashboard...`, 'success');
-
-            // Redirect to dashboard
-            setTimeout(() => {
-                console.log('Redirecting to dashboard after social login...');
-                window.location.href = 'dashboard.html?login=success&provider=' + user.provider;
-            }, 1500);
+            // Social sign-in is not wired to backend JWT yet — do not store fake smartfarm_token
+            if (btnText) btnText.style.display = 'inline';
+            if (loading) loading.classList.remove('show');
+            showAlert(
+                'Social sign-in is not connected to your farm account yet. Please sign in with email and password to use financials and saved data.',
+                'warning'
+            );
         }
 
         // Initialize social login when page loads

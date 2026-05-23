@@ -6872,13 +6872,38 @@
             }
         }
 
+        function isUsableBackendJwt(token) {
+            if (!token || typeof token !== 'string') {
+                return false;
+            }
+            const t = token.trim();
+            if (
+                t.startsWith('email-token-') ||
+                t.startsWith('social-token-') ||
+                t.startsWith('demo-token-') ||
+                t === 'test-token-123'
+            ) {
+                return false;
+            }
+            return t.split('.').length === 3;
+        }
+
         function checkAuthentication() {
             console.log('=== AUTH CHECK DEBUG START ===');
             
             // Wait a moment for any pending storage operations to complete
             setTimeout(() => {
                 const user = localStorage.getItem('smartfarm_user') || sessionStorage.getItem('smartfarm_user');
-                const token = localStorage.getItem('smartfarm_token') || sessionStorage.getItem('smartfarm_token');
+                let token = localStorage.getItem('smartfarm_token') || sessionStorage.getItem('smartfarm_token');
+                if (token && !isUsableBackendJwt(token)) {
+                    console.warn('Removing non-JWT token from storage');
+                    localStorage.removeItem('smartfarm_token');
+                    sessionStorage.removeItem('smartfarm_token');
+                    try {
+                        localStorage.removeItem('smartfarm_auth');
+                    } catch (_) {}
+                    token = null;
+                }
                 const rememberMe = localStorage.getItem('smartfarm_remember');
                 
                 console.log('Auth check - user:', user);
@@ -6897,23 +6922,22 @@
                 console.log('Auth check - fromLogin param:', fromLogin);
                 console.log('Auth check - recentLogin:', recentLogin);
                 
-                // If we just logged in successfully, give more time for data to be stored
-                if (fromLogin || recentLogin) {
-                    console.log('✅ Recent login detected, allowing access');
-                    updateUserInfo(user || 'Farmer');
+                // Post-login redirect: still require a real JWT (not ?login=success alone)
+                if ((fromLogin || recentLogin) && user && token && isUsableBackendJwt(token)) {
+                    console.log('✅ Recent login with valid JWT, allowing access');
+                    if (window.SmartFarmAPI && typeof window.SmartFarmAPI.syncAuthFromStorage === 'function') {
+                        window.SmartFarmAPI.syncAuthFromStorage();
+                    }
+                    updateUserInfo(user);
                     return;
                 }
                 
                 // Additional check: if we have valid auth data, allow access regardless of URL params
                 if (user && token) {
                     console.log('✅ Valid auth data found, allowing access');
-                    updateUserInfo(user);
-                    return;
-                }
-                
-                // If we have user data but no token, still allow access (demo mode)
-                if (user && !token) {
-                    console.log('✅ User found without token (demo mode), allowing access');
+                    if (window.SmartFarmAPI && typeof window.SmartFarmAPI.syncAuthFromStorage === 'function') {
+                        window.SmartFarmAPI.syncAuthFromStorage();
+                    }
                     updateUserInfo(user);
                     return;
                 }
@@ -6925,20 +6949,9 @@
                 }
                 
                 if (!token) {
-                    console.log('❌ No token found, redirecting to login');
+                    console.log('❌ No valid JWT found, redirecting to login');
                     window.location.href = 'login.html';
                     return;
-                }
-                
-                // If we have user but no token, check if this is a demo mode login
-                if (user && !token) {
-                    console.log('⚠️ User found but no token - checking for demo mode');
-                    const userData = localStorage.getItem('smartfarm_userData') || sessionStorage.getItem('smartfarm_userData');
-                    if (userData) {
-                        console.log('✅ Demo mode detected, allowing access');
-                        updateUserInfo(user);
-                        return;
-                    }
                 }
                 
                 // Continue with session validation...
