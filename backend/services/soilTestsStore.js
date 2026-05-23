@@ -64,7 +64,44 @@ function buildNutrients(payload) {
     if (payload.fieldId != null && !parseOptionalUuid(payload.fieldId)) {
         nutrients.fieldNameRef = String(payload.fieldId);
     }
+    if (payload.clientRequestId != null && String(payload.clientRequestId).trim() !== '') {
+        nutrients.clientRequestId = String(payload.clientRequestId).trim();
+    }
+    if (payload.clientRequestPayloadHash) {
+        nutrients.clientRequestPayloadHash = String(payload.clientRequestPayloadHash);
+    }
     return nutrients;
+}
+
+/**
+ * Find prior soil test by offline-queue idempotency key (W3-02).
+ */
+async function findByClientRequestId(pool, userId, clientRequestId) {
+    if (!pool || !userId || !isUuid(userId) || !clientRequestId) {
+        return null;
+    }
+    const key = String(clientRequestId).trim();
+    const result = await pool.query(
+        `SELECT id, user_id, farm_id, crop_id, field_id, test_date, nutrients, notes, source, created_at, updated_at
+         FROM soiltests
+         WHERE user_id = $1 AND nutrients->>'clientRequestId' = $2
+         LIMIT 1`,
+        [userId, key]
+    );
+    if (!result.rows[0]) {
+        return null;
+    }
+    const row = result.rows[0];
+    const nutrients =
+        row.nutrients && typeof row.nutrients === 'object'
+            ? row.nutrients
+            : typeof row.nutrients === 'string'
+              ? JSON.parse(row.nutrients)
+              : {};
+    return {
+        test: rowToApiTest(row, { cropId: nutrients.cropIdRef }),
+        storedPayloadHash: nutrients.clientRequestPayloadHash || null
+    };
 }
 
 /**
@@ -121,7 +158,8 @@ async function insertSoilTest(pool, row) {
         throw new BadRequestError('testDate must be a valid date');
     }
 
-    const nutrients = buildNutrients(row);
+    const payloadHash = row.clientRequestPayloadHash || null;
+    const nutrients = buildNutrients({ ...row, clientRequestPayloadHash: payloadHash });
     const cropIdUuid = parseOptionalUuid(row.cropId);
     const fieldIdUuid = parseOptionalUuid(row.fieldId);
     const farmIdUuid = parseOptionalUuid(row.farmId || row.farm_id);
@@ -188,6 +226,7 @@ async function getLatestSoilTestForCrop(pool, cropId, userId) {
 
 module.exports = {
     insertSoilTest,
+    findByClientRequestId,
     getLatestSoilTestForCrop,
     buildNutrients,
     rowToApiTest,

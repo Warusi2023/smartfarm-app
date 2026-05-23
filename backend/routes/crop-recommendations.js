@@ -6,6 +6,8 @@ const express = require('express');
 const store = require('../services/cropRecommendationStore');
 const soilTestsStore = require('../services/soilTestsStore');
 const farmCostsStore = require('../services/farmCostsStore');
+const writeIdempotency = require('../services/writeIdempotency');
+const { ConflictError } = require('../utils/errors');
 const { refineRecommendationsWithSoil } = require('../services/soilAdviceRefiner');
 const { asyncHandler } = require('../middleware/error-handler');
 const AuthMiddleware = require('../middleware/auth');
@@ -88,43 +90,55 @@ class CropRecommendationRoutes {
             });
         }
 
-        const result = store.createAction({ ...req.body, cropId, userId });
+        const clientRequestId = req.body.clientRequestId;
+        const out = await writeIdempotency.runIdempotent({
+            userId,
+            operation: 'crop-action',
+            clientRequestId,
+            payload: req.body,
+            execute: async () => {
+                const result = store.createAction({ ...req.body, cropId, userId });
 
-        let farmCost = null;
-        let farmCostWarning = null;
-        if (costParsed.amount > 0) {
-            if (!this.dbPool) {
-                farmCostWarning = 'Cost was not saved — database unavailable';
-            } else {
-                try {
-                    farmCost = await farmCostsStore.insertCropActionFarmCost(this.dbPool, {
-                        userId: userId,
-                        farmId: req.body.farmId || req.body.farm_id || null,
-                        amount: costParsed.amount,
-                        cropActionId: result.action.id,
-                        cropId: cropId,
-                        actionType: req.body.actionType || 'general',
-                        costNote: costParsed.note,
-                        fieldId: req.body.fieldId || req.body.field_id || '',
-                        alertId: result.alert && result.alert.id
-                    });
-                } catch (costErr) {
-                    logger.warnWithContext('Crop action saved but farmcosts insert failed', {
-                        error: costErr,
-                        cropId,
-                        userId,
-                        actionId: result.action.id
-                    });
-                    farmCostWarning =
-                        costErr.message || 'Cost could not be saved to financial records';
+                let farmCost = null;
+                let farmCostWarning = null;
+                if (costParsed.amount > 0) {
+                    if (!this.dbPool) {
+                        farmCostWarning = 'Cost was not saved — database unavailable';
+                    } else {
+                        try {
+                            farmCost = await farmCostsStore.insertCropActionFarmCost(this.dbPool, {
+                                userId: userId,
+                                farmId: req.body.farmId || req.body.farm_id || null,
+                                amount: costParsed.amount,
+                                cropActionId: result.action.id,
+                                cropId: cropId,
+                                actionType: req.body.actionType || 'general',
+                                costNote: costParsed.note,
+                                fieldId: req.body.fieldId || req.body.field_id || '',
+                                alertId: result.alert && result.alert.id
+                            });
+                        } catch (costErr) {
+                            logger.warnWithContext('Crop action saved but farmcosts insert failed', {
+                                error: costErr,
+                                cropId,
+                                userId,
+                                actionId: result.action.id
+                            });
+                            farmCostWarning =
+                                costErr.message || 'Cost could not be saved to financial records';
+                        }
+                    }
                 }
-            }
-        }
 
-        res.status(201).json({
+                return { ...result, farmCost, farmCostWarning };
+            }
+        });
+
+        res.status(out.replayed ? 200 : 201).json({
             success: true,
-            message: 'Action logged',
-            data: { ...result, farmCost, farmCostWarning }
+            message: out.replayed ? 'Action already logged (idempotent replay)' : 'Action logged',
+            data: out.result,
+            idempotentReplay: out.replayed
         });
     }
 
@@ -168,27 +182,74 @@ class CropRecommendationRoutes {
         }
         const userId = this.getUserId(req);
         const payload = { ...req.body, cropId, userId };
+        const clientRequestId = req.body.clientRequestId;
 
-        if (this.dbPool && soilTestsStore.isUuid(userId)) {
-            try {
-                const test = await soilTestsStore.insertSoilTest(this.dbPool, payload);
-                const alert = store.createSoilTestAlert(test, payload);
-                logger.info('Soil test saved to Postgres', { soilTestId: test.id, userId });
-                return res.status(201).json({
-                    success: true,
-                    data: { test, alert }
-                });
-            } catch (dbErr) {
-                logger.warnWithContext('Postgres soil test insert failed; using file store', {
-                    error: dbErr,
-                    userId,
-                    cropId
-                });
+        const out = await writeIdempotency.runIdempotent({
+            userId,
+            operation: 'soil-test',
+            clientRequestId,
+            payload: req.body,
+            execute: async () => {
+                const payloadHash = writeIdempotency.hashPayload('soil-test', req.body);
+
+                if (this.dbPool && soilTestsStore.isUuid(userId) && clientRequestId) {
+                    const existing = await soilTestsStore.findByClientRequestId(
+                        this.dbPool,
+                        userId,
+                        clientRequestId
+                    );
+                    if (existing) {
+                        if (
+                            existing.storedPayloadHash &&
+                            existing.storedPayloadHash !== payloadHash
+                        ) {
+                            throw new ConflictError(
+                                'This clientRequestId was already used with a different payload'
+                            );
+                        }
+                        logger.info('Soil test idempotent hit (Postgres)', {
+                            soilTestId: existing.test.id,
+                            clientRequestId,
+                            userId
+                        });
+                        return { test: existing.test, alert: null };
+                    }
+                }
+
+                if (this.dbPool && soilTestsStore.isUuid(userId)) {
+                    try {
+                        const test = await soilTestsStore.insertSoilTest(this.dbPool, {
+                            ...payload,
+                            clientRequestPayloadHash: payloadHash
+                        });
+                        const alert = store.createSoilTestAlert(test, payload);
+                        logger.info('Soil test saved to Postgres', {
+                            soilTestId: test.id,
+                            userId,
+                            clientRequestId: clientRequestId || null
+                        });
+                        return { test, alert };
+                    } catch (dbErr) {
+                        logger.warnWithContext('Postgres soil test insert failed; using file store', {
+                            error: dbErr,
+                            userId,
+                            cropId
+                        });
+                    }
+                }
+
+                return store.saveSoilTest({ ...payload, clientRequestPayloadHash: payloadHash });
             }
-        }
+        });
 
-        const result = store.saveSoilTest(payload);
-        res.status(201).json({ success: true, data: result });
+        res.status(out.replayed ? 200 : 201).json({
+            success: true,
+            data: out.result,
+            idempotentReplay: out.replayed,
+            message: out.replayed
+                ? 'Soil test already saved (idempotent replay)'
+                : undefined
+        });
     }
 
     pickLatestSoilTest(dbTest, fileTest) {

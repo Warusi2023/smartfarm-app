@@ -14,7 +14,8 @@ const EMPTY = () => ({
     recommendations: [],
     actions: [],
     soilTests: [],
-    alerts: []
+    alerts: [],
+    idempotency: []
 });
 
 function ensureStore() {
@@ -43,7 +44,8 @@ function readStore() {
             recommendations: Array.isArray(data.recommendations) ? data.recommendations : [],
             actions: Array.isArray(data.actions) ? data.actions : [],
             soilTests: Array.isArray(data.soilTests) ? data.soilTests : [],
-            alerts: Array.isArray(data.alerts) ? data.alerts : []
+            alerts: Array.isArray(data.alerts) ? data.alerts : [],
+            idempotency: Array.isArray(data.idempotency) ? data.idempotency : []
         };
     } catch (e) {
         console.warn('[cropRecommendationStore] Resetting corrupt store:', e.message);
@@ -87,10 +89,79 @@ class CropRecommendationStore {
         return rec;
     }
 
+    getIdempotencyRecord(userId, operation, clientRequestId) {
+        const store = readStore();
+        return (
+            store.idempotency.find(
+                (r) =>
+                    r.userId === userId &&
+                    r.operation === operation &&
+                    r.clientRequestId === clientRequestId
+            ) || null
+        );
+    }
+
+    saveIdempotencyRecord({ userId, operation, clientRequestId, payloadHash, result }) {
+        const store = readStore();
+        const record = {
+            userId,
+            operation,
+            clientRequestId,
+            payloadHash,
+            result,
+            createdAt: nowIso()
+        };
+        store.idempotency = store.idempotency.filter(
+            (r) =>
+                !(
+                    r.userId === userId &&
+                    r.operation === operation &&
+                    r.clientRequestId === clientRequestId
+                )
+        );
+        store.idempotency.push(record);
+        const MAX = 500;
+        if (store.idempotency.length > MAX) {
+            store.idempotency = store.idempotency.slice(-MAX);
+        }
+        writeStore(store);
+        return record;
+    }
+
     createAction(payload) {
         const store = readStore();
+        const userId = payload.userId || 'default-user';
+        const clientRequestId = payload.clientRequestId
+            ? String(payload.clientRequestId).trim()
+            : null;
+
+        if (clientRequestId && CLIENT_ID_SAFE(clientRequestId)) {
+            const existing = store.actions.find(
+                (a) => a.id === clientRequestId && a.userId === userId
+            );
+            if (existing) {
+                const alert =
+                    store.alerts.find((a) => a.recommendationActionId === existing.id) || null;
+                return {
+                    action: existing,
+                    alert,
+                    schedule: {
+                        nextDueDate: existing.nextDueDate,
+                        intervalLabel: alert ? alert.notes : null,
+                        title: alert ? alert.title : null,
+                        alertType: alert ? alert.alertType : null,
+                        priority: alert ? alert.priority : null,
+                        generatedFrom: alert ? alert.generatedFrom : null
+                    }
+                };
+            }
+        }
+
         const action = {
-            id: randomUUID(),
+            id: clientRequestId && CLIENT_ID_SAFE(clientRequestId)
+                ? clientRequestId
+                : randomUUID(),
+            clientRequestId: clientRequestId,
             recommendationId: payload.recommendationId || null,
             cropId: String(payload.cropId),
             fieldId: payload.fieldId || '',
@@ -106,7 +177,7 @@ class CropRecommendationStore {
             performedBy: payload.performedBy || '',
             nextDueDate: payload.nextDueDate || null,
             skipReason: payload.skipReason || null,
-            userId: payload.userId || 'default-user',
+            userId: userId,
             createdAt: nowIso(),
             updatedAt: nowIso()
         };
@@ -176,8 +247,33 @@ class CropRecommendationStore {
 
     saveSoilTest(payload) {
         const store = readStore();
+        const userId = payload.userId || 'default-user';
+        const clientRequestId = payload.clientRequestId
+            ? String(payload.clientRequestId).trim()
+            : null;
+
+        if (clientRequestId && CLIENT_ID_SAFE(clientRequestId)) {
+            const existing = store.soilTests.find(
+                (t) => t.id === clientRequestId && t.userId === userId
+            );
+            if (existing) {
+                const alert =
+                    store.alerts.find(
+                        (a) =>
+                            a.cropId === String(existing.cropId) &&
+                            a.generatedFrom === 'soil_test_saved' &&
+                            a.userId === userId
+                    ) || null;
+                return { test: existing, alert };
+            }
+        }
+
         const test = {
-            id: payload.id || randomUUID(),
+            id:
+                clientRequestId && CLIENT_ID_SAFE(clientRequestId)
+                    ? clientRequestId
+                    : payload.id || randomUUID(),
+            clientRequestId: clientRequestId,
             cropId: String(payload.cropId),
             fieldId: payload.fieldId || '',
             testDate: payload.testDate || nowIso().slice(0, 10),
@@ -269,6 +365,11 @@ class CropRecommendationStore {
         writeStore(store);
         return store.alerts[idx];
     }
+}
+
+function CLIENT_ID_SAFE(value) {
+    const id = String(value || '').trim();
+    return /^[a-zA-Z0-9_-]{8,128}$/.test(id);
 }
 
 module.exports = new CropRecommendationStore();

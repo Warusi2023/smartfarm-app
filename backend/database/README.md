@@ -150,6 +150,7 @@ node scripts/test-db-connection.js  # Verify connection first
 - ✅ Farm revenue (`farmrevenue`) — W2-08 migration `007_farmrevenue.sql`
 - ✅ Soil test writes (`soiltests`) — W2-02 `soilTestsStore.js` (Postgres when pool + auth UUID; file fallback)
 - ✅ Crop action costs (`farmcosts` type `crop-action`) — W2-05 via `POST /crop-recommendations/actions` (`costAmount`) or `POST /farm-costs/crop-action`
+- ✅ Idempotent replay (`clientRequestId`) — W3-02 `writeIdempotency.js` for `POST /crop-recommendations/actions` and `POST /crop-recommendations/soil-tests` (file cache + `soiltests.nutrients.clientRequestId` for DB dedupe; **no new migration**)
 - ✅ Weather data
 - ✅ Subscriptions
 - ✅ Analytics & reporting
