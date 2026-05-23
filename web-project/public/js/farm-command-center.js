@@ -1,5 +1,5 @@
 /**
- * Farm command center (W4–W5) — inbox, checklist, weekly review.
+ * Farm command center (W4–W5) — inbox, checklist, weekly review, weather risk.
  */
 (function (global) {
     'use strict';
@@ -32,7 +32,8 @@
         'feed-mix-cost': { page: 'livestock-management.html', dashboardFn: 'showDashboardFeedMixCalculator' },
         'farm-cost': { page: 'crop-management.html' },
         'manual-revenue': { scroll: '#revenueEntryForm', focus: '#revenueAmount' },
-        'offline-queue': { scroll: '#fcc-offline-panel' }
+        'offline-queue': { scroll: '#fcc-offline-panel' },
+        'weather-alerts': { page: 'weather-alerts.html' }
     };
 
     const ATTENTION_FALLBACK = {
@@ -584,6 +585,59 @@
             </div>
             ${routines.lastActivityDate || routines.lastSoilTestDate || routines.lastRevenueDate || streak ? freshness : ''}
             <ul class="fcc-checklist-list">${rows}</ul>
+        </div>`;
+    }
+
+    /** W5-03 — weather risk / opportunity row. */
+    function weatherIconClass(state) {
+        if (state === 'risk') {
+            return 'fa-cloud-showers-heavy';
+        }
+        if (state === 'opportunity') {
+            return 'fa-cloud-rain';
+        }
+        if (state === 'calm') {
+            return 'fa-sun';
+        }
+        return 'fa-cloud';
+    }
+
+    function renderWeatherRiskRow(payload) {
+        if (!payload) {
+            return '<div class="fcc-weather-row fcc-weather-unavailable"><p class="mb-0 small text-muted">Sign in for weather-aware farm suggestions.</p></div>';
+        }
+        const w = payload.weatherRisk;
+        if (!w) {
+            return '';
+        }
+        const state = w.state || 'unavailable';
+        const icon = weatherIconClass(state);
+        const conditions =
+            w.conditions && String(w.conditions).trim()
+                ? `<span class="fcc-weather-conditions">${escapeHtml(w.conditions)}</span>`
+                : '';
+        let actionHtml = '';
+        if (w.action && w.action.label && state !== 'unavailable') {
+            if (w.action.target === 'weather-alerts') {
+                actionHtml = actionButtonHtml(w.action.label, {
+                    class: 'btn-outline-primary',
+                    data: 'data-fcc-nav="weather-alerts"'
+                });
+            } else {
+                actionHtml = actionButtonHtml(w.action.label, {
+                    class: state === 'risk' ? 'btn-primary' : 'btn-outline-primary',
+                    data: 'data-fcc-nav="' + escapeHtml(w.action.target) + '"'
+                });
+            }
+        }
+        return `<div class="fcc-weather-row fcc-weather-${escapeHtml(state)}" role="status" aria-label="Weather and risk">
+            <span class="fcc-weather-icon" aria-hidden="true"><i class="fas ${icon}"></i></span>
+            <div class="fcc-weather-body">
+                <strong class="fcc-weather-summary">${escapeHtml(w.summary || '')}</strong>
+                <p class="fcc-weather-recommendation">${escapeHtml(w.recommendation || '')}</p>
+                ${conditions}
+            </div>
+            ${actionHtml ? '<div class="fcc-weather-action">' + actionHtml + '</div>' : ''}
         </div>`;
     }
 
@@ -1336,6 +1390,10 @@
                     </div>
                 </div>
                 <div id="fcc-offline-mount">${renderOfflinePanel()}</div>
+                <div class="fcc-weather-section">
+                    <div class="fcc-panel-title">Weather &amp; risk</div>
+                    <div id="fcc-weather-mount">${renderWeatherRiskRow(payload)}</div>
+                </div>
                 <div class="fcc-weekly-section">
                     <div class="fcc-panel-title">Weekly review</div>
                     <div id="fcc-weekly-mount">${renderWeeklyStrip(payload)}</div>
@@ -1384,6 +1442,10 @@
                     </div>
                 </div>
                 <div id="fcc-offline-mount">${renderOfflinePanel()}</div>
+                <div class="fcc-weather-section">
+                    <div class="fcc-panel-title">Weather &amp; risk</div>
+                    <div id="fcc-weather-mount">${renderWeatherRiskRow(payload)}</div>
+                </div>
                 <div class="fcc-weekly-section">
                     <div class="fcc-panel-title">Weekly review</div>
                     <div id="fcc-weekly-mount">${renderWeeklyStrip(null)}</div>

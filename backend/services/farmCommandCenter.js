@@ -5,6 +5,7 @@
 const cropStore = require('./cropRecommendationStore');
 const soilTestsStore = require('./soilTestsStore');
 const farmSummaryFinancials = require('./farmSummaryFinancials');
+const farmWeatherRisk = require('./farmWeatherRisk');
 
 function todayUtc() {
     return new Date().toISOString().slice(0, 10);
@@ -1192,6 +1193,10 @@ async function getCommandCenter(pool, userId, opts) {
         lastSoilDate
     });
 
+    const weatherRisk = await farmWeatherRisk.getWeatherRisk(pool, userId, {
+        apiKey: process.env.WEATHER_API_KEY
+    });
+
     return {
         window: bounds.window,
         windowLabel: bounds.label,
@@ -1224,6 +1229,7 @@ async function getCommandCenter(pool, userId, opts) {
         attention,
         dailyChecklist,
         weeklySummary,
+        weatherRisk,
         generatedAt: new Date().toISOString()
     };
 }
