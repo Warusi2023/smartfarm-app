@@ -51,6 +51,90 @@
         return data;
     }
 
+    /**
+     * POST with offline queue (W3-01) for enabled types; falls back to direct apiRequest.
+     */
+    async function queuedPost(path, body, queueType, label) {
+        if (
+            global.OfflineWriteQueue &&
+            queueType &&
+            global.OfflineWriteQueue.isEnabledType(queueType)
+        ) {
+            return global.OfflineWriteQueue.submit({
+                type: queueType,
+                body: body,
+                label: label
+            });
+        }
+        const response = await apiRequest('POST', path, body);
+        return { queued: false, response: response };
+    }
+
+    function buildQueuedActionOptimistic(body, clientRequestId) {
+        return {
+            id: clientRequestId,
+            clientRequestId: clientRequestId,
+            cropId: String(body.cropId),
+            fieldId: body.fieldId || '',
+            actionType: body.actionType || 'general',
+            recommendationText: body.recommendationText || '',
+            status: body.status || 'scheduled',
+            scheduledDate: body.scheduledDate || null,
+            completedDate: body.completedDate || null,
+            quantity: body.quantity ?? null,
+            unit: body.unit || '',
+            method: body.method || '',
+            notes: body.notes || '',
+            performedBy: body.performedBy || '',
+            nextDueDate: body.nextDueDate || null,
+            userId: 'queued-local',
+            createdAt: new Date().toISOString(),
+            _queued: true
+        };
+    }
+
+    function buildQueuedSoilOptimistic(body, clientRequestId) {
+        return {
+            id: clientRequestId,
+            clientRequestId: clientRequestId,
+            cropId: String(body.cropId),
+            fieldId: body.fieldId || '',
+            testDate: body.testDate || new Date().toISOString().slice(0, 10),
+            ph: body.ph ?? null,
+            nitrogen: body.nitrogen ?? null,
+            phosphorus: body.phosphorus ?? null,
+            potassium: body.potassium ?? null,
+            calcium: body.calcium ?? null,
+            magnesium: body.magnesium ?? null,
+            organicMatter: body.organicMatter ?? null,
+            moisture: body.moisture ?? null,
+            notes: body.notes || '',
+            source: body.source || '',
+            _queued: true
+        };
+    }
+
+    function handleReplaySuccess(entry, res) {
+        const data = res && res.data;
+        if (entry.type === global.OfflineWriteQueue.QUEUE_TYPES.CROP_ACTION && data) {
+            const action = data.action || data;
+            const alert = data.alert;
+            cacheLocal({ actions: [action], alerts: alert ? [alert] : [] });
+            refreshAlertsPanel();
+        }
+        if (entry.type === global.OfflineWriteQueue.QUEUE_TYPES.SOIL_TEST && data) {
+            const test = data.test || data;
+            cacheLocal({
+                soilTests: [test],
+                alerts: data.alert ? [data.alert] : []
+            });
+            if (test && test.cropId != null) {
+                notifySoilTestSaved(test.cropId, test);
+            }
+            refreshAlertsPanel();
+        }
+    }
+
     function cacheLocal(entry) {
         try {
             const raw = global.localStorage.getItem(LS_KEY);
@@ -485,7 +569,26 @@
                 if (costNote) body.costNote = costNote;
             }
             try {
-                const res = await apiRequest('POST', '/crop-recommendations/actions', body);
+                const result = await queuedPost(
+                    '/crop-recommendations/actions',
+                    body,
+                    global.OfflineWriteQueue
+                        ? global.OfflineWriteQueue.QUEUE_TYPES.CROP_ACTION
+                        : null,
+                    'Crop action'
+                );
+                if (result.queued) {
+                    const optimistic = buildQueuedActionOptimistic(body, result.clientRequestId);
+                    cacheLocal({ actions: [optimistic] });
+                    showAlertFn(
+                        'Action saved on this device and queued to sync when back online.',
+                        'warning'
+                    );
+                    bootstrap.Modal.getInstance(document.getElementById('recActionLogModal')).hide();
+                    refreshAlertsPanel();
+                    return;
+                }
+                const res = result.response;
                 const payload = res.data || {};
                 const action = payload.action || payload;
                 const alert = payload.alert;
@@ -537,7 +640,27 @@
             soilTest.cropId = adviceContext.crop.id;
             soilTest.fieldId = adviceContext.crop.field;
             try {
-                const res = await apiRequest('POST', '/crop-recommendations/soil-tests', soilTest);
+                const result = await queuedPost(
+                    '/crop-recommendations/soil-tests',
+                    soilTest,
+                    global.OfflineWriteQueue
+                        ? global.OfflineWriteQueue.QUEUE_TYPES.SOIL_TEST
+                        : null,
+                    'Soil test'
+                );
+                if (result.queued) {
+                    const optimistic = buildQueuedSoilOptimistic(soilTest, result.clientRequestId);
+                    cacheLocal({ soilTests: [optimistic] });
+                    notifySoilTestSaved(adviceContext.crop.id, optimistic);
+                    showAlertFn(
+                        'Soil test saved on this device and queued to sync when back online.',
+                        'warning'
+                    );
+                    bootstrap.Modal.getInstance(document.getElementById('recSoilTestModal')).hide();
+                    refreshAlertsPanel();
+                    return;
+                }
+                const res = result.response;
                 cacheLocal({ soilTests: [res.data.test], alerts: res.data.alert ? [res.data.alert] : [] });
                 notifySoilTestSaved(adviceContext.crop.id, res.data.test);
                 showAlertFn('Soil test saved.', 'success');
@@ -709,6 +832,13 @@
     function init(opts) {
         if (opts.showAlert) showAlertFn = opts.showAlert;
         if (opts.formatDate) formatDateFn = opts.formatDate;
+        if (global.OfflineWriteQueue) {
+            global.OfflineWriteQueue.init({
+                request: apiRequest,
+                showNotice: showAlertFn,
+                onReplaySuccess: handleReplaySuccess
+            });
+        }
         refreshAlertsPanel();
     }
 
