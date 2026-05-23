@@ -7,6 +7,7 @@ const soilTestsStore = require('./soilTestsStore');
 const farmSummaryFinancials = require('./farmSummaryFinancials');
 const farmWeatherRisk = require('./farmWeatherRisk');
 const farmWeeklyPriorities = require('./farmWeeklyPriorities');
+const farmWeeklyReset = require('./farmWeeklyReset');
 
 function todayUtc() {
     return new Date().toISOString().slice(0, 10);
@@ -1205,6 +1206,56 @@ async function getCommandCenter(pool, userId, opts) {
         lastSoilDate
     });
 
+    const priorPriorBounds = previousPeriodBounds(prevWeekBounds.start, prevWeekBounds.end);
+    const [
+        prevWeekActivityRaw,
+        prevWeekSoilDates,
+        prevWeekFeedDates,
+        prevWeekRevenueDates,
+        priorPriorFinancials
+    ] = await Promise.all([
+        fetchActivityDateSet(pool, userId, 14),
+        fetchSoilDatesInRange(pool, userId, prevWeekBounds.start, prevWeekBounds.end),
+        fetchFeedMixDatesInRange(pool, userId, prevWeekBounds.start, prevWeekBounds.end),
+        fetchRevenueDatesInRange(pool, userId, prevWeekBounds.start, prevWeekBounds.end),
+        buildPeriodFinancials(pool, userId, priorPriorBounds.start, priorPriorBounds.end)
+    ]);
+
+    const prevWeekActivityDates = farmWeeklyReset.filterDateSetToRange(
+        prevWeekActivityRaw,
+        prevWeekBounds.start,
+        prevWeekBounds.end
+    );
+
+    const lastWeekSnapshot = farmWeeklyReset.buildLastWeekSnapshot({
+        prevWeekStart: prevWeekBounds.start,
+        prevWeekEnd: prevWeekBounds.end,
+        prevFinancials: lastWeekFinancials,
+        prevPriorFinancials: priorPriorFinancials,
+        activityDates: prevWeekActivityDates,
+        soilDates: prevWeekSoilDates,
+        feedDates: prevWeekFeedDates,
+        revenueDates: prevWeekRevenueDates,
+        feedApplicable: hasLivestockSignal
+    });
+
+    const lastWeekPriorityItems = farmWeeklyReset.buildLastWeekPriorities({
+        lastWeekSnapshot,
+        weatherRisk,
+        attention,
+        lastSoilDate,
+        weeklySummary
+    }).items;
+
+    const weeklyReset = farmWeeklyReset.buildWeeklyResetContext({
+        currentWeekKey: weekBounds.start,
+        weeklySummary,
+        weeklyPriorities,
+        weatherRisk,
+        lastWeekSnapshot,
+        lastWeekPriorityItems
+    });
+
     return {
         window: bounds.window,
         windowLabel: bounds.label,
@@ -1239,6 +1290,7 @@ async function getCommandCenter(pool, userId, opts) {
         weeklySummary,
         weatherRisk,
         weeklyPriorities,
+        weeklyReset,
         generatedAt: new Date().toISOString()
     };
 }

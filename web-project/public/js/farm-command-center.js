@@ -50,7 +50,14 @@
     const SEEN_STORAGE_KEY = 'smartfarm_fcc_seen';
     const REC_DISMISS_KEY = 'smartfarm_fcc_rec_dismissed';
     const PRIORITY_DONE_KEY = 'smartfarm_fcc_priority_done';
+    const WEEKLY_RESET_KEY = 'smartfarm_weekly_reset_v1';
     const FEED_CLUSTER_MS = 6 * 60 * 60 * 1000;
+
+    let resetPanelOpen = false;
+    let resetStep = 1;
+    let resetCarryChoices = {};
+    let resetDismissed = {};
+    let resetFocusSelected = [];
 
     const SEVERITY_ORDER = { high: 0, medium: 1, low: 2 };
 
@@ -84,6 +91,26 @@
             global.sessionStorage.setItem(key, JSON.stringify(value));
         } catch (_) {
             /* ignore quota */
+        }
+    }
+
+    function readSessionObject(key, fallback) {
+        try {
+            const raw = global.sessionStorage.getItem(key);
+            if (!raw) {
+                return fallback;
+            }
+            return JSON.parse(raw);
+        } catch (_) {
+            return fallback;
+        }
+    }
+
+    function writeSessionObject(key, value) {
+        try {
+            global.sessionStorage.setItem(key, JSON.stringify(value));
+        } catch (_) {
+            /* ignore */
         }
     }
 
@@ -667,9 +694,88 @@
         return getPriorityDoneSet(weekKey).indexOf(priorityId) >= 0;
     }
 
+    function loadWeeklyResetState() {
+        return readSessionObject(WEEKLY_RESET_KEY, null);
+    }
+
+    function saveWeeklyResetState(state) {
+        writeSessionObject(WEEKLY_RESET_KEY, state);
+    }
+
+    function isResetCompleteForWeek(weekKey) {
+        const s = loadWeeklyResetState();
+        return !!(s && s.weekKey === weekKey && s.completedAt);
+    }
+
+    function getFocusPriorityIds(weekKey) {
+        const s = loadWeeklyResetState();
+        if (!s || s.weekKey !== weekKey) {
+            return [];
+        }
+        return Array.isArray(s.focusPriorityIds) ? s.focusPriorityIds : [];
+    }
+
+    function getCarriedForwardIds(weekKey) {
+        const s = loadWeeklyResetState();
+        if (!s || s.weekKey !== weekKey) {
+            return [];
+        }
+        return Array.isArray(s.carriedForwardIds) ? s.carriedForwardIds : [];
+    }
+
+    function needsWeeklyReset(payload) {
+        if (!payload || !payload.weeklyReset) {
+            return false;
+        }
+        const wr = payload.weeklyReset;
+        const weekKey = wr.currentWeekKey;
+        if (isResetCompleteForWeek(weekKey)) {
+            return false;
+        }
+        const prevDone = loadWeeklyResetState();
+        if (prevDone && prevDone.weekKey && prevDone.weekKey !== weekKey) {
+            return true;
+        }
+        if (wr.suggestReset) {
+            return true;
+        }
+        const carry = (wr.carryForwardCandidates || []).length;
+        const unfinished = (wr.carryForwardCandidates || []).filter(function (c) {
+            const prevKey = wr.lastWeekSnapshot && wr.lastWeekSnapshot.weekKey;
+            return prevKey && !isPriorityDone(c.id, prevKey);
+        });
+        return unfinished.length > 0;
+    }
+
     function mergeWeeklyPriorities(payload) {
         const base = (payload && payload.weeklyPriorities) || { items: [], weekKey: '', weekLabel: '' };
+        const weekKey = base.weekKey || '';
+        const carriedIds = getCarriedForwardIds(weekKey);
         const items = (base.items || []).slice();
+        const carryPool =
+            (payload && payload.weeklyReset && payload.weeklyReset.carryForwardCandidates) || [];
+        carriedIds.forEach(function (id) {
+            if (items.some(function (i) {
+                return i.id === id;
+            })) {
+                return;
+            }
+            const c = carryPool.find(function (x) {
+                return x.id === id;
+            });
+            if (c) {
+                items.push({
+                    id: c.id,
+                    type: c.type || 'carry',
+                    title: c.title,
+                    reason: c.reason,
+                    tag: 'ongoing',
+                    state: 'open',
+                    sortOrder: 88,
+                    suggestedActions: c.suggestedActions || []
+                });
+            }
+        });
         const queue =
             global.OfflineWriteQueue && typeof global.OfflineWriteQueue.getPendingCount === 'function'
                 ? global.OfflineWriteQueue.getPendingCount()
@@ -696,12 +802,24 @@
             });
         }
         items.sort(function (a, b) {
+            const aCarry = carriedIds.indexOf(a.id) >= 0 ? 1 : 0;
+            const bCarry = carriedIds.indexOf(b.id) >= 0 ? 1 : 0;
+            if (aCarry !== bCarry) {
+                return bCarry - aCarry;
+            }
+            const aFocus = getFocusPriorityIds(weekKey).indexOf(a.id) >= 0 ? 1 : 0;
+            const bFocus = getFocusPriorityIds(weekKey).indexOf(b.id) >= 0 ? 1 : 0;
+            if (aFocus !== bFocus) {
+                return bFocus - aFocus;
+            }
             return (b.sortOrder || 0) - (a.sortOrder || 0);
         });
         return {
             weekKey: base.weekKey,
             weekLabel: base.weekLabel,
-            items: items.slice(0, 5)
+            items: items.slice(0, 5),
+            carriedForwardIds: carriedIds,
+            focusPriorityIds: getFocusPriorityIds(weekKey)
         };
     }
 
@@ -721,10 +839,17 @@
         });
     }
 
-    function renderPriorityItem(item, weekKey) {
+    function renderPriorityItem(item, weekKey, meta) {
         const done = isPriorityDone(item.id, weekKey);
         const stateClass = done ? 'fcc-priority-done' : 'fcc-priority-open';
         const tagLabel = item.tag === 'ongoing' ? 'Ongoing' : 'New';
+        const carried =
+            meta && meta.carriedForwardIds && meta.carriedForwardIds.indexOf(item.id) >= 0;
+        const focus =
+            meta && meta.focusPriorityIds && meta.focusPriorityIds.indexOf(item.id) >= 0;
+        const extraBadges =
+            (carried ? '<span class="fcc-priority-badge carried">Carried forward</span>' : '') +
+            (focus ? '<span class="fcc-priority-badge focus">Focus</span>' : '');
         const actions = (item.suggestedActions || [])
             .slice(0, 2)
             .map(function (a) {
@@ -741,9 +866,10 @@
               '" data-fcc-week-key="' +
               escapeHtml(weekKey) +
               '">Mark done for this week</button>';
-        return `<li class="fcc-priority-item ${stateClass}" data-fcc-priority-id="${escapeHtml(item.id)}">
+        return `<li class="fcc-priority-item ${stateClass}${focus ? ' fcc-priority-focus' : ''}" data-fcc-priority-id="${escapeHtml(item.id)}">
             <div class="fcc-priority-head">
                 <span class="fcc-priority-tag ${escapeHtml(item.tag || 'new')}">${escapeHtml(tagLabel)}</span>
+                ${extraBadges}
                 <strong class="fcc-priority-title">${escapeHtml(item.title)}</strong>
             </div>
             <p class="fcc-priority-reason">${escapeHtml(item.reason || '')}</p>
@@ -764,12 +890,241 @@
             </div>`;
         }
         const lis = items.map(function (item) {
-            return renderPriorityItem(item, weekKey);
+            return renderPriorityItem(item, weekKey, merged);
         }).join('');
-        return `<div class="fcc-priorities" role="region" aria-label="This week's priorities">
+        const weekSet = isResetCompleteForWeek(weekKey);
+        const focusIds = merged.focusPriorityIds || [];
+        const weekSetBanner = weekSet
+            ? `<div class="fcc-week-set" role="status">
+                <i class="fas fa-check-circle me-2" aria-hidden="true"></i>
+                <strong>This week is set</strong>
+                ${focusIds.length ? ' · Focus: ' + escapeHtml(focusIds.length) + ' priorities' : ''}
+                <button type="button" class="btn btn-link btn-sm fcc-reset-reopen" data-fcc-cmd="open-reset">Review reset</button>
+            </div>`
+            : '';
+        return `${weekSetBanner}<div class="fcc-priorities" role="region" aria-label="This week's priorities">
             <p class="fcc-priorities-intro text-muted small">${escapeHtml(merged.weekLabel || 'Last 7 days')} · up to ${items.length} focus areas</p>
             <ul class="fcc-priorities-list">${lis}</ul>
         </div>`;
+    }
+
+    function initResetWizardState(payload) {
+        const wr = payload.weeklyReset || {};
+        resetStep = 1;
+        resetDismissed = {};
+        resetCarryChoices = {};
+        resetFocusSelected = [];
+        (wr.carryForwardCandidates || []).forEach(function (c) {
+            const prevKey = wr.lastWeekSnapshot && wr.lastWeekSnapshot.weekKey;
+            const wasDone = prevKey && isPriorityDone(c.id, prevKey);
+            if (!wasDone) {
+                resetCarryChoices[c.id] = true;
+            }
+        });
+        const existing = loadWeeklyResetState();
+        if (existing && existing.weekKey === wr.currentWeekKey && existing.focusPriorityIds) {
+            resetFocusSelected = existing.focusPriorityIds.slice(0, 3);
+        }
+    }
+
+    function renderResetStepReview(payload) {
+        const wr = payload.weeklyReset || {};
+        const snap = wr.lastWeekSnapshot || {};
+        const routines = snap.routines || {};
+        const lines = (snap.summaryLines || []).map(function (line) {
+            return '<li>' + escapeHtml(line) + '</li>';
+        }).join('');
+        const net = snap.net || {};
+        const unfinished = (wr.carryForwardCandidates || []).filter(function (c) {
+            const pk = snap.weekKey;
+            return pk && !isPriorityDone(c.id, pk);
+        });
+        const unfinList = unfinished.length
+            ? '<ul class="fcc-reset-list">' +
+              unfinished
+                  .map(function (c) {
+                      return '<li><strong>' + escapeHtml(c.title) + '</strong> — ' + escapeHtml(c.reason) + '</li>';
+                  })
+                  .join('') +
+              '</ul>'
+            : '<p class="text-muted small mb-0">No open priorities carried from last period.</p>';
+        return `<div class="fcc-reset-step" data-reset-step="1">
+            <h4 class="fcc-reset-step-title">Review last week</h4>
+            <p class="fcc-reset-step-lead">A brief look at the previous 7 days.</p>
+            <div class="fcc-reset-review-grid">
+                <div><span class="text-muted">Net</span><strong>${money(net.net)}</strong></div>
+                <div><span class="text-muted">Activity</span><strong>${routines.activityDays || 0}/${routines.totalDays || 7} days</strong></div>
+            </div>
+            <ul class="fcc-reset-bullets">${lines}</ul>
+            <div class="fcc-reset-unfinished">
+                <div class="fcc-reset-subtitle">Still open from last period</div>
+                ${unfinList}
+            </div>
+        </div>`;
+    }
+
+    function renderResetStepCarry(payload) {
+        const wr = payload.weeklyReset || {};
+        const candidates = wr.carryForwardCandidates || [];
+        if (!candidates.length) {
+            return `<div class="fcc-reset-step" data-reset-step="2">
+                <h4 class="fcc-reset-step-title">Carry forward</h4>
+                <p class="text-muted small">Nothing to carry from last period — continue to set this week&rsquo;s focus.</p>
+            </div>`;
+        }
+        const rows = candidates
+            .map(function (c) {
+                const checked = resetCarryChoices[c.id] ? ' checked' : '';
+                return `<label class="fcc-reset-carry-row">
+                    <input type="checkbox" class="form-check-input" data-fcc-carry-id="${escapeHtml(c.id)}"${checked} />
+                    <span>
+                        <strong>${escapeHtml(c.title)}</strong>
+                        <span class="d-block small text-muted">${escapeHtml(c.reason)}</span>
+                    </span>
+                </label>`;
+            })
+            .join('');
+        return `<div class="fcc-reset-step" data-reset-step="2">
+            <h4 class="fcc-reset-step-title">Carry forward what still matters</h4>
+            <p class="fcc-reset-step-lead">Keep items that should stay on your radar this week.</p>
+            ${rows}
+            <p class="text-muted small mb-0">Weather-specific items only appear if conditions still apply.</p>
+        </div>`;
+    }
+
+    function buildFocusOptions(payload) {
+        const wr = payload.weeklyReset || {};
+        const options = (wr.suggestedFocusOptions || []).slice();
+        const seen = {};
+        options.forEach(function (o) {
+            seen[o.id] = true;
+        });
+        Object.keys(resetCarryChoices).forEach(function (id) {
+            if (!resetCarryChoices[id] || seen[id]) {
+                return;
+            }
+            const c = (wr.carryForwardCandidates || []).find(function (x) {
+                return x.id === id;
+            });
+            if (c) {
+                options.push({
+                    id: c.id,
+                    title: c.title,
+                    reason: c.reason,
+                    tag: 'ongoing'
+                });
+                seen[id] = true;
+            }
+        });
+        return options;
+    }
+
+    function renderResetStepFocus(payload) {
+        const wr = payload.weeklyReset || {};
+        const options = buildFocusOptions(payload);
+        const maxF = wr.maxFocusCount || 3;
+        const rows = options
+            .map(function (opt) {
+                const checked = resetFocusSelected.indexOf(opt.id) >= 0 ? ' checked' : '';
+                const disabled =
+                    !checked && resetFocusSelected.length >= maxF ? ' disabled' : '';
+                return `<label class="fcc-reset-focus-row">
+                    <input type="checkbox" class="form-check-input" data-fcc-focus-id="${escapeHtml(opt.id)}"${checked}${disabled} />
+                    <span>
+                        <strong>${escapeHtml(opt.title)}</strong>
+                        <span class="d-block small text-muted">${escapeHtml(opt.reason)}</span>
+                    </span>
+                </label>`;
+            })
+            .join('');
+        return `<div class="fcc-reset-step" data-reset-step="3">
+            <h4 class="fcc-reset-step-title">Start this week</h4>
+            <p class="fcc-reset-step-lead">Choose up to <strong>${maxF}</strong> focus priorities for this week.</p>
+            ${rows || '<p class="text-muted small">No suggested priorities — you are clear to run routines.</p>'}
+        </div>`;
+    }
+
+    function renderResetPanel(payload) {
+        if (!resetPanelOpen || !payload) {
+            return '';
+        }
+        const step1 = resetStep === 1 ? renderResetStepReview(payload) : '';
+        const step2 = resetStep === 2 ? renderResetStepCarry(payload) : '';
+        const step3 = resetStep === 3 ? renderResetStepFocus(payload) : '';
+        const backBtn =
+            resetStep > 1
+                ? '<button type="button" class="btn btn-sm btn-outline-secondary" data-fcc-cmd="reset-back">Back</button>'
+                : '';
+        const nextLabel = resetStep < 3 ? 'Continue' : 'Complete reset';
+        const nextCmd = resetStep < 3 ? 'reset-next' : 'reset-complete';
+        return `<div class="fcc-reset-panel" id="fcc-reset-panel">
+            <div class="fcc-reset-steps-indicator">Step ${resetStep} of 3</div>
+            ${step1}${step2}${step3}
+            <div class="fcc-reset-actions">
+                ${backBtn}
+                <button type="button" class="btn btn-sm btn-primary" data-fcc-cmd="${nextCmd}">${nextLabel}</button>
+                <button type="button" class="btn btn-sm btn-link text-muted" data-fcc-cmd="reset-cancel">Cancel</button>
+            </div>
+        </div>`;
+    }
+
+    function renderWeeklyResetSection(payload) {
+        if (!payload || !payload.weeklyReset) {
+            return '';
+        }
+        const weekKey = payload.weeklyReset.currentWeekKey;
+        const complete = isResetCompleteForWeek(weekKey);
+        const showEntry = needsWeeklyReset(payload) || complete;
+        if (!showEntry && !resetPanelOpen) {
+            return '';
+        }
+        let entry = '';
+        if (!complete || needsWeeklyReset(payload)) {
+            entry = `<div class="fcc-reset-entry">
+                <div>
+                    <strong>Weekly reset</strong>
+                    <p class="mb-0 small text-muted">Review last week, carry forward what matters, and set up to 3 focus priorities.</p>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-primary" data-fcc-cmd="open-reset">Start weekly reset</button>
+            </div>`;
+        }
+        return entry + renderResetPanel(payload);
+    }
+
+    function completeWeeklyReset(payload) {
+        const wr = payload.weeklyReset || {};
+        const weekKey = wr.currentWeekKey;
+        const carriedForwardIds = Object.keys(resetCarryChoices).filter(function (id) {
+            return resetCarryChoices[id];
+        });
+        saveWeeklyResetState({
+            weekKey: weekKey,
+            completedAt: new Date().toISOString(),
+            carriedForwardIds: carriedForwardIds,
+            dismissedCarryForwardIds: Object.keys(resetDismissed),
+            focusPriorityIds: resetFocusSelected.slice(0, wr.maxFocusCount || 3)
+        });
+        resetPanelOpen = false;
+        resetStep = 1;
+    }
+
+    function syncResetCarryFromDom(root) {
+        if (!root) return;
+        root.querySelectorAll('[data-fcc-carry-id]').forEach(function (input) {
+            const id = input.getAttribute('data-fcc-carry-id');
+            resetCarryChoices[id] = input.checked;
+        });
+        root.querySelectorAll('[data-fcc-focus-id]').forEach(function (input) {
+            const id = input.getAttribute('data-fcc-focus-id');
+            if (input.checked && resetFocusSelected.indexOf(id) < 0) {
+                resetFocusSelected.push(id);
+            }
+            if (!input.checked) {
+                resetFocusSelected = resetFocusSelected.filter(function (x) {
+                    return x !== id;
+                });
+            }
+        });
     }
 
     /** W5-02 — weekly review strip (7-day routines + net direction). */
@@ -1361,9 +1716,62 @@
                     }
                 } else if (cmd === 'toggle-breakdown') {
                     toggleBreakdownUI();
+                } else if (cmd === 'open-reset') {
+                    resetPanelOpen = true;
+                    initResetWizardState(lastPayload);
+                    refreshResetMount();
+                } else if (cmd === 'reset-cancel') {
+                    resetPanelOpen = false;
+                    resetStep = 1;
+                    refreshResetMount();
+                } else if (cmd === 'reset-back') {
+                    syncResetCarryFromDom(root);
+                    if (resetStep > 1) {
+                        resetStep -= 1;
+                    }
+                    refreshResetMount();
+                } else if (cmd === 'reset-next') {
+                    syncResetCarryFromDom(root);
+                    if (resetStep < 3) {
+                        resetStep += 1;
+                    }
+                    refreshResetMount();
+                } else if (cmd === 'reset-complete') {
+                    syncResetCarryFromDom(root);
+                    completeWeeklyReset(lastPayload);
+                    refreshResetMount();
+                    refreshInboxMounts();
                 }
             });
         });
+
+        const resetPanel = root.querySelector('#fcc-reset-panel');
+        if (resetPanel) {
+            resetPanel.querySelectorAll('[data-fcc-carry-id]').forEach(function (input) {
+                input.addEventListener('change', function () {
+                    const id = input.getAttribute('data-fcc-carry-id');
+                    resetCarryChoices[id] = input.checked;
+                });
+            });
+            resetPanel.querySelectorAll('[data-fcc-focus-id]').forEach(function (input) {
+                input.addEventListener('change', function () {
+                    const id = input.getAttribute('data-fcc-focus-id');
+                    const maxF = (lastPayload && lastPayload.weeklyReset && lastPayload.weeklyReset.maxFocusCount) || 3;
+                    if (input.checked) {
+                        if (resetFocusSelected.indexOf(id) < 0 && resetFocusSelected.length < maxF) {
+                            resetFocusSelected.push(id);
+                        } else {
+                            input.checked = false;
+                        }
+                    } else {
+                        resetFocusSelected = resetFocusSelected.filter(function (x) {
+                            return x !== id;
+                        });
+                    }
+                    refreshResetMount();
+                });
+            });
+        }
 
         root.querySelectorAll('[data-fcc-feed-filter]').forEach((btn) => {
             btn.addEventListener('click', function () {
@@ -1402,12 +1810,24 @@
         });
     }
 
+    function refreshResetMount() {
+        const resetMount = document.getElementById('fcc-reset-mount');
+        if (resetMount) {
+            resetMount.innerHTML = renderWeeklyResetSection(lastPayload);
+        }
+        const root = document.getElementById(ROOT_ID);
+        if (root) {
+            bindActionHandlers(root);
+        }
+    }
+
     function refreshInboxMounts() {
         const grouped = prepareAttentionList(lastPayload ? lastPayload.attention : []);
         const nextMount = document.getElementById('fcc-next-step-mount');
         const attentionMount = document.getElementById('fcc-attention-mount');
         const checklistMount = document.getElementById('fcc-checklist-mount');
         const prioritiesMount = document.getElementById('fcc-priorities-mount');
+        const resetMount = document.getElementById('fcc-reset-mount');
         if (nextMount) {
             nextMount.innerHTML = renderRecommendedNextStep(grouped);
         }
@@ -1419,6 +1839,9 @@
         }
         if (prioritiesMount) {
             prioritiesMount.innerHTML = renderWeeklyPriorities(lastPayload);
+        }
+        if (resetMount) {
+            resetMount.innerHTML = renderWeeklyResetSection(lastPayload);
         }
         const root = document.getElementById(ROOT_ID);
         if (root) bindActionHandlers(root);
@@ -1543,6 +1966,9 @@
                     <div class="fcc-panel-title">Weekly review</div>
                     <div id="fcc-weekly-mount">${renderWeeklyStrip(payload)}</div>
                 </div>
+                <div class="fcc-reset-section">
+                    <div id="fcc-reset-mount">${renderWeeklyResetSection(payload)}</div>
+                </div>
                 <div class="fcc-priorities-section">
                     <div class="fcc-panel-title">This week&rsquo;s priorities</div>
                     <div id="fcc-priorities-mount">${renderWeeklyPriorities(payload)}</div>
@@ -1598,6 +2024,9 @@
                 <div class="fcc-weekly-section">
                     <div class="fcc-panel-title">Weekly review</div>
                     <div id="fcc-weekly-mount">${renderWeeklyStrip(null)}</div>
+                </div>
+                <div class="fcc-reset-section">
+                    <div id="fcc-reset-mount"></div>
                 </div>
                 <div class="fcc-priorities-section">
                     <div class="fcc-panel-title">This week&rsquo;s priorities</div>
