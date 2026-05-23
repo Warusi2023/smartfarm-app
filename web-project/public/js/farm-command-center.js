@@ -1,5 +1,5 @@
 /**
- * Farm command center (W4-01–W4-05) — summary, actions, filters, operator inbox.
+ * Farm command center (W4-01–W4-05, W5-01) — inbox, filters, daily checklist.
  */
 (function (global) {
     'use strict';
@@ -407,6 +407,184 @@
                     </button>
                 </div>
             </div>`;
+    }
+
+    /** W5-01 — daily operating checklist (server + offline sync). */
+    function formatRoutineDate(isoDate) {
+        if (!isoDate) {
+            return 'Never';
+        }
+        const d = String(isoDate).slice(0, 10);
+        const today = new Date().toISOString().slice(0, 10);
+        if (d === today) {
+            return 'Today';
+        }
+        const yesterday = new Date();
+        yesterday.setUTCDate(yesterday.getUTCDate() - 1);
+        if (d === yesterday.toISOString().slice(0, 10)) {
+            return 'Yesterday';
+        }
+        const then = new Date(d + 'T12:00:00Z');
+        const now = new Date(today + 'T12:00:00Z');
+        const days = Math.floor((now - then) / 86400000);
+        if (days >= 1 && days < 14) {
+            return days + ' day' + (days === 1 ? '' : 's') + ' ago';
+        }
+        try {
+            return new Date(d + 'T12:00:00Z').toLocaleDateString([], { month: 'short', day: 'numeric' });
+        } catch (_) {
+            return d;
+        }
+    }
+
+    function getOfflineSyncChecklistItem() {
+        if (!global.OfflineWriteQueue || typeof global.OfflineWriteQueue.getPendingCount !== 'function') {
+            return null;
+        }
+        const n = global.OfflineWriteQueue.getPendingCount();
+        if (n <= 0) {
+            return {
+                id: 'clear-sync',
+                label: 'Clear pending sync',
+                state: 'done',
+                reason: 'All writes are synced.',
+                action: null
+            };
+        }
+        return {
+            id: 'clear-sync',
+            label: 'Clear pending sync',
+            state: 'attention',
+            reason: n + ' write' + (n === 1 ? '' : 's') + ' waiting to upload.',
+            action: { label: 'Sync now', action: 'sync' }
+        };
+    }
+
+    function mergeDailyChecklist(payload) {
+        const base = (payload && payload.dailyChecklist) || { items: [], progress: {}, routines: {} };
+        const items = (base.items || []).slice();
+        const syncItem = getOfflineSyncChecklistItem();
+        if (syncItem) {
+            items.push(syncItem);
+        }
+        const countsTowardProgress = function (item) {
+            return item.state !== 'optional';
+        };
+        const applicable = items.filter(countsTowardProgress);
+        const done = items.filter(function (i) {
+            return i.state === 'done';
+        }).length;
+        const applicableDone = applicable.filter(function (i) {
+            return i.state === 'done';
+        }).length;
+        return {
+            items: items,
+            progress: {
+                done: done,
+                total: items.length,
+                applicable: applicable.length,
+                applicableDone: applicableDone
+            },
+            routines: base.routines || {}
+        };
+    }
+
+    function buildSignedOutChecklist() {
+        const syncItem = getOfflineSyncChecklistItem();
+        const items = syncItem ? [syncItem] : [];
+        return {
+            items: items,
+            progress: {
+                done: items.filter(function (i) {
+                    return i.state === 'done';
+                }).length,
+                total: items.length,
+                applicable: items.length,
+                applicableDone: items.filter(function (i) {
+                    return i.state === 'done';
+                }).length
+            },
+            routines: {}
+        };
+    }
+
+    function checklistActionHtml(action) {
+        if (!action) {
+            return '';
+        }
+        if (action.action === 'sync') {
+            return actionButtonHtml(action.label, {
+                class: 'btn-primary',
+                data: 'data-fcc-cmd="sync-now"'
+            });
+        }
+        return actionButtonHtml(action.label, {
+            class: 'btn-primary',
+            data: 'data-fcc-nav="' + escapeHtml(action.target) + '"'
+        });
+    }
+
+    function renderChecklistRow(item) {
+        const state = item.state || 'due';
+        const stateLabel =
+            state === 'done'
+                ? 'Done'
+                : state === 'attention'
+                  ? 'Needs attention'
+                  : state === 'optional'
+                    ? 'Optional'
+                    : 'Due';
+        return `<li class="fcc-check-row fcc-check-${escapeHtml(state)}">
+            <span class="fcc-check-status" aria-label="${escapeHtml(stateLabel)}">
+                <i class="fas ${state === 'done' ? 'fa-check-circle' : state === 'attention' ? 'fa-exclamation-circle' : state === 'optional' ? 'fa-minus-circle' : 'fa-circle'}"></i>
+            </span>
+            <div class="fcc-check-body">
+                <span class="fcc-check-label">${escapeHtml(item.label)}</span>
+                <span class="fcc-check-reason">${escapeHtml(item.reason || '')}</span>
+            </div>
+            ${item.action ? '<div class="fcc-check-action">' + checklistActionHtml(item.action) + '</div>' : ''}
+        </li>`;
+    }
+
+    function renderChecklist(payload) {
+        const checklist = payload ? mergeDailyChecklist(payload) : buildSignedOutChecklist();
+        const p = checklist.progress || {};
+        const routines = checklist.routines || {};
+        const items = checklist.items || [];
+        if (!items.length) {
+            return '<div class="fcc-empty">Sign in to see your daily checklist.</div>';
+        }
+        const pct =
+            p.applicable > 0 ? Math.round((100 * (p.applicableDone || 0)) / p.applicable) : 100;
+        const progressLabel =
+            (p.applicableDone != null ? p.applicableDone : p.done) +
+            ' of ' +
+            (p.applicable || p.total) +
+            ' done';
+        const rows = items.map(renderChecklistRow).join('');
+        const streak =
+            routines.activityStreakDays > 0
+                ? `<span class="fcc-routine-pill">${routines.activityStreakDays}-day activity streak</span>`
+                : '';
+        const freshness = `<div class="fcc-routine-freshness">
+            <span>Activity: <strong>${escapeHtml(formatRoutineDate(routines.lastActivityDate))}</strong></span>
+            <span>Soil: <strong>${escapeHtml(formatRoutineDate(routines.lastSoilTestDate))}</strong></span>
+            <span>Revenue: <strong>${escapeHtml(formatRoutineDate(routines.lastRevenueDate))}</strong></span>
+            ${streak}
+        </div>`;
+        return `<div class="fcc-checklist" role="region" aria-label="Today's checklist">
+            <div class="fcc-checklist-head">
+                <div class="fcc-checklist-progress" aria-label="Daily progress ${progressLabel}">
+                    <svg class="fcc-check-ring" viewBox="0 0 36 36" aria-hidden="true">
+                        <path class="fcc-check-ring-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                        <path class="fcc-check-ring-fill" stroke-dasharray="${pct}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                    </svg>
+                    <span class="fcc-check-progress-text">${escapeHtml(progressLabel)}</span>
+                </div>
+            </div>
+            ${routines.lastActivityDate || routines.lastSoilTestDate || routines.lastRevenueDate || streak ? freshness : ''}
+            <ul class="fcc-checklist-list">${rows}</ul>
+        </div>`;
     }
 
     function resolveAttentionAction(item) {
@@ -959,11 +1137,15 @@
         const grouped = prepareAttentionList(lastPayload ? lastPayload.attention : []);
         const nextMount = document.getElementById('fcc-next-step-mount');
         const attentionMount = document.getElementById('fcc-attention-mount');
+        const checklistMount = document.getElementById('fcc-checklist-mount');
         if (nextMount) {
             nextMount.innerHTML = renderRecommendedNextStep(grouped);
         }
         if (attentionMount) {
             attentionMount.innerHTML = renderAttention(lastPayload ? lastPayload.attention : []);
+        }
+        if (checklistMount) {
+            checklistMount.innerHTML = renderChecklist(lastPayload);
         }
         const root = document.getElementById(ROOT_ID);
         if (root) bindActionHandlers(root);
@@ -1080,6 +1262,10 @@
                     </div>
                 </div>
                 <div id="fcc-offline-mount">${renderOfflinePanel()}</div>
+                <div class="fcc-checklist-section">
+                    <div class="fcc-panel-title">Today&rsquo;s checklist</div>
+                    <div id="fcc-checklist-mount">${renderChecklist(payload)}</div>
+                </div>
                 ${renderStrip(stats, windowLabel)}
                 <div class="fcc-grid">
                     <div>
@@ -1120,6 +1306,10 @@
                     </div>
                 </div>
                 <div id="fcc-offline-mount">${renderOfflinePanel()}</div>
+                <div class="fcc-checklist-section">
+                    <div class="fcc-panel-title">Today&rsquo;s checklist</div>
+                    <div id="fcc-checklist-mount">${renderChecklist(null)}</div>
+                </div>
                 <div class="fcc-grid">
                     <div class="fcc-empty">Use email sign-in to unlock financials and synced soil tests.</div>
                     <div>
@@ -1214,6 +1404,10 @@
             clusterFeedItems: clusterFeedItems,
             markSeen: markSeen,
             isSeen: isSeen
+        },
+        _checklist: {
+            mergeDailyChecklist: mergeDailyChecklist,
+            renderChecklist: renderChecklist
         }
     };
 

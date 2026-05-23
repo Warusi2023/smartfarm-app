@@ -381,6 +381,319 @@ async function fetchLatestRevenue(pool, userId) {
     return res.rows[0] ? mapRevenueFeedItem(res.rows[0]) : null;
 }
 
+async function countFeedMixCostsInRange(pool, userId, startDate, endDate) {
+    const res = await pool.query(
+        `SELECT COUNT(*)::int AS cnt FROM farmcosts
+         WHERE user_id = $1 AND type = 'feed-mix'
+           AND created_at::date >= $2::date AND created_at::date <= $3::date`,
+        [userId, startDate, endDate]
+    );
+    return res.rows[0].cnt;
+}
+
+async function hasLivestockActivitySignal(pool, userId) {
+    const start = new Date();
+    start.setUTCDate(start.getUTCDate() - 60);
+    const startDate = start.toISOString().slice(0, 10);
+    const end = todayUtc();
+    const cnt = await countFeedMixCostsInRange(pool, userId, startDate, end);
+    return cnt > 0;
+}
+
+async function fetchLastRevenueDate(pool, userId) {
+    const res = await pool.query(
+        `SELECT MAX(COALESCE(date, created_at::date))::text AS d
+         FROM farmrevenue WHERE user_id = $1`,
+        [userId]
+    );
+    return res.rows[0].d || null;
+}
+
+async function fetchLastActivityDate(pool, userId, lastSoilDate) {
+    const dates = [];
+    const actions = cropStore.listRecentActionsForUser(userId, 1);
+    if (actions[0]) {
+        dates.push(String(actions[0].completedDate || actions[0].createdAt || '').slice(0, 10));
+    }
+    if (lastSoilDate) {
+        dates.push(String(lastSoilDate).slice(0, 10));
+    }
+    try {
+        const [costRes, revRes] = await Promise.all([
+            pool.query(
+                `SELECT MAX(created_at::date)::text AS d FROM farmcosts WHERE user_id = $1`,
+                [userId]
+            ),
+            pool.query(
+                `SELECT MAX(COALESCE(date, created_at::date))::text AS d
+                 FROM farmrevenue WHERE user_id = $1`,
+                [userId]
+            )
+        ]);
+        if (costRes.rows[0].d) {
+            dates.push(costRes.rows[0].d);
+        }
+        if (revRes.rows[0].d) {
+            dates.push(revRes.rows[0].d);
+        }
+    } catch (_) {
+        /* pool optional in tests */
+    }
+    const valid = dates.filter((d) => d && d.length >= 10);
+    if (!valid.length) {
+        return null;
+    }
+    return valid.sort().pop();
+}
+
+async function fetchActivityDateSet(pool, userId, lookbackDays) {
+    const end = todayUtc();
+    const start = new Date(end + 'T12:00:00Z');
+    start.setUTCDate(start.getUTCDate() - (lookbackDays - 1));
+    const startDate = start.toISOString().slice(0, 10);
+    const set = new Set();
+
+    cropStore.listRecentActionsForUser(userId, 500).forEach((a) => {
+        const d = String(a.completedDate || a.createdAt || '').slice(0, 10);
+        if (d >= startDate && d <= end) {
+            set.add(d);
+        }
+    });
+
+    cropStore.listRecentSoilTestsForUser(userId, 200).forEach((t) => {
+        const d = String(t.testDate || t.createdAt || '').slice(0, 10);
+        if (d >= startDate && d <= end) {
+            set.add(d);
+        }
+    });
+
+    try {
+        const [costs, revenue, soil] = await Promise.all([
+            pool.query(
+                `SELECT DISTINCT created_at::date::text AS d FROM farmcosts
+                 WHERE user_id = $1 AND created_at::date >= $2::date AND created_at::date <= $3::date`,
+                [userId, startDate, end]
+            ),
+            pool.query(
+                `SELECT DISTINCT COALESCE(date, created_at::date)::text AS d FROM farmrevenue
+                 WHERE user_id = $1 AND COALESCE(date, created_at::date) >= $2::date
+                   AND COALESCE(date, created_at::date) <= $3::date`,
+                [userId, startDate, end]
+            ),
+            soilTestsStore.isUuid(userId)
+                ? pool.query(
+                      `SELECT DISTINCT test_date::text AS d FROM soiltests
+                       WHERE user_id = $1 AND test_date >= $2::date AND test_date <= $3::date`,
+                      [userId, startDate, end]
+                  )
+                : Promise.resolve({ rows: [] })
+        ]);
+        costs.rows.forEach((r) => set.add(r.d));
+        revenue.rows.forEach((r) => set.add(r.d));
+        soil.rows.forEach((r) => set.add(r.d));
+    } catch (_) {
+        /* ignore */
+    }
+    return set;
+}
+
+function computeActivityStreak(activityDates, today) {
+    if (!activityDates || !activityDates.size) {
+        return 0;
+    }
+    let streak = 0;
+    const d = new Date(today + 'T12:00:00Z');
+    for (let i = 0; i < 90; i++) {
+        const key = d.toISOString().slice(0, 10);
+        if (activityDates.has(key)) {
+            streak += 1;
+            d.setUTCDate(d.getUTCDate() - 1);
+        } else {
+            break;
+        }
+    }
+    return streak;
+}
+
+function daysSinceDate(isoDate, today) {
+    if (!isoDate) {
+        return null;
+    }
+    const a = new Date(String(isoDate).slice(0, 10) + 'T12:00:00Z');
+    const b = new Date(today + 'T12:00:00Z');
+    return Math.floor((b - a) / 86400000);
+}
+
+function hasAnyActivityToday(todayStats) {
+    return (
+        (todayStats.actions || 0) +
+            (todayStats.soilTests || 0) +
+            (todayStats.costs || 0) +
+            (todayStats.revenue || 0) >
+        0
+    );
+}
+
+/**
+ * W5-01 — deterministic daily checklist from farm data (always "today").
+ * @param {object} input
+ * @returns {{ progress: object, routines: object, items: object[] }}
+ */
+function buildDailyChecklist({
+    today,
+    todayStats,
+    lastSoilDate,
+    lastActivityDate,
+    lastRevenueDate,
+    hasLivestockSignal,
+    feedMixToday,
+    activityStreak
+}) {
+    const items = [];
+    const todayLabel = today;
+
+    if (hasAnyActivityToday(todayStats)) {
+        const parts = [];
+        if (todayStats.actions) {
+            parts.push(`${todayStats.actions} action${todayStats.actions === 1 ? '' : 's'}`);
+        }
+        if (todayStats.soilTests) {
+            parts.push(`${todayStats.soilTests} soil`);
+        }
+        if (todayStats.costs) {
+            parts.push(`${todayStats.costs} cost`);
+        }
+        if (todayStats.revenue) {
+            parts.push(`${todayStats.revenue} revenue`);
+        }
+        items.push({
+            id: 'log-activity',
+            label: 'Log farm activity',
+            state: 'done',
+            reason: `Logged today (${parts.join(', ') || 'activity'}).`,
+            action: null
+        });
+    } else {
+        items.push({
+            id: 'log-activity',
+            label: 'Log farm activity',
+            state: 'due',
+            reason: 'No activity recorded yet today.',
+            action: { label: 'Log crop action', target: 'crop-action' }
+        });
+    }
+
+    const soilDays = daysSinceDate(lastSoilDate, today);
+    if (todayStats.soilTests > 0) {
+        items.push({
+            id: 'soil-status',
+            label: 'Review soil status',
+            state: 'done',
+            reason: 'Soil test logged today.',
+            action: null
+        });
+    } else if (!lastSoilDate) {
+        items.push({
+            id: 'soil-status',
+            label: 'Review soil status',
+            state: 'attention',
+            reason: 'No soil tests on record.',
+            action: { label: 'Add soil test', target: 'soil-test' }
+        });
+    } else if (soilDays != null && soilDays > 30) {
+        items.push({
+            id: 'soil-status',
+            label: 'Review soil status',
+            state: 'due',
+            reason: `Last soil test ${soilDays} days ago.`,
+            action: { label: 'Add soil test', target: 'soil-test' }
+        });
+    } else {
+        items.push({
+            id: 'soil-status',
+            label: 'Review soil status',
+            state: 'done',
+            reason:
+                soilDays === 0
+                    ? 'Soil data is current.'
+                    : `Last soil test ${soilDays} day${soilDays === 1 ? '' : 's'} ago.`,
+            action: null
+        });
+    }
+
+    if (!hasLivestockSignal) {
+        items.push({
+            id: 'feed-cost',
+            label: 'Review feed costs',
+            state: 'optional',
+            reason: 'No recent feed-mix costs — skip if livestock is inactive.',
+            action: { label: 'Add feed cost', target: 'feed-mix-cost' }
+        });
+    } else if (feedMixToday > 0) {
+        items.push({
+            id: 'feed-cost',
+            label: 'Review feed costs',
+            state: 'done',
+            reason: 'Feed cost logged today.',
+            action: null
+        });
+    } else {
+        items.push({
+            id: 'feed-cost',
+            label: 'Review feed costs',
+            state: 'due',
+            reason: 'Livestock feed activity detected — log today’s feed cost if needed.',
+            action: { label: 'Add feed cost', target: 'feed-mix-cost' }
+        });
+    }
+
+    if (todayStats.revenue > 0) {
+        items.push({
+            id: 'log-revenue',
+            label: 'Log revenue',
+            state: 'done',
+            reason: 'Revenue recorded today.',
+            action: null
+        });
+    } else if (todayStats.costs > 0) {
+        items.push({
+            id: 'log-revenue',
+            label: 'Log revenue',
+            state: 'attention',
+            reason: 'Costs logged today — add revenue if you had a sale.',
+            action: { label: 'Add revenue', target: 'revenue' }
+        });
+    } else {
+        items.push({
+            id: 'log-revenue',
+            label: 'Log revenue',
+            state: 'optional',
+            reason: 'Log when you complete a sale today.',
+            action: { label: 'Add revenue', target: 'revenue' }
+        });
+    }
+
+    const applicable = items.filter((i) => i.state !== 'optional');
+    const done = items.filter((i) => i.state === 'done').length;
+
+    return {
+        progress: {
+            done: done,
+            total: items.length,
+            applicable: applicable.length,
+            applicableDone: applicable.filter((i) => i.state === 'done').length
+        },
+        routines: {
+            lastActivityDate: lastActivityDate,
+            lastSoilTestDate: lastSoilDate,
+            lastRevenueDate: lastRevenueDate,
+            activityStreakDays: activityStreak
+        },
+        items: items,
+        date: todayLabel
+    };
+}
+
 async function fetchLastSoilTestDate(pool, userId) {
     let last = null;
     if (soilTestsStore.isUuid(userId)) {
@@ -514,6 +827,34 @@ async function getCommandCenter(pool, userId, opts) {
             fetchLastSoilTestDate(pool, userId)
         ]);
 
+    const [
+        todayStats,
+        lastRevenueDate,
+        lastActivityDate,
+        hasLivestockSignal,
+        feedMixToday,
+        activityDates
+    ] = await Promise.all([
+        buildPeriodStats(pool, userId, today, today),
+        fetchLastRevenueDate(pool, userId),
+        fetchLastActivityDate(pool, userId, lastSoilDate),
+        hasLivestockActivitySignal(pool, userId),
+        countFeedMixCostsInRange(pool, userId, today, today),
+        fetchActivityDateSet(pool, userId, 90)
+    ]);
+
+    const activityStreak = computeActivityStreak(activityDates, today);
+    const dailyChecklist = buildDailyChecklist({
+        today,
+        todayStats,
+        lastSoilDate,
+        lastActivityDate,
+        lastRevenueDate,
+        hasLivestockSignal,
+        feedMixToday,
+        activityStreak
+    });
+
     const listLimit = bounds.window === '30d' ? 30 : 20;
 
     const [recentCosts, recentRevenue, recentSoil, recentActions, largestDriver, latestRevenue] =
@@ -586,12 +927,15 @@ async function getCommandCenter(pool, userId, opts) {
             }
         },
         attention,
+        dailyChecklist,
         generatedAt: new Date().toISOString()
     };
 }
 
 module.exports = {
     getCommandCenter,
+    buildDailyChecklist,
+    computeActivityStreak,
     normalizeWindow,
     resolveWindowBounds,
     todayUtc,

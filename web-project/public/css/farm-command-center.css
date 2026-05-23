@@ -766,3 +766,170 @@
     letter-spacing: 0;
     margin-left: 0.35rem;
 }
+
+/* W5-01 — daily operating checklist */
+.fcc-checklist-section {
+    margin-bottom: 1.1rem;
+    padding-bottom: 0.25rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.fcc-checklist {
+    background: #fafafa;
+    border: 1px solid #e8e8e8;
+    border-radius: 10px;
+    padding: 0.85rem 1rem;
+}
+
+.fcc-checklist-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.65rem;
+}
+
+.fcc-checklist-progress {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.fcc-check-ring {
+    width: 2.25rem;
+    height: 2.25rem;
+    flex-shrink: 0;
+}
+
+.fcc-check-ring-bg {
+    fill: none;
+    stroke: #e0e0e0;
+    stroke-width: 3;
+}
+
+.fcc-check-ring-fill {
+    fill: none;
+    stroke: #2e7d32;
+    stroke-width: 3;
+    stroke-linecap: round;
+    transform: rotate(-90deg);
+    transform-origin: 50% 50%;
+}
+
+.fcc-check-progress-text {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #37474f;
+}
+
+.fcc-routine-freshness {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    font-size: 0.72rem;
+    color: #78909c;
+    margin-bottom: 0.65rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px dashed #e0e0e0;
+}
+
+.fcc-routine-freshness strong {
+    color: #455a64;
+    font-weight: 600;
+}
+
+.fcc-routine-pill {
+    background: #e8f5e9;
+    color: #2e7d32;
+    font-weight: 600;
+    padding: 0.1rem 0.45rem;
+    border-radius: 4px;
+    font-size: 0.68rem;
+}
+
+.fcc-checklist-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.fcc-check-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.55rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.fcc-check-row:last-child {
+    border-bottom: none;
+}
+
+.fcc-check-status {
+    flex-shrink: 0;
+    width: 1.25rem;
+    text-align: center;
+    margin-top: 0.1rem;
+    font-size: 0.95rem;
+}
+
+.fcc-check-done .fcc-check-status {
+    color: #2e7d32;
+}
+
+.fcc-check-due .fcc-check-status {
+    color: #90a4ae;
+}
+
+.fcc-check-attention .fcc-check-status {
+    color: #e65100;
+}
+
+.fcc-check-optional .fcc-check-status {
+    color: #b0bec5;
+}
+
+.fcc-check-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+
+.fcc-check-label {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #212529;
+}
+
+.fcc-check-reason {
+    font-size: 0.75rem;
+    color: #607d8b;
+    line-height: 1.35;
+}
+
+.fcc-check-action {
+    flex-shrink: 0;
+    align-self: center;
+}
+
+.fcc-check-action .btn {
+    min-height: 2rem;
+    font-size: 0.75rem;
+    white-space: nowrap;
+}
+
+@media (max-width: 575px) {
+    .fcc-check-row {
+        flex-wrap: wrap;
+    }
+
+    .fcc-check-action {
+        width: 100%;
+        padding-left: 1.8rem;
+    }
+
+    .fcc-check-action .btn {
+        width: 100%;
+    }
+}
