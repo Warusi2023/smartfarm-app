@@ -60,6 +60,13 @@
             margin-bottom: 30px;
         }
 
+        .farm-action-deep-link-highlight {
+            outline: 2px solid #0d6efd;
+            outline-offset: 2px;
+            background-color: rgba(13, 110, 253, 0.08);
+            border-radius: 4px;
+        }
+
         .card-custom {
             background: white;
             border-radius: 15px;
@@ -143,6 +150,18 @@
         .crop-card:hover {
             border-color: var(--primary-color);
             box-shadow: 0 4px 12px rgba(46, 125, 50, 0.15);
+        }
+
+        .crop-soil-summary {
+            border: 1px dashed #c8e6c9;
+            border-radius: 8px;
+            padding: 12px;
+            background: #f9fdf9;
+        }
+
+        .crop-soil-summary-label {
+            font-weight: 600;
+            color: #2e7d32;
         }
 
         .crop-image {
@@ -790,6 +809,13 @@
             updateStatistics();
             setupEventListeners();
             calculateAndDisplayMaturityDate();
+
+            document.addEventListener('smartfarm:soil-test-saved', function (ev) {
+                const cropId = ev.detail && ev.detail.cropId;
+                if (cropId != null) {
+                    refreshCropSoilSummary(cropId);
+                }
+            });
         });
 
         function setupEventListeners() {
@@ -1002,6 +1028,103 @@
                 const cropCard = createCropCard(crop);
                 container.appendChild(cropCard);
             });
+
+            refreshAllCropSoilSummaries();
+        }
+
+        async function refreshCropSoilSummary(cropId) {
+            const body = document.querySelector(
+                '[data-crop-soil-id="' + cropId + '"] .crop-soil-summary-body'
+            );
+            if (!body || !window.CropRecommendationLog) return;
+            try {
+                const test = await CropRecommendationLog.fetchLatestSoilTest(cropId);
+                body.innerHTML = CropRecommendationLog.renderSoilSummaryHtml(cropId, test);
+            } catch (e) {
+                console.warn('Soil summary refresh failed', cropId, e);
+                body.innerHTML = CropRecommendationLog.renderSoilSummaryHtml(cropId, null);
+            }
+        }
+
+        function refreshAllCropSoilSummaries() {
+            if (!window.CropRecommendationLog) return;
+            crops.forEach((crop) => refreshCropSoilSummary(crop.id));
+        }
+
+        function buildMinimalSoilRecommendations(crop) {
+            const growthStage = crop.growthStage || crop.status || 'vegetative';
+            return {
+                growthStage: growthStage,
+                fertilizer: [
+                    {
+                        name: 'General nutrition plan',
+                        amount: '—',
+                        application: 'Log a soil test to refine advice',
+                        reason: 'Baseline for soil refine flow'
+                    }
+                ],
+                tips: ['Save a soil test to adjust fertilizer guidance for this crop.']
+            };
+        }
+
+        async function fetchCropNutritionRecommendations(crop) {
+            let baseUrl = null;
+            if (window.SmartFarmApiConfig && window.SmartFarmApiConfig.baseUrl) {
+                baseUrl = window.SmartFarmApiConfig.baseUrl;
+            } else if (window.SmartFarmConfig && window.SmartFarmConfig.API_BASE_URL) {
+                baseUrl = window.SmartFarmConfig.API_BASE_URL;
+            } else if (window.VITE_API_BASE_URL) {
+                baseUrl = window.VITE_API_BASE_URL;
+            } else {
+                baseUrl = 'https://web-production-86d39.up.railway.app';
+            }
+            baseUrl = baseUrl.replace(/\/$/, '');
+            let apiUrl;
+            if (baseUrl.endsWith('/api')) {
+                apiUrl = baseUrl + '/ai-advisory/crop-nutrition/' + crop.id;
+            } else {
+                apiUrl = baseUrl + '/api/ai-advisory/crop-nutrition/' + crop.id;
+            }
+            const params = new URLSearchParams({
+                name: crop.name || '',
+                variety: crop.variety || '',
+                growthStage: crop.growthStage || crop.status || 'vegetative',
+                plantingDate: crop.plantingDate || '',
+                field: crop.field || ''
+            });
+            apiUrl += '?' + params.toString();
+
+            const response = await fetch(apiUrl, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                mode: 'cors'
+            });
+            if (!response.ok) return null;
+            const data = await response.json();
+            if (!data.success) return null;
+            return data.data || data;
+        }
+
+        async function openSoilTestFromCropCard(cropId) {
+            const crop = crops.find((c) => c.id == cropId);
+            if (!crop) {
+                showAlert('Crop not found.', 'error');
+                return;
+            }
+            if (!window.CropRecommendationLog) {
+                showAlert('Soil test module is not loaded.', 'error');
+                return;
+            }
+            let recommendations = null;
+            try {
+                recommendations = await fetchCropNutritionRecommendations(crop);
+            } catch (e) {
+                console.warn('Nutrition fetch for soil modal failed', e);
+            }
+            if (!recommendations) {
+                recommendations = buildMinimalSoilRecommendations(crop);
+            }
+            await CropRecommendationLog.openSoilTestFormForCrop(crop, recommendations);
         }
 
         function createCropCard(crop) {
@@ -1066,6 +1189,13 @@
                                 <div class="maturity-date">${formatDate(crop.maturityDate || calculateMaturityDate(crop))}</div>
                             </div>
                         </div>
+                    </div>
+
+                    <div class="crop-soil-summary mb-3" data-crop-soil-id="${crop.id}">
+                        <div class="crop-soil-summary-label small mb-1">
+                            <i class="fas fa-vial me-1"></i>Soil test
+                        </div>
+                        <div class="crop-soil-summary-body text-muted small">Loading…</div>
                     </div>
                     
                     <div class="d-flex gap-2">

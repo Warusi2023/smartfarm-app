@@ -64,6 +64,122 @@
         }
     }
 
+    function notifySoilTestSaved(cropId, test) {
+        if (cropId == null) return;
+        try {
+            global.dispatchEvent(
+                new CustomEvent('smartfarm:soil-test-saved', {
+                    detail: { cropId: cropId, test: test || null }
+                })
+            );
+        } catch (_) {
+            /* ignore */
+        }
+    }
+
+    function normalizeSoilTest(test) {
+        if (!test) return null;
+        if (test.ph !== undefined || test.nitrogen !== undefined) {
+            return test;
+        }
+        const n = test.nutrients;
+        if (n && typeof n === 'object') {
+            return {
+                ...test,
+                ph: n.ph ?? null,
+                nitrogen: n.nitrogen ?? null,
+                phosphorus: n.phosphorus ?? null,
+                potassium: n.potassium ?? null,
+                calcium: n.calcium ?? null,
+                magnesium: n.magnesium ?? null,
+                organicMatter: n.organicMatter ?? null,
+                moisture: n.moisture ?? null
+            };
+        }
+        return test;
+    }
+
+    function getLatestFromLocalCache(cropId) {
+        try {
+            const raw = global.localStorage.getItem(LS_KEY);
+            const cache = raw ? JSON.parse(raw) : { soilTests: [] };
+            const tests = (cache.soilTests || []).filter(
+                (t) => String(t.cropId) === String(cropId)
+            );
+            if (!tests.length) return null;
+            tests.sort((a, b) => String(b.testDate || '').localeCompare(String(a.testDate || '')));
+            return normalizeSoilTest(tests[0]);
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function pickLatestSoilTest(a, b) {
+        if (!a) return b ? normalizeSoilTest(b) : null;
+        if (!b) return normalizeSoilTest(a);
+        const na = normalizeSoilTest(a);
+        const nb = normalizeSoilTest(b);
+        const da = String(na.testDate || '');
+        const db = String(nb.testDate || '');
+        if (db > da) return nb;
+        if (da > db) return na;
+        const ca = na.createdAt ? new Date(na.createdAt).getTime() : 0;
+        const cb = nb.createdAt ? new Date(nb.createdAt).getTime() : 0;
+        return cb > ca ? nb : na;
+    }
+
+    async function fetchLatestSoilTest(cropId) {
+        let latest = getLatestFromLocalCache(cropId);
+        try {
+            const res = await apiRequest(
+                'GET',
+                '/crop-recommendations/soil-tests/latest/' + encodeURIComponent(cropId)
+            );
+            if (res && res.data) {
+                latest = pickLatestSoilTest(latest, res.data);
+            }
+        } catch (e) {
+            console.warn('Latest soil test fetch failed:', e.message || e);
+        }
+        return latest;
+    }
+
+    function formatNutrientValue(value, unit) {
+        if (value == null || value === '') return '—';
+        return String(value) + (unit ? ' ' + unit : '');
+    }
+
+    /**
+     * Compact HTML for crop card soil block (caller supplies cropId for CTA onclick).
+     */
+    function renderSoilSummaryHtml(cropId, test) {
+        const t = normalizeSoilTest(test);
+        const ctaLabel = t ? 'Update soil test' : 'Add soil test';
+        const safeId = typeof cropId === 'number' ? cropId : JSON.stringify(String(cropId));
+
+        if (!t) {
+            return (
+                '<div class="crop-soil-summary-inner">' +
+                '<small class="text-muted d-block mb-2">No soil test logged for this crop yet.</small>' +
+                `<button type="button" class="btn btn-sm btn-outline-primary w-100" onclick="openSoilTestFromCropCard(${safeId})">` +
+                '<i class="fas fa-flask me-1"></i>Add soil test</button></div>'
+            );
+        }
+
+        return (
+            '<div class="crop-soil-summary-inner">' +
+            `<small class="text-muted d-block mb-1">Last soil test · ${formatDateFn(t.testDate)}</small>` +
+            '<div class="small mb-2">' +
+            `pH <strong>${formatNutrientValue(t.ph, '')}</strong> · ` +
+            `N <strong>${formatNutrientValue(t.nitrogen, 'kg/ha')}</strong> · ` +
+            `P <strong>${formatNutrientValue(t.phosphorus, 'kg/ha')}</strong> · ` +
+            `K <strong>${formatNutrientValue(t.potassium, 'kg/ha')}</strong>` +
+            '</div>' +
+            `<button type="button" class="btn btn-sm btn-outline-primary w-100" onclick="openSoilTestFromCropCard(${safeId})">` +
+            `<i class="fas fa-flask me-1"></i>${ctaLabel}</button></div>`
+        );
+    }
+
     function setAdviceContext(crop, recommendations) {
         adviceContext = { crop, recommendations, recommendationId: null };
         return adviceContext;
@@ -393,6 +509,7 @@
             try {
                 const res = await apiRequest('POST', '/crop-recommendations/soil-tests', soilTest);
                 cacheLocal({ soilTests: [res.data.test], alerts: res.data.alert ? [res.data.alert] : [] });
+                notifySoilTestSaved(adviceContext.crop.id, res.data.test);
                 showAlertFn('Soil test saved.', 'success');
                 bootstrap.Modal.getInstance(document.getElementById('recSoilTestModal')).hide();
                 refreshAlertsPanel();
@@ -580,6 +697,9 @@
         SOIL_HEURISTIC_DISCLAIMER,
         soilDisclaimerHtml,
         renderRefinedAdviceHtml,
-        refineAdviceWithSoil
+        refineAdviceWithSoil,
+        fetchLatestSoilTest,
+        renderSoilSummaryHtml,
+        normalizeSoilTest
     };
 })(typeof window !== 'undefined' ? window : global);
