@@ -105,6 +105,12 @@
             border-left-color: #fd7e14;
         }
 
+        .farm-action-deep-link-highlight {
+            outline: 2px solid #0d6efd;
+            outline-offset: 2px;
+            box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.15);
+        }
+
         .task-header {
             display: flex;
             justify-content: space-between;
@@ -355,7 +361,7 @@
             <h5 class="mb-3">
                 <i class="fas fa-tasks me-2"></i>Active Weeding Tasks
             </h5>
-            <div class="task-grid" id="weedingTasksContainer">
+            <div class="task-grid" id="weedingTasksContainer" tabindex="-1">
                 <!-- Weeding tasks will be populated here -->
             </div>
         </div>
@@ -723,16 +729,42 @@
             });
         }
 
-        function populateWeedingTasks() {
-            const container = document.getElementById('weedingTasksContainer');
-            if (!container) return;
+        function mapUnifiedWeedingTask(t) {
+            return {
+                id: t.id,
+                cropName: t.crop || 'Crop',
+                location: t.field || '',
+                urgency: String(t.urgency || 'medium').toLowerCase(),
+                weedGrowthRate: t.weedGrowth != null ? t.weedGrowth : '—',
+                daysSinceLastWeeding: t.daysSince != null ? t.daysSince : '—',
+                recommendedAction: t.action || '',
+                estimatedCost: t.estimatedCost != null ? t.estimatedCost : 0,
+                weatherSuitability: t.weather || '',
+                scheduledDate: t.schedule || ''
+            };
+        }
 
-            // Get completed tasks from localStorage
+        function loadActiveWeedingTasks() {
             const completedTasks = JSON.parse(localStorage.getItem('completedWeedingTasks') || '[]');
             const completedTaskIds = completedTasks.map(task => task.taskId);
 
-            // Sample weeding tasks
-            const allTasks = [
+            try {
+                const raw = localStorage.getItem('unifiedWeedingTasks');
+                const unified = raw ? JSON.parse(raw) : [];
+                if (Array.isArray(unified) && unified.length > 0) {
+                    return unified
+                        .filter(t => {
+                            const st = String(t.status || 'active').toLowerCase();
+                            return st !== 'completed' && st !== 'done' && !completedTaskIds.includes(t.id);
+                        })
+                        .map(mapUnifiedWeedingTask);
+                }
+            } catch (e) {
+                console.warn('Could not read unifiedWeedingTasks', e);
+            }
+
+            // Sample weeding tasks (fallback when unified storage is empty)
+            return [
                 {
                     id: 'task1',
                     cropName: 'Tomatoes',
@@ -781,10 +813,35 @@
                     weatherSuitability: 'Weather OK',
                     scheduledDate: 'Next week'
                 }
-            ];
+            ].filter(task => !completedTaskIds.includes(task.id));
+        }
 
-            // Filter out completed tasks
-            const activeTasks = allTasks.filter(task => !completedTaskIds.includes(task.id));
+        function applyWeedingTaskDeepLink() {
+            const params = new URLSearchParams(window.location.search);
+            const taskId = params.get('task');
+            if (!taskId) return;
+
+            const container = document.getElementById('weedingTasksContainer');
+            if (container) {
+                container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                container.focus({ preventScroll: true });
+            }
+
+            const card = document.querySelector(
+                '[data-task-id="' + CSS.escape(String(taskId)) + '"]'
+            );
+            if (!card) return;
+
+            card.classList.add('farm-action-deep-link-highlight');
+            card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            setTimeout(() => card.classList.remove('farm-action-deep-link-highlight'), 4000);
+        }
+
+        function populateWeedingTasks() {
+            const container = document.getElementById('weedingTasksContainer');
+            if (!container) return;
+
+            const activeTasks = loadActiveWeedingTasks();
 
             container.innerHTML = '';
 
@@ -804,6 +861,8 @@
             activeTasks.forEach(task => {
                 const taskCard = document.createElement('div');
                 taskCard.className = `task-card ${task.urgency}`;
+                taskCard.setAttribute('data-task-id', task.id);
+                taskCard.id = 'weeding-task-' + task.id;
                 taskCard.innerHTML = `
                     <div class="task-header">
                         <div class="task-title">${task.cropName} - ${task.location}</div>
@@ -834,6 +893,7 @@
 
             // Update urgent alerts count
             updateUrgentAlertsCount(activeTasks);
+            applyWeedingTaskDeepLink();
         }
 
         function updateUrgentAlertsCount(activeTasks) {
