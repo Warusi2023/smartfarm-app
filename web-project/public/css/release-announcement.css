@@ -1,0 +1,37 @@
+.smartfarm-release-banner {
+    background: linear-gradient(90deg, #e8f5e9 0%, #f1f8e9 100%);
+    border-bottom: 1px solid rgba(46, 125, 50, 0.2) !important;
+    color: #1b5e20;
+    z-index: 1030;
+}
+
+.smartfarm-release-banner__icon {
+    color: #2e7d32;
+    font-size: 1.1rem;
+}
+
+.smartfarm-release-banner__text {
+    font-size: 0.95rem;
+    line-height: 1.45;
+}
+
+.smartfarm-release-banner__link {
+    color: #1b5e20;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.smartfarm-release-banner__link:hover {
+    color: #0d3d12;
+}
+
+.smartfarm-release-banner__close {
+    flex-shrink: 0;
+}
+
+@media (max-width: 576px) {
+    .smartfarm-release-banner__text {
+        font-size: 0.875rem;
+    }
+}

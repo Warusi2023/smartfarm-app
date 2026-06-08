@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [W6-02] - 2025-06-08
+
+### Added
+- **Dashboard command center (W6-02):** daily checklist, weekly summary, weekly priorities, weekly reset/carry-forward, and "This week's focus" progress pills on production dashboard.
+- **Release messaging:** in-app announcement banner (dismissible, once per user), [`release-notes.html`](web-project/public/release-notes.html), and help-center link.
+
+### Changed
+- Production API routing locked to healthy Railway host (`web-production-86d39`) on `smartfarm-app.com`.
+- Service worker offline responses return JSON instead of plain `"Offline"` text.
+- Dashboard script load order: API origin fix before fetch-dependent scripts; removed aggressive fetch override scripts.
+
+### Fixed
+- Wrong production backend URL causing CORS/503 failures on dashboard API calls.
+- JSON parse crashes when service worker returned non-JSON offline bodies.
+
+### Known limitations
+- Weather command-center block may show `unavailable` until farm coordinates and `WEATHER_API_KEY` are configured on production.
+
+## [Previous Unreleased]
+
 ### Added
 - **W1-07:** [`docs/BETA_LIMITATIONS.md`](docs/BETA_LIMITATIONS.md) — beta persistence limits for crop recommendation log, Today on farm panel, Railway/Netlify deploy behavior (also at `/docs/BETA_LIMITATIONS.md` on Netlify builds).
 - [`docs/WEEK1_WEB_RELEASE.md`](docs/WEEK1_WEB_RELEASE.md) — Week 1 web beta scope (W1-01–W1-04) with link to beta limitations.

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Release Notes — SmartFarm Dashboard (W6-02)</title>
+    <meta name="description" content="SmartFarm dashboard W6-02 release: more reliable command center, weekly planning, and weather integration.">
+    <link rel="icon" type="image/x-icon" href="images/favicon/favicon.ico">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root { --primary-dark: #2E7D32; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f8f9fa; }
+        .page-header {
+            background: linear-gradient(135deg, #8BC34A 0%, #4CAF50 50%, #2E7D32 100%);
+            color: white;
+            padding: 4rem 0 2.5rem;
+        }
+        .release-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        .release-card h1 { color: var(--primary-dark); font-size: 1.75rem; }
+        .release-meta { color: #6c757d; font-size: 0.9rem; }
+        .release-body { line-height: 1.7; color: #333; }
+        .release-body ul { margin-top: 1rem; }
+    </style>
+</head>
+<body>
+    <header class="page-header">
+        <div class="container">
+            <p class="mb-1 release-meta"><i class="fas fa-calendar-alt me-1"></i> June 2025 · W6-02</p>
+            <h1 class="h2 mb-0">SmartFarm Dashboard Release Notes</h1>
+        </div>
+    </header>
+
+    <main class="container py-4 py-md-5">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <article class="release-card">
+                    <h1>Dashboard reliability &amp; weekly planning update</h1>
+                    <p class="release-meta mb-4">Official user-facing announcement</p>
+                    <div class="release-body">
+                        <p>We've updated the SmartFarm dashboard to make it more reliable and easier to use. Your command center, weekly checklist, priorities, reset flow, and "This week's focus" now load more consistently and stay in sync with your farm data. The weather section is wired in and will show local conditions when your farm location and weather service are fully configured; until then you'll see a clear status message instead of broken or misleading data. If you notice anything unexpected, please let us know so we can improve it further.</p>
+                        <p>A mobile-friendly version of this experience is also on the way, so you'll soon be able to use these improvements more comfortably from your phone and tablet.</p>
+
+                        <h2 class="h5 mt-4">What's included</h2>
+                        <ul>
+                            <li><strong>Command center</strong> — daily checklist, weekly summary, and attention items</li>
+                            <li><strong>Weekly priorities</strong> — plan and track what matters this week</li>
+                            <li><strong>Weekly reset</strong> — carry forward or close out last week's work</li>
+                            <li><strong>This week's focus</strong> — progress pills for your top priorities</li>
+                            <li><strong>Weather</strong> — connected; shows local insights when location and service are configured</li>
+                        </ul>
+
+                        <p class="mt-4 mb-0">
+                            <a href="dashboard.html" class="btn btn-success"><i class="fas fa-tachometer-alt me-2"></i>Go to dashboard</a>
+                            <a href="help.html" class="btn btn-outline-secondary ms-2">Help center</a>
+                        </p>
+                    </div>
+                </article>
+
+                <section class="release-card">
+                    <h2 class="h5">Share this update (email template)</h2>
+                    <p class="text-muted small">Copy for customer email or newsletter:</p>
+                    <div class="bg-light border rounded p-3 small" id="email-template">
+                        <p class="mb-2"><strong>Subject:</strong> SmartFarm dashboard update — easier weekly planning</p>
+                        <p class="mb-0">We've updated the SmartFarm dashboard to make it more reliable and easier to use. Your command center, weekly checklist, priorities, reset flow, and "This week's focus" now load more consistently and stay in sync with your farm data. The weather section is wired in and will show local conditions when your farm location and weather service are fully configured; until then you'll see a clear status message instead of broken or misleading data. A mobile-friendly version of this experience is also on the way. If you notice anything unexpected, please reply and let us know.</p>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <footer class="text-center text-muted py-4 small">
+        <a href="index.html">SmartFarm</a> · <a href="help.html">Help</a> · <a href="dashboard.html">Dashboard</a>
+    </footer>
+</body>
+</html>
