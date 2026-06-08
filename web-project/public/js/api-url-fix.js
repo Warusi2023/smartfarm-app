@@ -41,6 +41,13 @@
   }
 
   window.__SMARTFARM_RESOLVE_API_ORIGIN__ = function resolveApiOrigin() {
+    try {
+      var host = window.location && window.location.hostname;
+      if (host && /(?:^|\.)smartfarm-app\.com$/i.test(host)) {
+        return CANONICAL_ORIGIN;
+      }
+    } catch (_) {}
+
     var candidates = [
       window.__SMARTFARM_API_BASE__,
       window.VITE_API_BASE_URL,

@@ -1282,6 +1282,10 @@ class IntelligentWeedingSystem {
         this.checkForAlerts();
     }
 
+    updateWeedingAlerts() {
+        this.checkForAlerts();
+    }
+
     checkForAlerts() {
         const urgentTasks = this.weedingTasks.filter(task => task.urgency.level === 'critical' || task.urgency.level === 'urgent');
         

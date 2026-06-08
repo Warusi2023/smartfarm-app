@@ -3,10 +3,10 @@
  * Comprehensive caching and offline support
  */
 
-const CACHE_NAME = 'smartfarm-v1.0.1';
-const STATIC_CACHE = 'smartfarm-static-v1.0.1';
-const DYNAMIC_CACHE = 'smartfarm-dynamic-v1.0.1';
-const API_CACHE = 'smartfarm-api-v1.0.1';
+const CACHE_NAME = 'smartfarm-v1.0.2';
+const STATIC_CACHE = 'smartfarm-static-v1.0.2';
+const DYNAMIC_CACHE = 'smartfarm-dynamic-v1.0.2';
+const API_CACHE = 'smartfarm-api-v1.0.2';
 
 // Files to cache immediately
 const STATIC_FILES = [
@@ -81,8 +81,8 @@ self.addEventListener('activate', event => {
         caches.keys().then(cacheNames => {
             return Promise.all(
                 cacheNames.map(cacheName => {
-                    if (cacheName !== STATIC_CACHE && 
-                        cacheName !== DYNAMIC_CACHE && 
+                    if (cacheName !== STATIC_CACHE &&
+                        cacheName !== DYNAMIC_CACHE &&
                         cacheName !== API_CACHE) {
                         console.log('Deleting old cache:', cacheName);
                         return caches.delete(cacheName);
@@ -96,21 +96,26 @@ self.addEventListener('activate', event => {
     );
 });
 
-// Fetch event - serve from cache or network
+// Fetch event - serve from cache or network (same-origin static/HTML only)
 self.addEventListener('fetch', event => {
     const { request } = event;
     const url = new URL(request.url);
-    
+
     // Skip non-GET requests
     if (request.method !== 'GET') {
         return;
     }
-    
+
     // Skip chrome-extension and other non-http requests
     if (!url.protocol.startsWith('http')) {
         return;
     }
-    
+
+    // Never intercept cross-origin requests (Railway API calls must bypass SW)
+    if (url.origin !== self.location.origin) {
+        return;
+    }
+
     event.respondWith(handleRequest(request));
 });
 
@@ -287,10 +292,17 @@ async function getOfflineResponse(request) {
         });
     }
     
-    // Return a generic offline response for other requests
-    return new Response('Offline', {
+    // JSON error for API/assets — never plain "Offline" (breaks JSON.parse in clients)
+    const offlineJson = JSON.stringify({
+        success: false,
+        offline: true,
+        error: 'Network unavailable',
+        message: 'Unable to reach the server. Check your connection and try again.'
+    });
+    return new Response(offlineJson, {
         status: 503,
-        statusText: 'Service Unavailable'
+        statusText: 'Service Unavailable',
+        headers: { 'Content-Type': 'application/json' }
     });
 }
 

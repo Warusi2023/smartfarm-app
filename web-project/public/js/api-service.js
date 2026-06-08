@@ -17,6 +17,9 @@ class SmartFarmAPIService {
     }
 
     getApiBaseUrl() {
+        if (typeof window.__SMARTFARM_RESOLVE_API_ORIGIN__ === 'function') {
+            return window.__SMARTFARM_RESOLVE_API_ORIGIN__();
+        }
         // Use single source of truth from api-config.js
         if (window.SmartFarmApiConfig) {
             const url = window.SmartFarmApiConfig.baseUrl;
@@ -122,6 +125,7 @@ class SmartFarmAPIService {
 
     // Generic API request method with retry logic and error handling
     async request(endpoint, options = {}, retryCount = 0, isRetrying401 = false) {
+        this.baseURL = this.getApiBaseUrl();
         const url = `${this.baseURL}/api${endpoint}`;
         const maxRetries = 1; // Reduced to 1 to minimize error spam
         const config = {
@@ -233,7 +237,18 @@ class SmartFarmAPIService {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         
-        const data = await response.json();
+        const text = await response.text();
+        let data = null;
+        try {
+            data = text ? JSON.parse(text) : null;
+        } catch (_) {
+            return {
+                success: false,
+                error: 'Invalid JSON response from server',
+                statusCode: response.status,
+                retries: retryCount
+            };
+        }
         
         // Connection successful - remove any server unavailable banners
         const banner = document.getElementById('server-unavailable-banner');

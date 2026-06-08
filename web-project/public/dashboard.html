@@ -18,6 +18,9 @@
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- API origin must load before any fetch/API scripts -->
+    <script src="js/api-origin.js"></script>
+    <script src="js/api-url-fix.js"></script>
     <script>
         // Aggressive error suppression - must run before any other scripts
         (function() {
@@ -88,9 +91,8 @@
                 console.warn('Local QR code library not found, loading from CDN...');
                 // Try multiple CDN sources for node-qrcode library
                 const cdnSources = [
-                    'https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js',
-                    'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js',
-                    'https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js'
+                    'https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js',
+                    'https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js'
                 ];
                 
                 let currentIndex = 0;
@@ -168,47 +170,15 @@
                 }, 3000);
             }
             
-            // Try to load local file first
-            const localScript = document.createElement('script');
-            localScript.src = 'js/qrcode.min.js';
-            localScript.onload = function() {
-                if (typeof QRCode !== 'undefined') {
-                    console.log('✅ QR Code library loaded successfully from local file');
-                } else {
-                    console.warn('Local file loaded but QRCode not defined, trying CDN...');
-                    loadQRCodeFromCDN();
-                }
-            };
-            localScript.onerror = function() {
-                console.warn('Local QR code file not found, loading from CDN...');
-                loadQRCodeFromCDN();
-            };
-            document.head.appendChild(localScript);
-            
-            // Also check after DOM loads in case the above didn't work
-            document.addEventListener('DOMContentLoaded', function() {
-                setTimeout(function() {
-                    if (typeof QRCode === 'undefined') {
-                        console.warn('QRCode not found after initial load, attempting to load from CDN...');
-                        loadQRCodeFromCDN();
-                    } else {
-                        console.log('✅ QR Code library verified');
-                    }
-                }, 1000);
-            });
+            loadQRCodeFromCDN();
         })();
     </script>
-    <!-- Direct CDN fallback for QR Code library (backup if dynamic loading fails) -->
-    <script src="https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js" async defer onerror="console.warn('Primary CDN failed, using dynamic loader')"></script>
-    <script src="js/aggressive-server-fix.js"></script>
-    <script src="js/emergency-error-disable.js"></script>
-    <script src="js/continuous-error-suppression.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js" async defer onerror="console.warn('Primary QR CDN failed')"></script>
     <script src="js/server-connectivity-fix.js"></script>
     <script src="js/navigation-dropdown.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="js/api-origin.js"></script>
     <script src="js/currency-config.js"></script>
     <script src="js/currency-selector.js"></script>
     <script src="js/weather-service.js"></script>
@@ -218,7 +188,6 @@
     <script src="js/user-roles.js"></script>
     <script src="js/log.js"></script>
     <script src="js/error-boundary.js"></script>
-    <script src="js/api-url-fix.js"></script>
     <script src="js/api-config.js"></script>
     <script src="js/api-service.js"></script>
     <script>

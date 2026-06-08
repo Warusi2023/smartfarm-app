@@ -110,6 +110,21 @@
 
   setAuthToken(getStoredToken());
 
+  function parseResponseJson(text) {
+    if (!text) {
+      return null;
+    }
+    try {
+      return JSON.parse(text);
+    } catch (_) {
+      return {
+        success: false,
+        error: 'Invalid JSON response from server',
+        raw: text.length > 120 ? text.slice(0, 120) + '…' : text
+      };
+    }
+  }
+
   async function request(path, options) {
     options = options || {};
     var API_BASE = getApiOrigin();
@@ -134,7 +149,7 @@
     });
 
     var text = await res.text();
-    var json = text ? JSON.parse(text) : null;
+    var json = parseResponseJson(text);
 
     if (!res.ok) {
       if (res.status === 401 || res.status === 403) {
@@ -143,6 +158,9 @@
         } catch (_) {}
       }
       throw json || new Error('Request failed with ' + res.status);
+    }
+    if (json && json.success === false && json.error === 'Invalid JSON response from server') {
+      throw json;
     }
     return json;
   }
