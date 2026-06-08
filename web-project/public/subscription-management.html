@@ -11,40 +11,71 @@
         body {
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem;
+            padding: 2rem 1rem;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         .card-box {
             background: white;
             border-radius: 15px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            max-width: 560px;
-            width: 100%;
+            max-width: 640px;
+            margin: 0 auto;
             padding: 2.5rem;
-            text-align: center;
         }
+        .plan-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #eee;
+        }
+        .plan-row:last-child { border-bottom: none; }
     </style>
-    <script>
-        (function () {
-            window.location.replace('contact.html?topic=billing');
-        })();
-    </script>
+    <script src="js/api-url-fix.js"></script>
+    <script src="js/api-origin.js"></script>
+    <script src="js/api-config.js"></script>
+    <script src="js/api-service.js"></script>
+    <script src="js/subscription-billing.js"></script>
 </head>
 <body>
     <div class="card-box">
-        <h1 class="h3 mb-3"><i class="fas fa-info-circle text-primary me-2"></i>Self-serve billing not available</h1>
-        <p class="text-muted mb-4">
-            New accounts include a <strong>30-day free trial</strong> when you register.
-            Professional and Enterprise plans are set up by our team — there is no online subscription checkout yet.
-        </p>
-        <div class="d-grid gap-2">
-            <a href="pricing.html" class="btn btn-outline-primary btn-lg">View pricing</a>
-            <a href="contact.html?topic=billing" class="btn btn-success btn-lg"><i class="fas fa-envelope me-2"></i>Contact us for paid plans</a>
+        <h1 class="h3 mb-2"><i class="fas fa-credit-card text-primary me-2"></i>Billing &amp; plans</h1>
+        <p class="text-muted mb-4">Manage your SmartFarm subscription.</p>
+
+        <div id="sfBillingAlert" class="alert d-none" role="alert"></div>
+
+        <div class="mb-4">
+            <div class="plan-row">
+                <span class="text-muted">Current plan</span>
+                <strong id="sfCurrentPlan">Loading…</strong>
+            </div>
+            <div class="plan-row">
+                <span class="text-muted">Status</span>
+                <span id="sfPlanStatus">—</span>
+            </div>
+            <div class="plan-row">
+                <span class="text-muted">Trial time left</span>
+                <span id="sfTrialDays">—</span>
+            </div>
+        </div>
+
+        <div class="d-grid gap-2 mb-3">
+            <button type="button" class="btn btn-success btn-lg d-none" id="sfUpgradeBtn">
+                <i class="fas fa-arrow-up me-2"></i>Upgrade to Farm Pro — $29/month
+            </button>
+            <a href="pricing.html" class="btn btn-outline-primary">View pricing</a>
             <a href="dashboard.html" class="btn btn-link">Back to dashboard</a>
         </div>
+
+        <p class="small text-muted mb-0">
+            Enterprise plans are arranged by our team — <a href="contact.html?topic=enterprise">contact us</a>.
+        </p>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (window.SmartFarmBilling) {
+                window.SmartFarmBilling.initSubscriptionManagement();
+            }
+        });
+    </script>
 </body>
 </html>

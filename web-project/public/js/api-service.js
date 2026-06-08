@@ -946,6 +946,20 @@ class SmartFarmAPIService {
         });
     }
 
+    async createCheckoutSession() {
+        return await this.request('/subscriptions/create-checkout-session', {
+            method: 'POST',
+            body: JSON.stringify({})
+        });
+    }
+
+    async logSubscriptionEvent(eventType, metadata) {
+        return await this.request('/subscriptions/events', {
+            method: 'POST',
+            body: JSON.stringify({ eventType, metadata: metadata || {} })
+        });
+    }
+
     // Utility methods
     async healthCheck() {
         return await this.request('/health');
