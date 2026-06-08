@@ -139,8 +139,8 @@ class DatabaseHelpers {
             const planNameMap = {
                 trial: '30-Day Free Trial',
                 free: 'Free Plan',
-                professional: 'Professional Plan',
-                enterprise: 'Enterprise Plan'
+                professional: 'Farm Pro',
+                enterprise: 'Enterprise'
             };
             const planName = planNameMap[normalizedPlan] || String(plan || 'Custom Plan');
             const result = await this.dbPool.query(
@@ -172,8 +172,8 @@ class DatabaseHelpers {
                 const planNameMap = {
                     trial: '30-Day Free Trial',
                     free: 'Free Plan',
-                    professional: 'Professional Plan',
-                    enterprise: 'Enterprise Plan'
+                    professional: 'Farm Pro',
+                    enterprise: 'Enterprise'
                 };
                 mapped.plan_name = planNameMap[normalizedPlan] || updates.plan;
                 mapped.plan_type = normalizedPlan;

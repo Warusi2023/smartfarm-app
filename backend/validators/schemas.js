@@ -238,6 +238,17 @@ const validationSchemas = {
         stats: {
             // No params needed
         },
+        create: {
+            body: z.object({
+                name: z.string().min(1).max(255),
+                location: z.string().min(1).max(255),
+                areaHectares: z.coerce.number().positive(),
+                farmType: z.string().min(1).max(100),
+                description: z.string().max(2000).optional(),
+                latitude: z.coerce.number().optional(),
+                longitude: z.coerce.number().optional(),
+            }),
+        },
     },
 
     // ============ CROPS ENDPOINTS ============
@@ -363,6 +374,15 @@ const validationSchemas = {
                 page: z.coerce.number().int().positive().optional().default(1),
                 limit: z.coerce.number().int().min(1).max(100).optional().default(20),
             }).optional(),
+        },
+        createCheckoutSession: {
+            body: z.object({}).optional(),
+        },
+        logEvent: {
+            body: z.object({
+                eventType: z.string().min(1).max(64),
+                metadata: z.record(z.unknown()).optional(),
+            }),
         },
     },
 };

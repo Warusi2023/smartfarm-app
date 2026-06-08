@@ -9,6 +9,7 @@ const AuthMiddleware = require('../middleware/auth');
 const EmailService = require('../utils/emailService');
 const DatabaseHelpers = require('../utils/db-helpers');
 const SubscriptionService = require('../services/subscriptionService');
+const SubscriptionEventService = require('../services/subscriptionEventService');
 const { validate } = require('../middleware/validator');
 const logger = require('../utils/logger');
 
@@ -571,6 +572,8 @@ class AuthRoutes {
             try {
                 const subscriptionService = new SubscriptionService(this.dbPool);
                 await subscriptionService.createTrialSubscription(userId);
+                const eventService = new SubscriptionEventService(this.dbPool);
+                await eventService.log(userId, 'trial_started', { trialDays: 30, maxFarms: 1 });
             } catch (trialError) {
                 logger.warn('Failed to create trial subscription', { error: trialError, userId });
             }
@@ -656,17 +659,17 @@ class AuthRoutes {
             // Check subscription/trial status using subscription service
             const subscriptionService = new SubscriptionService(this.dbPool);
             const accessStatus = await subscriptionService.getUserAccessStatus(user.id);
-            
+            let trialExpired = false;
+            let trialEnd = null;
+
             if (!accessStatus.valid) {
                 if (accessStatus.reason === 'TRIAL_EXPIRED') {
-                    return res.status(403).json({
-                        success: false,
-                        error: 'Your free trial has ended. Please subscribe to continue using SmartFarm.',
-                        code: 'TRIAL_EXPIRED',
-                        message: 'Your 30-day free trial has expired. Please subscribe to Professional ($29/month) or Enterprise ($99/month) to continue.',
-                        requiresSubscription: true,
-                        trialEnd: accessStatus.trialEnd
-                    });
+                    trialExpired = true;
+                    trialEnd = accessStatus.trialEnd;
+                    try {
+                        const eventService = new SubscriptionEventService(this.dbPool);
+                        await eventService.log(user.id, 'trial_expired', { trialEnd: accessStatus.trialEnd, source: 'login' });
+                    } catch (_) { /* non-blocking */ }
                 } else if (accessStatus.reason === 'NO_SUBSCRIPTION') {
                     // This shouldn't happen for new users (trial is set on registration)
                     // But handle it gracefully - create trial if missing
@@ -708,7 +711,11 @@ class AuthRoutes {
                         phone: user.phone,
                         country: user.country,
                         role: user.role || 'user'
-                    }
+                    },
+                    requiresSubscription: trialExpired,
+                    subscriptionStatus: trialExpired ? 'TRIAL_EXPIRED' : 'active',
+                    upgradeUrl: trialExpired ? '/subscription-management.html' : undefined,
+                    trialEnd: trialEnd || undefined
                 }
             });
         } catch (error) {

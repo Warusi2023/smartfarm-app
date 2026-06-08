@@ -19,7 +19,8 @@ const MIGRATION_ORDER = [
     '004_auth_users_columns.sql',
     '005_subscriptions_user_unique.sql',
     '006_soiltests_farmcosts.sql',
-    '007_farmrevenue.sql'
+    '007_farmrevenue.sql',
+    '008_stripe_billing.sql'
 ];
 
 async function runMigrations() {

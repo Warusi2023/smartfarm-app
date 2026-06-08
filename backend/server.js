@@ -46,6 +46,7 @@ try {
 
 const app = express();
 const appVersion = process.env.APP_VERSION || 'dev';
+let dbPool = null;
 
 // --- CORS SETUP (bulletproof origin handling) ---
 const rawOrigins = process.env.ALLOWED_ORIGINS || process.env.CORS_ORIGINS || '';
@@ -111,6 +112,24 @@ const corsOptions = {
 // Apply CORS middleware
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions)); // proper preflight handling
+
+// Stripe webhook — raw body required (must be before express.json)
+try {
+  const { createStripeWebhookHandler } = require('./routes/stripe-webhooks');
+  app.post(
+    '/api/webhooks/stripe',
+    express.raw({ type: 'application/json' }),
+    (req, res) => {
+      if (!dbPool) {
+        return res.status(503).json({ success: false, error: 'Database unavailable' });
+      }
+      return createStripeWebhookHandler(dbPool)(req, res);
+    }
+  );
+  logger.info('Stripe webhook route mounted');
+} catch (stripeWebhookError) {
+  logger.warnWithContext('Could not mount Stripe webhook', { error: stripeWebhookError });
+}
 
 // --- JSON body, other middleware ---
 app.use(express.json({ limit: '10mb' }));
@@ -392,7 +411,6 @@ app.get('/api/ai-advisory/crop-nutrition/:cropId', validate('aiAdvisory.cropNutr
 });
 
 // Import auth routes with email verification
-let dbPool = null;
 
 // 1) Database pool init (independent)
 try {
@@ -470,6 +488,16 @@ try {
   logger.info('Subscription routes loaded');
 } catch (subscriptionError) {
   logger.warnWithContext('Could not load subscription routes', { error: subscriptionError });
+}
+
+// 3b) Farm create route with subscription limits
+try {
+  const FarmRoutes = require('./routes/farms');
+  const farmRoutes = new FarmRoutes(dbPool);
+  app.use('/api/farms', farmRoutes.getRouter());
+  logger.info('Farm routes loaded (POST with limits)');
+} catch (farmRoutesError) {
+  logger.warnWithContext('Could not load farm routes', { error: farmRoutesError });
 }
 
 // 4) AI advisory routes (isolated)

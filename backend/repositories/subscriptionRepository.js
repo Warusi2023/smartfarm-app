@@ -13,6 +13,16 @@ class SubscriptionRepository {
      * @returns {Object} Subscription plans
      */
     getPlans() {
+        const w6Features = [
+            'Farm command center',
+            'Daily checklist',
+            'Weekly summary strip',
+            'Weekly priorities',
+            'Weekly reset',
+            'Focus pills',
+            'Today on farm',
+            'Responsive web on phone and tablet'
+        ];
         return {
             trial: {
                 id: 'trial',
@@ -20,69 +30,37 @@ class SubscriptionRepository {
                 price: 0,
                 duration: 30,
                 billingCycle: 'trial',
-                features: [
-                    'All Professional features unlocked',
-                    'No farm limitations',
-                    'AI-powered insights',
-                    'Complete crop & livestock management',
-                    'Weather forecasting',
-                    'Geofencing & GPS tracking',
-                    'Financial management',
-                    'Inventory management',
-                    'Priority support',
-                    'API access'
-                ],
+                features: w6Features,
                 limits: {
-                    maxFarms: -1, // Unlimited during trial
-                    maxUsers: 5,
-                    apiCallsPerMonth: 10000
+                    maxFarms: 1
                 },
-                note: 'After 30 days, subscription required to continue'
+                note: 'After 30 days, upgrade to Farm Pro to continue'
             },
             professional: {
                 id: 'professional',
-                name: 'Professional Plan',
+                name: 'Farm Pro',
                 price: 29,
                 billingCycle: 'monthly',
-                features: [
-                    'Up to 10 farms',
-                    'Advanced crop management',
-                    'Complete livestock tracking',
-                    'AI-powered insights',
-                    'Weather forecasting',
-                    'Geofencing & GPS tracking',
-                    'Financial management',
-                    'Inventory management',
-                    'Priority support',
-                    'API access'
-                ],
+                selfServe: true,
+                features: w6Features,
                 limits: {
-                    maxFarms: 10,
-                    maxUsers: 5,
-                    apiCallsPerMonth: 10000
+                    maxFarms: 3
                 }
             },
             enterprise: {
                 id: 'enterprise',
-                name: 'Enterprise Plan',
-                price: 99,
-                billingCycle: 'monthly',
+                name: 'Enterprise',
+                price: null,
+                billingCycle: 'contact',
+                selfServe: false,
+                contactOnly: true,
                 features: [
-                    'Unlimited farms',
-                    'Everything in Professional',
-                    'Multi-user management',
-                    'Advanced analytics',
-                    'Custom integrations',
-                    'White-label options',
+                    'Custom farm count and onboarding',
                     'Dedicated support',
-                    'Custom training',
-                    'SLA guarantee',
-                    'On-premise deployment'
+                    'Contact our team for pricing'
                 ],
                 limits: {
-                    maxFarms: -1,
-                    maxUsers: -1,
-                    apiCallsPerMonth: -1
+                    maxFarms: -1
                 }
             }
         };

@@ -95,13 +95,13 @@ class SubscriptionService {
             return { valid: true, reason: 'OK', level: 'enterprise', maxFarms: -1 };
         }
         if (p === 'trial' || data.plan === 'trial') {
-            return { valid: true, reason: 'OK', level: 'pro', maxFarms: -1 };
+            return { valid: true, reason: 'OK', level: 'trial', maxFarms: 1 };
         }
         if (['professional', 'free', 'pro'].includes(p)) {
-            return { valid: true, reason: 'OK', level: 'pro', maxFarms: 10 };
+            return { valid: true, reason: 'OK', level: 'pro', maxFarms: 3 };
         }
         if (data.status === 'active') {
-            return { valid: true, reason: 'OK', level: 'pro', maxFarms: 10 };
+            return { valid: true, reason: 'OK', level: 'pro', maxFarms: 3 };
         }
         return { valid: false, reason: 'NO_SUBSCRIPTION', level: 'none', maxFarms: 0 };
     }
@@ -132,13 +132,17 @@ class SubscriptionService {
                     const daysRemaining = Math.ceil((trialEnd - now) / (1000 * 60 * 60 * 24));
                     return {
                         plan: 'trial',
+                        planName: '30-Day Free Trial',
                         status: 'active',
                         trialEnd: trialEnd.toISOString(),
                         daysRemaining: daysRemaining,
+                        maxFarms: 1,
+                        priceMonthly: 0,
                         startDate: userTrialInfo.created_at || new Date().toISOString(),
                         nextBillingDate: null,
                         autoRenew: false,
-                        requiresSubscription: true
+                        requiresSubscription: true,
+                        canUpgrade: true
                     };
                 }
                 return {
@@ -146,8 +150,10 @@ class SubscriptionService {
                     status: 'trial_expired',
                     trialEnd: trialEnd.toISOString(),
                     daysRemaining: 0,
+                    maxFarms: 0,
                     requiresSubscription: true,
-                    message: 'Your free trial has ended. Please subscribe to continue using SmartFarm.'
+                    canUpgrade: true,
+                    message: 'Your free trial has ended. Upgrade to Farm Pro to continue using SmartFarm.'
                 };
             }
 
@@ -159,7 +165,15 @@ class SubscriptionService {
             };
         }
 
-        return subscription;
+        const planKey = String(subscription.plan || subscription.plan_type || '').toLowerCase();
+        const evaluated = this.evaluateSubscription(subscription);
+        return {
+            ...subscription,
+            planName: subscription.planName || (planKey === 'professional' ? 'Farm Pro' : subscription.plan_name),
+            maxFarms: evaluated.maxFarms,
+            priceMonthly: planKey === 'professional' ? 29 : undefined,
+            canUpgrade: planKey !== 'professional' && planKey !== 'enterprise'
+        };
     }
 
     /**
@@ -239,8 +253,8 @@ class SubscriptionService {
 }
 
 SubscriptionService.PLAN_CONFIG = {
-    trial: { maxFarms: -1 },
-    professional: { maxFarms: 10 },
+    trial: { maxFarms: 1 },
+    professional: { maxFarms: 3 },
     enterprise: { maxFarms: -1 }
 };
 

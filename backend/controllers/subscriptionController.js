@@ -4,22 +4,26 @@
  */
 
 const SubscriptionService = require('../services/subscriptionService');
+const StripeBillingService = require('../services/stripeBillingService');
+const SubscriptionEventService = require('../services/subscriptionEventService');
 const { BadRequestError } = require('../middleware/error-handler');
 const logger = require('../utils/logger');
 
 class SubscriptionController {
     constructor(dbPool) {
+        this.dbPool = dbPool;
         this.subscriptionService = new SubscriptionService(dbPool);
+        this.stripeBilling = new StripeBillingService(dbPool);
+        this.events = new SubscriptionEventService(dbPool);
     }
 
-    /** Paid self-serve billing is disabled until a payment provider is integrated. */
+    /** Legacy direct subscribe — use Stripe Checkout instead. */
     billingNotEnabled(res) {
         return res.status(503).json({
             success: false,
-            error: 'Online subscription billing is not enabled',
-            code: 'BILLING_NOT_ENABLED',
-            message:
-                'Paid plans are arranged manually during beta. Register for a 30-day free trial, or contact us for Professional or Enterprise.'
+            error: 'Direct subscription API is deprecated',
+            code: 'USE_STRIPE_CHECKOUT',
+            message: 'Use POST /api/subscriptions/create-checkout-session to upgrade to Farm Pro.'
         });
     }
 
@@ -105,6 +109,82 @@ class SubscriptionController {
             success: true,
             data: history || []
         });
+    }
+
+    /**
+     * Public billing config (publishable key only).
+     * GET /api/subscriptions/billing-config
+     */
+    async getBillingConfig(req, res) {
+        res.json({
+            success: true,
+            data: {
+                billingEnabled: this.stripeBilling.isConfigured(),
+                publishableKey: this.stripeBilling.getPublishableKey(),
+                farmProPriceMonthly: 29,
+                currency: 'usd'
+            }
+        });
+    }
+
+    /**
+     * Create Stripe Checkout Session for Farm Pro.
+     * POST /api/subscriptions/create-checkout-session
+     */
+    async createCheckoutSession(req, res) {
+        if (!this.stripeBilling.isConfigured()) {
+            return res.status(503).json({
+                success: false,
+                error: 'Stripe billing is not configured',
+                code: 'BILLING_NOT_CONFIGURED'
+            });
+        }
+
+        const userId = req.user.id;
+        const email = req.user.email;
+
+        try {
+            const session = await this.stripeBilling.createCheckoutSession(userId, email);
+            res.json({
+                success: true,
+                data: session
+            });
+        } catch (error) {
+            logger.errorWithContext('createCheckoutSession failed', {
+                userId,
+                error: error.message
+            });
+            if (error.code === 'BILLING_NOT_CONFIGURED') {
+                return res.status(503).json({
+                    success: false,
+                    error: error.message,
+                    code: error.code
+                });
+            }
+            throw error;
+        }
+    }
+
+    /**
+     * Log client-side subscription analytics events.
+     * POST /api/subscriptions/events
+     */
+    async logEvent(req, res) {
+        const userId = req.user.id;
+        const { eventType, metadata } = req.body || {};
+        const allowed = new Set([
+            'command_center_load',
+            'dashboard_load',
+            'upgrade_started',
+            'trial_expired'
+        ]);
+
+        if (!eventType || !allowed.has(eventType)) {
+            throw new BadRequestError('Invalid or missing eventType');
+        }
+
+        await this.events.log(userId, eventType, metadata || {});
+        res.json({ success: true });
     }
 }
 

@@ -48,6 +48,7 @@ class SubscriptionMiddleware {
 
                 // Check access level (pro vs enterprise)
                 const levelRank = {
+                    trial: 1,
                     pro: 1,
                     enterprise: 2
                 };

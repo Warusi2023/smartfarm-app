@@ -20,6 +20,12 @@ class SubscriptionRoutes {
     }
 
     setupRoutes() {
+        // Billing config (public — publishable key only)
+        this.router.get('/billing-config',
+            cacheMiddleware('subscriptions:billing-config', CACHE_TTL.SUBSCRIPTION_PLANS),
+            asyncHandler(this.controller.getBillingConfig.bind(this.controller))
+        );
+
         // Get subscription plans (public) - cached (static data)
         this.router.get('/plans', 
             cacheMiddleware('subscriptions:plans', CACHE_TTL.SUBSCRIPTION_PLANS),
@@ -34,7 +40,22 @@ class SubscriptionRoutes {
             asyncHandler(this.controller.getCurrentSubscription.bind(this.controller))
         );
         
-        // Subscribe to a plan (protected) - invalidates cache
+        // Stripe Checkout session (protected)
+        this.router.post('/create-checkout-session',
+            this.authMiddleware.authenticate(),
+            invalidateCache('subscriptions:create'),
+            validate('subscriptions.createCheckoutSession'),
+            asyncHandler(this.controller.createCheckoutSession.bind(this.controller))
+        );
+
+        // Client analytics events (protected)
+        this.router.post('/events',
+            this.authMiddleware.authenticate(),
+            validate('subscriptions.logEvent'),
+            asyncHandler(this.controller.logEvent.bind(this.controller))
+        );
+
+        // Legacy subscribe — redirects to Stripe Checkout flow
         this.router.post('/subscribe', 
             this.authMiddleware.authenticate(), 
             invalidateCache('subscriptions:create'),
