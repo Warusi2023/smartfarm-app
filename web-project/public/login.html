@@ -568,8 +568,11 @@
                         sessionStorage.setItem('smartfarm_refresh_token', data.data.refreshToken);
                     }
                 }
+                const redirectUrl = data.data.requiresSubscription || data.data.subscriptionStatus === 'TRIAL_EXPIRED'
+                    ? 'subscription-management.html?reason=trial_expired'
+                    : (new URLSearchParams(window.location.search).get('redirect') || 'dashboard.html?login=success');
                 setTimeout(() => {
-                    window.location.href = 'dashboard.html?login=success';
+                    window.location.href = redirectUrl;
                 }, 1500);
             }
 

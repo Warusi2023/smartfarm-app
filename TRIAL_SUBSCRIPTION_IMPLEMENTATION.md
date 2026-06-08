@@ -1,260 +1,103 @@
-# 🎯 30-Day Free Trial Implementation Summary
+# SmartFarm subscription billing (web)
 
-## ✅ Implementation Complete
+## Plans (shipped)
 
-SmartFarm has been successfully updated from a **Free Tier** model to a **30-Day Free Trial** model. This change eliminates subscription abuse, multi-device bypass issues, and provides a cleaner, more professional pricing structure.
+| Plan | Price | Farms | Self-serve |
+|------|-------|-------|------------|
+| **30-day trial** | $0 | 1 | Register + verify email |
+| **Farm Pro** | $29/month per account | Up to 3 | Stripe Checkout |
+| **Enterprise** | Contact-only | Custom | Contact sales |
 
----
+Per-farm pricing, seat licensing, and self-serve Enterprise are **out of scope** for this phase.
 
-## 🔄 What Changed
+## Billing path
 
-### **Before:**
-- ❌ Free Plan with 2 farms limit
-- ❌ Users could create unlimited free accounts
-- ❌ Multi-device bypass problem
-- ❌ Confusing plan levels
+1. User registers → `trial_end` set to 30 days, `trial_started` event logged.
+2. Trial user clicks **Upgrade to Farm Pro** → `POST /api/subscriptions/create-checkout-session` → `upgrade_started` logged.
+3. User pays on Stripe-hosted Checkout.
+4. Stripe webhook `POST /api/webhooks/stripe` (raw body, before `express.json`) activates `professional` in `subscriptions`.
+5. User returns to `subscription-management.html?checkout=success` → `upgrade_completed` logged on webhook.
 
-### **After:**
-- ✅ 30-Day Free Trial (all Professional features unlocked)
-- ✅ No farm limitations during trial
-- ✅ After trial: Must subscribe to Professional ($29/month) or Enterprise ($99/month)
-- ✅ Cleaner pricing: Trial → Pro → Enterprise
+### Webhook events handled
 
----
+- `checkout.session.completed` — activate Farm Pro
+- `customer.subscription.updated` — sync status (active / past_due)
+- `customer.subscription.deleted` — mark cancelled
+- `invoice.payment_failed` — log only (v1)
 
-## 📋 Updated Subscription Plans
+## Environment variables
 
-### 1. **30-Day Free Trial** (NEW)
-- **Price:** $0 for 30 days
-- **Features:** All Professional features unlocked
-- **Limits:** Unlimited farms during trial
-- **After 30 days:** Subscription required
-
-### 2. **Professional Plan**
-- **Price:** $29/month
-- **Features:** Up to 10 farms, AI insights, full management
-- **Status:** Unchanged
-
-### 3. **Enterprise Plan**
-- **Price:** $99/month
-- **Features:** Unlimited farms, custom analytics, dedicated support
-- **Status:** Unchanged
-
----
-
-## 🔧 Backend Changes
-
-### 1. **Database Schema** (`backend/utils/db-helpers.js`)
-- ✅ Added `getUserTrialInfo()` - Gets user's trial_end date
-- ✅ Added `hasActiveAccess()` - Checks if user has active subscription or valid trial
-- ✅ Added `initializeTrial()` - Sets trial_end to 30 days from registration
-- ✅ Updated `createUserWithVerification()` - Automatically sets `trial_end` on user creation
-
-### 2. **Subscription Routes** (`backend/routes/subscriptions.js`)
-- ✅ Removed "free" plan from available plans
-- ✅ Added "trial" plan information
-- ✅ Updated `getCurrentSubscription()` to check trial status
-- ✅ Updated validation to only allow 'professional' or 'enterprise' plans
-- ✅ Updated cancellation response
-
-### 3. **Authentication Routes** (`backend/routes/auth.js`)
-- ✅ Updated `login()` to check trial/subscription status
-- ✅ Returns trial expiration error if trial expired
-- ✅ Includes subscription/trial info in login response
-
-### 4. **Subscription Middleware** (`backend/middleware/subscription.js`) - NEW
-- ✅ `requireActiveAccess()` - Requires active subscription OR valid trial
-- ✅ `requirePaidSubscription()` - Requires paid subscription (no trial)
-- ✅ `optionalSubscriptionInfo()` - Adds subscription info without blocking
-
----
-
-## 🎨 Frontend Changes
-
-### 1. **Pricing Page** (`public/pricing.html`)
-- ✅ Replaced "Free Plan" with "30-Day Free Trial"
-- ✅ Updated features to show all Professional features unlocked
-- ✅ Added "No credit card required" badge
-- ✅ Updated plan selection logic
-
-### 2. **Subscription Management** (`public/subscription-management.html`)
-- ✅ Added trial status handling
-- ✅ Shows days remaining for trial users
-- ✅ Displays trial expiration warnings
-- ✅ Updated plan display logic
-
----
-
-## 🔐 How It Works
-
-### **Registration Flow:**
-1. User registers → `trial_end` automatically set to `NOW() + 30 days`
-2. User verifies email → Can start using SmartFarm immediately
-3. User has full access to all Professional features for 30 days
-
-### **Login Flow:**
-1. User logs in → System checks:
-   - If trial expired → Returns `TRIAL_EXPIRED` error
-   - If trial active → Returns trial info with days remaining
-   - If subscribed → Returns subscription info
-
-### **Access Control:**
-1. All protected routes check subscription/trial status
-2. Trial users have full access (same as Professional)
-3. After trial expires → Must subscribe to continue
-
----
-
-## 📊 Database Schema
-
-The `subscriptions` table already has `trial_end` column:
-```sql
-trial_end DATE
+```env
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_PUBLISHABLE_KEY=pk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+STRIPE_PRICE_ID_FARM_PRO=price_...
+FRONTEND_URL=https://www.smartfarm-app.com
 ```
 
-The `users` table uses `trial_end` to track trial expiration:
-- Set on registration: `trial_end = NOW() + INTERVAL '30 days'`
-- Checked on login and protected routes
+Stripe Dashboard: one product **Farm Pro**, one recurring price **$29/month**.
 
----
+## API endpoints
 
-## 🚀 Usage Examples
+| Method | Path | Purpose |
+|--------|------|---------|
+| GET | `/api/subscriptions/plans` | Public plan catalog |
+| GET | `/api/subscriptions/billing-config` | Publishable key + billing enabled flag |
+| GET | `/api/subscriptions/current` | Auth — current plan / trial days |
+| POST | `/api/subscriptions/create-checkout-session` | Auth — Stripe Checkout URL |
+| POST | `/api/subscriptions/events` | Auth — client analytics events |
+| POST | `/api/webhooks/stripe` | Stripe webhooks (raw body) |
+| POST | `/api/farms` | Auth — create farm with plan limit |
 
-### **Check User Access (Backend)**
-```javascript
-const SubscriptionMiddleware = require('./middleware/subscription');
-const subscriptionMiddleware = new SubscriptionMiddleware(dbPool);
+Legacy `POST /subscribe` and `POST /cancel` return `USE_STRIPE_CHECKOUT` until Customer Portal is added.
 
-// Require active subscription OR trial
-app.use('/api/farms', subscriptionMiddleware.requireActiveAccess());
+## Farm limits
 
-// Require paid subscription only (no trial)
-app.use('/api/premium-feature', subscriptionMiddleware.requirePaidSubscription());
-```
+Enforced in `subscriptionMiddleware.enforceFarmLimit()` on `POST /api/farms`:
 
-### **Get User Subscription Status**
-```javascript
-const accessStatus = await dbHelpers.hasActiveAccess(userId);
-// Returns:
-// { hasAccess: true, type: 'trial', daysRemaining: 15, trialEnd: '...' }
-// OR
-// { hasAccess: true, type: 'subscription', plan: 'professional' }
-// OR
-// { hasAccess: false, reason: 'trial_expired' }
-```
+- Trial: **1** farm
+- Farm Pro: **3** farms
+- Enterprise: unlimited
 
----
+## Frontend pages
 
-## ✅ Benefits
+- `pricing.html` — trial + Farm Pro; Enterprise contact footer
+- `checkout.html` — redirects to Stripe Checkout
+- `subscription-management.html` — plan status, upgrade CTA
+- `dashboard.html` — trial ≤7 days upgrade banner; expired trial → subscription management
+- `js/subscription-billing.js` — shared billing helpers
 
-1. **Stops Multi-Device Abuse** - Everyone must subscribe after 30 days
-2. **Eliminates Free Account Loopholes** - No free tier = no bypass
-3. **Higher Conversion Rate** - Users invest time → more likely to subscribe
-4. **Cleaner Pricing** - Trial → Pro → Enterprise (simple progression)
-5. **Professional Appearance** - Trials are more trusted than confusing limits
+## Analytics events (`subscription_events` table)
 
----
+| Event | When |
+|-------|------|
+| `trial_started` | Registration |
+| `upgrade_started` | Checkout session created |
+| `upgrade_completed` | Webhook after payment |
+| `trial_expired` | Login or dashboard redirect |
+| `command_center_load` | Command center loaded |
+| `dashboard_load` | Dashboard subscription check |
 
-## 🔄 Migration Notes
+### Metrics derived from events + DB
 
-### **Existing Users:**
-- Users created before this update will need `trial_end` set manually
-- Run SQL to initialize trial for existing users:
-  ```sql
-  UPDATE users 
-  SET trial_end = created_at + INTERVAL '30 days'
-  WHERE trial_end IS NULL;
-  ```
+- **MRR** = count of active `professional` subscriptions × $29
+- **Paying accounts** = active `professional` rows
+- **Churn** = `subscription_cancelled` / deleted Stripe subs
+- **Trial-to-paid** = `upgrade_completed` / `trial_started`
+- **Activation** = `command_center_load` within 7 days of `trial_started`
+- **Weekly engagement** = `dashboard_load` or `command_center_load` per ISO week
 
-### **New Users:**
-- Automatically get 30-day trial on registration
-- No action needed
+## Database migration
 
----
+Run `backend/database/migrations/008_stripe_billing.sql` (included in `npm run migrate`):
 
-## 📝 API Response Examples
+- `users.stripe_customer_id`
+- `subscription_events` table
 
-### **Login Response (Trial Active)**
-```json
-{
-  "success": true,
-  "data": {
-    "user": { ... },
-    "token": "...",
-    "subscription": {
-      "plan": "trial",
-      "status": "active",
-      "type": "trial",
-      "daysRemaining": 15,
-      "trialEnd": "2024-02-15T00:00:00.000Z"
-    }
-  }
-}
-```
+## Production checklist
 
-### **Login Response (Trial Expired)**
-```json
-{
-  "success": false,
-  "error": "Your free trial has ended. Please subscribe to continue using SmartFarm.",
-  "code": "TRIAL_EXPIRED",
-  "requiresSubscription": true
-}
-```
-
-### **Get Current Subscription (Trial)**
-```json
-{
-  "success": true,
-  "data": {
-    "plan": "trial",
-    "status": "active",
-    "trialEnd": "2024-02-15T00:00:00.000Z",
-    "daysRemaining": 15,
-    "requiresSubscription": true
-  }
-}
-```
-
----
-
-## 🎯 Next Steps
-
-1. **Test the Implementation:**
-   - Register a new user → Verify trial_end is set
-   - Login → Verify trial info is returned
-   - Wait 30 days → Verify trial expiration works
-   - Subscribe → Verify subscription works
-
-2. **Update Protected Routes:**
-   - Add `subscriptionMiddleware.requireActiveAccess()` to farm routes
-   - Add `subscriptionMiddleware.requireActiveAccess()` to crop/livestock routes
-   - Add `subscriptionMiddleware.requirePaidSubscription()` to premium features
-
-3. **Frontend Updates:**
-   - Update dashboard to show trial countdown
-   - Add subscription prompts when trial expires
-   - Update checkout flow
-
----
-
-## 📚 Files Modified
-
-### Backend:
-- `backend/routes/subscriptions.js` - Updated plans and logic
-- `backend/routes/auth.js` - Added trial checking
-- `backend/utils/db-helpers.js` - Added trial methods
-- `backend/middleware/subscription.js` - NEW middleware
-
-### Frontend:
-- `public/pricing.html` - Updated pricing display
-- `public/subscription-management.html` - Added trial status handling
-
----
-
-## ✨ Summary
-
-The 30-day free trial model is now fully implemented and ready for production. All users get full access to Professional features for 30 days, then must subscribe to continue. This eliminates abuse, improves conversion, and provides a cleaner user experience.
-
-**Status:** ✅ **COMPLETE** - Ready for testing and deployment
-
+1. Create Farm Pro product + $29/month price in Stripe (live mode).
+2. Set live env vars on Railway.
+3. Register live webhook endpoint: `https://web-production-86d39.up.railway.app/api/webhooks/stripe`
+4. Test: trial user → checkout → webhook → `professional` active.
+5. Confirm expired trial users land on `subscription-management.html`, not `contact.html`.

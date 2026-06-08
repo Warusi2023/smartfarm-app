@@ -242,6 +242,7 @@
     <script src="js/weather-alerts-widget.js"></script>
     <link href="css/release-announcement.css" rel="stylesheet">
     <script src="js/release-announcement.js"></script>
+    <script src="js/subscription-billing.js"></script>
     <style>
         :root {
             --primary-color: #2e7d32;
@@ -1618,6 +1619,8 @@
                             <small class="text-muted">Last updated: <span id="lastUpdated"></span></small>
                         </div>
                     </div>
+
+                    <div id="subscription-upgrade-banner" class="d-none" aria-live="polite"></div>
 
                     <!-- Farm command center (W4-01) -->
                     <div id="farm-command-center" class="fcc-root mt-3" aria-live="polite">
@@ -4210,6 +4213,14 @@
                     setInterval(updateLastUpdated, 60000); // Update every minute
                 } catch (error) {
                     console.warn('Warning: Could not initialize core components:', error);
+                }
+
+                try {
+                    if (window.SmartFarmBilling && typeof window.SmartFarmBilling.initDashboardBilling === 'function') {
+                        window.SmartFarmBilling.initDashboardBilling();
+                    }
+                } catch (billingError) {
+                    console.warn('Subscription billing check failed:', billingError);
                 }
                 
                 console.log('Dashboard initialized successfully');

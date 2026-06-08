@@ -2233,6 +2233,9 @@
         try {
             const data = await fetchPayload();
             render(data);
+            if (global.SmartFarmBilling && typeof global.SmartFarmBilling.logEvent === 'function') {
+                global.SmartFarmBilling.logEvent('command_center_load', {});
+            }
         } catch (err) {
             console.warn('Command center:', err);
             renderError(
