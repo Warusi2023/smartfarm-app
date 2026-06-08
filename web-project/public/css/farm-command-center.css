@@ -1531,3 +1531,191 @@
         width: 100%;
     }
 }
+
+/* M1 — mobile command center (tablet + phone) */
+@media (max-width: 768px) {
+    .fcc-root {
+        margin-bottom: 1rem;
+        min-width: 0;
+    }
+
+    .fcc-card {
+        padding: 1rem 0.85rem;
+        border-radius: 10px;
+    }
+
+    .fcc-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .fcc-title {
+        font-size: 1.05rem;
+    }
+
+    .fcc-period-toggle {
+        width: 100%;
+    }
+
+    .fcc-period-toggle .btn-group,
+    .fcc-period-toggle {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+    }
+
+    .fcc-period-toggle .btn {
+        flex: 1 1 auto;
+        min-height: 44px;
+    }
+
+    .fcc-strip {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+
+    .fcc-chip {
+        min-height: auto;
+        padding: 0.75rem;
+    }
+
+    .fcc-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .fcc-panel-title {
+        font-size: 0.8rem;
+    }
+
+    .fcc-quick-actions .btn,
+    .fcc-action-btn,
+    .fcc-next-step-actions .btn {
+        min-height: 44px;
+    }
+
+    .fcc-weekly-lane {
+        gap: 0.2rem;
+    }
+
+    .fcc-week-day-label {
+        font-size: 0.55rem;
+    }
+
+    .fcc-priority-head {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .fcc-priority-actions {
+        width: 100%;
+    }
+
+    .fcc-priority-actions .btn {
+        min-height: 44px;
+    }
+
+    .fcc-reset-entry {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .fcc-reset-entry .btn {
+        width: 100%;
+        min-height: 44px;
+    }
+
+    .fcc-reset-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .fcc-reset-actions .btn {
+        width: 100%;
+        min-height: 44px;
+    }
+
+    .fcc-reset-review-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .fcc-week-set {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .fcc-week-set .fcc-reset-reopen {
+        margin-left: 0;
+        margin-top: 0.35rem;
+    }
+
+    .fcc-weather-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .fcc-weather-action {
+        width: 100%;
+        padding-left: 0;
+        align-self: stretch;
+    }
+
+    .fcc-weather-action .btn {
+        width: 100%;
+        min-height: 44px;
+    }
+
+    .fcc-focus-progress {
+        display: inline-block;
+        margin-top: 0.15rem;
+    }
+
+    .fcc-focus-list .fcc-priority-item,
+    .fcc-priorities-list .fcc-priority-item {
+        padding: 0.85rem 0;
+    }
+
+    .fcc-checklist {
+        padding: 0.75rem;
+    }
+
+    .fcc-check-action .btn {
+        min-height: 44px;
+    }
+
+    .fcc-feed-card {
+        min-height: 44px;
+        padding: 0.75rem;
+    }
+
+    .fcc-next-step-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .fcc-next-step-actions .btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 375px) {
+    .fcc-strip {
+        grid-template-columns: 1fr;
+    }
+
+    .fcc-weekly-lane {
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+    }
+
+    .fcc-week-dot {
+        width: 0.45rem;
+        height: 0.45rem;
+    }
+
+    .fcc-reset-review-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .fcc-chip-value {
+        font-size: 1.15rem;
+    }
+}

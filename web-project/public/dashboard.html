@@ -237,6 +237,7 @@
     <script src="js/farm-summary.js"></script>
     <script src="js/command-center-focus.js"></script>
     <link href="css/farm-command-center.css" rel="stylesheet">
+    <link href="css/dashboard-mobile.css" rel="stylesheet">
     <script src="js/farm-command-center.js"></script>
     <script src="js/weather-alerts-widget.js"></script>
     <link href="css/release-announcement.css" rel="stylesheet">
@@ -1174,11 +1175,11 @@
         @media (max-width: 768px) {
             .sidebar {
                 position: fixed;
-                left: -250px;
+                left: -280px;
                 top: 0;
-                width: 250px;
-                z-index: 1000;
-                transition: left 0.3s ease;
+                width: min(280px, 88vw);
+                z-index: 1045;
+                transition: left 0.25s ease;
             }
 
             .sidebar.show {
@@ -1392,6 +1393,7 @@
     </nav>
 
     <div id="smartfarm-release-announcement-mount" aria-live="polite"></div>
+    <div id="sidebarBackdrop" class="sidebar-backdrop" aria-hidden="true"></div>
 
     <div class="container-fluid">
         <div class="row">
@@ -15040,10 +15042,48 @@ INVENTORY SUMMARY:
             );
         }
 
-        // Mobile sidebar toggle
-        document.getElementById('sidebarToggle').addEventListener('click', function() {
-            document.getElementById('sidebar').classList.toggle('show');
-        });
+        // Mobile sidebar toggle (with backdrop)
+        (function initMobileSidebar() {
+            var toggle = document.getElementById('sidebarToggle');
+            var sidebar = document.getElementById('sidebar');
+            var backdrop = document.getElementById('sidebarBackdrop');
+            if (!toggle || !sidebar) {
+                return;
+            }
+
+            function setSidebarOpen(open) {
+                sidebar.classList.toggle('show', open);
+                if (backdrop) {
+                    backdrop.classList.toggle('show', open);
+                    backdrop.setAttribute('aria-hidden', open ? 'false' : 'true');
+                }
+                document.body.classList.toggle('sidebar-open', open);
+            }
+
+            toggle.addEventListener('click', function () {
+                setSidebarOpen(!sidebar.classList.contains('show'));
+            });
+
+            if (backdrop) {
+                backdrop.addEventListener('click', function () {
+                    setSidebarOpen(false);
+                });
+            }
+
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    setSidebarOpen(false);
+                }
+            });
+
+            sidebar.querySelectorAll('.nav-link').forEach(function (link) {
+                link.addEventListener('click', function () {
+                    if (window.matchMedia('(max-width: 768px)').matches) {
+                        setSidebarOpen(false);
+                    }
+                });
+            });
+        })();
 
         // System status check
         function checkSystemStatus() {

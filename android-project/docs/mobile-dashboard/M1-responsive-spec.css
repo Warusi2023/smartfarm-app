@@ -1,0 +1,46 @@
+/**
+ * Reference: M1 mobile breakpoints for Android Compose parity
+ * Source of truth for web: web-project/public/css/farm-command-center.css
+ *                        web-project/public/css/dashboard-mobile.css
+ *
+ * API: GET /api/farm-summary/command-center?window=today|week
+ * Blocks: dailyChecklist, weeklySummary, weatherRisk, weeklyPriorities,
+ *         weeklyReset, focusProgress
+ */
+
+/* Tablet and below — single column command center */
+@media (max-width: 768px) {
+  /* Shell */
+  /* - overflow-x: hidden on page root */
+  /* - main padding ~12px */
+  /* - sidebar: fixed slide-over 280px max, z-index 1045, backdrop 1040 */
+
+  /* Command center */
+  /* .fcc-grid → 1 column */
+  /* .fcc-strip → 1 column chips */
+  /* .fcc-header → column stack */
+  /* .fcc-period-toggle buttons → min-height 44px, wrap */
+
+  /* Weekly */
+  /* .fcc-weekly-lane → 7 equal minmax(0,1fr) columns */
+  /* .fcc-week-day-label → ~0.55rem */
+
+  /* Priorities / focus */
+  /* .fcc-priority-actions → full width buttons, min-height 44px */
+  /* .fcc-focus-progress → inline pill, wraps with priority head */
+
+  /* Reset */
+  /* .fcc-reset-entry, .fcc-reset-actions → column, full-width buttons */
+
+  /* Weather */
+  /* .fcc-weather-row → column; action button full width */
+
+  /* Checklist */
+  /* .fcc-check-action → full width below label row */
+}
+
+/* Phone narrow */
+@media (max-width: 375px) {
+  /* .fcc-reset-review-grid → 1 column */
+  /* .fcc-chip-value → slightly smaller type */
+}
