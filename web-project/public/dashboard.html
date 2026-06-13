@@ -1524,8 +1524,8 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="contact.html?topic=billing">
-                                <i class="fas fa-envelope me-2"></i>Billing &amp; Plans
+                            <a class="nav-link" href="subscription-management.html">
+                                <i class="fas fa-credit-card me-2"></i>Billing &amp; Plans
                             </a>
                         </li>
                         
@@ -7881,8 +7881,8 @@
                 const farmData = {
                     name: farmName,
                     location: farmLocation,
-                    size: parseFloat(farmArea),
-                    type: farmType,
+                    areaHectares: parseFloat(farmArea),
+                    farmType: farmType,
                     description: document.getElementById('farmDescription')?.value?.trim() || ''
                 };
 
@@ -7904,6 +7904,15 @@
 
                     // Refresh farm data
                     await loadFarmData();
+                } else if (response.code === 'FARM_LIMIT_REACHED') {
+                    showInfoDialog(
+                        'Farm limit reached',
+                        response.error || 'Your plan has reached its farm limit. Upgrade to Farm Pro for up to 3 farms.',
+                        'Upgrade to Farm Pro',
+                        function () {
+                            window.location.href = 'subscription-management.html';
+                        }
+                    );
                 } else {
                     showErrorMessage(response.error || 'Failed to create farm');
                 }

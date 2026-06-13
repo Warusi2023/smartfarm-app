@@ -459,10 +459,56 @@ class SmartFarmAPIService {
     }
 
     async createFarm(farmData) {
-        return await this.request('/farms', {
+        this.baseURL = this.getApiBaseUrl();
+        const url = `${this.baseURL}/api/farms`;
+        const payload = {
+            name: farmData.name,
+            location: farmData.location,
+            areaHectares: farmData.areaHectares != null
+                ? Number(farmData.areaHectares)
+                : Number(farmData.size),
+            farmType: farmData.farmType || farmData.type,
+            description: farmData.description || undefined,
+            latitude: farmData.latitude,
+            longitude: farmData.longitude
+        };
+        const token = this.getAuthToken();
+        const headers = {
+            'Content-Type': 'application/json',
+            Accept: 'application/json'
+        };
+        if (token) {
+            headers.Authorization = `Bearer ${token}`;
+        }
+        const response = await fetch(url, {
             method: 'POST',
-            body: JSON.stringify(farmData)
+            headers,
+            body: JSON.stringify(payload),
+            credentials: 'include',
+            mode: 'cors'
         });
+        const text = await response.text();
+        let data = {};
+        try {
+            data = text ? JSON.parse(text) : {};
+        } catch (_) {
+            return { success: false, error: 'Invalid response from server', statusCode: response.status };
+        }
+        if (!response.ok) {
+            return {
+                success: false,
+                error: data.error || `HTTP ${response.status}`,
+                code: data.code,
+                statusCode: response.status,
+                currentFarms: data.currentFarms,
+                maxFarms: data.maxFarms
+            };
+        }
+        return {
+            success: data.success !== false,
+            data: data.data || data,
+            message: data.message
+        };
     }
 
     async updateFarm(id, farmData) {
