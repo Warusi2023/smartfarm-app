@@ -190,6 +190,7 @@
     <script src="js/error-boundary.js"></script>
     <script src="js/api-config.js"></script>
     <script src="js/api-service.js"></script>
+    <script src="js/aquaculture-management.js"></script>
     <script>
         // Ensure API service is properly initialized
         document.addEventListener('DOMContentLoaded', function() {
@@ -1429,6 +1430,11 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showAquacultureManagement(); return false;">
+                                <i class="fas fa-fish me-2"></i>Aquaculture
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" href="#" onclick="showInventoryManagement(); return false;">
                                 <i class="fas fa-boxes me-2"></i>Inventory
                             </a>
@@ -2062,6 +2068,7 @@
                                             <option value="crops">Crop Farming</option>
                                             <option value="livestock">Livestock Farming</option>
                                             <option value="dairy">Dairy Farming</option>
+                                            <option value="aquaculture">Aquaculture / Mixed</option>
                                         </select>
                                     </div>
                                 </div>
@@ -2721,6 +2728,145 @@
                                 <button class="btn btn-sm btn-danger" onclick="deleteLivestock(4)">
                                     <i class="fas fa-trash"></i>
                                 </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="aquacultureManagementView" style="display: none;">
+                    <div class="page-header mb-4">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <div>
+                                <h1 class="page-title">Aquaculture</h1>
+                                <p class="page-subtitle mb-0">Manage ponds and tanks, log daily readings, and review alerts</p>
+                                <p class="small text-muted mb-0" id="aqFarmLabel">Loading farm…</p>
+                            </div>
+                            <button class="btn btn-custom btn-lg" id="aqCreateUnitBtn" type="button">
+                                <i class="fas fa-plus me-2"></i>Add Unit
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-4 mb-4">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <strong>Production Units</strong>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="list-group list-group-flush" id="aqUnitsList"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-8 mb-4">
+                            <div class="card mb-3">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <strong>Unit Status</strong>
+                                    <span id="aqOverallStatus"></span>
+                                </div>
+                                <div class="card-body">
+                                    <div id="aqUnitDetail">
+                                        <p class="text-muted mb-0">Select a unit to view status and log daily readings.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <strong>Alerts</strong>
+                                </div>
+                                <div class="card-body" id="aqAlertsPanel">
+                                    <p class="text-muted mb-0">No unit selected.</p>
+                                </div>
+                            </div>
+                            <div class="card" id="aqLogFormWrap" style="display: none;">
+                                <div class="card-header">
+                                    <strong>Today's Daily Log</strong>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row g-3">
+                                        <div class="col-md-4">
+                                            <label class="form-label" for="aqFeedAmountKg">Feed (kg)</label>
+                                            <input type="number" step="0.01" min="0" class="form-control" id="aqFeedAmountKg">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label" for="aqMortalityCount">Mortality count</label>
+                                            <input type="number" step="1" min="0" class="form-control" id="aqMortalityCount" value="0">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label" for="aqEstimatedStock">Estimated stock</label>
+                                            <input type="number" step="1" min="1" class="form-control" id="aqEstimatedStock">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label" for="aqAverageWeightG">Avg weight (g)</label>
+                                            <input type="number" step="0.01" min="0" class="form-control" id="aqAverageWeightG">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label" for="aqWaterTempC">Water temp (°C)</label>
+                                            <input type="number" step="0.1" class="form-control" id="aqWaterTempC">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label" for="aqPh">pH</label>
+                                            <input type="number" step="0.01" min="0" max="14" class="form-control" id="aqPh">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label" for="aqDissolvedOxygen">Dissolved O₂ (mg/L)</label>
+                                            <input type="number" step="0.01" min="0" class="form-control" id="aqDissolvedOxygen">
+                                        </div>
+                                        <div class="col-md-8">
+                                            <label class="form-label" for="aqLogNotes">Notes</label>
+                                            <input type="text" class="form-control" id="aqLogNotes" placeholder="Optional observations">
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-custom mt-3" id="aqSaveLogBtn">
+                                        <i class="fas fa-save me-2"></i>Save Today's Log
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal fade" id="aqCreateUnitModal" tabindex="-1" aria-labelledby="aqCreateUnitModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="aqCreateUnitModalLabel">New Aquaculture Unit</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <label class="form-label" for="aqNewUnitName">Name</label>
+                                        <input type="text" class="form-control" id="aqNewUnitName" placeholder="e.g. Pond A">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label" for="aqNewUnitType">Unit type</label>
+                                        <select class="form-select" id="aqNewUnitType">
+                                            <option value="pond">Pond</option>
+                                            <option value="tank">Tank</option>
+                                            <option value="cage">Cage</option>
+                                            <option value="hatchery">Hatchery</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label" for="aqNewUnitSpecies">Species</label>
+                                        <select class="form-select" id="aqNewUnitSpecies">
+                                            <option value="tilapia">Tilapia</option>
+                                            <option value="shrimp">Shrimp</option>
+                                            <option value="other">Other</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label" for="aqNewSpeciesOther">Species detail (if other)</label>
+                                        <input type="text" class="form-control" id="aqNewSpeciesOther" placeholder="Optional">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label" for="aqNewCapacityNotes">Capacity notes</label>
+                                        <textarea class="form-control" id="aqNewCapacityNotes" rows="2" placeholder="Optional"></textarea>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="button" class="btn btn-custom" id="aqConfirmCreateUnit">Create Unit</button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -4033,6 +4179,7 @@
                 'showFarmManagement',
                 'showCropManagement',
                 'showLivestockManagement',
+                'showAquacultureManagement',
                 'showPetsManagement',
                 'showInventoryManagement',
                 'showAnalytics',
@@ -4064,6 +4211,7 @@
                 { name: 'Farm Management', func: 'showFarmManagement', view: 'farmManagementView' },
                 { name: 'Crop Management', func: 'showCropManagement', view: 'cropManagementView' },
                 { name: 'Livestock Management', func: 'showLivestockManagement', view: 'livestockManagementView' },
+                { name: 'Aquaculture Management', func: 'showAquacultureManagement', view: 'aquacultureManagementView' },
                 { name: 'Pets Management', func: 'showPetsManagement', view: 'petsManagementView' },
                 { name: 'Inventory Management', func: 'showInventoryManagement', view: 'inventoryManagementView' },
                 { name: 'Analytics', func: 'showAnalytics', view: 'analyticsView' },
@@ -4101,6 +4249,7 @@
                     'farmManagementView': '/farm-management',
                     'cropManagementView': '/crop-management',
                     'livestockManagementView': '/livestock-management',
+                    'aquacultureManagementView': '/aquaculture-management',
                     'petsManagementView': '/pets-management',
                     'inventoryManagementView': '/inventory-management',
                     'analyticsView': '/analytics',
@@ -4138,6 +4287,7 @@
                     '/farm-management': 'farmManagementView',
                     '/crop-management': 'cropManagementView',
                     '/livestock-management': 'livestockManagementView',
+                    '/aquaculture-management': 'aquacultureManagementView',
                     '/pets-management': 'petsManagementView',
                     '/inventory-management': 'inventoryManagementView',
                     '/analytics': 'analyticsView',
@@ -7572,6 +7722,31 @@
             }
         }
 
+        function showAquacultureManagement() {
+            console.log('Switching to Aquaculture Management...');
+            try {
+                if (typeof showView !== 'function') {
+                    throw new Error('showView function not defined');
+                }
+                if (typeof setActiveNav !== 'function') {
+                    throw new Error('setActiveNav function not defined');
+                }
+                showView('aquacultureManagementView');
+                setActiveNav('aquaculture');
+                updateURL('aquacultureManagementView');
+                if (window.AquacultureManagement && typeof window.AquacultureManagement.loadUnits === 'function') {
+                    window.AquacultureManagement.loadUnits();
+                }
+                console.log('Successfully switched to Aquaculture Management');
+            } catch (error) {
+                console.error('Error switching to Aquaculture Management:', error);
+                const view = document.getElementById('aquacultureManagementView');
+                if (view) {
+                    view.style.display = 'block';
+                }
+            }
+        }
+
         function showLivestockManagement() {
             console.log('Switching to Livestock Management...');
             try {
@@ -7760,7 +7935,7 @@
             try {
                 // Hide all views
                 const views = ['dashboardView', 'farmManagementView', 'cropManagementView', 
-                              'livestockManagementView', 'petsManagementView', 'inventoryManagementView', 
+                              'livestockManagementView', 'aquacultureManagementView', 'petsManagementView', 'inventoryManagementView', 
                               'analyticsView', 'tasksView', 'reportsView'];
                 
                 views.forEach(id => {
@@ -7806,6 +7981,7 @@
                     'farm': '[onclick*="showFarmManagement"]',
                     'crop': '[onclick*="showCropManagement"]',
                     'livestock': '[onclick*="showLivestockManagement"]',
+                    'aquaculture': '[onclick*="showAquacultureManagement"]',
                     'pets': '[onclick*="showPetsManagement"]',
                     'inventory': '[onclick*="showInventoryManagement"]',
                     'analytics': '[onclick*="showAnalytics"]',
@@ -17454,6 +17630,7 @@ INVENTORY SUMMARY:
         window.showDashboard = showDashboard;
         window.showCropManagement = showCropManagement;
         window.showLivestockManagement = showLivestockManagement;
+        window.showAquacultureManagement = showAquacultureManagement;
         window.showPetsManagement = showPetsManagement;
         window.showInventoryManagement = showInventoryManagement;
         window.showAnalytics = showAnalytics;
@@ -17477,6 +17654,7 @@ INVENTORY SUMMARY:
                 'showFarmManagement', 
                 'showCropManagement',
                 'showLivestockManagement',
+                'showAquacultureManagement',
                 'showPetsManagement',
                 'showInventoryManagement',
                 'showAnalytics',
@@ -17498,6 +17676,7 @@ INVENTORY SUMMARY:
                 'farmManagementView',
                 'cropManagementView',
                 'livestockManagementView',
+                'aquacultureManagementView',
                 'petsManagementView',
                 'inventoryManagementView',
                 'analyticsView',

@@ -622,6 +622,47 @@ class SmartFarmAPIService {
         return await this.request('/livestock/stats/overview');
     }
 
+    // Aquaculture Management API (Phase 1)
+    async getAquacultureUnits(params = {}) {
+        const queryString = new URLSearchParams(params).toString();
+        return await this.request(`/aquaculture/units${queryString ? '?' + queryString : ''}`);
+    }
+
+    async createAquacultureUnit(unitData) {
+        return await this.request('/aquaculture/units', {
+            method: 'POST',
+            body: JSON.stringify(unitData)
+        });
+    }
+
+    async getAquacultureUnit(unitId) {
+        return await this.request(`/aquaculture/units/${unitId}`);
+    }
+
+    async updateAquacultureUnit(unitId, unitData) {
+        return await this.request(`/aquaculture/units/${unitId}`, {
+            method: 'PATCH',
+            body: JSON.stringify(unitData)
+        });
+    }
+
+    async getAquacultureLogs(unitId, params = {}) {
+        const queryString = new URLSearchParams(params).toString();
+        return await this.request(`/aquaculture/units/${unitId}/logs${queryString ? '?' + queryString : ''}`);
+    }
+
+    async saveAquacultureLog(unitId, logData) {
+        return await this.request(`/aquaculture/units/${unitId}/logs`, {
+            method: 'POST',
+            body: JSON.stringify(logData)
+        });
+    }
+
+    async getAquacultureStatus(params = {}) {
+        const queryString = new URLSearchParams(params).toString();
+        return await this.request(`/aquaculture/status${queryString ? '?' + queryString : ''}`);
+    }
+
     // Feed Mix Management API
     async getFeedMixes(params = {}) {
         const queryString = new URLSearchParams(params).toString();

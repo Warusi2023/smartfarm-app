@@ -340,6 +340,70 @@ const validationSchemas = {
         },
     },
 
+    // ============ AQUACULTURE ENDPOINTS (Phase 1) ============
+    aquaculture: {
+        listUnits: {
+            query: z.object({
+                farmId: commonSchemas.uuid,
+            }),
+        },
+        createUnit: {
+            body: z.object({
+                farmId: commonSchemas.uuid,
+                name: z.string().min(1).max(255).trim(),
+                unitType: z.enum(['pond', 'tank', 'cage', 'hatchery']),
+                species: z.enum(['tilapia', 'shrimp', 'other']),
+                speciesOther: z.string().max(255).optional(),
+                capacityNotes: z.string().max(2000).optional(),
+            }),
+        },
+        getUnit: {
+            params: z.object({
+                unitId: commonSchemas.uuid,
+            }),
+        },
+        updateUnit: {
+            params: z.object({
+                unitId: commonSchemas.uuid,
+            }),
+            body: z.object({
+                name: z.string().min(1).max(255).trim().optional(),
+                capacityNotes: z.string().max(2000).optional(),
+                isActive: z.boolean().optional(),
+            }),
+        },
+        listLogs: {
+            params: z.object({
+                unitId: commonSchemas.uuid,
+            }),
+            query: z.object({
+                from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'from must be YYYY-MM-DD'),
+                to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'to must be YYYY-MM-DD'),
+            }),
+        },
+        saveLog: {
+            params: z.object({
+                unitId: commonSchemas.uuid,
+            }),
+            body: z.object({
+                logDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+                feedAmountKg: z.number().nonnegative().optional(),
+                mortalityCount: z.number().int().nonnegative().optional(),
+                estimatedStockCount: z.number().int().positive().optional(),
+                averageWeightG: z.number().nonnegative().optional(),
+                waterTempC: z.number().optional(),
+                ph: z.number().min(0).max(14).optional(),
+                dissolvedOxygenMgl: z.number().nonnegative().optional(),
+                notes: z.string().max(2000).optional(),
+            }),
+        },
+        farmStatus: {
+            query: z.object({
+                farmId: commonSchemas.uuid,
+            }),
+        },
+    },
+
     // ============ SUBSCRIPTIONS ENDPOINTS ============
     subscriptions: {
         getPlans: {

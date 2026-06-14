@@ -500,6 +500,16 @@ try {
   logger.warnWithContext('Could not load farm routes', { error: farmRoutesError });
 }
 
+// 3c) Aquaculture Phase 1 routes
+try {
+  const AquacultureRoutes = require('./routes/aquaculture');
+  const aquacultureRoutes = new AquacultureRoutes(dbPool);
+  app.use('/api/aquaculture', aquacultureRoutes.getRouter());
+  logger.info('Aquaculture routes loaded');
+} catch (aquacultureRoutesError) {
+  logger.warnWithContext('Could not load aquaculture routes', { error: aquacultureRoutesError });
+}
+
 // 4) AI advisory routes (isolated)
 try {
   const AIAdvisoryRoutes = require('./routes/ai-advisory');
