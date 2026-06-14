@@ -331,39 +331,59 @@ async function fetchWeatherSnapshot(apiKey, lat, lng) {
  * @param {{ apiKey?: string, demoSnapshot?: object }} [opts]
  */
 async function getWeatherRisk(pool, userId, opts) {
+    const ctx = await getWeatherContext(pool, userId, opts);
+    return ctx.weatherRisk;
+}
+
+/**
+ * Fetch snapshot + weatherRisk in one pass (shared by hazard assessment).
+ * @param {import('pg').Pool|null} pool
+ * @param {string} userId
+ * @param {{ apiKey?: string, demoSnapshot?: object }} [opts]
+ */
+async function getWeatherContext(pool, userId, opts) {
     if (opts && opts.demoSnapshot) {
         const block = buildWeatherRiskFromSnapshot(opts.demoSnapshot);
         block.source = 'demo';
-        return block;
+        return { snapshot: opts.demoSnapshot, weatherRisk: block, location: null };
     }
 
     const apiKey = (opts && opts.apiKey) || process.env.WEATHER_API_KEY;
 
     if (!pool) {
-        return unavailableWeatherRisk('Weather insights require a database connection.');
+        const weatherRisk = unavailableWeatherRisk('Weather insights require a database connection.');
+        return { snapshot: null, weatherRisk, location: null };
     }
 
     const location = await fetchUserFarmLocation(pool, userId);
     if (!location) {
-        return unavailableWeatherRisk(
+        const weatherRisk = unavailableWeatherRisk(
             'Add farm coordinates on a farm profile to enable weather-aware suggestions.'
         );
+        return { snapshot: null, weatherRisk, location: null };
     }
 
     if (!apiKey) {
-        return unavailableWeatherRisk('Weather service is not configured on the server.');
+        const weatherRisk = unavailableWeatherRisk('Weather service is not configured on the server.');
+        return { snapshot: null, weatherRisk, location };
     }
 
     const snapshot = await fetchWeatherSnapshot(apiKey, location.lat, location.lng);
     if (!snapshot) {
-        return unavailableWeatherRisk('Weather data is temporarily unavailable. Try again later.');
+        const weatherRisk = unavailableWeatherRisk('Weather data is temporarily unavailable. Try again later.');
+        return { snapshot: null, weatherRisk, location };
     }
 
-    return buildWeatherRiskFromSnapshot(snapshot);
+    return {
+        snapshot,
+        weatherRisk: buildWeatherRiskFromSnapshot(snapshot),
+        location
+    };
 }
 
 module.exports = {
     getWeatherRisk,
+    getWeatherContext,
     buildWeatherRiskFromSnapshot,
     normalizeWeatherSnapshot,
     summarizeForecastDay,

@@ -670,6 +670,124 @@
         </div>`;
     }
 
+    /** Farm hazard & early warning panel */
+    function hazardSeverityLabel(severity) {
+        const map = {
+            none: 'All clear',
+            watch: 'Watch',
+            warning: 'Warning',
+            severe: 'Severe'
+        };
+        return map[severity] || 'Watch';
+    }
+
+    function hazardSeverityClass(severity) {
+        if (severity === 'severe') return 'fcc-hazard-severe';
+        if (severity === 'warning') return 'fcc-hazard-warning';
+        if (severity === 'watch') return 'fcc-hazard-watch';
+        return 'fcc-hazard-calm';
+    }
+
+    function hazardTypeIcon(type) {
+        const icons = {
+            drought: 'fa-sun',
+            flood: 'fa-water',
+            wind: 'fa-wind',
+            heat: 'fa-temperature-high',
+            cold: 'fa-snowflake'
+        };
+        return icons[type] || 'fa-cloud';
+    }
+
+    function renderActionList(items, label) {
+        if (!items || !items.length) return '';
+        return `<div class="fcc-hazard-action-group">
+            <strong class="fcc-hazard-action-label">${escapeHtml(label)}</strong>
+            <ul class="fcc-hazard-action-list">${items.map((a) => `<li>${escapeHtml(a)}</li>`).join('')}</ul>
+        </div>`;
+    }
+
+    function renderFarmHazardPanel(payload) {
+        if (!payload) {
+            return '<div class="fcc-hazard-panel fcc-hazard-unavailable"><p class="mb-0 small text-muted">Sign in for farm hazard guidance.</p></div>';
+        }
+        const ha = payload.hazardAssessment;
+        if (!ha) {
+            return '';
+        }
+        if (ha.unavailableReason) {
+            const offlineActions =
+                ha.topActions && ha.topActions.length
+                    ? `<div class="fcc-hazard-top-actions"><strong>Suggested checks</strong><ul>${ha.topActions
+                          .map((a) => `<li>${escapeHtml(a)}</li>`)
+                          .join('')}</ul></div>`
+                    : '';
+            return `<div class="fcc-hazard-panel fcc-hazard-unavailable" role="status">
+                <p class="mb-0"><strong>Weather hazards unavailable</strong></p>
+                <p class="mb-0 small text-muted">${escapeHtml(ha.unavailableReason)}</p>
+                ${offlineActions}
+            </div>`;
+        }
+
+        const severity = ha.overallSeverity || 'none';
+        const badgeClass = hazardSeverityClass(severity);
+        const hazards = (ha.hazards || []).slice(0, 3);
+        const topActions = (ha.topActions || []).slice(0, 3);
+
+        let summaryHtml;
+        if (severity === 'none' || !hazards.length) {
+            summaryHtml = '<p class="fcc-hazard-calm-msg mb-2">No major weather threat right now.</p>';
+        } else {
+            summaryHtml = `<ul class="fcc-hazard-summary-list mb-2">${hazards
+                .map(
+                    (h) =>
+                        `<li><i class="fas ${hazardTypeIcon(h.type)} me-1" aria-hidden="true"></i><strong>${escapeHtml(h.title)}</strong> — ${escapeHtml(h.reason)}</li>`
+                )
+                .join('')}</ul>`;
+        }
+
+        const actionsHtml = topActions.length
+            ? `<div class="fcc-hazard-top-actions"><strong>Do now</strong><ul>${topActions
+                  .map((a) => `<li>${escapeHtml(a)}</li>`)
+                  .join('')}</ul></div>`
+            : '';
+
+        const detailsHtml = (ha.hazards || [])
+            .map((h, idx) => {
+                const affects = h.affects || {};
+                const affectParts = [];
+                if (affects.crops) affectParts.push('crops');
+                if (affects.livestock) affectParts.push('livestock');
+                if (affects.aquaculture) affectParts.push('aquaculture');
+                if (affects.pondsTanks) affectParts.push('ponds/tanks');
+                if (affects.waterQuality) affectParts.push('water quality');
+                if (affects.aerationPower) affectParts.push('aeration/power');
+                if (affects.stockEscapeOverflow) affectParts.push('overflow/escape');
+                if (affects.water) affectParts.push('water supply');
+                if (affects.infrastructure) affectParts.push('infrastructure');
+                return `<details class="fcc-hazard-detail" ${idx === 0 && severity !== 'none' ? 'open' : ''}>
+                    <summary><span class="fcc-hazard-badge ${hazardSeverityClass(h.severity)}">${escapeHtml(hazardSeverityLabel(h.severity))}</span> ${escapeHtml(h.title)}</summary>
+                    <p class="small mb-2">${escapeHtml(h.reason)}</p>
+                    ${h.triggers && h.triggers.length ? `<p class="small text-muted mb-2"><em>Basis: ${escapeHtml(h.triggers.join('; '))}</em></p>` : ''}
+                    ${affectParts.length ? `<p class="small mb-2">Affects: ${escapeHtml(affectParts.join(', '))}</p>` : ''}
+                    ${renderActionList(h.actions && h.actions.doNow, 'Do now')}
+                    ${renderActionList(h.actions && h.actions.next24h, 'Next 24–72h')}
+                    ${renderActionList(h.actions && h.actions.recovery, 'After the event')}
+                </details>`;
+            })
+            .join('');
+
+        return `<div class="fcc-hazard-panel ${badgeClass}" role="region" aria-label="Farm hazard and early warning">
+            <div class="fcc-hazard-header">
+                <span class="fcc-hazard-overall-badge ${badgeClass}">${escapeHtml(hazardSeverityLabel(severity))}</span>
+                <span class="fcc-hazard-header-title">Farm hazard &amp; early warning</span>
+            </div>
+            ${summaryHtml}
+            ${actionsHtml}
+            ${detailsHtml ? `<div class="fcc-hazard-details">${detailsHtml}</div>` : ''}
+        </div>`;
+    }
+
     /** W5-04 — this week's priorities (server rules + client done state). */
     function priorityDoneStorageKey(weekKey) {
         return PRIORITY_DONE_KEY + ':' + (weekKey || 'unknown');
@@ -2110,6 +2228,9 @@
                     <div class="fcc-panel-title">Weather &amp; risk</div>
                     <div id="fcc-weather-mount">${renderWeatherRiskRow(payload)}</div>
                 </div>
+                <div class="fcc-hazard-section">
+                    <div id="fcc-hazard-mount">${renderFarmHazardPanel(payload)}</div>
+                </div>
                 <div class="fcc-weekly-section">
                     <div class="fcc-panel-title">Weekly review</div>
                     <div id="fcc-weekly-mount">${renderWeeklyStrip(payload)}</div>
@@ -2168,6 +2289,9 @@
                 <div class="fcc-weather-section">
                     <div class="fcc-panel-title">Weather &amp; risk</div>
                     <div id="fcc-weather-mount">${renderWeatherRiskRow(null)}</div>
+                </div>
+                <div class="fcc-hazard-section">
+                    <div id="fcc-hazard-mount">${renderFarmHazardPanel(null)}</div>
                 </div>
                 <div class="fcc-weekly-section">
                     <div class="fcc-panel-title">Weekly review</div>

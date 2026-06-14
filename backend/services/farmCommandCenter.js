@@ -6,6 +6,7 @@ const cropStore = require('./cropRecommendationStore');
 const soilTestsStore = require('./soilTestsStore');
 const farmSummaryFinancials = require('./farmSummaryFinancials');
 const farmWeatherRisk = require('./farmWeatherRisk');
+const farmHazardAssessment = require('./farmHazardAssessment');
 const farmWeeklyPriorities = require('./farmWeeklyPriorities');
 const farmWeeklyReset = require('./farmWeeklyReset');
 const farmFocusProgress = require('./farmFocusProgress');
@@ -1196,9 +1197,16 @@ async function getCommandCenter(pool, userId, opts) {
         lastSoilDate
     });
 
-    const weatherRisk = await farmWeatherRisk.getWeatherRisk(pool, userId, {
+    const weatherCtx = await farmWeatherRisk.getWeatherContext(pool, userId, {
         apiKey: process.env.WEATHER_API_KEY
     });
+    const weatherRisk = weatherCtx.weatherRisk;
+    const farmContext = await farmHazardAssessment.fetchFarmContext(pool, userId, hasLivestockSignal);
+    const hazardAssessment = farmHazardAssessment.buildHazardAssessmentFromSnapshot(
+        weatherCtx.snapshot,
+        farmContext,
+        weatherRisk
+    );
 
     const weeklyPriorities = farmWeeklyPriorities.buildWeeklyPriorities({
         weeklySummary,
@@ -1297,6 +1305,7 @@ async function getCommandCenter(pool, userId, opts) {
         dailyChecklist,
         weeklySummary,
         weatherRisk,
+        hazardAssessment,
         weeklyPriorities,
         weeklyReset,
         focusProgress,
