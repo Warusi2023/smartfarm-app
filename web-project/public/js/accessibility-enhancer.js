@@ -236,14 +236,38 @@ class AccessibilityEnhancer {
         this.addScreenReaderText();
     }
 
+    getMountParent() {
+        return document.body || document.documentElement || null;
+    }
+
+    safeAppendChild(parent, node) {
+        const mount = parent || this.getMountParent();
+        if (!mount || typeof mount.appendChild !== 'function') {
+            return false;
+        }
+        mount.appendChild(node);
+        return true;
+    }
+
     addLiveRegions() {
+        if (document.getElementById('status-announcements') || document.getElementById('alert-announcements')) {
+            return;
+        }
+
+        const parent = this.getMountParent();
+        if (!parent) {
+            return;
+        }
+
         // Status announcements
         const statusRegion = document.createElement('div');
         statusRegion.setAttribute('aria-live', 'polite');
         statusRegion.setAttribute('aria-atomic', 'true');
         statusRegion.className = 'sr-only';
         statusRegion.id = 'status-announcements';
-        document.body.appendChild(statusRegion);
+        if (!this.safeAppendChild(parent, statusRegion)) {
+            return;
+        }
 
         // Alert announcements
         const alertRegion = document.createElement('div');
@@ -251,10 +275,15 @@ class AccessibilityEnhancer {
         alertRegion.setAttribute('aria-atomic', 'true');
         alertRegion.className = 'sr-only';
         alertRegion.id = 'alert-announcements';
-        document.body.appendChild(alertRegion);
+        this.safeAppendChild(parent, alertRegion);
     }
 
     announcePageChanges() {
+        const mainContent = document.querySelector('.main-content');
+        if (!mainContent) {
+            return;
+        }
+
         // Announce when content changes
         const observer = new MutationObserver((mutations) => {
             mutations.forEach(mutation => {
@@ -264,7 +293,7 @@ class AccessibilityEnhancer {
             });
         });
 
-        observer.observe(document.querySelector('.main-content'), {
+        observer.observe(mainContent, {
             childList: true,
             subtree: true
         });
@@ -583,7 +612,9 @@ class AccessibilityEnhancer {
                 gap: 10px;
                 align-items: center;
             `;
-            document.body.appendChild(toolbar);
+            if (!this.safeAppendChild(this.getMountParent(), toolbar)) {
+                return toolbar;
+            }
         }
         return toolbar;
     }
@@ -684,8 +715,19 @@ class AccessibilityEnhancer {
     }
 }
 
-// Initialize accessibility enhancer
-window.accessibilityEnhancer = new AccessibilityEnhancer();
+// Initialize after DOM is ready (script may load in <head> before <body> exists)
+function initAccessibilityEnhancer() {
+    if (window.accessibilityEnhancer) {
+        return;
+    }
+    window.accessibilityEnhancer = new AccessibilityEnhancer();
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAccessibilityEnhancer);
+} else {
+    initAccessibilityEnhancer();
+}
 
 // Export for module systems
 if (typeof module !== 'undefined' && module.exports) {
