@@ -495,9 +495,29 @@ try {
   const FarmRoutes = require('./routes/farms');
   const farmRoutes = new FarmRoutes(dbPool);
   app.use('/api/farms', farmRoutes.getRouter());
-  logger.info('Farm routes loaded (POST with limits)');
+  logger.info('Farm routes loaded (GET list + POST with limits)');
 } catch (farmRoutesError) {
   logger.warnWithContext('Could not load farm routes', { error: farmRoutesError });
+}
+
+// 3b2) Farm team — memberships, invitations, shared tasks
+try {
+  const FarmTeamRoutes = require('./routes/farmTeam');
+  const farmTeamRoutes = new FarmTeamRoutes(dbPool);
+  app.use('/api/farms', farmTeamRoutes.getRouter());
+  logger.info('Farm team routes loaded');
+} catch (farmTeamError) {
+  logger.warnWithContext('Could not load farm team routes', { error: farmTeamError });
+}
+
+// 3b3) Farm invitation accept/decline
+try {
+  const FarmInvitationRoutes = require('./routes/farmInvitations');
+  const farmInvitationRoutes = new FarmInvitationRoutes(dbPool);
+  app.use('/api/farm-invitations', farmInvitationRoutes.getRouter());
+  logger.info('Farm invitation routes loaded');
+} catch (farmInviteError) {
+  logger.warnWithContext('Could not load farm invitation routes', { error: farmInviteError });
 }
 
 // 3c) Aquaculture Phase 1 routes
@@ -663,19 +683,7 @@ try {
 // Note: Weather alerts cron job is configured via Railway Cron (not node-cron)
 // See CRON_JOB_CONFIGURATION.md for setup instructions
 
-// Farms endpoints
-app.get('/api/farms', 
-  cacheMiddleware('farms', CACHE_TTL.FARM_LIST, (req) => 
-    `farms:user:${req.user?.id || 'anonymous'}`
-  ),
-  validate('farms.list'), 
-  (req, res) => {
-  res.status(200).json({
-    success: true,
-    data: []
-  });
-});
-
+// Farms endpoints — list handled by FarmRoutes (membership-scoped)
 app.get('/api/farms/stats/overview', validate('farms.stats'), (req, res) => {
   res.status(200).json({
     success: true,

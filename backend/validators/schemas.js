@@ -404,6 +404,105 @@ const validationSchemas = {
         },
     },
 
+    // ============ FARM TEAM (memberships, invites, tasks) ============
+    farmTeam: {
+        listMembers: {
+            params: z.object({ farmId: commonSchemas.uuid }),
+        },
+        updateMember: {
+            params: z.object({
+                farmId: commonSchemas.uuid,
+                membershipId: commonSchemas.uuid,
+            }),
+            body: z.object({
+                role: z.enum(['manager', 'worker', 'viewer']),
+            }),
+        },
+        removeMember: {
+            params: z.object({
+                farmId: commonSchemas.uuid,
+                membershipId: commonSchemas.uuid,
+            }),
+        },
+        createInvitation: {
+            params: z.object({ farmId: commonSchemas.uuid }),
+            body: z.object({
+                email: commonSchemas.email,
+                role: z.enum(['manager', 'worker', 'viewer']),
+            }),
+        },
+        listTasks: {
+            params: z.object({ farmId: commonSchemas.uuid }),
+            query: z.object({
+                status: z.enum(['open', 'in_progress', 'done', 'cancelled']).optional(),
+            }).optional(),
+        },
+        listMyTasks: {
+            params: z.object({ farmId: commonSchemas.uuid }),
+        },
+        createTask: {
+            params: z.object({ farmId: commonSchemas.uuid }),
+            body: z.object({
+                title: z.string().min(1).max(500).trim(),
+                description: z.string().max(5000).optional(),
+                category: z.string().max(100).optional(),
+                priority: z.enum(['low', 'medium', 'high', 'urgent']).optional(),
+                assignedToUserId: commonSchemas.uuid.optional(),
+                dueAt: z.string().datetime().optional(),
+                sourceType: z.string().max(100).optional(),
+                sourceId: commonSchemas.uuid.optional(),
+            }),
+        },
+        getTask: {
+            params: z.object({
+                farmId: commonSchemas.uuid,
+                taskId: commonSchemas.uuid,
+            }),
+        },
+        updateTask: {
+            params: z.object({
+                farmId: commonSchemas.uuid,
+                taskId: commonSchemas.uuid,
+            }),
+            body: z.object({
+                title: z.string().min(1).max(500).trim().optional(),
+                description: z.string().max(5000).optional(),
+                category: z.string().max(100).optional(),
+                status: z.enum(['open', 'in_progress', 'done', 'cancelled']).optional(),
+                priority: z.enum(['low', 'medium', 'high', 'urgent']).optional(),
+                assignedToUserId: commonSchemas.uuid.nullable().optional(),
+                dueAt: z.string().datetime().nullable().optional(),
+            }),
+        },
+        completeTask: {
+            params: z.object({
+                farmId: commonSchemas.uuid,
+                taskId: commonSchemas.uuid,
+            }),
+        },
+        addTaskUpdate: {
+            params: z.object({
+                farmId: commonSchemas.uuid,
+                taskId: commonSchemas.uuid,
+            }),
+            body: z.object({
+                updateType: z.enum(['comment', 'status_change', 'reassigned', 'completion', 'attachment']).optional(),
+                body: z.string().max(5000).optional(),
+                metadata: z.record(z.unknown()).optional(),
+            }),
+        },
+        acceptInvitation: {
+            params: z.object({
+                token: z.string().min(16).max(128),
+            }),
+        },
+        declineInvitation: {
+            params: z.object({
+                token: z.string().min(16).max(128),
+            }),
+        },
+    },
+
     // ============ SUBSCRIPTIONS ENDPOINTS ============
     subscriptions: {
         getPlans: {

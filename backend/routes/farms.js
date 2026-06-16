@@ -8,6 +8,7 @@ const SubscriptionMiddleware = require('../middleware/subscriptionMiddleware');
 const { validate } = require('../middleware/validator');
 const { asyncHandler } = require('../middleware/error-handler');
 const logger = require('../utils/logger');
+const FarmMembershipService = require('../services/farmMembershipService');
 
 class FarmRoutes {
     constructor(dbPool = null) {
@@ -15,10 +16,17 @@ class FarmRoutes {
         this.dbPool = dbPool;
         this.authMiddleware = new AuthMiddleware();
         this.subscriptionMiddleware = new SubscriptionMiddleware(dbPool);
+        this.membershipService = dbPool ? new FarmMembershipService(dbPool) : null;
         this.setupRoutes();
     }
 
     setupRoutes() {
+        this.router.get(
+            '/',
+            this.authMiddleware.authenticate(),
+            validate('farms.list'),
+            asyncHandler(this.listFarms.bind(this))
+        );
         this.router.post(
             '/',
             this.authMiddleware.authenticate(),
@@ -27,6 +35,27 @@ class FarmRoutes {
             validate('farms.create'),
             asyncHandler(this.createFarm.bind(this))
         );
+    }
+
+    async listFarms(req, res) {
+        if (!this.dbPool || !this.membershipService) {
+            return res.status(503).json({
+                success: false,
+                error: 'Database unavailable',
+                code: 'DB_UNAVAILABLE'
+            });
+        }
+        try {
+            const farms = await this.membershipService.listFarmsForUser(req.user.id);
+            res.json({ success: true, data: farms });
+        } catch (error) {
+            logger.errorWithContext('List farms error', { error: error.message, userId: req.user.id });
+            res.status(500).json({
+                success: false,
+                error: 'Failed to list farms',
+                code: 'FARM_LIST_ERROR'
+            });
+        }
     }
 
     async createFarm(req, res) {
@@ -68,6 +97,9 @@ class FarmRoutes {
             );
 
             const row = result.rows[0];
+            if (this.membershipService) {
+                await this.membershipService.createOwnerMembership(row.id, userId);
+            }
             res.status(201).json({
                 success: true,
                 message: 'Farm created successfully',

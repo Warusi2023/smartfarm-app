@@ -191,6 +191,7 @@
     <script src="js/api-config.js"></script>
     <script src="js/api-service.js"></script>
     <script src="js/aquaculture-management.js"></script>
+    <script src="js/farm-team-management.js"></script>
     <script>
         // Ensure API service is properly initialized
         document.addEventListener('DOMContentLoaded', function() {
@@ -1465,8 +1466,13 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#" onclick="showTasks()">
-                                <i class="fas fa-tasks me-2"></i>Tasks
+                            <a class="nav-link" href="#" onclick="showTasks(); return false;">
+                                <i class="fas fa-tasks me-2"></i>Farm Tasks
+                            </a>
+                        </li>
+                        <li class="nav-item" data-nav-team>
+                            <a class="nav-link" href="#" onclick="showTeamManagement(); return false;">
+                                <i class="fas fa-users me-2"></i>Team
                             </a>
                         </li>
                         
@@ -3291,40 +3297,93 @@
                 </div>
 
                 <div id="tasksView" style="display: none;">
-                    <h2>Task Management</h2>
-                    <div class="dashboard-card">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5>Tasks</h5>
-                            <button class="btn btn-custom" onclick="addNewTask()">
-                                <i class="fas fa-plus me-2"></i>Add Task
-                            </button>
+                    <div class="page-header mb-4">
+                        <h2 class="mb-1">Farm Tasks</h2>
+                        <p class="small text-muted mb-0" id="ftFarmLabel">Loading farm…</p>
+                    </div>
+                    <ul class="nav nav-tabs mb-3" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#ftTabAll" type="button">All tasks</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#ftTabMy" type="button">My tasks</button>
+                        </li>
+                    </ul>
+                    <div class="tab-content">
+                        <div class="tab-pane fade show active" id="ftTabAll">
+                            <div class="dashboard-card mb-3">
+                                <h5 class="mb-3">Create task</h5>
+                                <div class="row g-2 align-items-end">
+                                    <div class="col-md-4">
+                                        <label class="form-label small">Title</label>
+                                        <input type="text" class="form-control" id="ftTaskTitle" placeholder="Inspect north pond aerators">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label small">Priority</label>
+                                        <select class="form-select" id="ftTaskPriority">
+                                            <option value="low">Low</option>
+                                            <option value="medium" selected>Medium</option>
+                                            <option value="high">High</option>
+                                            <option value="urgent">Urgent</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label small">Assign to</label>
+                                        <select class="form-select" id="ftTaskAssignee"><option value="">Unassigned</option></select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <button type="button" class="btn btn-custom w-100" id="ftCreateTaskBtn">Add task</button>
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label small">Description</label>
+                                        <textarea class="form-control" id="ftTaskDescription" rows="2" placeholder="Optional details"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="dashboard-card">
+                                <h5 class="mb-3">Team task board</h5>
+                                <div id="ftTasksList"><p class="text-muted mb-0">Loading…</p></div>
+                            </div>
                         </div>
-                        <div class="table-responsive">
-                            <table class="table table-custom">
-                                <thead>
-                                    <tr>
-                                        <th>Task</th>
-                                        <th>Priority</th>
-                                        <th>Due Date</th>
-                                        <th>Status</th>
-                                        <th>Assigned To</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tasksTable">
-                                    <tr>
-                                        <td>Harvest Field A</td>
-                                        <td><span class="badge bg-danger">High</span></td>
-                                        <td>2025-01-20</td>
-                                        <td><span class="status-badge status-pending">Pending</span></td>
-                                        <td>John Doe</td>
-                                        <td>
-                                            <button class="btn btn-sm btn-outline-success me-1" onclick="completeTask(1)">Complete</button>
-                                            <button class="btn btn-sm btn-outline-primary" onclick="editTask(1)">Edit</button>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                        <div class="tab-pane fade" id="ftTabMy">
+                            <div class="dashboard-card">
+                                <h5 class="mb-3">Assigned to me</h5>
+                                <div id="ftMyTasksList"><p class="text-muted mb-0">Loading…</p></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="teamManagementView" style="display: none;">
+                    <div class="page-header mb-4">
+                        <h2 class="mb-1">Farm Team</h2>
+                        <p class="small text-muted mb-0" id="ftTeamFarmLabel">Loading farm…</p>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-lg-7">
+                            <div class="dashboard-card">
+                                <h5 class="mb-3">Members</h5>
+                                <div id="ftMembersList"><p class="text-muted mb-0">Loading…</p></div>
+                            </div>
+                        </div>
+                        <div class="col-lg-5">
+                            <div class="dashboard-card">
+                                <h5 class="mb-3">Invite member</h5>
+                                <p class="small text-muted">Owner invites by email. Invitee accepts after login with the same email.</p>
+                                <div class="mb-2">
+                                    <label class="form-label small">Email</label>
+                                    <input type="email" class="form-control" id="ftInviteEmail" placeholder="worker@example.com">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small">Role</label>
+                                    <select class="form-select" id="ftInviteRole">
+                                        <option value="manager">Manager</option>
+                                        <option value="worker" selected>Worker</option>
+                                        <option value="viewer">Viewer</option>
+                                    </select>
+                                </div>
+                                <button type="button" class="btn btn-custom" id="ftInviteBtn">Send invitation</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -4184,6 +4243,7 @@
                 'showInventoryManagement',
                 'showAnalytics',
                 'showTasks',
+                'showTeamManagement',
                 'showReports'
             ];
             
@@ -4215,7 +4275,8 @@
                 { name: 'Pets Management', func: 'showPetsManagement', view: 'petsManagementView' },
                 { name: 'Inventory Management', func: 'showInventoryManagement', view: 'inventoryManagementView' },
                 { name: 'Analytics', func: 'showAnalytics', view: 'analyticsView' },
-                { name: 'Tasks', func: 'showTasks', view: 'tasksView' },
+                { name: 'Farm Tasks', func: 'showTasks', view: 'tasksView' },
+                { name: 'Team', func: 'showTeamManagement', view: 'teamManagementView' },
                 { name: 'Reports', func: 'showReports', view: 'reportsView' }
             ];
 
@@ -4254,6 +4315,7 @@
                     'inventoryManagementView': '/inventory-management',
                     'analyticsView': '/analytics',
                     'tasksView': '/tasks',
+                    'teamManagementView': '/team-management',
                     'reportsView': '/reports'
                 };
                 
@@ -4292,6 +4354,7 @@
                     '/inventory-management': 'inventoryManagementView',
                     '/analytics': 'analyticsView',
                     '/tasks': 'tasksView',
+                    '/team-management': 'teamManagementView',
                     '/reports': 'reportsView'
                 };
                 
@@ -7853,26 +7916,33 @@
         }
 
         function showTasks() {
-            console.log('Switching to Tasks...');
+            console.log('Switching to Farm Tasks...');
             try {
                 showView('tasksView');
                 setActiveNav('tasks');
                 updateURL('tasksView');
-                
-                // Load tasks table
-                if (typeof loadTasksTable === 'function') {
-                    loadTasksTable();
+                if (window.FarmTeamManagement && typeof window.FarmTeamManagement.loadTasksView === 'function') {
+                    window.FarmTeamManagement.loadTasksView();
                 }
-                
-                // Initialize weeding tasks if not already done
-                if (typeof intelligentWeeding !== 'undefined') {
-                    intelligentWeeding.generateWeedingTasks();
-                }
-                console.log('Successfully switched to Tasks');
+                console.log('Successfully switched to Farm Tasks');
             } catch (error) {
                 console.error('Error switching to Tasks:', error);
-                // Fallback: just show the view
                 document.getElementById('tasksView').style.display = 'block';
+            }
+        }
+
+        function showTeamManagement() {
+            console.log('Switching to Team...');
+            try {
+                showView('teamManagementView');
+                setActiveNav('team');
+                updateURL('teamManagementView');
+                if (window.FarmTeamManagement && typeof window.FarmTeamManagement.loadTeamView === 'function') {
+                    window.FarmTeamManagement.loadTeamView();
+                }
+            } catch (error) {
+                console.error('Error switching to Team:', error);
+                document.getElementById('teamManagementView').style.display = 'block';
             }
         }
 
@@ -7936,7 +8006,7 @@
                 // Hide all views
                 const views = ['dashboardView', 'farmManagementView', 'cropManagementView', 
                               'livestockManagementView', 'aquacultureManagementView', 'petsManagementView', 'inventoryManagementView', 
-                              'analyticsView', 'tasksView', 'reportsView'];
+                              'analyticsView', 'tasksView', 'teamManagementView', 'reportsView'];
                 
                 views.forEach(id => {
                     const element = document.getElementById(id);
@@ -7986,6 +8056,7 @@
                     'inventory': '[onclick*="showInventoryManagement"]',
                     'analytics': '[onclick*="showAnalytics"]',
                     'tasks': '[onclick*="showTasks"]',
+                    'team': '[onclick*="showTeamManagement"]',
                     'reports': '[onclick*="showReports"]'
                 };
                 
@@ -14737,6 +14808,9 @@ INVENTORY SUMMARY:
                 case 'tasksView':
                     showTasks();
                     break;
+                case 'teamManagementView':
+                    showTeamManagement();
+                    break;
                 default:
                     showDashboard();
             }
@@ -17635,6 +17709,7 @@ INVENTORY SUMMARY:
         window.showInventoryManagement = showInventoryManagement;
         window.showAnalytics = showAnalytics;
         window.showTasks = showTasks;
+        window.showTeamManagement = showTeamManagement;
         
         // Make new card functions globally accessible
         window.filterCrops = filterCrops;
@@ -17659,6 +17734,7 @@ INVENTORY SUMMARY:
                 'showInventoryManagement',
                 'showAnalytics',
                 'showTasks',
+                'showTeamManagement',
                 'showReports'
             ];
             
@@ -17681,6 +17757,7 @@ INVENTORY SUMMARY:
                 'inventoryManagementView',
                 'analyticsView',
                 'tasksView',
+                'teamManagementView',
                 'reportsView'
             ];
             

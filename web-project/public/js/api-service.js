@@ -663,6 +663,77 @@ class SmartFarmAPIService {
         return await this.request(`/aquaculture/status${queryString ? '?' + queryString : ''}`);
     }
 
+    // Farm team — memberships, invitations, shared tasks
+    async getFarmMembers(farmId) {
+        return await this.request(`/farms/${farmId}/members`);
+    }
+
+    async inviteFarmMember(farmId, data) {
+        return await this.request(`/farms/${farmId}/invitations`, {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    }
+
+    async updateFarmMember(farmId, membershipId, data) {
+        return await this.request(`/farms/${farmId}/members/${membershipId}`, {
+            method: 'PATCH',
+            body: JSON.stringify(data)
+        });
+    }
+
+    async removeFarmMember(farmId, membershipId) {
+        return await this.request(`/farms/${farmId}/members/${membershipId}`, {
+            method: 'DELETE'
+        });
+    }
+
+    async acceptFarmInvitation(token) {
+        return await this.request(`/farm-invitations/${token}/accept`, { method: 'POST' });
+    }
+
+    async declineFarmInvitation(token) {
+        return await this.request(`/farm-invitations/${token}/decline`, { method: 'POST' });
+    }
+
+    async getFarmTasks(farmId, params = {}) {
+        const queryString = new URLSearchParams(params).toString();
+        return await this.request(`/farms/${farmId}/tasks${queryString ? '?' + queryString : ''}`);
+    }
+
+    async getMyFarmTasks(farmId) {
+        return await this.request(`/farms/${farmId}/tasks/my`);
+    }
+
+    async createFarmTask(farmId, data) {
+        return await this.request(`/farms/${farmId}/tasks`, {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    }
+
+    async getFarmTask(farmId, taskId) {
+        return await this.request(`/farms/${farmId}/tasks/${taskId}`);
+    }
+
+    async updateFarmTask(farmId, taskId, data) {
+        return await this.request(`/farms/${farmId}/tasks/${taskId}`, {
+            method: 'PATCH',
+            body: JSON.stringify(data)
+        });
+    }
+
+    async completeFarmTask(farmId, taskId) {
+        return await this.request(`/farms/${farmId}/tasks/${taskId}/complete`, { method: 'POST' });
+    }
+
+    async addFarmTaskUpdate(farmId, taskId, data) {
+        return await this.request(`/farms/${farmId}/tasks/${taskId}/updates`, {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    }
+
     // Feed Mix Management API
     async getFeedMixes(params = {}) {
         const queryString = new URLSearchParams(params).toString();
