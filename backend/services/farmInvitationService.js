@@ -52,18 +52,31 @@ class FarmInvitationService {
             throw new ConflictError('User is already a member of this farm');
         }
 
-        const pending = await this.dbPool.query(
-            `SELECT id FROM farm_invitations
-             WHERE farm_id = $1 AND lower(email) = $2 AND status = 'pending' AND expires_at > NOW()`,
-            [farmId, normalizedEmail]
-        );
-        if (pending.rows[0]) {
-            throw new ConflictError('A pending invitation already exists for this email');
-        }
-
         const rawToken = generateInviteToken();
         const tokenHash = hashToken(rawToken);
         const expiresAt = new Date(Date.now() + INVITE_TTL_DAYS * 24 * 60 * 60 * 1000);
+
+        const pending = await this.dbPool.query(
+            `SELECT * FROM farm_invitations
+             WHERE farm_id = $1 AND lower(email) = $2 AND status = 'pending'`,
+            [farmId, normalizedEmail]
+        );
+        if (pending.rows[0]) {
+            const result = await this.dbPool.query(
+                `UPDATE farm_invitations
+                 SET token_hash = $1, expires_at = $2, role = $3, invited_by_user_id = $4
+                 WHERE id = $5
+                 RETURNING *`,
+                [tokenHash, expiresAt, role, invitedByUserId, pending.rows[0].id]
+            );
+            const invite = mapInvitationRow(result.rows[0]);
+            return {
+                invitation: invite,
+                token: rawToken,
+                acceptUrl: `/dashboard.html?farmInvite=${rawToken}`,
+                resent: true
+            };
+        }
 
         const result = await this.dbPool.query(
             `INSERT INTO farm_invitations (farm_id, email, role, invited_by_user_id, token_hash, expires_at)
@@ -76,7 +89,8 @@ class FarmInvitationService {
         return {
             invitation: invite,
             token: rawToken,
-            acceptUrl: `/dashboard.html?farmInvite=${rawToken}`
+            acceptUrl: `/dashboard.html?farmInvite=${rawToken}`,
+            resent: false
         };
     }
 

@@ -213,6 +213,32 @@
         renderTasks(response.data || [], 'ftMyTasksList', true);
     }
 
+    function fullAcceptUrl(relative) {
+        if (!relative) {
+            return '';
+        }
+        if (/^https?:\/\//i.test(relative)) {
+            return relative;
+        }
+        const path = relative.startsWith('/') ? relative : `/${relative}`;
+        return `${global.location.origin}${path}`;
+    }
+
+    async function copyInviteLink(url) {
+        if (!url) {
+            return false;
+        }
+        try {
+            if (global.navigator && global.navigator.clipboard && global.navigator.clipboard.writeText) {
+                await global.navigator.clipboard.writeText(url);
+                return true;
+            }
+        } catch (_) {
+            /* fall through */
+        }
+        return false;
+    }
+
     async function inviteMember() {
         if (!canManageTeam()) {
             notify('Only the farm owner can invite members', 'warning');
@@ -226,11 +252,35 @@
         }
         const response = await global.SmartFarmAPI.inviteFarmMember(currentFarmId, { email, role });
         if (!response || response.success === false) {
-            notify(response && response.error ? response.error : 'Invite failed', 'danger');
+            const err = response && response.error ? response.error : 'Invite failed';
+            if (/pending invitation already exists/i.test(err)) {
+                notify(
+                    'A pending invite already exists for this email. Invite again to refresh the link, then copy it.',
+                    'warning'
+                );
+            } else {
+                notify(err, 'danger');
+            }
             return;
         }
-        const acceptUrl = response.data && response.data.acceptUrl;
-        notify(`Invitation created. Share link: ${acceptUrl || '(check API response)'}`, 'success');
+        const acceptUrl = fullAcceptUrl(response.data && response.data.acceptUrl);
+        const resent = !!(response.data && response.data.resent);
+        const copied = await copyInviteLink(acceptUrl);
+        if (resent) {
+            notify(
+                copied
+                    ? 'Pending invite already existed — fresh link copied.'
+                    : `Pending invite already existed — fresh link: ${acceptUrl}`,
+                'success'
+            );
+        } else {
+            notify(
+                copied
+                    ? 'Invitation created — invite link copied.'
+                    : `Invitation created. Share link: ${acceptUrl}`,
+                'success'
+            );
+        }
         if ($('ftInviteEmail')) {
             $('ftInviteEmail').value = '';
         }

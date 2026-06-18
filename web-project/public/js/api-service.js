@@ -233,18 +233,32 @@ class SmartFarmAPIService {
             }
         }
         
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-        
         const text = await response.text();
         let data = null;
         try {
             data = text ? JSON.parse(text) : null;
         } catch (_) {
+            if (!response.ok) {
+                return {
+                    success: false,
+                    error: `HTTP ${response.status}: ${response.statusText}`,
+                    statusCode: response.status,
+                    retries: retryCount
+                };
+            }
             return {
                 success: false,
                 error: 'Invalid JSON response from server',
+                statusCode: response.status,
+                retries: retryCount
+            };
+        }
+
+        if (!response.ok) {
+            return {
+                success: false,
+                error: (data && data.error) || `HTTP ${response.status}: ${response.statusText}`,
+                code: data && data.code,
                 statusCode: response.status,
                 retries: retryCount
             };

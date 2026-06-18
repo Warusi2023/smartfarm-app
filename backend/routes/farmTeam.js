@@ -140,7 +140,7 @@ class FarmTeamRoutes {
         res.status(status).json({
             success: false,
             error: error.message,
-            code: error.code || 'FARM_TEAM_ERROR'
+            code: error.errorCode || error.code || 'FARM_TEAM_ERROR'
         });
     }
 
@@ -202,12 +202,13 @@ class FarmTeamRoutes {
                 invitedByUserId: req.user.id
             });
             // TODO: send invitation email with result.token
-            res.status(201).json({
+            res.status(result.resent ? 200 : 201).json({
                 success: true,
-                message: 'Invitation created',
+                message: result.resent ? 'Pending invitation refreshed' : 'Invitation created',
                 data: {
                     invitation: result.invitation,
-                    acceptUrl: result.acceptUrl
+                    acceptUrl: result.acceptUrl,
+                    resent: !!result.resent
                 }
             });
         } catch (error) {
