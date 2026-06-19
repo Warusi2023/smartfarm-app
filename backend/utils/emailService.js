@@ -213,6 +213,74 @@ class EmailService {
     }
 
     /**
+     * Send farm team invitation email
+     */
+    async sendFarmInvitationEmail({
+        email,
+        farmName,
+        role,
+        inviteToken,
+        invitedByName = 'A farm owner',
+        isResend = false
+    }) {
+        if (!this.isConfigured || !this.transporter) {
+            console.warn('⚠️ Email service not configured, skipping farm invitation email');
+            return false;
+        }
+
+        let acceptUrl;
+        try {
+            acceptUrl = buildPublicFrontendUrl('/dashboard.html', { farmInvite: inviteToken });
+        } catch (err) {
+            console.error(`❌ Failed to build farm invite link for ${email}:`, err.message);
+            return false;
+        }
+
+        const roleLabel = role ? String(role).charAt(0).toUpperCase() + String(role).slice(1) : 'Member';
+        const subject = isResend
+            ? `Updated invitation to join ${farmName} on SmartFarm`
+            : `You're invited to join ${farmName} on SmartFarm`;
+        const intro = isResend
+            ? `${invitedByName} refreshed your invitation to join <strong>${farmName}</strong> as <strong>${roleLabel}</strong>.`
+            : `${invitedByName} invited you to join <strong>${farmName}</strong> as <strong>${roleLabel}</strong>.`;
+        const emailHtml = `
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>Farm Team Invitation</title></head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <h2 style="color: #2e7d32;">Farm team invitation</h2>
+    <p>Hello,</p>
+    <p>${intro}</p>
+    <p>Log in with this email address, then accept the invitation:</p>
+    <p>
+        <a href="${acceptUrl}" style="display: inline-block; padding: 12px 20px; background-color: #2e7d32; color: #fff; text-decoration: none; border-radius: 4px;">
+            Accept invitation
+        </a>
+    </p>
+    <p>If the button does not work, copy and paste this URL into your browser:</p>
+    <p style="word-break: break-all;">${acceptUrl}</p>
+    <p><strong>This link expires in 7 days.</strong></p>
+    <p style="font-size: 12px; color: #666;">SmartFarm Team</p>
+</body>
+</html>`;
+
+        try {
+            const info = await this.transporter.sendMail({
+                from: this.fromEmail,
+                to: email,
+                subject,
+                html: emailHtml,
+                text: `${invitedByName} invited you to join ${farmName} as ${roleLabel}. Accept (7-day link): ${acceptUrl}`
+            });
+            console.log(`✅ Farm invitation email sent to ${email}:`, info.messageId);
+            return true;
+        } catch (error) {
+            console.error(`❌ Failed to send farm invitation email to ${email}:`, error.message);
+            return false;
+        }
+    }
+
+    /**
      * Send welcome email (after verification)
      */
     async sendWelcomeEmail(email, firstName = 'User') {

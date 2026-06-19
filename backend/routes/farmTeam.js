@@ -16,6 +16,7 @@ const {
 const FarmMembershipService = require('../services/farmMembershipService');
 const FarmInvitationService = require('../services/farmInvitationService');
 const FarmTaskService = require('../services/farmTaskService');
+const EmailService = require('../utils/emailService');
 const logger = require('../utils/logger');
 
 class FarmTeamRoutes {
@@ -27,6 +28,7 @@ class FarmTeamRoutes {
         this.membershipService = dbPool ? new FarmMembershipService(dbPool) : null;
         this.invitationService = dbPool ? new FarmInvitationService(dbPool) : null;
         this.taskService = dbPool ? new FarmTaskService(dbPool) : null;
+        this.emailService = new EmailService();
         this.setupRoutes();
     }
 
@@ -229,7 +231,33 @@ class FarmTeamRoutes {
                 role: req.body.role,
                 invitedByUserId: req.user.id
             });
-            // TODO: send invitation email with result.token
+            let farmName = 'your farm';
+            if (this.dbPool) {
+                const farmRow = await this.dbPool.query(
+                    'SELECT name FROM farms WHERE id = $1',
+                    [req.params.farmId]
+                );
+                farmName = farmRow.rows[0]?.name || farmName;
+            }
+            const invitedByName = [req.user.first_name, req.user.last_name]
+                .filter(Boolean)
+                .join(' ') || req.user.email || 'A farm owner';
+            try {
+                await this.emailService.sendFarmInvitationEmail({
+                    email: req.body.email,
+                    farmName,
+                    role: req.body.role,
+                    inviteToken: result.token,
+                    invitedByName,
+                    isResend: !!result.resent
+                });
+            } catch (emailError) {
+                logger.warn('Failed to send farm invitation email', {
+                    error: emailError,
+                    farmId: req.params.farmId,
+                    email: req.body.email
+                });
+            }
             res.status(result.resent ? 200 : 201).json({
                 success: true,
                 message: result.resent ? 'Pending invitation refreshed' : 'Invitation created',
