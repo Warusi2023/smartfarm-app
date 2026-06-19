@@ -189,9 +189,9 @@
     <script src="js/log.js"></script>
     <script src="js/error-boundary.js"></script>
     <script src="js/api-config.js"></script>
-    <script src="js/api-service.js?v=teamfix1"></script>
+    <script src="js/api-service.js?v=teamui1"></script>
     <script src="js/aquaculture-management.js"></script>
-    <script src="js/farm-team-management.js"></script>
+    <script src="js/farm-team-management.js?v=teamui1"></script>
     <script>
         // Ensure API service is properly initialized
         document.addEventListener('DOMContentLoaded', function() {
@@ -3361,9 +3361,13 @@
                     </div>
                     <div class="row g-3">
                         <div class="col-lg-7">
-                            <div class="dashboard-card">
+                            <div class="dashboard-card mb-3">
                                 <h5 class="mb-3">Members</h5>
                                 <div id="ftMembersList"><p class="text-muted mb-0">Loading…</p></div>
+                            </div>
+                            <div class="dashboard-card" id="ftPendingInvitesCard">
+                                <h5 class="mb-3">Pending invites</h5>
+                                <div id="ftPendingInvitesList"><p class="text-muted mb-0">Loading…</p></div>
                             </div>
                         </div>
                         <div class="col-lg-5">

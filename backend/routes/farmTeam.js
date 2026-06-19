@@ -59,6 +59,14 @@ class FarmTeamRoutes {
         );
 
         // Invitations (owner only)
+        this.router.get(
+            '/:farmId/invitations',
+            auth,
+            validate('farmTeam.listInvitations'),
+            this.requireMembership,
+            requireFarmRole('owner'),
+            asyncHandler(this.listInvitations.bind(this))
+        );
         this.router.post(
             '/:farmId/invitations',
             auth,
@@ -66,6 +74,14 @@ class FarmTeamRoutes {
             this.requireMembership,
             requireFarmRole('owner'),
             asyncHandler(this.createInvitation.bind(this))
+        );
+        this.router.delete(
+            '/:farmId/invitations/:invitationId',
+            auth,
+            validate('farmTeam.revokeInvitation'),
+            this.requireMembership,
+            requireFarmRole('owner'),
+            asyncHandler(this.revokeInvitation.bind(this))
         );
 
         // Tasks — my tasks before :taskId
@@ -190,6 +206,18 @@ class FarmTeamRoutes {
         }
     }
 
+    async listInvitations(req, res) {
+        if (!this.ensureService(res)) {
+            return;
+        }
+        try {
+            const invitations = await this.invitationService.listPendingInvitations(req.params.farmId);
+            res.json({ success: true, data: invitations });
+        } catch (error) {
+            this.handleError(res, error);
+        }
+    }
+
     async createInvitation(req, res) {
         if (!this.ensureService(res)) {
             return;
@@ -211,6 +239,21 @@ class FarmTeamRoutes {
                     resent: !!result.resent
                 }
             });
+        } catch (error) {
+            this.handleError(res, error);
+        }
+    }
+
+    async revokeInvitation(req, res) {
+        if (!this.ensureService(res)) {
+            return;
+        }
+        try {
+            const invitation = await this.invitationService.revokePendingInvitation(
+                req.params.farmId,
+                req.params.invitationId
+            );
+            res.json({ success: true, data: invitation });
         } catch (error) {
             this.handleError(res, error);
         }

@@ -431,6 +431,15 @@ const validationSchemas = {
                 role: z.enum(['manager', 'worker', 'viewer']),
             }),
         },
+        listInvitations: {
+            params: z.object({ farmId: commonSchemas.uuid }),
+        },
+        revokeInvitation: {
+            params: z.object({
+                farmId: commonSchemas.uuid,
+                invitationId: commonSchemas.uuid,
+            }),
+        },
         listTasks: {
             params: z.object({ farmId: commonSchemas.uuid }),
             query: z.object({

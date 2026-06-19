@@ -18,10 +18,15 @@
         done: 'success',
         cancelled: 'dark'
     };
+    const MEMBER_STATUS_CLASS = {
+        active: 'success',
+        revoked: 'secondary'
+    };
 
     let currentFarmId = null;
     let currentFarmRole = null;
     let membersCache = [];
+    let invitesCache = [];
     let tasksCache = [];
 
     function $(id) {
@@ -53,6 +58,41 @@
         } catch (_) {
             return String(iso).slice(0, 10);
         }
+    }
+
+    function formatRole(role) {
+        if (!role) {
+            return '—';
+        }
+        return String(role).charAt(0).toUpperCase() + String(role).slice(1);
+    }
+
+    function memberStatusLabel(status) {
+        if (status === 'active') {
+            return 'Active';
+        }
+        return formatRole(status);
+    }
+
+    function inviteStatusLabel(invite) {
+        if (invite.status !== 'pending') {
+            return formatRole(invite.status);
+        }
+        if (invite.expiresAt && new Date(invite.expiresAt) < new Date()) {
+            return 'Expired';
+        }
+        return 'Pending';
+    }
+
+    function inviteStatusClass(invite) {
+        const label = inviteStatusLabel(invite);
+        if (label === 'Pending') {
+            return 'warning';
+        }
+        if (label === 'Expired') {
+            return 'secondary';
+        }
+        return 'dark';
     }
 
     async function resolveFarmContext() {
@@ -89,6 +129,7 @@
         const inviteBtn = $('ftInviteBtn');
         const createTaskBtn = $('ftCreateTaskBtn');
         const teamNav = document.querySelector('[data-nav-team]');
+        const pendingCard = $('ftPendingInvitesCard');
         if (inviteBtn) {
             inviteBtn.style.display = canManageTeam() ? '' : 'none';
         }
@@ -98,6 +139,9 @@
         if (teamNav) {
             teamNav.style.display = canManageTeam() || currentFarmRole === 'manager' ? '' : 'none';
         }
+        if (pendingCard) {
+            pendingCard.style.display = canManageTeam() ? '' : 'none';
+        }
     }
 
     function renderMembers(members) {
@@ -106,22 +150,59 @@
             return;
         }
         if (!members.length) {
-            el.innerHTML = '<p class="text-muted mb-0">No members yet.</p>';
+            el.innerHTML = '<p class="text-muted mb-0">No active members yet.</p>';
             return;
         }
         el.innerHTML = `
             <div class="table-responsive">
                 <table class="table table-sm table-custom mb-0">
-                    <thead><tr><th>Member</th><th>Role</th><th></th></tr></thead>
+                    <thead><tr><th>Personnel</th><th>Role</th><th>Status</th><th></th></tr></thead>
                     <tbody>
-                        ${members.map((m) => `
+                        ${members.map((m) => {
+                            const statusClass = MEMBER_STATUS_CLASS[m.status] || 'secondary';
+                            return `
                             <tr>
                                 <td>${escapeHtml(m.userName || m.userEmail)}<br><small class="text-muted">${escapeHtml(m.userEmail)}</small></td>
-                                <td>${escapeHtml(m.role)}</td>
+                                <td>${escapeHtml(formatRole(m.role))}</td>
+                                <td><span class="badge bg-${statusClass}">${escapeHtml(memberStatusLabel(m.status))}</span></td>
                                 <td class="text-end">
                                     ${canManageTeam() && m.role !== 'owner'
                                         ? `<button type="button" class="btn btn-sm btn-outline-danger" onclick="FarmTeamManagement.removeMember('${m.id}')">Remove</button>`
                                         : ''}
+                                </td>
+                            </tr>`;
+                        }).join('')}
+                    </tbody>
+                </table>
+            </div>`;
+    }
+
+    function renderPendingInvites(invites) {
+        const el = $('ftPendingInvitesList');
+        if (!el) {
+            return;
+        }
+        if (!canManageTeam()) {
+            el.innerHTML = '<p class="text-muted mb-0">Only the farm owner can view pending invites.</p>';
+            return;
+        }
+        if (!invites.length) {
+            el.innerHTML = '<p class="text-muted mb-0">No pending invites.</p>';
+            return;
+        }
+        el.innerHTML = `
+            <div class="table-responsive">
+                <table class="table table-sm table-custom mb-0">
+                    <thead><tr><th>Invitee</th><th>Role</th><th>Status</th><th></th></tr></thead>
+                    <tbody>
+                        ${invites.map((inv) => `
+                            <tr>
+                                <td>${escapeHtml(inv.email)}<br><small class="text-muted">Sent ${formatDate(inv.createdAt)} · expires ${formatDate(inv.expiresAt)}</small></td>
+                                <td>${escapeHtml(formatRole(inv.role))}</td>
+                                <td><span class="badge bg-${inviteStatusClass(inv)}">${escapeHtml(inviteStatusLabel(inv))}</span></td>
+                                <td class="text-end text-nowrap">
+                                    <button type="button" class="btn btn-sm btn-outline-primary me-1" onclick="FarmTeamManagement.resendInvite('${inv.id}')">Resend</button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="FarmTeamManagement.revokeInvite('${inv.id}')">Cancel</button>
                                 </td>
                             </tr>`).join('')}
                     </tbody>
@@ -179,6 +260,31 @@
         membersCache = response.data || [];
         renderMembers(membersCache);
         updateTeamUiVisibility();
+    }
+
+    async function loadPendingInvites() {
+        if (!currentFarmId) {
+            await resolveFarmContext();
+        }
+        if (!currentFarmId || !canManageTeam()) {
+            invitesCache = [];
+            renderPendingInvites([]);
+            updateTeamUiVisibility();
+            return;
+        }
+        const response = await global.SmartFarmAPI.getFarmInvitations(currentFarmId);
+        if (!response || response.success === false) {
+            notify(response && response.error ? response.error : 'Failed to load pending invites', 'danger');
+            return;
+        }
+        invitesCache = response.data || [];
+        renderPendingInvites(invitesCache);
+        updateTeamUiVisibility();
+    }
+
+    async function refreshTeamPersonnel() {
+        await loadMembers();
+        await loadPendingInvites();
     }
 
     async function loadFarmTasks() {
@@ -284,6 +390,53 @@
         if ($('ftInviteEmail')) {
             $('ftInviteEmail').value = '';
         }
+        await refreshTeamPersonnel();
+    }
+
+    async function resendInvite(invitationId) {
+        if (!canManageTeam()) {
+            notify('Only the farm owner can resend invites', 'warning');
+            return;
+        }
+        const invite = invitesCache.find((i) => i.id === invitationId);
+        if (!invite) {
+            notify('Invitation not found', 'warning');
+            return;
+        }
+        const response = await global.SmartFarmAPI.inviteFarmMember(currentFarmId, {
+            email: invite.email,
+            role: invite.role
+        });
+        if (!response || response.success === false) {
+            notify(response && response.error ? response.error : 'Resend failed', 'danger');
+            return;
+        }
+        const acceptUrl = fullAcceptUrl(response.data && response.data.acceptUrl);
+        const copied = await copyInviteLink(acceptUrl);
+        notify(
+            copied
+                ? 'Fresh invite link copied.'
+                : `Fresh invite link: ${acceptUrl}`,
+            'success'
+        );
+        await refreshTeamPersonnel();
+    }
+
+    async function revokeInvite(invitationId) {
+        if (!canManageTeam()) {
+            notify('Only the farm owner can cancel invites', 'warning');
+            return;
+        }
+        if (!confirm('Cancel this pending invitation?')) {
+            return;
+        }
+        const response = await global.SmartFarmAPI.revokeFarmInvitation(currentFarmId, invitationId);
+        if (!response || response.success === false) {
+            notify(response && response.error ? response.error : 'Cancel failed', 'danger');
+            return;
+        }
+        notify('Invitation cancelled', 'success');
+        await refreshTeamPersonnel();
     }
 
     async function removeMember(membershipId) {
@@ -296,7 +449,7 @@
             return;
         }
         notify('Member removed', 'success');
-        loadMembers();
+        await refreshTeamPersonnel();
     }
 
     async function createTask() {
@@ -382,7 +535,7 @@
 
     async function loadTeamView() {
         await resolveFarmContext();
-        await loadMembers();
+        await refreshTeamPersonnel();
         updateTeamUiVisibility();
     }
 
@@ -412,6 +565,7 @@
         global.history.replaceState({}, '', next);
         currentFarmId = null;
         await resolveFarmContext();
+        await refreshTeamPersonnel();
     }
 
     function init() {
@@ -433,6 +587,8 @@
         loadMyTasks,
         inviteMember,
         removeMember,
+        resendInvite,
+        revokeInvite,
         createTask,
         completeTask,
         promptComment

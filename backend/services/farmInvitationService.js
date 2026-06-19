@@ -176,6 +176,30 @@ class FarmInvitationService {
         );
         return { declined: true };
     }
+
+    async listPendingInvitations(farmId) {
+        const result = await this.dbPool.query(
+            `SELECT * FROM farm_invitations
+             WHERE farm_id = $1 AND status = 'pending'
+             ORDER BY created_at DESC`,
+            [farmId]
+        );
+        return result.rows.map(mapInvitationRow);
+    }
+
+    async revokePendingInvitation(farmId, invitationId) {
+        const result = await this.dbPool.query(
+            `UPDATE farm_invitations
+             SET status = 'revoked'
+             WHERE id = $1 AND farm_id = $2 AND status = 'pending'
+             RETURNING *`,
+            [invitationId, farmId]
+        );
+        if (!result.rows[0]) {
+            throw new NotFoundError('Pending invitation not found');
+        }
+        return mapInvitationRow(result.rows[0]);
+    }
 }
 
 module.exports = FarmInvitationService;

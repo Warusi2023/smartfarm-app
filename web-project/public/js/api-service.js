@@ -689,6 +689,16 @@ class SmartFarmAPIService {
         });
     }
 
+    async getFarmInvitations(farmId) {
+        return await this.request(`/farms/${farmId}/invitations`);
+    }
+
+    async revokeFarmInvitation(farmId, invitationId) {
+        return await this.request(`/farms/${farmId}/invitations/${invitationId}`, {
+            method: 'DELETE'
+        });
+    }
+
     async updateFarmMember(farmId, membershipId, data) {
         return await this.request(`/farms/${farmId}/members/${membershipId}`, {
             method: 'PATCH',
