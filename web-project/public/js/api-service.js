@@ -312,8 +312,23 @@ class SmartFarmAPIService {
             
             if (response.ok) {
                 const data = await response.json();
-                if (data.token) {
-                    this.setAuthToken(data.token);
+                const payload = data && data.data ? data.data : data;
+                const nextToken = payload && payload.token;
+                const nextRefresh = payload && payload.refreshToken;
+                if (nextToken) {
+                    this.setAuthToken(nextToken);
+                    const remember =
+                        localStorage.getItem('smartfarm_remember') === 'true' ||
+                        sessionStorage.getItem('smartfarm_remember') === 'true';
+                    if (nextRefresh) {
+                        if (remember) {
+                            localStorage.setItem('smartfarm_refresh_token', nextRefresh);
+                            sessionStorage.removeItem('smartfarm_refresh_token');
+                        } else {
+                            sessionStorage.setItem('smartfarm_refresh_token', nextRefresh);
+                            localStorage.removeItem('smartfarm_refresh_token');
+                        }
+                    }
                     console.log('✅ Token refreshed successfully');
                     return true;
                 }

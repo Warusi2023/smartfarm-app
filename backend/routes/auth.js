@@ -374,6 +374,7 @@ class AuthRoutes {
          *         $ref: '#/components/responses/UnauthorizedError'
          */
         this.router.get('/me', this.authMiddleware.authenticate(), validate('auth.getProfile'), this.getProfile.bind(this));
+        this.router.get('/profile', this.authMiddleware.authenticate(), validate('auth.getProfile'), this.getProfile.bind(this));
 
         /**
          * @swagger
