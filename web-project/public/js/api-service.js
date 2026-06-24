@@ -287,6 +287,11 @@ class SmartFarmAPIService {
         };
     }
     
+    clearRefreshTokens() {
+        localStorage.removeItem('smartfarm_refresh_token');
+        sessionStorage.removeItem('smartfarm_refresh_token');
+    }
+
     // Safely attempt to refresh token
     async refreshTokenSafely() {
         try {
@@ -334,6 +339,9 @@ class SmartFarmAPIService {
                 }
             }
             
+            if (response.status === 401) {
+                this.clearRefreshTokens();
+            }
             console.warn('Token refresh failed');
             return false;
         } catch (error) {

@@ -7,6 +7,7 @@ const express = require('express');
 const AuthService = require('../auth/auth');
 const AuthMiddleware = require('../middleware/auth');
 const EmailService = require('../utils/emailService');
+const { formatUserProfile } = require('../utils/authProfile');
 const DatabaseHelpers = require('../utils/db-helpers');
 const SubscriptionService = require('../services/subscriptionService');
 const SubscriptionEventService = require('../services/subscriptionEventService');
@@ -1107,16 +1108,7 @@ class AuthRoutes {
 
             res.json({
                 success: true,
-                data: {
-                    id: user.id,
-                    email: user.email,
-                    firstName: user.firstName,
-                    lastName: user.lastName,
-                    phone: user.phone,
-                    country: user.country,
-                    isVerified: user.isVerified,
-                    role: user.role || 'user'
-                }
+                data: formatUserProfile(user)
             });
         } catch (error) {
             logger.errorWithContext('Get profile error', { error, userId: req.user?.id });
