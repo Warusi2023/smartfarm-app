@@ -30,3 +30,27 @@ No production JWT, browser session, or test email inbox in CI/agent environment.
 ## Deploy order
 
 Backend first (profile helper + `/profile` alias already on 225a784), then **smartfarm-app** (HTML + `linksfix2`).
+
+## API base URL (important)
+
+- **Backend API** lives on Railway: `https://web-production-86d39.up.railway.app`
+- Routes such as `GET /api/auth/profile` and `GET /api/auth/me` exist on the **backend** (commit `a959ad2+`).
+- The dashboard's `api-service.js` / `api-client.js` call the Railway origin directly.
+- As of the API proxy server (`scripts/serve-dist-with-api-proxy.js`), same-origin `https://www.smartfarm-app.com/api/*` is **also** forwarded to Railway after web redeploy.
+
+### Manual profile verification (after web deploy with API proxy)
+
+```javascript
+const token = localStorage.getItem('smartfarm_token');
+
+// Option A — same origin (requires smartfarm-app web deploy with API proxy)
+fetch('/api/auth/profile', { headers: { Authorization: `Bearer ${token}` } })
+  .then(r => r.json()).then(console.log);
+
+// Option B — direct backend (always valid)
+fetch('https://web-production-86d39.up.railway.app/api/auth/profile', {
+  headers: { Authorization: `Bearer ${token}` }
+}).then(r => r.json()).then(console.log);
+```
+
+Expect **200** JSON with `{ success: true, data: { email, ... } }` for both `/profile` and `/me`.
