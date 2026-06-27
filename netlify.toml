@@ -2,16 +2,8 @@
   command = "cd web-project && npm install --include=dev && npm run build"
   publish = "web-project/dist"
 
-[[redirects]]
-  from = "/api/*"
-  to = "https://web-production-86d39.up.railway.app/api/:splat"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+# Redirect rules live in web-project/public/_redirects (published as dist/_redirects).
+# Do not duplicate [[redirects]] here — merged rules can let SPA /* win over /api/*.
 
 # Performance Optimization: Browser Caching Headers
 [[headers]]

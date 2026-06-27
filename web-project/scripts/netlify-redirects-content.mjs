@@ -1,4 +1,8 @@
-# Netlify redirects — more specific rules first; catch-all last.
+/**
+ * Single source of truth for Netlify _redirects (published in dist/).
+ * Order matters: first match wins — API proxy first, SPA catch-all last.
+ */
+export const NETLIFY_REDIRECTS = `# Netlify redirects — more specific rules first; catch-all last.
 /api/*  https://web-production-86d39.up.railway.app/api/:splat  200!
 
 /signup.html /register.html 301
@@ -15,3 +19,4 @@
 /backend-test.html /index.html 301
 
 /*  /index.html  200
+`;

@@ -8,7 +8,7 @@
   "scripts": {
     "prebuild": "node scripts/fix-svg-viewbox.mjs",
     "build": "vite build",
-    "postbuild": "node scripts/postbuild-dist.mjs && node scripts/fix-svg-viewbox.mjs",
+    "postbuild": "node scripts/postbuild-dist.mjs && node scripts/fix-svg-viewbox.mjs && node scripts/write-netlify-redirects.mjs",
     "dev": "vite --host --port 5173",
     "preview": "vite preview --strictPort --port 4173",
     "start": "node scripts/serve-dist-with-api-proxy.js",
