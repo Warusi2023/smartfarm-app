@@ -56,6 +56,25 @@ Same-origin `/api/*` on `www.smartfarm-app.com` proxies to Railway (see [`netlif
 | Authenticated `window=today\|week` payload | 200 + shape | ⏸️ Needs `SMARTFARM_SMOKE_EMAIL/PASSWORD` |
 | Offline queue replay in browser | manual | ⏸️ Pending |
 
+### Run 2 — API probe (2026-06-28, owner=`androsat.kv@gmail.com`)
+
+| Check | Result |
+|-------|--------|
+| Auth login | ✅ `ok: true` |
+| `GET /api/farm-summary/command-center?window=today` | ✅ 200, `success: true`, `periodStats`, `recentActivity`, `financials`, `attention` |
+| `GET /api/farm-summary/command-center?window=week` | ✅ 200, `success: true`, same payload shape |
+| Public command-center (no token, Netlify + Railway) | ✅ 401 JSON `MISSING_TOKEN` |
+| Netlify assets: `farm-command-center.js`, `farm-action-center.js`, `offline-write-queue.js` | ✅ 200 |
+
+**Verdict:** Command center API **passes Run 2** for owner account. Remaining: browser UI confirmation and offline queue replay.
+
+### UI verification (pending)
+
+- [ ] Log in as owner → open `dashboard.html` command center
+- [ ] **Today** / **This week** match API categories (stats, recent activity, financials, attention)
+- [ ] Log revenue or feed-mix — network tab shows 200/201; panel refreshes
+- [ ] Record: `- UI (2026-06-28): command center loads stats/activity/financials/attention for Natavea1; actions tested: ___`
+
 ### Daily checklist / command center load
 
 - [ ] Sign in on `https://www.smartfarm-app.com/dashboard.html`

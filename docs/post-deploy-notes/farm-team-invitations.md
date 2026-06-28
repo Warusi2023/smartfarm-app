@@ -32,6 +32,7 @@ All team routes require JWT auth. Invitation management requires **farm owner** 
 | Invite email already an **active member** | 409 | `User is already a member of this farm` |
 | Invite email has **pending invite** | 200 | Updates token/expiry; `resent: true`; fresh accept URL |
 | Non-owner calls invite endpoints | 403 | Role denied |
+| **Invalid `farmId` (not UUID)** | **400** | Zod validation — `Invalid UUID format` (before membership check) |
 | Revoke unknown invitation | 404 | Not found |
 | Accept expired/invalid token | 4xx JSON | Clear error in UI |
 
@@ -65,7 +66,43 @@ If email env is missing, owner still receives **accept URL in UI** (copy link fl
 | Authenticated list invitations/members | 200 | ⏸️ Needs `SMARTFARM_SMOKE_EMAIL`, `SMARTFARM_SMOKE_FARM_ID` |
 | Invite / resend / accept / 409 scenarios | manual | ⏸️ Pending |
 
-### Scenarios
+### Run 2 — API probe (2026-06-28, owner=`androsat.kv@gmail.com`)
+
+| Check | Result |
+|-------|--------|
+| Auth login | ✅ `ok: true` |
+| `GET /api/farms/Natavea1/invitations` | ❌ **400** — `Natavea1` is a **farm name**, not a UUID |
+| `GET /api/farms/Natavea1/members` | ❌ **400** — same validation failure |
+| Public `/api/farms/{uuid}/invitations` (no token) | ✅ 401 JSON `MISSING_TOKEN` (Netlify + Railway) |
+| `dashboard.html` team + command center JS | ✅ 200, scripts present |
+
+**Root cause of 400:** `farmTeam.listInvitations` / `listMembers` require `params.farmId` as UUID (`backend/validators/schemas.js`). Passing a farm **name** (e.g. `Natavea1`) fails Zod validation with **400** before authorization or DB lookup — not an auth or business-rule failure.
+
+**Fix for probe / manual tests:**
+
+```powershell
+# Option A — resolve UUID from farm name (probe auto-resolves as of 73ba440+)
+$env:SMARTFARM_SMOKE_FARM_NAME="Natavea1"
+
+# Option B — set UUID explicitly after GET /api/farms
+$env:SMARTFARM_SMOKE_FARM_ID="<uuid-from-/api/farms>"
+node backend/scripts/farm-team-production-probe.js
+```
+
+**Browser — list farms and use UUID:**
+
+```javascript
+const token = localStorage.getItem("smartfarm_token");
+fetch("/api/farms", { headers: { Authorization: `Bearer ${token}` } })
+  .then(r => r.json())
+  .then(d => console.log(d.data?.map(f => ({ id: f.id, name: f.name }))));
+```
+
+### Current blockers
+
+- **Probe used farm name instead of UUID** — re-run with `SMARTFARM_SMOKE_FARM_NAME=Natavea1` or correct UUID; expect **200** on list invitations/members for farm owner.
+- Manual invite/resend/accept/409 scenarios still pending after UUID fix.
+
 
 **1. New invite**
 
