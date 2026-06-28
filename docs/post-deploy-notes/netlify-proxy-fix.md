@@ -45,15 +45,64 @@ Netlify build (repo root config):
 
 ## Verification (production)
 
-Confirmed on `https://www.smartfarm-app.com`:
+**Status:** Broken-link and route verification completed; all checked links and `/api/*` endpoints respond as expected on `www.smartfarm-app.com` (commits `758392e`, `b5b6a2d`, docs `35c06ac`).
 
-| Endpoint | Expected | Result |
-|----------|----------|--------|
-| `GET /api/health` | 200 JSON | Pass |
-| `GET /api/auth/profile` | 200 JSON (with token) | Pass |
-| `GET /api/auth/me` | 200 JSON (with token) | Pass |
+### API routes — public domain (`www.smartfarm-app.com`)
 
-Browser console checks:
+Same-origin `/api/*` returns **JSON**, not HTML. SPA fallback does **not** swallow API routes.
+
+| URL | Method | Expected | Actual |
+|-----|--------|----------|--------|
+| `/api/health` | GET | 200 JSON | ✅ 200 `application/json` |
+| `/api/auth/profile` | GET (no token) | JSON error | ✅ 401 `application/json` |
+| `/api/auth/me` | GET (no token) | JSON error | ✅ 401 `application/json` |
+| `/api/auth/profile` | GET (valid token) | 200 JSON | ✅ 200 `application/json` (browser, logged in) |
+| `/api/auth/me` | GET (valid token) | 200 JSON | ✅ 200 `application/json` (browser, logged in) |
+| `/api/auth/forgot-password` | POST | JSON | ✅ 200 `application/json` |
+
+**SPA vs API separation:** `GET /nonexistent-page-xyz` → 200 HTML (SPA fallback, expected). `GET /api/health` → 200 JSON (proxy to Railway, expected).
+
+### Railway direct backend (sanity check)
+
+| URL | Expected | Actual |
+|-----|----------|--------|
+| `GET https://web-production-86d39.up.railway.app/api/health` | 200 JSON | ✅ 200 `application/json` |
+
+Public-domain behavior is fixed on **Netlify**; Railway direct path was already healthy and remains unchanged.
+
+### Public web UI — sampled routes
+
+All returned **200** with expected content type (`text/html` unless noted):
+
+| Route | Status |
+|-------|--------|
+| `/`, `/index.html`, `/dashboard.html` | ✅ 200 |
+| `/login.html`, `/register.html`, `/forgot-password.html`, `/reset-password.html` | ✅ 200 |
+| `/pricing.html`, `/help.html`, `/traceability.html` | ✅ 200 |
+| `/about.html`, `/contact.html`, `/settings.html` | ✅ 200 |
+| `/privacy-policy.html`, `/terms-of-service.html`, `/data-security.html`, `/cookie-policy.html` | ✅ 200 |
+| `/subscription-management.html`, `/verify-email.html`, `/insights.html`, `/release-notes.html` | ✅ 200 |
+| `/docs/BETA_LIMITATIONS.md` | ✅ 200 `text/markdown` |
+| `/robots.txt` | ✅ 200 `text/plain` |
+
+**Navigation anchors:** `pricing.html` → `/#features` present; `index.html` has `#features`, `#pricing`, `#faq` targets.
+
+**Dashboard sidebar sample:** `/crop-management.html`, `/watering-management.html`, `/user-management.html`, `/weather-alerts.html`, `/ai-advisory.html`, `/farm-to-table.html` → all ✅ 200.
+
+### In-repo documentation links
+
+| Source | Link | Status |
+|--------|------|--------|
+| `CHANGELOG.md` | `docs/post-deploy-notes/netlify-proxy-fix.md` | ✅ file exists |
+| `POST_DEPLOY_NOTES.md` | `docs/post-deploy-notes/netlify-proxy-fix.md` | ✅ file exists |
+| `CHANGELOG.md` | `docs/BETA_LIMITATIONS.md`, `docs/WEEK1_WEB_RELEASE.md` | ✅ files exist |
+| GitHub `main` (reviewers) | raw `docs/post-deploy-notes/netlify-proxy-fix.md` | ✅ HTTP 200 |
+
+### Out of scope (pre-existing, non-blocking)
+
+Local static audit reports **`features.html`** missing from `web-project/public/`. Production `GET /features.html` returns **200 HTML** (SPA fallback to homepage), not 404. Hash links (`index.html#features`, `/#features`) resolve correctly. **Not related to the Netlify proxy fix.**
+
+### Browser console checks
 
 ```javascript
 fetch("/api/health")
