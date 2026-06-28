@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - **Netlify API proxy (`758392e`, `b5b6a2d`):** same-origin `/api/*` from `www.smartfarm-app.com` now proxy to the Railway backend via `dist/_redirects` and are no longer intercepted by SPA fallback. Verified `/api/health`, `/api/auth/profile`, and `/api/auth/me` return 200 JSON in production. See [`docs/post-deploy-notes/netlify-proxy-fix.md`](docs/post-deploy-notes/netlify-proxy-fix.md).
 
+### Documentation
+- Post-deploy verification playbooks: [`stripe-billing-flow.md`](docs/post-deploy-notes/stripe-billing-flow.md) (Stripe E2E **blocked** until Railway `STRIPE_*` env configured — see Outcome), [`farm-team-invitations.md`](docs/post-deploy-notes/farm-team-invitations.md), [`command-center-verification.md`](docs/post-deploy-notes/command-center-verification.md).
+- Stripe probe script: `backend/scripts/stripe-billing-production-probe.js`.
+
 ## [W6-02] - 2025-06-08
 
 ### Added
