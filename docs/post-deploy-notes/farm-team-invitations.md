@@ -51,7 +51,19 @@ If email env is missing, owner still receives **accept URL in UI** (copy link fl
 
 ## Verification (production)
 
-**Status:** Pending manual run — requires owner account, second email/inbox, and optional email env on Railway.
+**Status:** Run 1 partial (2026-06-28) — routing and assets pass; invite/accept scenarios need owner JWT + farm ID.
+
+**Probe:** `node backend/scripts/farm-team-production-probe.js`
+
+### Run 1 — automated (2026-06-28)
+
+| Check | Expected | Actual |
+|-------|----------|--------|
+| `GET /api/farms/{id}/invitations` (no auth, Netlify) | 401 JSON | ✅ 401 `application/json` `MISSING_TOKEN` |
+| Same (Railway direct) | 401 JSON | ✅ 401 JSON |
+| `dashboard.html` includes `farm-team-management.js` | present | ✅ |
+| Authenticated list invitations/members | 200 | ⏸️ Needs `SMARTFARM_SMOKE_EMAIL`, `SMARTFARM_SMOKE_FARM_ID` |
+| Invite / resend / accept / 409 scenarios | manual | ⏸️ Pending |
 
 ### Scenarios
 

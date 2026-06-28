@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Documentation
 - Post-deploy verification playbooks: [`stripe-billing-flow.md`](docs/post-deploy-notes/stripe-billing-flow.md) (Stripe E2E **blocked** until Railway `STRIPE_*` env configured — see Outcome), [`farm-team-invitations.md`](docs/post-deploy-notes/farm-team-invitations.md), [`command-center-verification.md`](docs/post-deploy-notes/command-center-verification.md).
 - Stripe probe script: `backend/scripts/stripe-billing-production-probe.js`.
+- Run 1 production probes: `farm-team-production-probe.js`, `command-center-production-probe.js` — team/command-center API routing and dashboard assets verified; full scenarios pending JWT.
 
 ## [W6-02] - 2025-06-08
 

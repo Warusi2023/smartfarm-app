@@ -40,7 +40,21 @@ Same-origin `/api/*` on `www.smartfarm-app.com` proxies to Railway (see [`netlif
 
 ## Verification (production)
 
-**Status:** Pending structured manual pass on a real farm with data.
+**Status:** Run 1 partial (2026-06-28) — API proxy and dashboard assets pass; farm data scenarios need JWT.
+
+**Probe:** `node backend/scripts/command-center-production-probe.js`
+
+### Run 1 — automated (2026-06-28)
+
+| Check | Expected | Actual |
+|-------|----------|--------|
+| `GET /api/farm-summary/command-center` (no auth, Netlify) | 401 JSON | ✅ 401 `application/json` |
+| Same (Railway direct) | 401 JSON | ✅ 401 JSON |
+| `/js/farm-command-center.js` | 200 | ✅ |
+| `/js/farm-action-center.js` | 200 | ✅ |
+| `/js/offline-write-queue.js` | 200 | ✅ |
+| Authenticated `window=today\|week` payload | 200 + shape | ⏸️ Needs `SMARTFARM_SMOKE_EMAIL/PASSWORD` |
+| Offline queue replay in browser | manual | ⏸️ Pending |
 
 ### Daily checklist / command center load
 
