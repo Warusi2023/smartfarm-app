@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Netlify API proxy (`758392e`, `b5b6a2d`):** same-origin `/api/*` from `www.smartfarm-app.com` now proxy to the Railway backend via `dist/_redirects` and are no longer intercepted by SPA fallback. Verified `/api/health`, `/api/auth/profile`, and `/api/auth/me` return 200 JSON in production. See [`docs/post-deploy-notes/netlify-proxy-fix.md`](docs/post-deploy-notes/netlify-proxy-fix.md).
+
 ## [W6-02] - 2025-06-08
 
 ### Added
