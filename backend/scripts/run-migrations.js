@@ -22,7 +22,8 @@ const MIGRATION_ORDER = [
     '007_farmrevenue.sql',
     '008_stripe_billing.sql',
     '009_aquaculture_phase1.sql',
-    '010_farm_team_tasks.sql'
+    '010_farm_team_tasks.sql',
+    '013_ipm_reference_data.sql'
 ];
 
 async function runMigrations() {

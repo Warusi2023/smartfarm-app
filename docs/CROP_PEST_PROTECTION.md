@@ -1,8 +1,12 @@
 # Crop Pests & Protection — IPM panel template
 
 **API:** `GET /api/biological-farming/pests-protection/:cropName`  
+Optional query: `?region=KE` (or `regionCode`) — filters DB chemical actives through `crop_chemical_regulatory_status`. Without region, pests/beneficials load from DB when imported; chemicals keep JS fallback until region is supplied.
+
 **UI module:** `web-project/public/js/crop-pest-protection.js`  
-**Data:** `backend/data/cropPestProtection.js`
+**Data:** `backend/data/cropPestProtection.js` (Phase 0 — migrating to DB; see [IPM_REFERENCE_SCHEMA.md](./IPM_REFERENCE_SCHEMA.md))
+
+The frontend passes `?region=` from the signed-in user's country (ISO code) when available, enabling regulatory chemical filtering once DB + regulatory rows are deployed.
 
 ---
 

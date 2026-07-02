@@ -8,6 +8,32 @@
         'Example active ingredients vary by country and change over time. ' +
         'Always use products registered for your crop and follow the label, pre-harvest interval, and your agronomist\'s advice.';
 
+    /** Country display names (register form) → ISO region codes for regulatory filtering */
+    var COUNTRY_REGION_CODES = {
+        'Fiji': 'FJ',
+        'Australia': 'AU',
+        'New Zealand': 'NZ',
+        'Papua New Guinea': 'PG',
+        'Solomon Islands': 'SB',
+        'Vanuatu': 'VU',
+        'Samoa': 'WS',
+        'Tonga': 'TO',
+        'United States': 'US',
+        'Canada': 'CA',
+        'Mexico': 'MX',
+        'Kenya': 'KE',
+        'Uganda': 'UG',
+        'Tanzania': 'TZ',
+        'South Africa': 'ZA',
+        'Nigeria': 'NG',
+        'Ghana': 'GH',
+        'India': 'IN',
+        'United Kingdom': 'GB',
+        'France': 'FR',
+        'Germany': 'DE',
+        'Brazil': 'BR'
+    };
+
     function apiUrl(path) {
         if (global.SmartFarmApiConfig && typeof global.SmartFarmApiConfig.url === 'function') {
             return global.SmartFarmApiConfig.url(path);
@@ -22,6 +48,57 @@
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;')
             .replace(/"/g, '&quot;');
+    }
+
+    function lookupCountryCode(countryName) {
+        if (!countryName) return null;
+        var trimmed = String(countryName).trim();
+        if (!trimmed) return null;
+        if (/^[A-Za-z]{2}$/.test(trimmed)) {
+            return trimmed.toUpperCase();
+        }
+        if (COUNTRY_REGION_CODES[trimmed]) {
+            return COUNTRY_REGION_CODES[trimmed];
+        }
+        var lower = trimmed.toLowerCase();
+        for (var key in COUNTRY_REGION_CODES) {
+            if (Object.prototype.hasOwnProperty.call(COUNTRY_REGION_CODES, key) && key.toLowerCase() === lower) {
+                return COUNTRY_REGION_CODES[key];
+            }
+        }
+        return null;
+    }
+
+    function readStoredUserCountry() {
+        var sources = [
+            function () {
+                return localStorage.getItem('smartfarm_user') || sessionStorage.getItem('smartfarm_user');
+            },
+            function () {
+                return localStorage.getItem('smartfarm_userData');
+            }
+        ];
+        for (var i = 0; i < sources.length; i += 1) {
+            try {
+                var raw = sources[i]();
+                if (!raw) continue;
+                var parsed = JSON.parse(raw);
+                var value = parsed.country || parsed.countryName || parsed.regionCode || null;
+                if (value == null || value === '') continue;
+                if (typeof value !== 'string' && typeof value !== 'number') continue;
+                return String(value).trim() || null;
+            } catch (err) {
+                continue;
+            }
+        }
+        return null;
+    }
+
+    function resolveRegionCode(explicitRegion) {
+        if (explicitRegion != null && String(explicitRegion).trim()) {
+            return lookupCountryCode(explicitRegion);
+        }
+        return lookupCountryCode(readStoredUserCountry());
     }
 
     /**
@@ -57,7 +134,8 @@
         }).join('');
 
         const chem = data.chemicalActives || {};
-        const actives = (chem.actives || []).map(function (a) {
+        const activesList = chem.actives || [];
+        const actives = activesList.map(function (a) {
             return escapeHtml(a);
         }).join(', ');
 
@@ -67,6 +145,20 @@
               'Crop-specific recommendations are not loaded yet; confirm pests in the field before acting.' +
               '</div>'
             : '';
+
+        const regionalNotice = chem.regionalNotice
+            ? '<p class="small text-muted mb-2">' + escapeHtml(chem.regionalNotice) + '</p>'
+            : '';
+
+        const activesParagraph = activesList.length
+            ? '<p class="mb-2 small">' +
+              'Growers often use actives such as <strong>' + actives + '</strong> against ' +
+              escapeHtml(chem.mainPestGroups || 'common pest groups') + '.' +
+              '</p>'
+            : '<p class="mb-2 small text-muted">' +
+              'No localized chemical actives are approved for display in your region. ' +
+              'Focus on monitoring, cultural controls, and beneficial conservation first.' +
+              '</p>';
 
         const lookForSection = lookForItems
             ? '<section class="mb-4">' +
@@ -93,10 +185,8 @@
             '<section>' +
             '<h4 class="h6 text-uppercase text-muted mb-2">3. Example chemical actives used in many regions</h4>' +
             '<p class="mb-2 small text-muted">' + escapeHtml(LOCAL_CHEMICAL_DISCLAIMER) + '</p>' +
-            '<p class="mb-2 small">' +
-            'Growers often use actives such as <strong>' + actives + '</strong> against ' +
-            escapeHtml(chem.mainPestGroups || 'common pest groups') + '.' +
-            '</p>' +
+            regionalNotice +
+            activesParagraph +
             '<p class="mb-0 small text-muted border-start border-3 border-warning ps-2">' +
             '<i class="fas fa-exclamation-triangle me-1"></i>' +
             escapeHtml(chem.safetyNote || '') +
@@ -105,9 +195,15 @@
             '</div>';
     }
 
-    async function fetchPestProtection(cropName) {
+    async function fetchPestProtection(cropName, options) {
+        options = options || {};
         const encoded = encodeURIComponent(String(cropName || '').trim());
-        const res = await fetch(apiUrl('/biological-farming/pests-protection/' + encoded), {
+        var url = apiUrl('/biological-farming/pests-protection/' + encoded);
+        const regionCode = resolveRegionCode(options.regionCode);
+        if (regionCode) {
+            url += (url.indexOf('?') >= 0 ? '&' : '?') + 'region=' + encodeURIComponent(regionCode);
+        }
+        const res = await fetch(url, {
             headers: { Accept: 'application/json' }
         });
         const json = await res.json().catch(function () {
@@ -119,14 +215,14 @@
         return json.data;
     }
 
-    async function loadAndRender(mount, cropName) {
+    async function loadAndRender(mount, cropName, options) {
         const el = typeof mount === 'string' ? document.getElementById(mount) : mount;
         if (!el) return;
         el.innerHTML =
             '<p class="text-muted mb-0">' +
             '<span class="spinner-border spinner-border-sm me-2"></span>Loading pests &amp; protection…</p>';
         try {
-            const data = await fetchPestProtection(cropName);
+            const data = await fetchPestProtection(cropName, options);
             renderPestsProtectionPanel(el, data);
         } catch (err) {
             el.innerHTML = '<div class="alert alert-warning mb-0">' + escapeHtml(err.message) + '</div>';
@@ -136,6 +232,7 @@
     global.SmartFarmPestProtection = {
         renderPestsProtectionPanel: renderPestsProtectionPanel,
         fetchPestProtection: fetchPestProtection,
-        loadAndRender: loadAndRender
+        loadAndRender: loadAndRender,
+        resolveRegionCode: resolveRegionCode
     };
 })(window);

@@ -313,6 +313,10 @@ const validationSchemas = {
             params: z.object({
                 cropName: z.string().min(1).max(100),
             }),
+            query: z.object({
+                region: z.string().min(2).max(20).optional(),
+                regionCode: z.string().min(2).max(20).optional(),
+            }).optional(),
         },
     },
 

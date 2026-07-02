@@ -8,11 +8,12 @@ const { cacheMiddleware } = require('../middleware/cache-middleware');
 const { CACHE_TTL } = require('../config/cache-config');
 const { validate } = require('../middleware/validator');
 const {
-    resolveCropPestProtection,
-    listPestProtectionCrops
-} = require('../data/cropPestProtection');
+    getPestProtectionPanel,
+    listDedicatedPestProtectionCrops
+} = require('../services/ipmIntelligence/ipmRepository');
 
 const router = express.Router();
+let ipmDbPool = null;
 
 router.get('/_ping', (req, res) => {
     res.json({
@@ -548,10 +549,11 @@ router.get('/recommendations/:cropName',
 router.get('/pests-protection',
     cacheMiddleware('biological-farming:pests-protection', CACHE_TTL.BIOLOGICAL_FARMING),
     validate('biologicalFarming.pestsProtectionList'),
-    (req, res) => {
+    async (req, res) => {
+        const data = await listDedicatedPestProtectionCrops(ipmDbPool);
         res.json({
             success: true,
-            data: listPestProtectionCrops(),
+            data,
             note: 'Unknown crop names receive the general vegetable IPM template via GET /pests-protection/:cropName'
         });
     }
@@ -560,14 +562,17 @@ router.get('/pests-protection',
 /**
  * GET /api/biological-farming/pests-protection/:cropName
  * Unified Pests & Protection panel (pests, beneficials, example actives)
+ * Optional query: region or regionCode (ISO country/region) for regulatory chemical filtering
  */
 router.get('/pests-protection/:cropName',
-    cacheMiddleware('biological-farming:pests-protection', CACHE_TTL.BIOLOGICAL_FARMING, (req) =>
-        `biological-farming:pests-protection:${req.params.cropName.toLowerCase()}`
-    ),
+    cacheMiddleware('biological-farming:pests-protection', CACHE_TTL.BIOLOGICAL_FARMING, (req) => {
+        const region = (req.query.region || req.query.regionCode || '').toString().toLowerCase();
+        return `biological-farming:pests-protection:${req.params.cropName.toLowerCase()}:${region}`;
+    }),
     validate('biologicalFarming.pestsProtectionByCrop'),
-    (req, res) => {
-        const data = resolveCropPestProtection(req.params.cropName);
+    async (req, res) => {
+        const regionCode = req.query.region || req.query.regionCode || null;
+        const data = await getPestProtectionPanel(ipmDbPool, req.params.cropName, { regionCode });
         res.json({
             success: true,
             data
@@ -575,5 +580,10 @@ router.get('/pests-protection/:cropName',
     }
 );
 
-module.exports = router;
+function createBiologicalFarmingRouter(dbPool = null) {
+    ipmDbPool = dbPool;
+    return router;
+}
+
+module.exports = createBiologicalFarmingRouter;
 

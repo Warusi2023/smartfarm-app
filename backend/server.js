@@ -626,8 +626,8 @@ try {
 }
 
 try {
-  const biologicalFarmingRoutes = require('./routes/biological-farming');
-  app.use('/api/biological-farming', biologicalFarmingRoutes);
+  const createBiologicalFarmingRoutes = require('./routes/biological-farming');
+  app.use('/api/biological-farming', createBiologicalFarmingRoutes(dbPool));
   logger.info('Biological farming routes loaded');
   logger.info('Biological farming mounted at /api/biological-farming');
 } catch (bioError) {
