@@ -152,6 +152,27 @@
             box-shadow: 0 4px 12px rgba(46, 125, 50, 0.15);
         }
 
+        .crop-card.crop-card-selected {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.35);
+            background: #f9fdf9;
+        }
+
+        #cropPestProtectionSection {
+            scroll-margin-top: 1rem;
+        }
+
+        .btn-pest-protection {
+            min-height: 44px;
+            font-weight: 600;
+        }
+
+        .crop-card-actions {
+            border-top: 1px solid #eee;
+            padding-top: 12px;
+            margin-top: 4px;
+        }
+
         .crop-soil-summary {
             border: 1px dashed #c8e6c9;
             border-radius: 8px;
@@ -368,6 +389,18 @@
             <!-- Crop cards will be dynamically loaded here -->
         </div>
 
+        <!-- Inline Pests & Protection (selected crop) -->
+        <div id="cropPestProtectionSection" class="card-custom mt-4 d-none">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+                <h5 class="mb-0"><i class="fas fa-shield-alt me-2 text-success"></i>Pests &amp; Protection</h5>
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="closeCropPestPanel()">
+                    <i class="fas fa-times me-1"></i>Close
+                </button>
+            </div>
+            <p class="text-muted small mb-3" id="cropPestProtectionContext"></p>
+            <div id="cropPestProtectionPanel"></div>
+        </div>
+
         <!-- No crops message -->
         <div id="noCropsMessage" class="text-center py-5" style="display: none;">
             <i class="fas fa-seedling fa-3x text-muted mb-3"></i>
@@ -582,7 +615,9 @@
     <script src="js/ai-advisory-database.js"></script>
     <!-- Include config -->
     <script src="js/api-origin.js"></script>
+    <script src="js/api-config.js"></script>
     <script src="js/config.js"></script>
+    <script src="js/crop-pest-protection.js"></script>
     <script src="js/offline-write-queue.js"></script>
     <script src="js/command-center-focus.js"></script>
     <script src="js/crop-recommendation-log.js"></script>
@@ -1033,6 +1068,15 @@
 
             refreshAllCropSoilSummaries();
 
+            if (selectedCropPestId != null) {
+                const stillThere = crops.some((c) => c.id == selectedCropPestId);
+                if (stillThere) {
+                    showCropPestProtection(selectedCropPestId);
+                } else {
+                    closeCropPestPanel();
+                }
+            }
+
             if (window.CommandCenterFocus && typeof window.CommandCenterFocus.tryConsume === 'function') {
                 window.CommandCenterFocus.tryConsume();
             }
@@ -1197,31 +1241,84 @@
                         </div>
                     </div>
 
+                    <div class="crop-card-actions mb-3">
+                        <button type="button" class="btn btn-success btn-sm w-100 btn-pest-protection mb-2" onclick="showCropPestProtection(${crop.id})" aria-label="Pests and protection guide for ${crop.name}">
+                            <i class="fas fa-shield-alt me-1"></i>Pests &amp; Protection
+                        </button>
+                        <div class="d-flex gap-2 flex-wrap mb-2">
+                            <button type="button" class="btn btn-sm btn-outline-primary flex-fill" onclick="editCrop(${crop.id})">
+                                <i class="fas fa-edit me-1"></i>Edit
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-success flex-fill" onclick="addYield(${crop.id})">
+                                <i class="fas fa-plus me-1"></i>Add Yield
+                            </button>
+                        </div>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <button type="button" class="btn btn-sm btn-outline-info flex-fill" onclick="getAICropAdvice(${crop.id})">
+                                <i class="fas fa-robot me-1"></i>AI Nutrition
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteCrop(${crop.id})" aria-label="Delete crop">
+                                <i class="fas fa-trash me-1"></i>Delete
+                            </button>
+                        </div>
+                    </div>
+
                     <div class="crop-soil-summary mb-3" data-crop-soil-id="${crop.id}">
                         <div class="crop-soil-summary-label small mb-1">
                             <i class="fas fa-vial me-1"></i>Soil test
                         </div>
                         <div class="crop-soil-summary-body text-muted small">Loading…</div>
                     </div>
-                    
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-sm btn-outline-primary flex-fill" onclick="editCrop(${crop.id})">
-                            <i class="fas fa-edit me-1"></i>Edit
-                        </button>
-                        <button class="btn btn-sm btn-outline-success flex-fill" onclick="addYield(${crop.id})">
-                            <i class="fas fa-plus me-1"></i>Add Yield
-                        </button>
-                        <button class="btn btn-sm btn-outline-info" onclick="getAICropAdvice(${crop.id})" title="Get AI Nutrition Advice">
-                            <i class="fas fa-robot"></i>
-                        </button>
-                        <button class="btn btn-sm btn-outline-danger" onclick="deleteCrop(${crop.id})">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
                 </div>
             `;
             
             return col;
+        }
+
+        let selectedCropPestId = null;
+
+        function showCropPestProtection(cropId) {
+            const crop = crops.find((c) => c.id == cropId);
+            if (!crop || !crop.name) {
+                showAlert('Crop not found.', 'error');
+                return;
+            }
+
+            selectedCropPestId = cropId;
+            document.querySelectorAll('.crop-card').forEach((el) => el.classList.remove('crop-card-selected'));
+            const card = document.querySelector('[data-crop-card-id="' + cropId + '"]');
+            if (card) {
+                card.classList.add('crop-card-selected');
+            }
+
+            const section = document.getElementById('cropPestProtectionSection');
+            const ctx = document.getElementById('cropPestProtectionContext');
+            const fieldPart = crop.field ? ' in ' + crop.field : '';
+            const varietyPart = crop.variety ? ' (' + crop.variety + ')' : '';
+            ctx.textContent = 'Integrated pest management for ' + crop.name + varietyPart + fieldPart + '.';
+
+            section.classList.remove('d-none');
+            section.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+            if (window.SmartFarmPestProtection && typeof window.SmartFarmPestProtection.loadAndRender === 'function') {
+                window.SmartFarmPestProtection.loadAndRender('cropPestProtectionPanel', crop.name);
+            } else {
+                document.getElementById('cropPestProtectionPanel').innerHTML =
+                    '<div class="alert alert-warning mb-0">Pest protection module not loaded.</div>';
+            }
+        }
+
+        function closeCropPestPanel() {
+            selectedCropPestId = null;
+            document.querySelectorAll('.crop-card').forEach((el) => el.classList.remove('crop-card-selected'));
+            const section = document.getElementById('cropPestProtectionSection');
+            if (section) {
+                section.classList.add('d-none');
+            }
+            const panel = document.getElementById('cropPestProtectionPanel');
+            if (panel) {
+                panel.innerHTML = '';
+            }
         }
 
         function calculateProgress(crop) {
