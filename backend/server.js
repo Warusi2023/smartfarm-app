@@ -485,6 +485,11 @@ try {
   const SubscriptionRoutes = require('./routes/subscriptions');
   const subscriptionRoutes = new SubscriptionRoutes(dbPool);
   app.use('/api/subscriptions', subscriptionRoutes.getRouter());
+
+  const BillingRoutes = require('./routes/billing');
+  const billingRoutes = new BillingRoutes(dbPool);
+  app.use('/api/billing', billingRoutes.getRouter());
+  logger.info('Billing routes mounted at /api/billing');
   logger.info('Subscription routes loaded');
 } catch (subscriptionError) {
   logger.warnWithContext('Could not load subscription routes', { error: subscriptionError });
@@ -1138,6 +1143,12 @@ async function startServer() {
   server = app.listen(PORT, '0.0.0.0', () => {
     logger.info(`SmartFarm API version ${appVersion} started`);
     logger.info('Database URL present', { hasDatabaseUrl: !!process.env.DATABASE_URL });
+    try {
+      const StripeBillingService = require('./services/stripeBillingService');
+      new StripeBillingService(dbPool).logStartupStatus();
+    } catch (billingLogError) {
+      logger.warnWithContext('Could not log Stripe billing startup status', { error: billingLogError });
+    }
     logger.info('SmartFarm API Server Started', {
       environment: process.env.NODE_ENV || 'development',
       port: PORT,

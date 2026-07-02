@@ -308,6 +308,12 @@ const validationSchemas = {
                 cropName: z.string().min(1).max(100),
             }),
         },
+        pestsProtectionList: {},
+        pestsProtectionByCrop: {
+            params: z.object({
+                cropName: z.string().min(1).max(100),
+            }),
+        },
     },
 
     // ============ DAILY TIPS ENDPOINTS ============
@@ -555,6 +561,12 @@ const validationSchemas = {
                 eventType: z.string().min(1).max(64),
                 metadata: z.record(z.unknown()).optional(),
             }),
+        },
+    },
+
+    billing: {
+        createPortalSession: {
+            body: z.object({}).optional(),
         },
     },
 };

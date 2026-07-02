@@ -7,6 +7,10 @@ const express = require('express');
 const { cacheMiddleware } = require('../middleware/cache-middleware');
 const { CACHE_TTL } = require('../config/cache-config');
 const { validate } = require('../middleware/validator');
+const {
+    resolveCropPestProtection,
+    listPestProtectionCrops
+} = require('../data/cropPestProtection');
 
 const router = express.Router();
 
@@ -536,6 +540,40 @@ router.get('/recommendations/:cropName',
         });
     }
 });
+
+/**
+ * GET /api/biological-farming/pests-protection
+ * List crops with dedicated IPM panel content
+ */
+router.get('/pests-protection',
+    cacheMiddleware('biological-farming:pests-protection', CACHE_TTL.BIOLOGICAL_FARMING),
+    validate('biologicalFarming.pestsProtectionList'),
+    (req, res) => {
+        res.json({
+            success: true,
+            data: listPestProtectionCrops(),
+            note: 'Unknown crop names receive the general vegetable IPM template via GET /pests-protection/:cropName'
+        });
+    }
+);
+
+/**
+ * GET /api/biological-farming/pests-protection/:cropName
+ * Unified Pests & Protection panel (pests, beneficials, example actives)
+ */
+router.get('/pests-protection/:cropName',
+    cacheMiddleware('biological-farming:pests-protection', CACHE_TTL.BIOLOGICAL_FARMING, (req) =>
+        `biological-farming:pests-protection:${req.params.cropName.toLowerCase()}`
+    ),
+    validate('biologicalFarming.pestsProtectionByCrop'),
+    (req, res) => {
+        const data = resolveCropPestProtection(req.params.cropName);
+        res.json({
+            success: true,
+            data
+        });
+    }
+);
 
 module.exports = router;
 
