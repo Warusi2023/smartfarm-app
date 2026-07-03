@@ -15,6 +15,13 @@ const {
 const router = express.Router();
 let ipmDbPool = null;
 
+/** Cache prefix v2 — busts pre-DB 24h entries that cached js_fallback responses */
+const IPM_PESTS_CACHE_PREFIX = 'biological-farming:pests-protection:v2';
+
+function resolveIpmDbPool(req) {
+    return req.app?.locals?.dbPool ?? ipmDbPool ?? null;
+}
+
 router.get('/_ping', (req, res) => {
     res.json({
         success: true,
@@ -547,10 +554,10 @@ router.get('/recommendations/:cropName',
  * List crops with dedicated IPM panel content
  */
 router.get('/pests-protection',
-    cacheMiddleware('biological-farming:pests-protection', CACHE_TTL.BIOLOGICAL_FARMING),
+    cacheMiddleware(IPM_PESTS_CACHE_PREFIX, CACHE_TTL.IPM_PESTS_PROTECTION),
     validate('biologicalFarming.pestsProtectionList'),
     async (req, res) => {
-        const data = await listDedicatedPestProtectionCrops(ipmDbPool);
+        const data = await listDedicatedPestProtectionCrops(resolveIpmDbPool(req));
         res.json({
             success: true,
             data,
@@ -565,14 +572,14 @@ router.get('/pests-protection',
  * Optional query: region or regionCode (ISO country/region) for regulatory chemical filtering
  */
 router.get('/pests-protection/:cropName',
-    cacheMiddleware('biological-farming:pests-protection', CACHE_TTL.BIOLOGICAL_FARMING, (req) => {
+    cacheMiddleware(IPM_PESTS_CACHE_PREFIX, CACHE_TTL.IPM_PESTS_PROTECTION, (req) => {
         const region = (req.query.region || req.query.regionCode || '').toString().toLowerCase();
-        return `biological-farming:pests-protection:${req.params.cropName.toLowerCase()}:${region}`;
+        return `${IPM_PESTS_CACHE_PREFIX}:${req.params.cropName.toLowerCase()}:${region}`;
     }),
     validate('biologicalFarming.pestsProtectionByCrop'),
     async (req, res) => {
         const regionCode = req.query.region || req.query.regionCode || null;
-        const data = await getPestProtectionPanel(ipmDbPool, req.params.cropName, { regionCode });
+        const data = await getPestProtectionPanel(resolveIpmDbPool(req), req.params.cropName, { regionCode });
         res.json({
             success: true,
             data

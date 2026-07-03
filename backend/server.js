@@ -426,6 +426,7 @@ try {
     dbPool.on('error', (err) => {
       logger.errorWithContext('Database connection error', { error: err });
     });
+    app.locals.dbPool = dbPool;
   }
 } catch (dbInitError) {
   logger.errorWithContext('Database pool initialization failed', { error: dbInitError });

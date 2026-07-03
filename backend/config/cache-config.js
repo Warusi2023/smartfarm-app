@@ -11,6 +11,7 @@ const CACHE_TTL = {
     STATIC_DATA: 24 * 60 * 60, // 24 hours
     SUBSCRIPTION_PLANS: 24 * 60 * 60, // 24 hours
     BIOLOGICAL_FARMING: 24 * 60 * 60, // 24 hours (static data)
+    IPM_PESTS_PROTECTION: 60 * 60, // 1 hour — DB-backed; shorter than legacy biological-farming cache
     
     // Daily data - Medium TTL
     DAILY_TIPS: 60 * 60, // 1 hour (changes daily)

@@ -161,6 +161,11 @@ async function assemblePanelFromDb(pool, catalog, cropName, regionCode) {
     };
 }
 
+function jsFallbackPanel(jsPanel, reason, meta = {}) {
+    logger.debug('IPM panel using JS fallback', { reason, ...meta });
+    return { ...jsPanel, dataSource: 'js_fallback' };
+}
+
 /**
  * @param {import('pg').Pool | null} pool
  * @param {string} cropName
@@ -173,18 +178,22 @@ async function getPestProtectionPanel(pool, cropName, options = {}) {
     const lookupKey = cropKey || DEFAULT_CROP_KEY;
 
     if (!pool) {
-        return { ...jsPanel, dataSource: 'js_fallback' };
+        return jsFallbackPanel(jsPanel, 'pool_unavailable', { cropName, lookupKey });
     }
 
     try {
         const catalog = await loadCatalog(pool, lookupKey);
         if (!catalog || catalog.population_status !== 'complete') {
-            return { ...jsPanel, dataSource: 'js_fallback' };
+            return jsFallbackPanel(jsPanel, 'catalog_incomplete', {
+                cropName,
+                lookupKey,
+                populationStatus: catalog?.population_status || null
+            });
         }
 
         const dbPanel = await assemblePanelFromDb(pool, catalog, cropName, regionCode);
         if (!dbPanel) {
-            return { ...jsPanel, dataSource: 'js_fallback' };
+            return jsFallbackPanel(jsPanel, 'panel_empty', { cropName, lookupKey });
         }
 
         if (!normalizeRegionCode(regionCode)) {
@@ -200,9 +209,10 @@ async function getPestProtectionPanel(pool, cropName, options = {}) {
     } catch (error) {
         logger.warnWithContext('IPM repository DB load failed; using JS fallback', {
             cropName,
+            lookupKey,
             error: error.message
         });
-        return { ...jsPanel, dataSource: 'js_fallback' };
+        return jsFallbackPanel(jsPanel, 'db_error', { cropName, lookupKey });
     }
 }
 
