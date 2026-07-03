@@ -260,6 +260,7 @@ if (require.main === module) {
 
 module.exports = {
     IMPORT_KEYS,
+    sourceForKey,
     inferPestType,
     inferBeneficialType,
     inferProductClass,

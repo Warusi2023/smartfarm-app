@@ -1,7 +1,9 @@
 # Crop Pests & Protection — IPM panel template
 
 **API:** `GET /api/biological-farming/pests-protection/:cropName`  
-Optional query: `?region=KE` (or `regionCode`) — filters DB chemical actives through `crop_chemical_regulatory_status`. Without region, pests/beneficials load from DB when imported; chemicals keep JS fallback until region is supplied.
+Optional query: `?region=FJ` (or `regionCode`) — filters DB chemical actives through `crop_chemical_regulatory_status`. Without region, pests/beneficials load from DB when imported; chemicals keep JS fallback until region is supplied.
+
+**Regulatory seed (Fiji):** after IPM import, run `node backend/scripts/import-ipm-regulatory-data.js` on Railway (`railway ssh -s Backend "node scripts/import-ipm-regulatory-data.js"`). This seeds illustrative `allowed` rows for all 31 crops so Fiji farms see example actives; replace with MAAF-register-backed data when available.
 
 **UI module:** `web-project/public/js/crop-pest-protection.js`  
 **Data:** `backend/data/cropPestProtection.js` (Phase 0 — migrating to DB; see [IPM_REFERENCE_SCHEMA.md](./IPM_REFERENCE_SCHEMA.md))
