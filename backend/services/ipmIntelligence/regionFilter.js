@@ -3,6 +3,7 @@
  */
 
 const ALLOWED_REGULATORY_STATUSES = new Set(['allowed', 'restricted', 'requires_license']);
+const { isRegisterBackedSourceRef } = require('./registerImportBuilder');
 
 function normalizeRegionCode(regionCode) {
     if (!regionCode || typeof regionCode !== 'string') {
@@ -61,6 +62,27 @@ function findRegulatoryStatus(regulatoryRows, activeIngredient, cropKey, regionC
 }
 
 /**
+ * @param {object[]} regulatoryRows
+ * @param {string | null | undefined} regionCode
+ * @param {string} cropKey
+ */
+function hasRegisterBackedRegulatory(regulatoryRows, regionCode, cropKey) {
+    const normalizedRegion = normalizeRegionCode(regionCode);
+    if (!normalizedRegion) {
+        return false;
+    }
+    return regulatoryRows.some((row) => {
+        if (String(row.region_code || '').trim().toUpperCase() !== normalizedRegion) {
+            return false;
+        }
+        if (row.crop_key && row.crop_key !== cropKey) {
+            return false;
+        }
+        return isRegisterBackedSourceRef(row.source_ref);
+    });
+}
+
+/**
  * Example-only actives require an explicit regulatory row for the farm region.
  *
  * @param {object} chemical
@@ -96,7 +118,11 @@ function isChemicallyDisplayable(chemical, regulatoryStatus, regionCode) {
  * @param {string} cropKey
  */
 function filterChemicalOptions(chemicals, regulatoryRows, regionCode, cropKey) {
+    const registerBacked = hasRegisterBackedRegulatory(regulatoryRows, regionCode, cropKey);
     return chemicals.filter((chemical) => {
+        if (registerBacked && chemical.is_example_only) {
+            return false;
+        }
         const regulatoryStatus = findRegulatoryStatus(
             regulatoryRows,
             chemical.active_ingredient,
@@ -112,6 +138,7 @@ module.exports = {
     normalizeRegionCode,
     regionMatches,
     findRegulatoryStatus,
+    hasRegisterBackedRegulatory,
     isChemicallyDisplayable,
     filterChemicalOptions
 };

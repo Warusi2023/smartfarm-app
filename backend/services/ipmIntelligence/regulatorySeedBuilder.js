@@ -4,14 +4,10 @@
  */
 
 const { IMPORT_KEYS, sourceForKey } = require('../../scripts/import-ipm-reference-data');
-
-/** Marker source_ref — only rows with this ref are replaced on re-import */
-const ILLUSTRATIVE_SEED_SOURCE_REF = 'smartfarm:ipm_illustrative_seed_v1';
-
-const ILLUSTRATIVE_SEED_NOTES =
-    'Illustrative display approval for example actives in SmartFarm IPM panels. ' +
-    'Does not replace Fiji MAAF Pesticides Register, Biosecurity Authority of Fiji guidance, ' +
-    'or on-product label verification. Confirm with a local agronomist before use.';
+const {
+    ILLUSTRATIVE_SEED_SOURCE_REF,
+    ILLUSTRATIVE_SEED_NOTES
+} = require('../../data/ipmRegulatory/constants');
 
 /** @type {Record<string, { regionCode: string, status: string, sourceRef: string, notes: string }>} */
 const REGION_SEED_PROFILES = {

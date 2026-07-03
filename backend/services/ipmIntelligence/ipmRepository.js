@@ -9,7 +9,7 @@ const {
     CHEMICAL_SAFETY_NOTE
 } = require('../../data/cropPestProtection');
 const { resolveIpmCropKey, DEFAULT_CROP_KEY } = require('./cropKeyResolver');
-const { filterChemicalOptions, normalizeRegionCode, regionMatches } = require('./regionFilter');
+const { filterChemicalOptions, normalizeRegionCode, regionMatches, findRegulatoryStatus, hasRegisterBackedRegulatory } = require('./regionFilter');
 
 function mapPestRow(row) {
     return {
@@ -25,7 +25,7 @@ function mapBeneficialRow(row) {
     };
 }
 
-function buildChemicalActives(chemicalRows, filteredChemicals, regionCode) {
+function buildChemicalActives(chemicalRows, filteredChemicals, regionCode, regulatoryRows, cropKey) {
     const summaryRow = chemicalRows.find((row) => row.main_pest_groups) || chemicalRows[0];
     const actives = filteredChemicals.map((row) => row.active_ingredient);
     const payload = {
@@ -33,6 +33,26 @@ function buildChemicalActives(chemicalRows, filteredChemicals, regionCode) {
         mainPestGroups: summaryRow?.main_pest_groups || '',
         safetyNote: summaryRow?.safety_note || CHEMICAL_SAFETY_NOTE
     };
+
+    const registerBacked = hasRegisterBackedRegulatory(regulatoryRows, regionCode, cropKey);
+    if (registerBacked && actives.length > 0) {
+        payload.chemicalTier = 'register_backed';
+        payload.regulatorySource =
+            'Fiji MAAF Pesticides Register framework — verify registration number on product label';
+        payload.activeDetails = filteredChemicals.map((row) => {
+            const regulatory = findRegulatoryStatus(
+                regulatoryRows,
+                row.active_ingredient,
+                cropKey,
+                regionCode
+            );
+            return {
+                activeIngredient: row.active_ingredient,
+                status: regulatory?.status || null,
+                sourceRef: regulatory?.source_ref || null
+            };
+        });
+    }
 
     if (!normalizeRegionCode(regionCode)) {
         payload.regionalNotice =
@@ -111,7 +131,7 @@ async function loadRegulatoryStatuses(pool, cropKey, regionCode) {
         return [];
     }
     const res = await pool.query(
-        `SELECT region_code, active_ingredient, crop_key, status
+        `SELECT region_code, active_ingredient, crop_key, status, source_ref, notes
          FROM crop_chemical_regulatory_status
          WHERE region_code = $1
            AND (crop_key IS NULL OR crop_key = $2)`,
@@ -156,7 +176,7 @@ async function assemblePanelFromDb(pool, catalog, cropName, regionCode) {
         dataSource: 'database',
         pests,
         beneficials,
-        chemicalActives: buildChemicalActives(chemicalRows, filteredChemicals, regionCode),
+        chemicalActives: buildChemicalActives(chemicalRows, filteredChemicals, regionCode, regulatoryRows, cropKey),
         damageToLookFor: fieldSigns,
         maturityNotes: catalog.maturity_notes || null
     };

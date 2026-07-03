@@ -177,7 +177,8 @@ INSERT INTO crop_pests (
 2. Import shipped crops: `node backend/scripts/import-ipm-reference-data.js`
 3. **Done:** `backend/services/ipmIntelligence/` — repository, region filter, crop key resolver.
 4. **Done:** pests-protection routes read DB first with JS fallback; optional `?region=FJ` for chemical filtering.
-5. **Illustrative Fiji seed:** `node backend/scripts/import-ipm-regulatory-data.js` — tags rows with `smartfarm:ipm_illustrative_seed_v1` so `?region=FJ` shows example actives from `crop_chemical_options`. Re-run safe; does not delete agronomist rows with other `source_ref` values. Replace with MAAF-register-backed rows when available.
-6. Admin or CSV import path for agronomists to add pests without deploys.
+5. **Illustrative Fiji seed:** `node backend/scripts/import-ipm-regulatory-data.js` — tags rows with `smartfarm:ipm_illustrative_seed_v1` so `?region=FJ` shows example actives from `crop_chemical_options`. Re-run safe; does not delete agronomist rows with other `source_ref` values.
+6. **Register-backed Fiji (priority legumes + root/tubers):** `node backend/scripts/import-ipm-register-data.js` — adds `maaf:fj:*` provenance rows and region-specific `crop_chemical_options`, replaces illustrative regulatory rows for those crops. API returns `chemicalTier: register_backed` and `activeDetails[].sourceRef` when applicable.
+7. Admin or CSV import path for agronomists to add pests without deploys.
 
 See also: [CROP_PEST_PROTECTION.md](./CROP_PEST_PROTECTION.md) for current panel API and UI.

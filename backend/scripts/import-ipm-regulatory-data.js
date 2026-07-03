@@ -14,9 +14,9 @@ const logger = require('../utils/logger');
 const { getPostgresSSLConfig } = require('../utils/ssl-config');
 const {
     buildRegulatorySeedEntries,
-    ILLUSTRATIVE_SEED_SOURCE_REF,
     listSupportedSeedRegions
 } = require('../services/ipmIntelligence/regulatorySeedBuilder');
+const { ILLUSTRATIVE_SEED_SOURCE_REF } = require('../data/ipmRegulatory/constants');
 
 function parseRegionArg(argv) {
     const flag = argv.find((arg) => arg.startsWith('--region='));
