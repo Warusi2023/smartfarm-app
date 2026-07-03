@@ -5,6 +5,7 @@
 
 const CHEMICAL_SAFETY_NOTE = require('./ipmConstants').CHEMICAL_SAFETY_NOTE;
 const { CEREAL_IPM, CEREAL_ALIASES } = require('./cerealPestProtection');
+const { ROOT_TUBER_IPM, ROOT_TUBER_ALIASES } = require('./rootTuberPestProtection');
 
 /** @type {{ pests: object[], beneficials: object[], chemicalActives: object, damageToLookFor: string[] }} */
 const DEFAULT_VEGETABLE_IPM = {
@@ -226,7 +227,7 @@ const CROP_IPM = {
     }
 };
 
-Object.assign(CROP_IPM, CEREAL_IPM);
+Object.assign(CROP_IPM, CEREAL_IPM, ROOT_TUBER_IPM);
 
 /** Normalize user-facing crop names to lookup keys */
 const CROP_ALIASES = {
@@ -243,7 +244,8 @@ const CROP_ALIASES = {
     'leafy greens': 'lettuce',
     spinach: 'lettuce',
     kale: 'lettuce',
-    ...CEREAL_ALIASES
+    ...CEREAL_ALIASES,
+    ...ROOT_TUBER_ALIASES
 };
 
 function normalizeCropKey(cropName) {
@@ -280,7 +282,8 @@ function resolveCropPestProtection(cropName) {
         pests: source.pests,
         beneficials: source.beneficials,
         chemicalActives: source.chemicalActives,
-        damageToLookFor: source.damageToLookFor || DEFAULT_VEGETABLE_IPM.damageToLookFor
+        damageToLookFor: source.damageToLookFor || DEFAULT_VEGETABLE_IPM.damageToLookFor,
+        maturityNotes: source.maturityNotes || null
     };
 }
 

@@ -167,6 +167,13 @@
               '</section>'
             : '';
 
+        const maturitySection = data.maturityNotes
+            ? '<section class="mt-4 pt-3 border-top">' +
+              '<h4 class="h6 text-uppercase text-muted mb-2">4. Typical maturity window</h4>' +
+              '<p class="mb-0 small">' + escapeHtml(data.maturityNotes) + '</p>' +
+              '</section>'
+            : '';
+
         el.innerHTML =
             '<div class="crop-pest-protection-panel border rounded p-3 p-md-4 bg-white">' +
             '<h3 class="h5 mb-2"><i class="fas fa-shield-alt text-success me-2"></i>' +
@@ -182,7 +189,7 @@
             '<h4 class="h6 text-uppercase text-muted mb-2">2. Beneficial insects — protect these</h4>' +
             '<ul class="mb-0 ps-3">' + beneficialItems + '</ul>' +
             '</section>' +
-            '<section>' +
+            '<section class="mb-3">' +
             '<h4 class="h6 text-uppercase text-muted mb-2">3. Example chemical actives used in many regions</h4>' +
             '<p class="mb-2 small text-muted">' + escapeHtml(LOCAL_CHEMICAL_DISCLAIMER) + '</p>' +
             regionalNotice +
@@ -192,6 +199,7 @@
             escapeHtml(chem.safetyNote || '') +
             '</p>' +
             '</section>' +
+            maturitySection +
             '</div>';
     }
 

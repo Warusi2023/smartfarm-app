@@ -63,6 +63,18 @@ Pests & protection for {Crop name}
 | `buckwheat` | buckwheat | Pollinator-safe focus |
 | `fonio` | fonio, small millets | Marginal-environment millets |
 
+**Root and tuber crops** (`backend/data/rootTuberPestProtection.js`) — include `maturityNotes` for harvest windows:
+
+| Crop key | Aliases | Notes |
+|----------|---------|--------|
+| `potato` | potato, potatoes | Late blight, Colorado beetle; 80–150+ day maturity |
+| `cassava` | cassava, manioc | Mealybug biocontrol; 6–24 month cycles |
+| `sweet_potato` | sweet potato | Weevil focus; 3–6 month maturity |
+| `yam` | yam, yams | Long-cycle tuber; 6–12 months |
+| `taro` | taro, cocoyam | Wetland aroid; 9–12 months |
+| `aroid` | aroid, tannia | Related aroids; 8–12 months |
+| `sago_palm` | sago, sago palm | Long-cycle starch palm; 7–15+ years |
+
 Add a row in `CROP_IPM` in `backend/data/cropPestProtection.js` (vegetables) or `backend/data/cerealPestProtection.js` (cereals) and optional aliases in `CROP_ALIASES`.
 
 ---

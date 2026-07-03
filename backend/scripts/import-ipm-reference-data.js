@@ -17,10 +17,11 @@ const {
     CHEMICAL_SAFETY_NOTE
 } = require('../data/cropPestProtection');
 const { CEREAL_CROP_KEYS } = require('../data/cerealPestProtection');
+const { ROOT_TUBER_CROP_KEYS } = require('../data/rootTuberPestProtection');
 const { normalizeLabel } = require('../services/ipmIntelligence/labelNormalizer');
 
 const VEGETABLE_IMPORT_KEYS = ['vegetable_default', 'tomato', 'capsicum', 'lettuce'];
-const IMPORT_KEYS = [...VEGETABLE_IMPORT_KEYS, ...CEREAL_CROP_KEYS];
+const IMPORT_KEYS = [...VEGETABLE_IMPORT_KEYS, ...CEREAL_CROP_KEYS, ...ROOT_TUBER_CROP_KEYS];
 
 const CATALOG_META = {
     vegetable_default: {
@@ -41,7 +42,14 @@ const CATALOG_META = {
     rye: { displayName: 'Rye', cropGroup: 'cereal', isDefaultTemplate: false },
     triticale: { displayName: 'Triticale', cropGroup: 'cereal', isDefaultTemplate: false },
     buckwheat: { displayName: 'Buckwheat', cropGroup: 'cereal', isDefaultTemplate: false },
-    fonio: { displayName: 'Fonio / small millets', cropGroup: 'cereal', isDefaultTemplate: false }
+    fonio: { displayName: 'Fonio / small millets', cropGroup: 'cereal', isDefaultTemplate: false },
+    potato: { displayName: 'Potato', cropGroup: 'root_tuber', isDefaultTemplate: false },
+    cassava: { displayName: 'Cassava (manioc)', cropGroup: 'root_tuber', isDefaultTemplate: false },
+    sweet_potato: { displayName: 'Sweet potato', cropGroup: 'root_tuber', isDefaultTemplate: false },
+    yam: { displayName: 'Yam', cropGroup: 'root_tuber', isDefaultTemplate: false },
+    taro: { displayName: 'Taro / cocoyam', cropGroup: 'root_tuber', isDefaultTemplate: false },
+    aroid: { displayName: 'Aroid (tannia)', cropGroup: 'root_tuber', isDefaultTemplate: false },
+    sago_palm: { displayName: 'Sago palm', cropGroup: 'root_tuber', isDefaultTemplate: false }
 };
 
 function inferPestType(name) {
@@ -116,23 +124,27 @@ async function clearCropContent(client, cropKey) {
 
 async function upsertCatalog(client, cropKey) {
     const meta = CATALOG_META[cropKey];
+    const source = sourceForKey(cropKey);
+    const maturityNotes = source?.maturityNotes || null;
     await client.query(
         `INSERT INTO ipm_crop_catalog (
-            crop_key, display_name, crop_group, is_default_template, population_status, notes
-         ) VALUES ($1, $2, $3, $4, 'complete', $5)
+            crop_key, display_name, crop_group, is_default_template, population_status, notes, maturity_notes
+         ) VALUES ($1, $2, $3, $4, 'complete', $5, $6)
          ON CONFLICT (crop_key) DO UPDATE SET
             display_name = EXCLUDED.display_name,
             crop_group = EXCLUDED.crop_group,
             is_default_template = EXCLUDED.is_default_template,
             population_status = 'complete',
             notes = EXCLUDED.notes,
+            maturity_notes = EXCLUDED.maturity_notes,
             updated_at = NOW()`,
         [
             cropKey,
             meta.displayName,
             meta.cropGroup,
             meta.isDefaultTemplate,
-            `Imported from cropPestProtection.js on ${new Date().toISOString().slice(0, 10)}`
+            `Imported from cropPestProtection.js on ${new Date().toISOString().slice(0, 10)}`,
+            maturityNotes
         ]
     );
 }

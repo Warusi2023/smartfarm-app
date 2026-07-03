@@ -47,7 +47,7 @@ function buildChemicalActives(chemicalRows, filteredChemicals, regionCode) {
 
 async function loadCatalog(pool, cropKey) {
     const res = await pool.query(
-        `SELECT crop_key, display_name, crop_group, is_default_template, population_status
+        `SELECT crop_key, display_name, crop_group, is_default_template, population_status, maturity_notes
          FROM ipm_crop_catalog
          WHERE crop_key = $1`,
         [cropKey]
@@ -157,7 +157,8 @@ async function assemblePanelFromDb(pool, catalog, cropName, regionCode) {
         pests,
         beneficials,
         chemicalActives: buildChemicalActives(chemicalRows, filteredChemicals, regionCode),
-        damageToLookFor: fieldSigns
+        damageToLookFor: fieldSigns,
+        maturityNotes: catalog.maturity_notes || null
     };
 }
 
@@ -199,6 +200,9 @@ async function getPestProtectionPanel(pool, cropName, options = {}) {
         if (!normalizeRegionCode(regionCode)) {
             dbPanel.chemicalActives = jsPanel.chemicalActives;
             dbPanel._chemicalSource = 'js_fallback_no_region';
+        }
+        if (!dbPanel.maturityNotes && jsPanel.maturityNotes) {
+            dbPanel.maturityNotes = jsPanel.maturityNotes;
         }
 
         if (usedDefault && !catalog.is_default_template) {
