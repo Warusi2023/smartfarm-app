@@ -51,8 +51,19 @@ Pests & protection for {Crop name}
 | `tomato` | tomato, tomatoes | Includes Tuta absoluta, fruit borers |
 | `capsicum` | pepper, bell pepper, capsicum | Thrips, fruit borers emphasis |
 | `lettuce` | lettuce, leafy greens, spinach, kale | Leafminers, flea beetles |
+| `wheat` | wheat | Temperate/continental cereals |
+| `rice` | rice, paddy | Paddy stem borers, hoppers, blast |
+| `maize` | maize, corn | Fall armyworm, stem borers |
+| `barley` | barley | Net blotch, rust, aphids |
+| `sorghum` | sorghum | Midge, shoot fly, armyworm |
+| `millet` | millet, pearl millet | Stem borers, head bugs |
+| `oats` | oats | Crown rust, aphid viruses |
+| `rye` | rye | Low-input cover/forage IPM |
+| `triticale` | triticale | Wheat-complex pests |
+| `buckwheat` | buckwheat | Pollinator-safe focus |
+| `fonio` | fonio, small millets | Marginal-environment millets |
 
-Add a row in `CROP_IPM` in `backend/data/cropPestProtection.js` and optional aliases in `CROP_ALIASES`.
+Add a row in `CROP_IPM` in `backend/data/cropPestProtection.js` (vegetables) or `backend/data/cerealPestProtection.js` (cereals) and optional aliases in `CROP_ALIASES`.
 
 ---
 

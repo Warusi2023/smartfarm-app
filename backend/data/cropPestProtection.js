@@ -3,10 +3,8 @@
  * One record per crop; UI renders the same three sections for all crops.
  */
 
-const CHEMICAL_SAFETY_NOTE =
-    'Growers often use example active ingredients against the main pest groups listed for each crop. ' +
-    'Always follow your local label, pre-harvest interval, and agronomist\'s advice. ' +
-    'Approved products differ by country. Avoid broad-spectrum sprays when beneficial insects are active.';
+const CHEMICAL_SAFETY_NOTE = require('./ipmConstants').CHEMICAL_SAFETY_NOTE;
+const { CEREAL_IPM, CEREAL_ALIASES } = require('./cerealPestProtection');
 
 /** @type {{ pests: object[], beneficials: object[], chemicalActives: object, damageToLookFor: string[] }} */
 const DEFAULT_VEGETABLE_IPM = {
@@ -228,6 +226,8 @@ const CROP_IPM = {
     }
 };
 
+Object.assign(CROP_IPM, CEREAL_IPM);
+
 /** Normalize user-facing crop names to lookup keys */
 const CROP_ALIASES = {
     tomato: 'tomato',
@@ -242,7 +242,8 @@ const CROP_ALIASES = {
     'lettuce & leafy greens': 'lettuce',
     'leafy greens': 'lettuce',
     spinach: 'lettuce',
-    kale: 'lettuce'
+    kale: 'lettuce',
+    ...CEREAL_ALIASES
 };
 
 function normalizeCropKey(cropName) {

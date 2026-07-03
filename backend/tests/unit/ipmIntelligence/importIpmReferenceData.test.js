@@ -10,8 +10,11 @@ const {
 } = require('../../../scripts/import-ipm-reference-data');
 
 describe('import-ipm-reference-data', () => {
-    test('imports the four shipped crop keys', () => {
-        expect(IMPORT_KEYS).toEqual(['vegetable_default', 'tomato', 'capsicum', 'lettuce']);
+    test('imports vegetable and cereal crop keys', () => {
+        expect(IMPORT_KEYS).toContain('tomato');
+        expect(IMPORT_KEYS).toContain('wheat');
+        expect(IMPORT_KEYS).toContain('maize');
+        expect(IMPORT_KEYS.length).toBeGreaterThanOrEqual(15);
     });
 
     describe('inferPestType', () => {

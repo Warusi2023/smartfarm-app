@@ -1,11 +1,10 @@
 /**
- * Import tomato/capsicum/lettuce/default IPM content from cropPestProtection.js
- * into ipm_crop_catalog reference tables.
+ * Import IPM reference content from cropPestProtection.js into ipm_crop_catalog tables.
  *
  * Usage:
  *   node backend/scripts/import-ipm-reference-data.js
  *
- * Safe to re-run: clears and re-imports content for the four shipped crop keys.
+ * Safe to re-run: clears and re-imports content for all shipped crop keys.
  */
 
 require('dotenv').config();
@@ -17,9 +16,11 @@ const {
     DEFAULT_VEGETABLE_IPM,
     CHEMICAL_SAFETY_NOTE
 } = require('../data/cropPestProtection');
+const { CEREAL_CROP_KEYS } = require('../data/cerealPestProtection');
 const { normalizeLabel } = require('../services/ipmIntelligence/labelNormalizer');
 
-const IMPORT_KEYS = ['vegetable_default', 'tomato', 'capsicum', 'lettuce'];
+const VEGETABLE_IMPORT_KEYS = ['vegetable_default', 'tomato', 'capsicum', 'lettuce'];
+const IMPORT_KEYS = [...VEGETABLE_IMPORT_KEYS, ...CEREAL_CROP_KEYS];
 
 const CATALOG_META = {
     vegetable_default: {
@@ -29,7 +30,18 @@ const CATALOG_META = {
     },
     tomato: { displayName: 'Tomato', cropGroup: 'vegetable', isDefaultTemplate: false },
     capsicum: { displayName: 'Capsicum (bell pepper)', cropGroup: 'vegetable', isDefaultTemplate: false },
-    lettuce: { displayName: 'Lettuce', cropGroup: 'vegetable', isDefaultTemplate: false }
+    lettuce: { displayName: 'Lettuce', cropGroup: 'vegetable', isDefaultTemplate: false },
+    wheat: { displayName: 'Wheat', cropGroup: 'cereal', isDefaultTemplate: false },
+    rice: { displayName: 'Rice (paddy)', cropGroup: 'cereal', isDefaultTemplate: false },
+    maize: { displayName: 'Maize / corn', cropGroup: 'cereal', isDefaultTemplate: false },
+    barley: { displayName: 'Barley', cropGroup: 'cereal', isDefaultTemplate: false },
+    sorghum: { displayName: 'Sorghum', cropGroup: 'cereal', isDefaultTemplate: false },
+    millet: { displayName: 'Millet', cropGroup: 'cereal', isDefaultTemplate: false },
+    oats: { displayName: 'Oats', cropGroup: 'cereal', isDefaultTemplate: false },
+    rye: { displayName: 'Rye', cropGroup: 'cereal', isDefaultTemplate: false },
+    triticale: { displayName: 'Triticale', cropGroup: 'cereal', isDefaultTemplate: false },
+    buckwheat: { displayName: 'Buckwheat', cropGroup: 'cereal', isDefaultTemplate: false },
+    fonio: { displayName: 'Fonio / small millets', cropGroup: 'cereal', isDefaultTemplate: false }
 };
 
 function inferPestType(name) {
