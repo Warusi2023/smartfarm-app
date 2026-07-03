@@ -4,22 +4,25 @@
 
 const { ILLUSTRATIVE_SEED_SOURCE_REF } = require('../../data/ipmRegulatory/constants');
 const { CHEMICAL_SAFETY_NOTE } = require('../../data/ipmConstants');
-const {
-    FJ_PRIORITY_CROP_KEYS,
-    getFijiRegisterActivesForCrop
-} = require('../../data/ipmRegulatory/fijiMaafRegister');
+const { getRegisterModule } = require('../../data/ipmRegulatory/regions/index');
 
 /**
  * @param {string} regionCode
  * @param {string[]} [cropKeys]
  */
-function buildRegisterImportPlan(regionCode, cropKeys = FJ_PRIORITY_CROP_KEYS) {
-    const normalizedRegion = String(regionCode || '').toUpperCase();
+function buildRegisterImportPlan(regionCode, cropKeys) {
+    const module = getRegisterModule(regionCode);
+    if (!module) {
+        throw new Error(`No register module for region: ${regionCode}`);
+    }
+
+    const normalizedRegion = module.regionCode;
+    const keys = cropKeys || module.cropKeys;
     const chemicals = [];
     const regulatory = [];
 
-    for (const cropKey of cropKeys) {
-        const actives = getFijiRegisterActivesForCrop(cropKey);
+    for (const cropKey of keys) {
+        const actives = module.getRegisterActivesForCrop(cropKey);
         let sortOrder = 1;
         for (const active of actives) {
             chemicals.push({
@@ -38,14 +41,16 @@ function buildRegisterImportPlan(regionCode, cropKeys = FJ_PRIORITY_CROP_KEYS) {
                 activeIngredient: active.activeIngredient,
                 status: active.status,
                 sourceRef: active.sourceRef,
-                notes: active.notes
+                notes: active.notes,
+                productName: active.productName || null,
+                registrationNumber: active.registrationNumber || null
             });
         }
     }
 
     return {
         regionCode: normalizedRegion,
-        cropKeys,
+        cropKeys: keys,
         chemicals,
         regulatory,
         illustrativeSourceRef: ILLUSTRATIVE_SEED_SOURCE_REF

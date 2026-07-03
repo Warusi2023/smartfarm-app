@@ -14,6 +14,9 @@ const {
 } = require('./constants');
 const { GRAIN_LEGUME_CROP_KEYS } = require('../grainLegumePestProtection');
 const { ROOT_TUBER_CROP_KEYS } = require('../rootTuberPestProtection');
+const { CEREAL_CROP_KEYS } = require('../cerealPestProtection');
+
+const VEGETABLE_REGISTER_KEYS = ['tomato', 'capsicum', 'lettuce', 'vegetable_default'];
 
 /**
  * @typedef {object} RegisterActiveEntry
@@ -122,6 +125,70 @@ const FIJI_ACTIVES = {
         sourceRef: `${MAAF_FJ_PESTICIDES_ACT};active:chlorpyrifos`,
         notes: `Restricted organophosphate — soil and early-season pests only where still labeled; follow MOA guidance and re-entry intervals. ${REGISTER_VERIFY_NOTE}`,
         targetDescription: 'soil pests, cutworms, early borers'
+    },
+    spinosad: {
+        activeIngredient: 'Spinosad',
+        productClass: 'insecticide',
+        status: 'allowed',
+        sourceRef: `${MAAF_FJ_APPPC_2015_PROVENANCE};active:spinosad`,
+        notes: `Selective caterpillar and thrips control; lower impact on many beneficials when used at threshold. ${REGISTER_VERIFY_NOTE}`,
+        targetDescription: 'caterpillars, thrips, leafminers'
+    },
+    emamectin_benzoate: {
+        activeIngredient: 'Emamectin benzoate',
+        productClass: 'insecticide',
+        status: 'requires_license',
+        sourceRef: `${MAAF_FJ_PESTICIDES_ACT};active:emamectin_benzoate`,
+        notes: `For labeled caterpillar and leafminer programs on fruiting vegetables. ${REGISTER_VERIFY_NOTE}`,
+        targetDescription: 'caterpillars, leafminers, fruit borers'
+    },
+    cyromazine: {
+        activeIngredient: 'Cyromazine',
+        productClass: 'insecticide',
+        status: 'requires_license',
+        sourceRef: `${MAAF_FJ_PESTICIDES_ACT};active:cyromazine`,
+        notes: `Leafminer and dipteran pest control where labeled. ${REGISTER_VERIFY_NOTE}`,
+        targetDescription: 'leafminers, dipteran larvae'
+    },
+    flonicamid: {
+        activeIngredient: 'Flonicamid',
+        productClass: 'insecticide',
+        status: 'requires_license',
+        sourceRef: `${MAAF_FJ_PESTICIDES_ACT};active:flonicamid`,
+        notes: `Selective aphid and whitefly material; rotate modes of action. ${REGISTER_VERIFY_NOTE}`,
+        targetDescription: 'aphids, whiteflies'
+    },
+    tebuconazole: {
+        activeIngredient: 'Tebuconazole',
+        productClass: 'fungicide',
+        status: 'requires_license',
+        sourceRef: `${MAAF_FJ_PESTICIDES_ACT};active:tebuconazole`,
+        notes: `Triazole fungicide for rust, mildew, and leaf-spot programs when thresholds are met. ${REGISTER_VERIFY_NOTE}`,
+        targetDescription: 'rusts, mildews, leaf spots'
+    },
+    azoxystrobin: {
+        activeIngredient: 'Azoxystrobin',
+        productClass: 'fungicide',
+        status: 'requires_license',
+        sourceRef: `${MAAF_FJ_PESTICIDES_ACT};active:azoxystrobin`,
+        notes: `Strobilurin fungicide for cereal and vegetable disease pressure; resistance management required. ${REGISTER_VERIFY_NOTE}`,
+        targetDescription: 'rusts, blights, leaf spots'
+    },
+    tricyclazole: {
+        activeIngredient: 'Tricyclazole',
+        productClass: 'fungicide',
+        status: 'requires_license',
+        sourceRef: `${MAAF_FJ_PESTICIDES_ACT};active:tricyclazole`,
+        notes: `Rice blast management where labeled; combine with resistant varieties and field sanitation. ${REGISTER_VERIFY_NOTE}`,
+        targetDescription: 'rice blast, neck blast'
+    },
+    thiamethoxam_seed: {
+        activeIngredient: 'Thiamethoxam (seed treatment)',
+        productClass: 'insecticide',
+        status: 'requires_license',
+        sourceRef: `${MAAF_FJ_PESTICIDES_ACT};active:thiamethoxam_seed_treatment`,
+        notes: `Seed dressing for early soil and sucking-pest protection where labeled for the crop. ${REGISTER_VERIFY_NOTE}`,
+        targetDescription: 'soil pests, early aphids, leafhoppers'
     }
 };
 
@@ -159,7 +226,47 @@ for (const cropKey of ROOT_TUBER_CROP_KEYS) {
         ROOT_TUBER_ACTIVE_KEYS[cropKey] || ['neem', 'mancozeb', 'cypermethrin'];
 }
 
-const FJ_PRIORITY_CROP_KEYS = [...GRAIN_LEGUME_CROP_KEYS, ...ROOT_TUBER_CROP_KEYS];
+/** Cereal defaults — stem borers, aphids, rusts */
+const CEREAL_ACTIVE_KEYS = {
+    wheat: ['thiamethoxam_seed', 'imidacloprid', 'bt', 'tebuconazole'],
+    rice: ['tricyclazole', 'imidacloprid', 'bt', 'mancozeb'],
+    maize: ['bt', 'lambda_cyhalothrin', 'thiamethoxam_seed', 'imidacloprid'],
+    barley: ['tebuconazole', 'imidacloprid', 'bt', 'mancozeb'],
+    sorghum: ['lambda_cyhalothrin', 'imidacloprid', 'bt', 'cypermethrin'],
+    millet: ['thiamethoxam_seed', 'lambda_cyhalothrin', 'imidacloprid', 'bt'],
+    oats: ['tebuconazole', 'imidacloprid', 'bt', 'mancozeb'],
+    rye: ['tebuconazole', 'imidacloprid', 'bt'],
+    triticale: ['tebuconazole', 'imidacloprid', 'bt', 'azoxystrobin'],
+    buckwheat: ['spinosad', 'neem', 'soap'],
+    fonio: ['thiamethoxam_seed', 'lambda_cyhalothrin', 'imidacloprid', 'bt']
+};
+
+for (const cropKey of CEREAL_CROP_KEYS) {
+    FJ_REGISTER_ACTIVE_KEYS_BY_CROP[cropKey] =
+        CEREAL_ACTIVE_KEYS[cropKey] || ['bt', 'imidacloprid', 'tebuconazole', 'lambda_cyhalothrin'];
+}
+
+/** Vegetable defaults */
+const VEGETABLE_ACTIVE_KEYS = {
+    tomato: ['spinosad', 'bt', 'abamectin', 'cyromazine', 'soap'],
+    capsicum: ['spinosad', 'abamectin', 'flonicamid', 'bt', 'soap'],
+    lettuce: ['soap', 'neem', 'spinosad', 'bt'],
+    vegetable_default: ['soap', 'neem', 'bt', 'spinosad', 'imidacloprid']
+};
+
+for (const cropKey of VEGETABLE_REGISTER_KEYS) {
+    FJ_REGISTER_ACTIVE_KEYS_BY_CROP[cropKey] = VEGETABLE_ACTIVE_KEYS[cropKey];
+}
+
+const FJ_REGISTER_CROP_KEYS = [
+    ...GRAIN_LEGUME_CROP_KEYS,
+    ...ROOT_TUBER_CROP_KEYS,
+    ...CEREAL_CROP_KEYS,
+    ...VEGETABLE_REGISTER_KEYS
+];
+
+/** @deprecated use FJ_REGISTER_CROP_KEYS */
+const FJ_PRIORITY_CROP_KEYS = FJ_REGISTER_CROP_KEYS;
 
 /**
  * @param {string} cropKey
@@ -175,6 +282,7 @@ function getFijiRegisterActivesForCrop(cropKey) {
 
 module.exports = {
     FIJI_ACTIVES,
+    FJ_REGISTER_CROP_KEYS,
     FJ_PRIORITY_CROP_KEYS,
     FJ_REGISTER_ACTIVE_KEYS_BY_CROP,
     getFijiRegisterActivesForCrop

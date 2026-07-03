@@ -101,6 +101,103 @@
         return lookupCountryCode(readStoredUserCountry());
     }
 
+    function formatStatusBadge(status) {
+        if (!status) return '';
+        var map = {
+            allowed: { label: 'Allowed', cls: 'bg-success' },
+            requires_license: { label: 'License required', cls: 'bg-warning text-dark' },
+            restricted: { label: 'Restricted', cls: 'bg-danger' }
+        };
+        var info = map[status] || { label: status, cls: 'bg-secondary' };
+        return '<span class="badge ' + info.cls + ' ms-2 align-middle">' + escapeHtml(info.label) + '</span>';
+    }
+
+    function shortenSourceRef(sourceRef) {
+        if (!sourceRef) return '';
+        var parts = String(sourceRef).split(';');
+        if (parts.length <= 2) return sourceRef;
+        return parts.slice(0, 2).join(';') + '…';
+    }
+
+    function renderChemicalSection(chem) {
+        var isRegisterBacked = chem.chemicalTier === 'register_backed';
+        var sectionTitle = isRegisterBacked
+            ? '3. Registered chemical actives'
+            : '3. Example chemical actives used in many regions';
+
+        var regionalNotice = chem.regionalNotice
+            ? '<p class="small text-muted mb-2">' + escapeHtml(chem.regionalNotice) + '</p>'
+            : '';
+
+        var registerBanner = isRegisterBacked && chem.regulatorySource
+            ? '<div class="alert alert-info py-2 px-3 small mb-3" role="status">' +
+              '<i class="fas fa-certificate me-1"></i>' +
+              '<strong>Register-backed guidance</strong> — ' + escapeHtml(chem.regulatorySource) +
+              '</div>'
+            : '';
+
+        var activesBody = '';
+        var details = chem.activeDetails || [];
+        if (isRegisterBacked && details.length > 0) {
+            activesBody =
+                '<ul class="list-unstyled mb-2 small">' +
+                details.map(function (detail) {
+                    var provenance = detail.sourceRef
+                        ? '<div class="text-muted mt-1" style="font-size:0.85em;">' +
+                          '<i class="fas fa-link me-1"></i>' + escapeHtml(shortenSourceRef(detail.sourceRef)) +
+                          '</div>'
+                        : '';
+                    var productLine = detail.productName || detail.registrationNumber
+                        ? '<div class="text-muted mt-1" style="font-size:0.85em;">' +
+                          escapeHtml(
+                              [detail.productName, detail.registrationNumber ? 'Reg. ' + detail.registrationNumber : '']
+                                  .filter(Boolean)
+                                  .join(' · ')
+                          ) +
+                          '</div>'
+                        : '';
+                    return (
+                        '<li class="mb-2 pb-2 border-bottom">' +
+                        '<strong>' + escapeHtml(detail.activeIngredient) + '</strong>' +
+                        formatStatusBadge(detail.status) +
+                        provenance +
+                        productLine +
+                        '</li>'
+                    );
+                }).join('') +
+                '</ul>';
+        } else if ((chem.actives || []).length) {
+            var actives = (chem.actives || []).map(function (a) {
+                return escapeHtml(a);
+            }).join(', ');
+            activesBody =
+                '<p class="mb-2 small">' +
+                'Growers often use actives such as <strong>' + actives + '</strong> against ' +
+                escapeHtml(chem.mainPestGroups || 'common pest groups') + '.' +
+                '</p>';
+        } else {
+            activesBody =
+                '<p class="mb-2 small text-muted">' +
+                'No localized chemical actives are approved for display in your region. ' +
+                'Focus on monitoring, cultural controls, and beneficial conservation first.' +
+                '</p>';
+        }
+
+        return (
+            '<section class="mb-3">' +
+            '<h4 class="h6 text-uppercase text-muted mb-2">' + sectionTitle + '</h4>' +
+            '<p class="mb-2 small text-muted">' + escapeHtml(LOCAL_CHEMICAL_DISCLAIMER) + '</p>' +
+            registerBanner +
+            regionalNotice +
+            activesBody +
+            '<p class="mb-0 small text-muted border-start border-3 border-warning ps-2">' +
+            '<i class="fas fa-exclamation-triangle me-1"></i>' +
+            escapeHtml(chem.safetyNote || '') +
+            '</p>' +
+            '</section>'
+        );
+    }
+
     /**
      * @param {HTMLElement|string} mount
      * @param {object} data from resolveCropPestProtection / API
@@ -134,10 +231,6 @@
         }).join('');
 
         const chem = data.chemicalActives || {};
-        const activesList = chem.actives || [];
-        const actives = activesList.map(function (a) {
-            return escapeHtml(a);
-        }).join(', ');
 
         const defaultBanner = data.isDefaultTemplate
             ? '<div class="alert alert-secondary py-2 px-3 small mb-3 mb-md-4" role="status">' +
@@ -145,20 +238,6 @@
               'Crop-specific recommendations are not loaded yet; confirm pests in the field before acting.' +
               '</div>'
             : '';
-
-        const regionalNotice = chem.regionalNotice
-            ? '<p class="small text-muted mb-2">' + escapeHtml(chem.regionalNotice) + '</p>'
-            : '';
-
-        const activesParagraph = activesList.length
-            ? '<p class="mb-2 small">' +
-              'Growers often use actives such as <strong>' + actives + '</strong> against ' +
-              escapeHtml(chem.mainPestGroups || 'common pest groups') + '.' +
-              '</p>'
-            : '<p class="mb-2 small text-muted">' +
-              'No localized chemical actives are approved for display in your region. ' +
-              'Focus on monitoring, cultural controls, and beneficial conservation first.' +
-              '</p>';
 
         const lookForSection = lookForItems
             ? '<section class="mb-4">' +
@@ -189,16 +268,7 @@
             '<h4 class="h6 text-uppercase text-muted mb-2">2. Beneficial insects — protect these</h4>' +
             '<ul class="mb-0 ps-3">' + beneficialItems + '</ul>' +
             '</section>' +
-            '<section class="mb-3">' +
-            '<h4 class="h6 text-uppercase text-muted mb-2">3. Example chemical actives used in many regions</h4>' +
-            '<p class="mb-2 small text-muted">' + escapeHtml(LOCAL_CHEMICAL_DISCLAIMER) + '</p>' +
-            regionalNotice +
-            activesParagraph +
-            '<p class="mb-0 small text-muted border-start border-3 border-warning ps-2">' +
-            '<i class="fas fa-exclamation-triangle me-1"></i>' +
-            escapeHtml(chem.safetyNote || '') +
-            '</p>' +
-            '</section>' +
+            renderChemicalSection(chem) +
             maturitySection +
             '</div>';
     }

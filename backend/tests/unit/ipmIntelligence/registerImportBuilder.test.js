@@ -1,5 +1,6 @@
 const { buildRegisterImportPlan } = require('../../../services/ipmIntelligence/registerImportBuilder');
-const { FJ_PRIORITY_CROP_KEYS } = require('../../../data/ipmRegulatory/fijiMaafRegister');
+const { FJ_REGISTER_CROP_KEYS } = require('../../../data/ipmRegulatory/fijiMaafRegister');
+const { listRegisterRegions } = require('../../../data/ipmRegulatory/regions/index');
 const {
     filterChemicalOptions,
     hasRegisterBackedRegulatory
@@ -7,12 +8,17 @@ const {
 const { MAAF_FJ_REGISTER_SOURCE_PREFIX } = require('../../../data/ipmRegulatory/constants');
 
 describe('registerImportBuilder', () => {
-    test('builds register plan for all priority legume and root/tuber crops', () => {
+    test('lists Fiji in regional register modules', () => {
+        expect(listRegisterRegions()).toContain('FJ');
+    });
+
+    test('builds register plan for all 31 IPM crops including cereals and vegetables', () => {
         const plan = buildRegisterImportPlan('FJ');
         expect(plan.regionCode).toBe('FJ');
-        expect(plan.cropKeys).toEqual(FJ_PRIORITY_CROP_KEYS);
+        expect(plan.cropKeys).toEqual(FJ_REGISTER_CROP_KEYS);
+        expect(plan.cropKeys.length).toBe(31);
         expect(plan.chemicals.length).toBe(plan.regulatory.length);
-        expect(plan.chemicals.length).toBeGreaterThan(40);
+        expect(plan.chemicals.length).toBeGreaterThan(100);
     });
 
     test('cowpea register actives use MAAF source_ref provenance', () => {
@@ -61,5 +67,15 @@ describe('registerImportBuilder', () => {
         );
         expect(filtered).toHaveLength(1);
         expect(filtered[0].is_example_only).toBe(false);
+    });
+
+    test('wheat and tomato crops have register-backed actives', () => {
+        const plan = buildRegisterImportPlan('FJ');
+        const wheat = plan.regulatory.filter((row) => row.cropKey === 'wheat');
+        const tomato = plan.regulatory.filter((row) => row.cropKey === 'tomato');
+        expect(wheat.length).toBe(4);
+        expect(tomato.length).toBe(5);
+        expect(wheat.every((row) => row.sourceRef.startsWith('maaf:fj:'))).toBe(true);
+        expect(tomato.some((row) => /spinosad/i.test(row.activeIngredient))).toBe(true);
     });
 });

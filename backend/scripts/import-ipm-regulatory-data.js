@@ -38,20 +38,25 @@ async function clearIllustrativeRows(client, regionCode, sourceRef) {
 async function upsertRegulatoryRow(client, entry) {
     await client.query(
         `INSERT INTO crop_chemical_regulatory_status (
-            region_code, active_ingredient, crop_key, status, source_ref, notes
-         ) VALUES ($1, $2, $3, $4, $5, $6)
+            region_code, active_ingredient, crop_key, status, source_ref, notes,
+            product_name, registration_number
+         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
          ON CONFLICT (region_code, active_ingredient, crop_key)
          DO UPDATE SET
             status = EXCLUDED.status,
             source_ref = EXCLUDED.source_ref,
-            notes = EXCLUDED.notes`,
+            notes = EXCLUDED.notes,
+            product_name = EXCLUDED.product_name,
+            registration_number = EXCLUDED.registration_number`,
         [
             entry.regionCode,
             entry.activeIngredient,
             entry.cropKey,
             entry.status,
             entry.sourceRef,
-            entry.notes
+            entry.notes,
+            entry.productName || null,
+            entry.registrationNumber || null
         ]
     );
 }

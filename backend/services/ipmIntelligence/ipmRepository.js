@@ -49,7 +49,9 @@ function buildChemicalActives(chemicalRows, filteredChemicals, regionCode, regul
             return {
                 activeIngredient: row.active_ingredient,
                 status: regulatory?.status || null,
-                sourceRef: regulatory?.source_ref || null
+                sourceRef: regulatory?.source_ref || null,
+                productName: regulatory?.product_name || null,
+                registrationNumber: regulatory?.registration_number || null
             };
         });
     }
@@ -131,7 +133,8 @@ async function loadRegulatoryStatuses(pool, cropKey, regionCode) {
         return [];
     }
     const res = await pool.query(
-        `SELECT region_code, active_ingredient, crop_key, status, source_ref, notes
+        `SELECT region_code, active_ingredient, crop_key, status, source_ref, notes,
+                product_name, registration_number
          FROM crop_chemical_regulatory_status
          WHERE region_code = $1
            AND (crop_key IS NULL OR crop_key = $2)`,

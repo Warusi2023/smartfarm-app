@@ -16,6 +16,7 @@ const { getPostgresSSLConfig } = require('../utils/ssl-config');
 const { ILLUSTRATIVE_SEED_SOURCE_REF, MAAF_FJ_REGISTER_SOURCE_PREFIX } = require('../data/ipmRegulatory/constants');
 const { buildRegisterImportPlan } = require('../services/ipmIntelligence/registerImportBuilder');
 const { upsertRegulatoryRow } = require('./import-ipm-regulatory-data');
+const { getRegisterModule } = require('../data/ipmRegulatory/regions/index');
 
 function parseRegionArg(argv) {
     const flag = argv.find((arg) => arg.startsWith('--region='));
@@ -159,8 +160,8 @@ async function main() {
     }
 
     const regionCode = parseRegionArg(process.argv.slice(2));
-    if (String(regionCode).toUpperCase() !== 'FJ') {
-        console.error('Only --region=FJ is supported in this release.');
+    if (!getRegisterModule(regionCode)) {
+        console.error(`Unsupported region: ${regionCode}. Supported: ${require('../data/ipmRegulatory/regions/index').listRegisterRegions().join(', ')}`);
         process.exit(1);
     }
 

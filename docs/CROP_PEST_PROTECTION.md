@@ -10,7 +10,9 @@ railway ssh -s Backend "node scripts/import-ipm-regulatory-data.js"
 railway ssh -s Backend "node scripts/import-ipm-register-data.js"
 ```
 
-The illustrative import unlocks example actives for all 31 crops. The **register import** upgrades legumes and root/tubers (16 crops) to MAAF-provenance actives with `chemicalTier: register_backed` in the API. Cereals and vegetables remain on illustrative seed until register data is added.
+The illustrative import unlocks example actives for all 31 crops. The **register import** upgrades all 31 crops to MAAF-provenance actives with `chemicalTier: register_backed` and `activeDetails` (status + `sourceRef`) in the API. The UI shows register-backed actives with status badges when `activeDetails` is present.
+
+**Trade products (future):** migration `015_ipm_regulatory_products.sql` adds `product_name` and `registration_number` on regulatory rows for Gazette-backed provenance.
 
 **UI module:** `web-project/public/js/crop-pest-protection.js`  
 **Data:** `backend/data/cropPestProtection.js` (Phase 0 — migrating to DB; see [IPM_REFERENCE_SCHEMA.md](./IPM_REFERENCE_SCHEMA.md))

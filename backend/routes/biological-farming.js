@@ -16,7 +16,7 @@ const router = express.Router();
 let ipmDbPool = null;
 
 /** Cache prefix v2 — busts pre-DB 24h entries that cached js_fallback responses */
-const IPM_PESTS_CACHE_PREFIX = 'biological-farming:pests-protection:v6';
+const IPM_PESTS_CACHE_PREFIX = 'biological-farming:pests-protection:v7';
 
 function resolveIpmDbPool(req) {
     return req.app?.locals?.dbPool ?? ipmDbPool ?? null;
