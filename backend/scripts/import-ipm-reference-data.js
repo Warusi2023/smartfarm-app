@@ -18,10 +18,11 @@ const {
 } = require('../data/cropPestProtection');
 const { CEREAL_CROP_KEYS } = require('../data/cerealPestProtection');
 const { ROOT_TUBER_CROP_KEYS } = require('../data/rootTuberPestProtection');
+const { GRAIN_LEGUME_CROP_KEYS } = require('../data/grainLegumePestProtection');
 const { normalizeLabel } = require('../services/ipmIntelligence/labelNormalizer');
 
 const VEGETABLE_IMPORT_KEYS = ['vegetable_default', 'tomato', 'capsicum', 'lettuce'];
-const IMPORT_KEYS = [...VEGETABLE_IMPORT_KEYS, ...CEREAL_CROP_KEYS, ...ROOT_TUBER_CROP_KEYS];
+const IMPORT_KEYS = [...VEGETABLE_IMPORT_KEYS, ...CEREAL_CROP_KEYS, ...ROOT_TUBER_CROP_KEYS, ...GRAIN_LEGUME_CROP_KEYS];
 
 const CATALOG_META = {
     vegetable_default: {
@@ -49,7 +50,16 @@ const CATALOG_META = {
     yam: { displayName: 'Yam', cropGroup: 'root_tuber', isDefaultTemplate: false },
     taro: { displayName: 'Taro / cocoyam', cropGroup: 'root_tuber', isDefaultTemplate: false },
     aroid: { displayName: 'Aroid (tannia)', cropGroup: 'root_tuber', isDefaultTemplate: false },
-    sago_palm: { displayName: 'Sago palm', cropGroup: 'root_tuber', isDefaultTemplate: false }
+    sago_palm: { displayName: 'Sago palm', cropGroup: 'root_tuber', isDefaultTemplate: false },
+    soybean: { displayName: 'Soybean', cropGroup: 'legume', isDefaultTemplate: false },
+    common_bean: { displayName: 'Common bean', cropGroup: 'legume', isDefaultTemplate: false },
+    pea: { displayName: 'Pea', cropGroup: 'legume', isDefaultTemplate: false },
+    chickpea: { displayName: 'Chickpea', cropGroup: 'legume', isDefaultTemplate: false },
+    lentil: { displayName: 'Lentil', cropGroup: 'legume', isDefaultTemplate: false },
+    pigeon_pea: { displayName: 'Pigeon pea', cropGroup: 'legume', isDefaultTemplate: false },
+    cowpea: { displayName: 'Cowpea', cropGroup: 'legume', isDefaultTemplate: false },
+    broad_bean: { displayName: 'Broad / fava bean', cropGroup: 'legume', isDefaultTemplate: false },
+    groundnut: { displayName: 'Groundnut / peanut', cropGroup: 'legume', isDefaultTemplate: false }
 };
 
 function inferPestType(name) {

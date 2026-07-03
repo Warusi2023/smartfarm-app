@@ -75,7 +75,21 @@ Pests & protection for {Crop name}
 | `aroid` | aroid, tannia | Related aroids; 8–12 months |
 | `sago_palm` | sago, sago palm | Long-cycle starch palm; 7–15+ years |
 
-Add a row in `CROP_IPM` in `backend/data/cropPestProtection.js` (vegetables) or `backend/data/cerealPestProtection.js` (cereals) and optional aliases in `CROP_ALIASES`.
+**Grain legumes** (`backend/data/grainLegumePestProtection.js`):
+
+| Crop key | Aliases | Notes |
+|----------|---------|--------|
+| `soybean` | soybean, soy, soya | Wide maturity by variety group |
+| `common_bean` | beans, kidney/black/navy/pinto bean | Bush vs climbing maturity |
+| `pea` | pea, field pea, garden pea | Short cool-season cycle |
+| `chickpea` | chickpea, gram | Pod borer focus |
+| `lentil` | lentil, lentils | Short-duration pulse |
+| `pigeon_pea` | pigeon pea | Very wide maturity (100–280+ days) |
+| `cowpea` | cowpea, black-eyed pea | Fast cycle in dry climates |
+| `broad_bean` | broad bean, fava, faba | Cool-season aphid pressure |
+| `groundnut` | groundnut, peanut | Soil and storage pests |
+
+Add a row in `backend/data/cerealPestProtection.js`, `rootTuberPestProtection.js`, or `grainLegumePestProtection.js` and optional aliases in `CROP_ALIASES`.
 
 ---
 

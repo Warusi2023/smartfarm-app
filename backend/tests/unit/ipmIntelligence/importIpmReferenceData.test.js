@@ -15,7 +15,7 @@ describe('import-ipm-reference-data', () => {
         expect(IMPORT_KEYS).toContain('wheat');
         expect(IMPORT_KEYS).toContain('maize');
         expect(IMPORT_KEYS).toContain('potato');
-        expect(IMPORT_KEYS.length).toBeGreaterThanOrEqual(22);
+        expect(IMPORT_KEYS.length).toBeGreaterThanOrEqual(31);
     });
 
     describe('inferPestType', () => {
