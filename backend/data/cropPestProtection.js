@@ -8,6 +8,7 @@ const { CEREAL_IPM, CEREAL_ALIASES } = require('./cerealPestProtection');
 const { ROOT_TUBER_IPM, ROOT_TUBER_ALIASES } = require('./rootTuberPestProtection');
 const { GRAIN_LEGUME_IPM, GRAIN_LEGUME_ALIASES } = require('./grainLegumePestProtection');
 const { OILSEED_IPM, OILSEED_ALIASES } = require('./oilseedPestProtection');
+const { VEGETABLE_FAMILY_IPM, VEGETABLE_FAMILY_ALIASES } = require('./vegetableFamilyPestProtection');
 const { FIBER_IPM, FIBER_ALIASES } = require('./fiberPestProtection');
 const { FRUIT_IPM, FRUIT_ALIASES } = require('./fruitPestProtection');
 const { SUGAR_SWEETENER_IPM, SUGAR_SWEETENER_ALIASES } = require('./sugarSweetenerPestProtection');
@@ -232,7 +233,17 @@ const CROP_IPM = {
     }
 };
 
-Object.assign(CROP_IPM, CEREAL_IPM, ROOT_TUBER_IPM, GRAIN_LEGUME_IPM, OILSEED_IPM, FIBER_IPM, FRUIT_IPM, SUGAR_SWEETENER_IPM);
+Object.assign(
+    CROP_IPM,
+    CEREAL_IPM,
+    ROOT_TUBER_IPM,
+    GRAIN_LEGUME_IPM,
+    OILSEED_IPM,
+    VEGETABLE_FAMILY_IPM,
+    FIBER_IPM,
+    FRUIT_IPM,
+    SUGAR_SWEETENER_IPM
+);
 
 /** Normalize user-facing crop names to lookup keys */
 const CROP_ALIASES = {
@@ -244,11 +255,8 @@ const CROP_ALIASES = {
     pepper: 'capsicum',
     peppers: 'capsicum',
     'capsicum (bell pepper)': 'capsicum',
-    lettuce: 'lettuce',
-    'lettuce & leafy greens': 'lettuce',
-    'leafy greens': 'lettuce',
-    spinach: 'lettuce',
-    kale: 'lettuce',
+    'lettuce & leafy greens': 'leafy_greens',
+    ...VEGETABLE_FAMILY_ALIASES,
     ...CEREAL_ALIASES,
     ...ROOT_TUBER_ALIASES,
     ...GRAIN_LEGUME_ALIASES,
@@ -257,6 +265,8 @@ const CROP_ALIASES = {
     ...FRUIT_ALIASES,
     ...SUGAR_SWEETENER_ALIASES
 };
+
+const HIDDEN_LIST_CROP_KEYS = new Set(['lettuce']);
 
 function normalizeCropKey(cropName) {
     if (!cropName || typeof cropName !== 'string') {
@@ -298,16 +308,19 @@ function resolveCropPestProtection(cropName) {
 }
 
 function listPestProtectionCrops() {
-    return Object.keys(CROP_IPM).map((key) => ({
-        cropKey: key,
-        cropName: CROP_IPM[key].cropName
-    }));
+    return Object.keys(CROP_IPM)
+        .filter((key) => !HIDDEN_LIST_CROP_KEYS.has(key))
+        .map((key) => ({
+            cropKey: key,
+            cropName: CROP_IPM[key].cropName
+        }));
 }
 
 module.exports = {
     CHEMICAL_SAFETY_NOTE,
     DEFAULT_VEGETABLE_IPM,
     CROP_IPM,
+    HIDDEN_LIST_CROP_KEYS,
     normalizeCropKey,
     resolveCropPestProtection,
     listPestProtectionCrops

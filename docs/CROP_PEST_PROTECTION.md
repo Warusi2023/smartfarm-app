@@ -100,7 +100,13 @@ Pests & protection for {Crop name}
 | `broad_bean` | broad bean, fava, faba | Cool-season aphid pressure |
 | `groundnut` | groundnut, peanut | Soil and storage pests |
 
-Add a row in `backend/data/cerealPestProtection.js`, `rootTuberPestProtection.js`, or `grainLegumePestProtection.js` and optional aliases in `CROP_ALIASES`.
+**Vegetable families** (`backend/data/vegetableFamilyPestProtection.js`):
+
+| Crop key | Aliases | Notes |
+|----------|---------|--------|
+| `leafy_greens` | lettuce, cabbage, spinach, kale, Chinese cabbage / Napa cabbage | Shared leafy IPM with bolting, humid-canopy disease, and crop-specific harvest windows |
+
+Add a row in `backend/data/vegetableFamilyPestProtection.js`, `backend/data/cerealPestProtection.js`, `rootTuberPestProtection.js`, or `grainLegumePestProtection.js` and optional aliases in `CROP_ALIASES`.
 
 ---
 

@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "count": 359,
+  "count": 361,
   "items": [
     {
       "id": "bivalves:[object object]",
@@ -4976,14 +4976,22 @@
       "id": "plants:cabbage",
       "group": "plants",
       "category": "Vegetables",
-      "subCategory": null,
+      "subCategory": "Leafy Greens",
       "name": "Cabbage",
       "scientificName": "Brassica oleracea var. capitata",
-      "aliases": [],
-      "notes": null,
+      "aliases": [
+        "cabbage",
+        "heading cabbage",
+        "green cabbage",
+        "red cabbage"
+      ],
+      "notes": "Cool-season heading brassica that performs best with steady moisture, balanced nitrogen, and strong airflow to reduce caterpillar, aphid, and head disease pressure.",
       "environment": "terrestrial",
       "tags": [
         "vegetable",
+        "leafy",
+        "brassica",
+        "cool-season",
         "crop",
         "edible",
         "plants"
@@ -4992,26 +5000,42 @@
       "isCrop": true,
       "isTree": false,
       "isFlower": false,
-      "climate": "tropical",
-      "soil": "loam",
+      "climate": "temperate",
+      "soil": "fertile, well-drained loam",
       "varieties": [
-        "Storage types",
-        "Fresh-market cultivars"
+        "Early heading cabbages",
+        "Standard fresh-market cabbages",
+        "Late storage cabbages"
       ],
       "plantingSeason": "Transplant April–May; harvest July–October",
       "spacing": "60–70 cm rows x 40–50 cm",
       "fertilizerRequirements": "Basal NPK with side-dressed nitrogen; lime acidic soils",
       "commonDiseases": [
         "Clubroot",
-        "Diamondback moth"
+        "Black rot",
+        "Downy mildew"
       ],
       "preventiveActions": [
         "Apply lime to maintain pH above 6.5",
-        "Implement IPM and rotation to break pest cycles"
+        "Use nets or row covers during early moth and flea beetle pressure",
+        "Avoid excess nitrogen and tighten rotation to break pest cycles"
       ],
-      "growthDurationDays": 120,
+      "growthDurationDays": 95,
       "yieldKgPerAcre": 18180,
       "russiaEuropeNotes": "Late-storage cultivars for winter supplies; manage clubroot with liming and rotations.",
+      "maturityNotes": "Early heading cabbages often finish in about 70-85 days, standard market types around 85-110 days, and late storage types around 110-140 days depending on transplant age and climate.",
+      "climateSuitability": {
+        "suitable": [
+          "Temperate",
+          "Continental"
+        ],
+        "marginal": [
+          "Tropical",
+          "Dry",
+          "Polar / high-mountain"
+        ],
+        "notRecommended": []
+      },
       "regions": [
         "russia-europe"
       ],
@@ -5023,6 +5047,59 @@
         "Lithuania",
         "Latvia",
         "Estonia"
+      ]
+    },
+    {
+      "id": "plants:chinese cabbage",
+      "group": "plants",
+      "category": "Vegetables",
+      "subCategory": "Leafy Greens",
+      "name": "Chinese cabbage",
+      "scientificName": "Brassica rapa subsp. pekinensis",
+      "aliases": [
+        "chinese cabbage",
+        "napa cabbage",
+        "napa"
+      ],
+      "notes": "Fast cool-season leafy brassica grown for tight or semi-tight heads; quality drops quickly under heat stress, erratic irrigation, and dense humid canopies.",
+      "environment": "terrestrial",
+      "tags": [
+        "vegetable",
+        "leafy",
+        "brassica",
+        "cool-season",
+        "crop",
+        "edible",
+        "plants"
+      ],
+      "isEdible": true,
+      "isCrop": true,
+      "isTree": false,
+      "isFlower": false,
+      "climate": "temperate",
+      "soil": "fertile, well-drained loam",
+      "varieties": [
+        "Fast Napa types",
+        "Standard heading Chinese cabbages"
+      ],
+      "growthDurationDays": 65,
+      "maturityNotes": "Fast Napa-type Chinese cabbages commonly reach harvest in about 45-60 days, while fuller heading lines often need about 60-80 days in cooler conditions.",
+      "climateSuitability": {
+        "suitable": [
+          "Temperate",
+          "Continental"
+        ],
+        "marginal": [
+          "Tropical",
+          "Dry",
+          "Polar / high-mountain"
+        ],
+        "notRecommended": []
+      },
+      "preventiveActions": [
+        "Use cooler planting windows or highland sites to limit bolting and tipburn",
+        "Keep spacing open and irrigation even to reduce head rot and foliar disease",
+        "Protect young stands from flea beetles and caterpillars with nets where practical"
       ]
     },
     {
@@ -6084,14 +6161,21 @@
       "id": "plants:kale",
       "group": "plants",
       "category": "Vegetables",
-      "subCategory": null,
+      "subCategory": "Leafy Greens",
       "name": "Kale",
-      "scientificName": null,
-      "aliases": [],
-      "notes": null,
+      "scientificName": "Brassica oleracea var. sabellica",
+      "aliases": [
+        "kale",
+        "curly kale",
+        "lacinato kale"
+      ],
+      "notes": "Cut-and-come-again leafy brassica that handles cool conditions well but can become fibrous or pest-stressed under prolonged heat, drought, and dense canopies.",
       "environment": "terrestrial",
       "tags": [
         "vegetable",
+        "leafy",
+        "brassica",
+        "cool-season",
         "crop",
         "edible",
         "plants"
@@ -6100,8 +6184,32 @@
       "isCrop": true,
       "isTree": false,
       "isFlower": false,
-      "climate": "tropical",
-      "soil": "loam"
+      "climate": "temperate",
+      "soil": "fertile, well-drained loam",
+      "varieties": [
+        "Baby-leaf kale",
+        "Curly kale",
+        "Lacinato / dinosaur kale"
+      ],
+      "growthDurationDays": 60,
+      "maturityNotes": "Baby-leaf kale may start in about 30-40 days, while fuller leaf harvests often begin around 50-75 days with repeated picking possible after the first cut.",
+      "climateSuitability": {
+        "suitable": [
+          "Temperate",
+          "Continental"
+        ],
+        "marginal": [
+          "Tropical",
+          "Dry",
+          "Polar / high-mountain"
+        ],
+        "notRecommended": []
+      },
+      "preventiveActions": [
+        "Encourage parasitoids and predators to slow aphids and caterpillars",
+        "Keep weeds and old brassica residues down to reduce flea beetle carryover",
+        "Use balanced nitrogen and open spacing to prevent lush disease-prone growth"
+      ]
     },
     {
       "id": "plants:kenaf",
@@ -6241,14 +6349,23 @@
       "id": "plants:lettuce",
       "group": "plants",
       "category": "Vegetables",
-      "subCategory": null,
+      "subCategory": "Leafy Greens",
       "name": "Lettuce",
-      "scientificName": null,
-      "aliases": [],
-      "notes": null,
+      "scientificName": "Lactuca sativa",
+      "aliases": [
+        "lettuce",
+        "head lettuce",
+        "romaine lettuce",
+        "looseleaf lettuce",
+        "loose leaf lettuce"
+      ],
+      "notes": "Short-cycle leafy crop that prefers mild temperatures and even moisture; quality declines quickly with heat stress, bolting, aphid buildup, and saturated canopies.",
       "environment": "terrestrial",
       "tags": [
         "vegetable",
+        "leafy",
+        "salad",
+        "cool-season",
         "crop",
         "edible",
         "plants"
@@ -6257,8 +6374,32 @@
       "isCrop": true,
       "isTree": false,
       "isFlower": false,
-      "climate": "tropical",
-      "soil": "loam"
+      "climate": "temperate",
+      "soil": "fertile, moisture-retentive loam",
+      "varieties": [
+        "Looseleaf lettuce",
+        "Romaine lettuce",
+        "Heading lettuce"
+      ],
+      "growthDurationDays": 52,
+      "maturityNotes": "Looseleaf lettuce may be ready from about 35-45 days, romaine often around 50-65 days, and tighter heading types around 60-75 days depending on temperature and planting density.",
+      "climateSuitability": {
+        "suitable": [
+          "Temperate",
+          "Continental"
+        ],
+        "marginal": [
+          "Tropical",
+          "Dry",
+          "Polar / high-mountain"
+        ],
+        "notRecommended": []
+      },
+      "preventiveActions": [
+        "Use even irrigation and avoid excess nitrogen to reduce tipburn and aphid flareups",
+        "Promote airflow with spacing and residue cleanup to limit downy mildew and leaf rots",
+        "Protect young beds with nets or row covers where leafminers and caterpillars are chronic"
+      ]
     },
     {
       "id": "plants:maize",
@@ -7869,14 +8010,20 @@
       "id": "plants:spinach",
       "group": "plants",
       "category": "Vegetables",
-      "subCategory": null,
+      "subCategory": "Leafy Greens",
       "name": "Spinach",
-      "scientificName": null,
-      "aliases": [],
-      "notes": null,
+      "scientificName": "Spinacia oleracea",
+      "aliases": [
+        "spinach",
+        "baby spinach",
+        "bunching spinach"
+      ],
+      "notes": "Cool-season leafy green with strong demand for even moisture and quick turnover; heat, drought, and long days sharply increase bolting and reduce leaf quality.",
       "environment": "terrestrial",
       "tags": [
         "vegetable",
+        "leafy",
+        "cool-season",
         "crop",
         "edible",
         "plants"
@@ -7885,8 +8032,32 @@
       "isCrop": true,
       "isTree": false,
       "isFlower": false,
-      "climate": "tropical",
-      "soil": "loam"
+      "climate": "temperate",
+      "soil": "fertile, well-drained loam",
+      "varieties": [
+        "Baby-leaf spinach",
+        "Bunching spinach",
+        "Savoy spinach"
+      ],
+      "growthDurationDays": 40,
+      "maturityNotes": "Baby spinach often cuts in about 25-35 days, while bunching or fuller-leaf harvest usually takes about 35-55 days depending on season and variety.",
+      "climateSuitability": {
+        "suitable": [
+          "Temperate",
+          "Continental"
+        ],
+        "marginal": [
+          "Tropical",
+          "Dry",
+          "Polar / high-mountain"
+        ],
+        "notRecommended": []
+      },
+      "preventiveActions": [
+        "Keep irrigation even to reduce cracking, stress, and uneven leaf expansion",
+        "Rotate away from repeated spinach beds to reduce foliar disease and root issues",
+        "Use open spacing and weed control to limit leafminer, aphid, and humid-canopy disease pressure"
+      ]
     },
     {
       "id": "plants:strawberries",

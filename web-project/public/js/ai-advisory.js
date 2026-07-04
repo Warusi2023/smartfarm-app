@@ -615,10 +615,11 @@ class AIAdvisorySystem {
             garlic: { planting: 30, vegetative: 90, bulb_formation: 180, maturation: 240 }, // 8-9 months
             
             // Leafy Vegetables
-            spinach: { germination: 7, vegetative: 25, maturation: 40 }, // 40 days
-            lettuce: { germination: 7, vegetative: 30, maturation: 45 }, // 45 days
-            cabbage: { germination: 7, vegetative: 45, head_formation: 70, maturation: 90 }, // 3 months
-            kale: { germination: 7, vegetative: 30, maturation: 55 }, // 55 days
+            spinach: { germination: 7, vegetative: 20, maturation: 40 }, // 25-55 days depending on baby leaf vs bunching
+            lettuce: { germination: 7, vegetative: 28, maturation: 52 }, // 35-75 days across looseleaf, romaine, and heading types
+            cabbage: { germination: 7, vegetative: 45, head_formation: 70, maturation: 95 }, // 70-140 days from early to late types
+            kale: { germination: 7, vegetative: 25, maturation: 60 }, // 30-75 days with repeat harvest potential
+            chinese_cabbage: { germination: 7, vegetative: 30, head_formation: 50, maturation: 65 }, // 45-80 days, faster Napa types
             
             // Fruit Vegetables
             tomatoes: { germination: 7, vegetative: 45, flowering: 60, fruiting: 75 }, // 75 days

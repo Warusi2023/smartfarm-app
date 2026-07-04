@@ -12,6 +12,7 @@ const {
 describe('import-ipm-reference-data', () => {
     test('imports vegetable and cereal crop keys', () => {
         expect(IMPORT_KEYS).toContain('tomato');
+        expect(IMPORT_KEYS).toContain('leafy_greens');
         expect(IMPORT_KEYS).toContain('wheat');
         expect(IMPORT_KEYS).toContain('maize');
         expect(IMPORT_KEYS).toContain('potato');

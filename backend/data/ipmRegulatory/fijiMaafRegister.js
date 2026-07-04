@@ -16,7 +16,7 @@ const { GRAIN_LEGUME_CROP_KEYS } = require('../grainLegumePestProtection');
 const { ROOT_TUBER_CROP_KEYS } = require('../rootTuberPestProtection');
 const { CEREAL_CROP_KEYS } = require('../cerealPestProtection');
 
-const VEGETABLE_REGISTER_KEYS = ['tomato', 'capsicum', 'lettuce', 'vegetable_default'];
+const VEGETABLE_REGISTER_KEYS = ['tomato', 'capsicum', 'leafy_greens', 'vegetable_default'];
 
 /**
  * @typedef {object} RegisterActiveEntry
@@ -250,7 +250,7 @@ for (const cropKey of CEREAL_CROP_KEYS) {
 const VEGETABLE_ACTIVE_KEYS = {
     tomato: ['spinosad', 'bt', 'abamectin', 'cyromazine', 'soap'],
     capsicum: ['spinosad', 'abamectin', 'flonicamid', 'bt', 'soap'],
-    lettuce: ['soap', 'neem', 'spinosad', 'bt'],
+    leafy_greens: ['soap', 'neem', 'spinosad', 'bt', 'cyromazine'],
     vegetable_default: ['soap', 'neem', 'bt', 'spinosad', 'imidacloprid']
 };
 

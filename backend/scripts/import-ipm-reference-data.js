@@ -19,9 +19,10 @@ const {
 const { CEREAL_CROP_KEYS } = require('../data/cerealPestProtection');
 const { ROOT_TUBER_CROP_KEYS } = require('../data/rootTuberPestProtection');
 const { GRAIN_LEGUME_CROP_KEYS } = require('../data/grainLegumePestProtection');
+const { VEGETABLE_FAMILY_CROP_KEYS } = require('../data/vegetableFamilyPestProtection');
 const { normalizeLabel } = require('../services/ipmIntelligence/labelNormalizer');
 
-const VEGETABLE_IMPORT_KEYS = ['vegetable_default', 'tomato', 'capsicum', 'lettuce'];
+const VEGETABLE_IMPORT_KEYS = ['vegetable_default', 'tomato', 'capsicum', ...VEGETABLE_FAMILY_CROP_KEYS];
 const IMPORT_KEYS = [...VEGETABLE_IMPORT_KEYS, ...CEREAL_CROP_KEYS, ...ROOT_TUBER_CROP_KEYS, ...GRAIN_LEGUME_CROP_KEYS];
 
 const CATALOG_META = {
@@ -32,7 +33,7 @@ const CATALOG_META = {
     },
     tomato: { displayName: 'Tomato', cropGroup: 'vegetable', isDefaultTemplate: false },
     capsicum: { displayName: 'Capsicum (bell pepper)', cropGroup: 'vegetable', isDefaultTemplate: false },
-    lettuce: { displayName: 'Lettuce', cropGroup: 'vegetable', isDefaultTemplate: false },
+    leafy_greens: { displayName: 'Leafy greens', cropGroup: 'vegetable', isDefaultTemplate: false },
     wheat: { displayName: 'Wheat', cropGroup: 'cereal', isDefaultTemplate: false },
     rice: { displayName: 'Rice (paddy)', cropGroup: 'cereal', isDefaultTemplate: false },
     maize: { displayName: 'Maize / corn', cropGroup: 'cereal', isDefaultTemplate: false },

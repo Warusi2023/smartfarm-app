@@ -12,11 +12,12 @@ describe('registerImportBuilder', () => {
         expect(listRegisterRegions()).toContain('FJ');
     });
 
-    test('builds register plan for all 31 IPM crops including cereals and vegetables', () => {
+    test('builds register plan for all 31 IPM crops including vegetable families', () => {
         const plan = buildRegisterImportPlan('FJ');
         expect(plan.regionCode).toBe('FJ');
         expect(plan.cropKeys).toEqual(FJ_REGISTER_CROP_KEYS);
         expect(plan.cropKeys.length).toBe(31);
+        expect(plan.cropKeys).toContain('leafy_greens');
         expect(plan.chemicals.length).toBe(plan.regulatory.length);
         expect(plan.chemicals.length).toBeGreaterThan(100);
     });

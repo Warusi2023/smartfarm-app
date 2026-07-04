@@ -6,6 +6,7 @@ const logger = require('../../utils/logger');
 const {
     resolveCropPestProtection,
     listPestProtectionCrops,
+    HIDDEN_LIST_CROP_KEYS,
     CHEMICAL_SAFETY_NOTE
 } = require('../../data/cropPestProtection');
 const { resolveIpmCropKey, DEFAULT_CROP_KEY } = require('./cropKeyResolver');
@@ -262,10 +263,12 @@ async function listDedicatedPestProtectionCrops(pool) {
         if (res.rows.length === 0) {
             return listPestProtectionCrops();
         }
-        return res.rows.map((row) => ({
-            cropKey: row.crop_key,
-            cropName: row.display_name
-        }));
+        return res.rows
+            .filter((row) => !HIDDEN_LIST_CROP_KEYS.has(row.crop_key))
+            .map((row) => ({
+                cropKey: row.crop_key,
+                cropName: row.display_name
+            }));
     } catch (error) {
         logger.warnWithContext('IPM crop list DB load failed; using JS fallback', {
             error: error.message
