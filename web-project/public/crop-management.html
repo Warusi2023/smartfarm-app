@@ -711,7 +711,7 @@
                 const buildMapFromItems = items => {
                     const map = new Map();
                     (items || []).forEach(item => {
-                        if (!item || !item.name) return;
+                        if (!item || !item.name || item.group !== 'plants') return;
                         const primaryKey = item.name.toLowerCase();
                         map.set(primaryKey, item);
                         if (Array.isArray(item.aliases)) {
@@ -1418,6 +1418,27 @@
             hemp: { 'fiber hemp': 100, 'dual-purpose hemp': 130 },
             'sisal / agave fibers': { sisal: 1095, henequen: 1275 },
             sisal_agave: { sisal: 1095, henequen: 1275 },
+            'bananas and plantains': { default: 330, 'dessert banana': 300, plantain: 360 },
+            banana_plantain: { default: 330, 'dessert banana': 300, plantain: 360 },
+            bananas: { default: 330, 'dessert banana': 300 },
+            plantains: { default: 360, plantain: 360 },
+            citrus: { default: 240, navel: 220, valencia: 270, lemon: 210 },
+            'apples and pears': { default: 165, gala: 145, 'bartlett pear': 155, 'late-season apples': 180 },
+            apple_pear: { default: 165, gala: 145, 'bartlett pear': 155, 'late-season apples': 180 },
+            pears: { default: 165, 'bartlett pear': 155, 'anjou pear': 165 },
+            grapes: { default: 150, 'table grapes': 135, 'wine grapes': 165 },
+            mangoes: { default: 135, alphonso: 140, banganapalle: 130 },
+            mango: { default: 135, alphonso: 140, banganapalle: 130 },
+            papaya: { default: 270, 'red lady': 255, 'solo type': 240 },
+            papayas: { default: 270, 'red lady': 255, 'solo type': 240 },
+            pineapple: { default: 540, 'smooth cayenne': 540, queen: 495 },
+            pineapples: { default: 540, 'smooth cayenne': 540, queen: 495 },
+            avocado: { default: 270, hass: 285, fuerte: 255 },
+            avocados: { default: 270, hass: 285, fuerte: 255 },
+            'stone fruits': { default: 120, 'early peach': 100, 'sweet cherry': 95 },
+            stone_fruits: { default: 120, 'early peach': 100, 'sweet cherry': 95 },
+            berries: { default: 95, 'june-bearing': 80, 'day-neutral': 70, 'southern highbush': 95 },
+            strawberries: { default: 75, 'june-bearing': 80, 'day-neutral': 70 },
             kava: { default: 1095, noble: 1000 },
         };
 
@@ -1484,16 +1505,287 @@
                 'asparagus': { baseDays: 730, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 2-3 years first harvest
                 
                 // Fruits
-                'strawberries': { baseDays: 30, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 28-35 days from transplant
+                'strawberries': {
+                    baseDays: 75,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Strawberries often begin first harvest in about 45-90 days after establishment or flowering, with protected systems and day-neutral types typically moving faster.'
+                },
+                'berries': {
+                    baseDays: 95,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Berry crops vary widely: strawberries can move quickly, while blueberries, raspberries, and blackberries more often follow 60-120 day flowering-to-harvest windows.'
+                },
+                'blueberries': {
+                    baseDays: 95,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Blueberries commonly mature over roughly 70-110 days from flowering to harvest, with cooler climates often stretching the ripening window.'
+                },
+                'raspberries': {
+                    baseDays: 90,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Raspberries often reach first pick about 60-100 days after flowering, with primocane systems and cool weather shifting the harvest window.'
+                },
+                'blackberries': {
+                    baseDays: 95,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Blackberries commonly ripen about 65-105 days after bloom, while pruning system and summer heat strongly influence harvest spread.'
+                },
                 'watermelons': { baseDays: 85, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 70-100 days
                 'cantaloupes': { baseDays: 80, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 65-90 days
                 'pumpkins': { baseDays: 100, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 90-120 days
                 'squash': { baseDays: 60, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 50-65 days (summer)
                 'winter squash': { baseDays: 100, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 80-110 days
-                'bananas': { baseDays: 300, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 9-12 months
-                'pineapple': { baseDays: 540, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 18-24 months
-                'papaya': { baseDays: 240, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 6-9 months
-                'mango': { baseDays: 120, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 3-5 months from flowering
+                'bananas and plantains': {
+                    baseDays: 330,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Bananas and plantains commonly reach first harvest in about 9-14 months, with ratoon crops often maturing faster once mats are established.'
+                },
+                banana_plantain: {
+                    baseDays: 330,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Bananas and plantains commonly reach first harvest in about 9-14 months, while plantain-leaning systems often sit at the slower end of that range.'
+                },
+                banana: {
+                    baseDays: 300,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Dessert bananas often reach first bunch harvest in about 9-12 months under warm tropical conditions.'
+                },
+                bananas: {
+                    baseDays: 330,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Banana crops commonly reach first harvest in about 9-14 months, with irrigation and sucker management strongly affecting bunch timing.'
+                },
+                plantain: {
+                    baseDays: 360,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Plantains often need about 10-14 months to first harvest and generally mature later than dessert bananas.'
+                },
+                plantains: {
+                    baseDays: 360,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Plantain systems commonly mature toward the longer end of the banana window, especially under dryland or high-pressure disease conditions.'
+                },
+                citrus: {
+                    baseDays: 240,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Citrus maturity is usually tracked from flowering, with many orchard windows spanning about 6-12 months depending on species, variety, and climate.'
+                },
+                orange: {
+                    baseDays: 240,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Sweet oranges commonly ripen in about 7-10 months from bloom, while cool nights can extend color development and sugar accumulation.'
+                },
+                oranges: {
+                    baseDays: 240,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Sweet oranges commonly ripen in about 7-10 months from bloom, with early and late varieties shifting the window.'
+                },
+                lemon: {
+                    baseDays: 210,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Lemons often mature in about 6-8 months from flowering, with harvest timing influenced by juice content and peel color.'
+                },
+                lemons: {
+                    baseDays: 210,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Lemons often mature in about 6-8 months from flowering, especially in warm irrigated citrus zones.'
+                },
+                lime: {
+                    baseDays: 180,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Many limes mature in about 5-7 months from flowering, though dry-season irrigation can shift both size and harvest timing.'
+                },
+                limes: {
+                    baseDays: 180,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Many limes mature in about 5-7 months from flowering, with harvest often tuned for market color and juice targets.'
+                },
+                grapefruit: {
+                    baseDays: 270,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Grapefruit commonly needs about 8-11 months from bloom to harvest and often holds longer on the tree than smaller citrus.'
+                },
+                grapefruits: {
+                    baseDays: 270,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Grapefruit commonly needs about 8-11 months from bloom to harvest, with warm nights and water stress affecting sugar-acid balance.'
+                },
+                'apples and pears': {
+                    baseDays: 165,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Apples and pears are commonly tracked from bloom to harvest over about 120-180 days, with chilling, frost, and late-season weather strongly affecting maturity.'
+                },
+                apple_pear: {
+                    baseDays: 165,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Pome fruit maturity is commonly measured from bloom, usually about 120-180 days depending on variety and climate.'
+                },
+                apple: {
+                    baseDays: 155,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Many apples mature in about 130-180 days from bloom, with early cultivars moving faster and cool finishing weather improving quality.'
+                },
+                apples: {
+                    baseDays: 160,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Many apples mature in about 130-180 days from bloom, with frost risk and late-season weather shaping the practical harvest date.'
+                },
+                pear: {
+                    baseDays: 165,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Pears commonly mature over about 135-185 days from bloom, with harvest often targeted before full tree ripeness for storage quality.'
+                },
+                pears: {
+                    baseDays: 165,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Pears commonly mature over about 135-185 days from bloom, with chill accumulation and summer heat influencing fruit size and finish.'
+                },
+                grape: {
+                    baseDays: 150,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Grapes are often harvested about 110-180 days after budbreak, depending on whether the crop targets table use or wine-style ripeness.'
+                },
+                grapes: {
+                    baseDays: 150,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Grapes are often harvested about 110-180 days after budbreak, with climate and canopy management strongly influencing sugar accumulation.'
+                },
+                mango: {
+                    baseDays: 135,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Mango commonly reaches harvest about 3-5 months after flowering, though heat, flowering date, and alternate bearing shift the exact window.'
+                },
+                mangoes: {
+                    baseDays: 135,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Mango commonly reaches harvest about 3-5 months after flowering, with orchard management and rainfall affecting both timing and fruit finish.'
+                },
+                papaya: {
+                    baseDays: 270,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Papaya often reaches first harvest in about 8-10 months from planting, then continues with repeated or staggered picking under warm conditions.'
+                },
+                papayas: {
+                    baseDays: 270,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Papaya often reaches first harvest in about 8-10 months from planting, while cooler weather or root stress can extend the first-pick window.'
+                },
+                pineapple: {
+                    baseDays: 540,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Pineapple commonly needs about 15-18 months to first harvest, with ratoon or follow-up crops often shortening after establishment.'
+                },
+                pineapples: {
+                    baseDays: 540,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Pineapple commonly needs about 15-18 months to first harvest, while flowering induction and water stress can shift practical cutting dates.'
+                },
+                avocado: {
+                    baseDays: 270,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Avocado maturity often spans about 6-12 months from flowering, with variety and climate strongly influencing when fruit reaches acceptable oil content and harvest size.'
+                },
+                avocados: {
+                    baseDays: 270,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Avocado maturity often spans about 6-12 months from flowering, and some cultivars hold on the tree long after physiological maturity.'
+                },
+                'stone fruits': {
+                    baseDays: 120,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Stone fruits are commonly harvested about 90-140 days after bloom, with spring frost risk and variety earliness driving the practical window.'
+                },
+                stone_fruits: {
+                    baseDays: 120,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Stone fruits are commonly harvested about 90-140 days after bloom, with cherries and early apricots often maturing before peaches and later plums.'
+                },
+                peach: {
+                    baseDays: 110,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Peaches often ripen in about 90-130 days from bloom, with freestone and clingstone types varying by cultivar and climate.'
+                },
+                peaches: {
+                    baseDays: 110,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Peaches often ripen in about 90-130 days from bloom, with warm summers shortening the finish and cool nights improving color.'
+                },
+                plum: {
+                    baseDays: 120,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Plums often mature in about 95-140 days from bloom, depending on species, variety, and summer temperatures.'
+                },
+                plums: {
+                    baseDays: 120,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Plums often mature in about 95-140 days from bloom, with rain near harvest increasing splitting and disease risk.'
+                },
+                apricot: {
+                    baseDays: 105,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Apricots often ripen in about 85-120 days from bloom and are especially sensitive to spring frost and sudden heat events.'
+                },
+                apricots: {
+                    baseDays: 105,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Apricots often ripen in about 85-120 days from bloom, with short warm seasons speeding harvest substantially.'
+                },
+                cherry: {
+                    baseDays: 95,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Cherries often reach harvest in about 85-110 days from bloom, but cracking risk rises sharply with rain near picking.'
+                },
+                cherries: {
+                    baseDays: 95,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Cherries often reach harvest in about 85-110 days from bloom, with rootstock and site temperatures influencing precocity.'
+                },
                 
                 // Grains
                 'corn': { baseDays: 90, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 60-100 days

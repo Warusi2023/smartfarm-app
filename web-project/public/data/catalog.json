@@ -4448,25 +4448,59 @@
       "id": "plants:apples",
       "group": "plants",
       "category": "Fruits",
-      "subCategory": "Tree Fruits",
-      "name": "Apples",
-      "scientificName": null,
-      "aliases": [],
-      "notes": null,
+      "subCategory": "Pome Fruits",
+      "name": "Apples and pears",
+      "scientificName": "Malus domestica / Pyrus communis",
+      "aliases": [
+        "apple_pear",
+        "apples and pears",
+        "pome fruits",
+        "apple",
+        "apples",
+        "pear",
+        "pears"
+      ],
+      "notes": "Shared pome-fruit record for apple and pear crop planning; use this family entry when the grower wants orchard-style maturity guidance rather than a cultivar-specific tree reference.",
       "environment": "terrestrial",
       "tags": [
         "fruit",
         "crop",
         "edible",
         "tree",
+        "orchard",
         "plants"
       ],
       "isEdible": true,
       "isCrop": true,
       "isTree": true,
       "isFlower": false,
-      "climate": "tropical",
-      "soil": "loam"
+      "climate": "temperate",
+      "soil": "well-drained loam",
+      "varieties": [
+        "Gala apples",
+        "Bartlett pear",
+        "Late-season pome fruit"
+      ],
+      "plantingSeason": "Dormant planting in cool-season orchard windows; harvest timing is usually tracked from bloom to fruit maturity rather than from tree establishment",
+      "spacing": "4–6 m between trees depending on rootstock and training system",
+      "fertilizerRequirements": "Moderate annual nutrient demand with attention to nitrogen balance, calcium, and boron where deficient",
+      "commonDiseases": [
+        "Scab",
+        "Rust",
+        "Fire blight-type issues",
+        "Cankers"
+      ],
+      "preventiveActions": [
+        "Prune for airflow and light distribution",
+        "Remove dropped fruit and diseased wood after harvest"
+      ],
+      "growthDurationDays": 165,
+      "maturityNotes": "Apples and pears are commonly tracked from bloom to harvest over about 120-180 days, with chilling accumulation, frost risk, and late-season weather strongly affecting practical picking dates.",
+      "regions": [
+        "temperate",
+        "continental",
+        "cool-highland"
+      ]
     },
     {
       "id": "plants:ashwagandha",
@@ -4495,24 +4529,54 @@
       "group": "plants",
       "category": "Fruits",
       "subCategory": "Tree Fruits",
-      "name": "Avocados",
-      "scientificName": null,
-      "aliases": [],
-      "notes": null,
+      "name": "Avocado",
+      "scientificName": "Persea americana",
+      "aliases": [
+        "avocado",
+        "avocados",
+        "hass",
+        "fuerte"
+      ],
+      "notes": "Subtropical to warm-temperate orchard crop with long flowering-to-harvest windows that vary strongly by variety and climate.",
       "environment": "terrestrial",
       "tags": [
         "fruit",
         "crop",
         "edible",
         "tree",
+        "orchard",
         "plants"
       ],
       "isEdible": true,
       "isCrop": true,
       "isTree": true,
       "isFlower": false,
-      "climate": "tropical",
-      "soil": "loam"
+      "climate": "subtropical",
+      "soil": "well-drained loam",
+      "varieties": [
+        "Hass",
+        "Fuerte",
+        "West Indian types"
+      ],
+      "plantingSeason": "Plant at the start of the rainy season or in mild irrigated windows; harvest timing is usually measured from flowering rather than planting date",
+      "spacing": "6–9 m orchard spacing depending on vigor and pruning system",
+      "fertilizerRequirements": "Moderate demand with strong emphasis on drainage, calcium, and balanced nitrogen",
+      "commonDiseases": [
+        "Phytophthora root rot",
+        "Anthracnose",
+        "Canker"
+      ],
+      "preventiveActions": [
+        "Maintain mulch without burying the trunk collar",
+        "Prune to reduce canopy humidity and remove diseased wood"
+      ],
+      "growthDurationDays": 270,
+      "maturityNotes": "Avocado maturity often spans about 6-12 months from flowering, with oil accumulation, climate, and cultivar deciding when fruit is truly ready to pick.",
+      "regions": [
+        "tropical",
+        "dry-irrigated",
+        "warm-temperate"
+      ]
     },
     {
       "id": "plants:bamboo shoots",
@@ -4540,17 +4604,27 @@
       "id": "plants:bananas",
       "group": "plants",
       "category": "Fruits",
-      "subCategory": "Tree Fruits",
-      "name": "Bananas",
+      "subCategory": "Tropical Fruit Crops",
+      "name": "Bananas and plantains",
       "scientificName": "Musa spp.",
-      "aliases": [],
-      "notes": null,
+      "aliases": [
+        "banana_plantain",
+        "bananas and plantains",
+        "banana",
+        "bananas",
+        "plantain",
+        "plantains",
+        "dessert banana",
+        "cooking banana"
+      ],
+      "notes": "Family-level record covering dessert bananas and plantains, including ratoon systems in warm humid or irrigated tropical production zones.",
       "environment": "terrestrial",
       "tags": [
         "fruit",
         "crop",
         "edible",
         "tree",
+        "tropical",
         "plants"
       ],
       "isEdible": true,
@@ -4558,38 +4632,38 @@
       "isTree": true,
       "isFlower": false,
       "climate": "tropical",
-      "soil": "loam",
+      "soil": "well-drained loam",
       "varieties": [
         "Grand Naine",
         "Robusta",
         "Nendran"
       ],
-      "plantingSeason": "Year-round with staggered planting",
-      "spacing": "1.8 x 1.8 m (adjust per variety and density)",
-      "fertilizerRequirements": "Apply FYM 10–20 t/ha with fertigation emphasizing potassium",
+      "plantingSeason": "Year-round with staggered planting where water is reliable; ratoon timing depends on mat health and sucker management",
+      "spacing": "1.8 x 1.8 m or wider depending on variety, wind exposure, and density target",
+      "fertilizerRequirements": "High potassium demand with regular organic matter and split nitrogen applications",
       "commonDiseases": [
         "Panama disease",
-        "Sigatoka"
+        "Sigatoka",
+        "Bunchy top or virus pressure"
       ],
       "preventiveActions": [
-        "Use tissue-culture plants and maintain sanitation",
-        "Implement windbreaks and propping in cyclone-prone areas"
+        "Use clean planting material and rogue weak suckers early",
+        "Maintain drainage, sanitation, and wind support for heavy bunches"
       ],
       "growthDurationDays": 330,
       "yieldKgPerAcre": 20234,
-      "southAsiaNotes": "Provide windbreaks and drainage; propping reduces lodging in monsoon winds.",
+      "maturityNotes": "Bananas and plantains commonly reach first harvest in about 9-14 months, with ratoon crops often moving faster after establishment and plantain types usually maturing later than dessert bananas.",
       "regions": [
-        "south-asia"
+        "tropical",
+        "humid-dry",
+        "protected-subtropical"
       ],
       "countries": [
         "India",
-        "Pakistan",
-        "Bangladesh",
-        "Sri Lanka",
-        "Nepal",
-        "Bhutan",
-        "Maldives",
-        "Afghanistan"
+        "Uganda",
+        "Ecuador",
+        "Philippines",
+        "Colombia"
       ]
     },
     {
@@ -4771,24 +4845,58 @@
       "id": "plants:blueberries",
       "group": "plants",
       "category": "Fruits",
-      "subCategory": "Vine/Bush Fruits",
-      "name": "Blueberries",
-      "scientificName": null,
-      "aliases": [],
-      "notes": null,
+      "subCategory": "Berry Crops",
+      "name": "Berries",
+      "scientificName": "Vaccinium spp. / Fragaria spp. / Rubus spp.",
+      "aliases": [
+        "berries",
+        "berry",
+        "blueberry",
+        "blueberries",
+        "raspberry",
+        "raspberries",
+        "blackberry",
+        "blackberries"
+      ],
+      "notes": "Family-level berry record for blueberry, raspberry, blackberry, and similar systems. Strawberry remains available as its own catalog entry while still sharing the same maturity framework.",
       "environment": "terrestrial",
       "tags": [
         "fruit",
         "crop",
         "edible",
+        "berry",
         "plants"
       ],
       "isEdible": true,
       "isCrop": true,
       "isTree": false,
       "isFlower": false,
-      "climate": "tropical",
-      "soil": "loam"
+      "climate": "temperate",
+      "soil": "well-drained loam",
+      "varieties": [
+        "Southern highbush blueberry",
+        "Primocane raspberry",
+        "Floricane blackberry"
+      ],
+      "plantingSeason": "Plant in cool-season or mild windows; harvest timing is usually tracked from flowering or canopy establishment depending on the berry system",
+      "spacing": "0.3–3 m depending on whether the crop is strawberry, bush berry, or cane berry",
+      "fertilizerRequirements": "Moderate demand with steady moisture and strong attention to pH for blueberries",
+      "commonDiseases": [
+        "Gray mold",
+        "Powdery mildew",
+        "Cane diseases"
+      ],
+      "preventiveActions": [
+        "Prune and ventilate canopies to keep fruit dry",
+        "Remove overripe or rotted berries frequently during harvest"
+      ],
+      "growthDurationDays": 95,
+      "maturityNotes": "Berry crops vary widely: strawberries can move quickly, while blueberries, raspberries, and blackberries more often follow 60-120 day flowering-to-harvest windows shaped by climate and pruning system.",
+      "regions": [
+        "temperate",
+        "cool-highland",
+        "protected-culture"
+      ]
     },
     {
       "id": "plants:broccoli",
@@ -5738,24 +5846,55 @@
       "id": "plants:grapes",
       "group": "plants",
       "category": "Fruits",
-      "subCategory": "Vine/Bush Fruits",
+      "subCategory": "Vine Fruits",
       "name": "Grapes",
-      "scientificName": null,
-      "aliases": [],
-      "notes": null,
+      "scientificName": "Vitis vinifera and related Vitis spp.",
+      "aliases": [
+        "grape",
+        "grapes",
+        "table grapes",
+        "wine grapes"
+      ],
+      "notes": "Shared grape record for table and wine-style systems, with maturity measured primarily from budbreak and flowering rather than from vine age.",
       "environment": "terrestrial",
       "tags": [
         "fruit",
         "crop",
         "edible",
+        "vine",
         "plants"
       ],
       "isEdible": true,
       "isCrop": true,
       "isTree": false,
       "isFlower": false,
-      "climate": "tropical",
-      "soil": "loam"
+      "climate": "temperate",
+      "soil": "well-drained loam",
+      "varieties": [
+        "Early table grapes",
+        "Late table grapes",
+        "Wine grapes"
+      ],
+      "plantingSeason": "Establish vines in dormant or mild-season windows; annual harvest timing is usually tracked from budbreak to fruit maturity",
+      "spacing": "2–3 m between vines with trellis spacing adjusted to the training system",
+      "fertilizerRequirements": "Moderate demand; avoid excessive nitrogen that can worsen canopy disease pressure",
+      "commonDiseases": [
+        "Powdery mildew",
+        "Downy mildew",
+        "Bunch rots",
+        "Trunk diseases"
+      ],
+      "preventiveActions": [
+        "Open the canopy through pruning and bunch-zone leaf management",
+        "Remove diseased clusters and wood promptly after harvest"
+      ],
+      "growthDurationDays": 150,
+      "maturityNotes": "Grapes are often harvested about 110-180 days after budbreak, with table vs wine targets, canopy microclimate, and late-season weather driving the final pick date.",
+      "regions": [
+        "warm-temperate",
+        "continental",
+        "dry-irrigated"
+      ]
     },
     {
       "id": "plants:groundnuts",
@@ -6188,14 +6327,18 @@
       "subCategory": "Tree Fruits",
       "name": "Mangoes",
       "scientificName": "Mangifera indica",
-      "aliases": [],
-      "notes": null,
+      "aliases": [
+        "mango",
+        "mangoes"
+      ],
+      "notes": "Tropical to subtropical orchard crop with maturity windows usually measured from flowering rather than planting age.",
       "environment": "terrestrial",
       "tags": [
         "fruit",
         "crop",
         "edible",
         "tree",
+        "orchard",
         "plants"
       ],
       "isEdible": true,
@@ -6203,28 +6346,31 @@
       "isTree": true,
       "isFlower": false,
       "climate": "tropical",
-      "soil": "loam",
+      "soil": "well-drained loam",
       "varieties": [
         "Alphonso",
         "Dashehari",
         "Banganapalle"
       ],
-      "plantingSeason": "Flowering January–February; harvest April–June",
-      "spacing": "10 x 10 m orchard spacing",
-      "fertilizerRequirements": "Annual FYM plus NPK; supplement micronutrients as needed",
+      "plantingSeason": "Plant in warm moist establishment windows; annual harvest timing is usually tracked from flowering to fruit maturity",
+      "spacing": "8–10 m orchard spacing depending on vigor and pruning system",
+      "fertilizerRequirements": "Annual organic matter plus balanced NPK, with micronutrient support where flowering or fruit set is weak",
       "commonDiseases": [
         "Anthracnose",
-        "Fruit fly"
+        "Powdery mildew",
+        "Fruit fly injury"
       ],
       "preventiveActions": [
-        "Prune and sanitize orchard regularly",
-        "Deploy bait traps and timely sprays"
+        "Prune and sanitize the orchard after harvest",
+        "Use traps and fallen-fruit removal to break fruit-fly cycles"
       ],
       "growthDurationDays": 135,
       "yieldKgPerAcre": 4047,
-      "southAsiaNotes": "Alternate bearing requires canopy management and flower induction practices.",
+      "maturityNotes": "Mango commonly reaches harvest about 3-5 months after flowering, with rainfall, heat, and alternate bearing shifting the exact harvest window.",
       "regions": [
-        "south-asia"
+        "tropical",
+        "subtropical",
+        "dry-irrigated"
       ],
       "countries": [
         "India",
@@ -6232,9 +6378,7 @@
         "Bangladesh",
         "Sri Lanka",
         "Nepal",
-        "Bhutan",
-        "Maldives",
-        "Afghanistan"
+        "Kenya"
       ]
     },
     {
@@ -6638,25 +6782,62 @@
       "id": "plants:oranges",
       "group": "plants",
       "category": "Fruits",
-      "subCategory": "Tree Fruits",
-      "name": "Oranges",
-      "scientificName": null,
-      "aliases": [],
-      "notes": null,
+      "subCategory": "Citrus Fruits",
+      "name": "Citrus",
+      "scientificName": "Citrus spp.",
+      "aliases": [
+        "citrus",
+        "orange",
+        "oranges",
+        "lemon",
+        "lemons",
+        "lime",
+        "limes",
+        "grapefruit",
+        "grapefruits"
+      ],
+      "notes": "Family-level citrus record covering oranges, lemons, limes, grapefruits, and similar orchard crops with climate-sensitive flowering-to-harvest windows.",
       "environment": "terrestrial",
       "tags": [
         "fruit",
         "crop",
         "edible",
         "tree",
+        "orchard",
         "plants"
       ],
       "isEdible": true,
       "isCrop": true,
       "isTree": true,
       "isFlower": false,
-      "climate": "tropical",
-      "soil": "loam"
+      "climate": "subtropical",
+      "soil": "well-drained loam",
+      "varieties": [
+        "Navel orange",
+        "Valencia orange",
+        "Persian lime",
+        "Eureka lemon"
+      ],
+      "plantingSeason": "Plant in mild orchard-establishment windows; harvest timing is usually measured from flowering and fruit set rather than from planting date",
+      "spacing": "4–7 m depending on species, rootstock, and canopy vigor",
+      "fertilizerRequirements": "Steady NPK with attention to micronutrients such as zinc and boron where deficiency is common",
+      "commonDiseases": [
+        "Canker",
+        "Greening-like decline",
+        "Citrus scab",
+        "Root rot"
+      ],
+      "preventiveActions": [
+        "Prune for airflow and scout flush regularly",
+        "Control ants and remove dropped fruit to reduce pest carryover"
+      ],
+      "growthDurationDays": 240,
+      "maturityNotes": "Citrus maturity is commonly measured in months from flowering, with many harvest windows spanning about 6-12 months depending on fruit type, variety, and heat or irrigation regime.",
+      "regions": [
+        "tropical",
+        "dry-irrigated",
+        "warm-temperate"
+      ]
     },
     {
       "id": "plants:oregano",
@@ -6710,17 +6891,23 @@
       "id": "plants:papayas",
       "group": "plants",
       "category": "Fruits",
-      "subCategory": "Tree Fruits",
-      "name": "Papayas",
-      "scientificName": null,
-      "aliases": [],
-      "notes": null,
+      "subCategory": "Tropical Fruit Crops",
+      "name": "Papaya",
+      "scientificName": "Carica papaya",
+      "aliases": [
+        "papaya",
+        "papayas",
+        "red lady",
+        "solo type"
+      ],
+      "notes": "Fast-growing tropical fruit crop with repeated harvest once production begins, so maturity is usually framed as time to first harvest rather than a single-cut crop cycle.",
       "environment": "terrestrial",
       "tags": [
         "fruit",
         "crop",
         "edible",
         "tree",
+        "tropical",
         "plants"
       ],
       "isEdible": true,
@@ -6728,7 +6915,31 @@
       "isTree": true,
       "isFlower": false,
       "climate": "tropical",
-      "soil": "loam"
+      "soil": "well-drained loam",
+      "varieties": [
+        "Red Lady",
+        "Solo type",
+        "Hybrid export types"
+      ],
+      "plantingSeason": "Plant in warm frost-free windows with reliable drainage; first harvest usually begins months later and then continues in flushes",
+      "spacing": "1.8–2.5 m depending on vigor and row system",
+      "fertilizerRequirements": "Regular split feeding with emphasis on balanced nitrogen and potassium",
+      "commonDiseases": [
+        "Papaya ringspot virus pressure",
+        "Anthracnose",
+        "Root and stem rots"
+      ],
+      "preventiveActions": [
+        "Rogue badly diseased plants early and keep rows clean",
+        "Avoid waterlogging and remove dropped fruit frequently"
+      ],
+      "growthDurationDays": 270,
+      "maturityNotes": "Papaya often reaches first harvest in about 8-10 months from planting, then continues with staggered or repeated picking under warm tropical conditions.",
+      "regions": [
+        "tropical",
+        "subtropical",
+        "protected-warm"
+      ]
     },
     {
       "id": "plants:parsley",
@@ -6841,25 +7052,53 @@
       "id": "plants:pears",
       "group": "plants",
       "category": "Fruits",
-      "subCategory": "Tree Fruits",
+      "subCategory": "Pome Fruits",
       "name": "Pears",
-      "scientificName": null,
-      "aliases": [],
-      "notes": null,
+      "scientificName": "Pyrus communis and related Pyrus spp.",
+      "aliases": [
+        "bartlett pear",
+        "anjou pear"
+      ],
+      "notes": "Specific pear entry kept for growers who choose pear directly instead of the shared apples-and-pears family record.",
       "environment": "terrestrial",
       "tags": [
         "fruit",
         "crop",
         "edible",
         "tree",
+        "orchard",
         "plants"
       ],
       "isEdible": true,
       "isCrop": true,
       "isTree": true,
       "isFlower": false,
-      "climate": "tropical",
-      "soil": "loam"
+      "climate": "temperate",
+      "soil": "well-drained loam",
+      "varieties": [
+        "Bartlett",
+        "Anjou",
+        "Packham's Triumph"
+      ],
+      "plantingSeason": "Dormant planting in cool orchard windows; annual harvest is more reliably tracked from bloom and fruit development than from planting date",
+      "spacing": "4–6 m depending on rootstock and training system",
+      "fertilizerRequirements": "Moderate annual nutrient demand with attention to calcium, boron, and balanced nitrogen",
+      "commonDiseases": [
+        "Scab",
+        "Fire blight-type issues",
+        "Rust"
+      ],
+      "preventiveActions": [
+        "Open the canopy with annual pruning",
+        "Remove dropped fruit and blighted wood promptly"
+      ],
+      "growthDurationDays": 165,
+      "maturityNotes": "Pears commonly mature over about 135-185 days from bloom, with harvest often targeted slightly before full tree ripeness for storage and shipping quality.",
+      "regions": [
+        "temperate",
+        "continental",
+        "cool-highland"
+      ]
     },
     {
       "id": "plants:peas",
@@ -6989,16 +7228,22 @@
       "id": "plants:pineapples",
       "group": "plants",
       "category": "Fruits",
-      "subCategory": "Vine/Bush Fruits",
-      "name": "Pineapples",
-      "scientificName": null,
-      "aliases": [],
-      "notes": null,
+      "subCategory": "Tropical Fruit Crops",
+      "name": "Pineapple",
+      "scientificName": "Ananas comosus",
+      "aliases": [
+        "pineapple",
+        "pineapples",
+        "smooth cayenne",
+        "queen pineapple"
+      ],
+      "notes": "Long-cycle tropical fruit crop where the first harvest often arrives well after a year, with follow-up ratoon cycles moving faster than the establishment crop.",
       "environment": "terrestrial",
       "tags": [
         "fruit",
         "crop",
         "edible",
+        "tropical",
         "plants"
       ],
       "isEdible": true,
@@ -7006,31 +7251,92 @@
       "isTree": false,
       "isFlower": false,
       "climate": "tropical",
-      "soil": "loam"
+      "soil": "well-drained loam",
+      "varieties": [
+        "Smooth Cayenne",
+        "Queen",
+        "MD-2"
+      ],
+      "plantingSeason": "Plant in warm moist windows with clean suckers or slips; flowering induction and ratoon management strongly influence the harvest calendar",
+      "spacing": "25–35 cm in double or triple rows depending on production system",
+      "fertilizerRequirements": "Moderate to high potassium demand with steady moisture and careful nitrogen management",
+      "commonDiseases": [
+        "Heart rot",
+        "Fruit rot",
+        "Mealybug-associated decline"
+      ],
+      "preventiveActions": [
+        "Use clean planting material and manage ant trails",
+        "Keep residues and heavily infested crowns out of the field"
+      ],
+      "growthDurationDays": 540,
+      "maturityNotes": "Pineapple commonly takes about 15-18 months to first harvest, while ratoon or follow-up crops often shorten after the planting has established.",
+      "regions": [
+        "tropical",
+        "subtropical",
+        "humid-dry"
+      ]
     },
     {
       "id": "plants:plums",
       "group": "plants",
       "category": "Fruits",
-      "subCategory": "Tree Fruits",
-      "name": "Plums",
-      "scientificName": null,
-      "aliases": [],
-      "notes": null,
+      "subCategory": "Stone Fruits",
+      "name": "Stone fruits",
+      "scientificName": "Prunus spp.",
+      "aliases": [
+        "stone_fruits",
+        "stone fruits",
+        "peach",
+        "peaches",
+        "plum",
+        "plums",
+        "apricot",
+        "apricots",
+        "cherry",
+        "cherries"
+      ],
+      "notes": "Family-level record covering peaches, plums, apricots, and cherries, all of which rely on temperate orchard cycles with bloom-to-harvest timing.",
       "environment": "terrestrial",
       "tags": [
         "fruit",
         "crop",
         "edible",
         "tree",
+        "orchard",
         "plants"
       ],
       "isEdible": true,
       "isCrop": true,
       "isTree": true,
       "isFlower": false,
-      "climate": "tropical",
-      "soil": "loam"
+      "climate": "temperate",
+      "soil": "well-drained loam",
+      "varieties": [
+        "Early peach",
+        "Japanese plum",
+        "Sweet cherry"
+      ],
+      "plantingSeason": "Dormant orchard planting in cool-season windows; annual crop timing is usually measured from bloom to harvest",
+      "spacing": "4–6 m depending on species, rootstock, and training system",
+      "fertilizerRequirements": "Moderate annual nutrient demand with careful nitrogen timing to avoid weak fruit finish",
+      "commonDiseases": [
+        "Brown rot",
+        "Leaf curl",
+        "Shot-hole",
+        "Blossom blights"
+      ],
+      "preventiveActions": [
+        "Prune to improve airflow and remove diseased wood",
+        "Collect dropped fruit and thin crowded canopies early"
+      ],
+      "growthDurationDays": 120,
+      "maturityNotes": "Stone fruits are commonly harvested about 90-140 days after bloom, with cherries and early apricots tending to mature ahead of peaches and later plums.",
+      "regions": [
+        "temperate",
+        "continental",
+        "cool-highland"
+      ]
     },
     {
       "id": "plants:potatoes",
@@ -7586,24 +7892,54 @@
       "id": "plants:strawberries",
       "group": "plants",
       "category": "Fruits",
-      "subCategory": "Vine/Bush Fruits",
+      "subCategory": "Berry Crops",
       "name": "Strawberries",
-      "scientificName": null,
-      "aliases": [],
-      "notes": null,
+      "scientificName": "Fragaria × ananassa",
+      "aliases": [
+        "strawberry",
+        "strawberries",
+        "june-bearing",
+        "day-neutral"
+      ],
+      "notes": "Specific strawberry entry retained alongside the broader berries family because strawberry systems often behave differently from bush and cane berries in maturity timing and harvest cadence.",
       "environment": "terrestrial",
       "tags": [
         "fruit",
         "crop",
         "edible",
+        "berry",
         "plants"
       ],
       "isEdible": true,
       "isCrop": true,
       "isTree": false,
       "isFlower": false,
-      "climate": "tropical",
-      "soil": "loam"
+      "climate": "temperate",
+      "soil": "well-drained loam",
+      "varieties": [
+        "June-bearing",
+        "Day-neutral",
+        "Everbearing"
+      ],
+      "plantingSeason": "Establish in cool-season or mild protected windows; first commercial harvest may begin quickly once flowering starts",
+      "spacing": "25–35 cm plants x 75–100 cm rows depending on matted-row or plasticulture system",
+      "fertilizerRequirements": "Moderate feeding with steady potassium and careful nitrogen near fruiting",
+      "commonDiseases": [
+        "Gray mold",
+        "Powdery mildew",
+        "Crown rot"
+      ],
+      "preventiveActions": [
+        "Mulch and ventilate rows to keep fruit off wet soil",
+        "Pick ripe fruit frequently and remove diseased berries"
+      ],
+      "growthDurationDays": 75,
+      "maturityNotes": "Strawberries often begin first harvest about 45-90 days after establishment or flowering, while day-neutral and protected systems can shorten the first-pick window.",
+      "regions": [
+        "temperate",
+        "cool-highland",
+        "protected-culture"
+      ]
     },
     {
       "id": "plants:sugar_beet",
