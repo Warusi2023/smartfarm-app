@@ -970,7 +970,11 @@
             let extraInfo = '';
 
             if (context?.source === 'variety-override' && typeof context.baseDays === 'number') {
-                extraInfo = `<div class="mt-2 small text-muted">Variety-adjusted growth window: ${context.baseDays} days</div>`;
+                const parts = [`Variety-adjusted growth window: ${context.baseDays} days`];
+                if (context.maturityNote) {
+                    parts.push(`Maturity note: ${context.maturityNote}`);
+                }
+                extraInfo = `<div class="mt-2 small text-muted">${parts.join(' • ')}</div>`;
             } else if (context?.source === 'catalog' && context.catalogItem) {
                 const parts = [];
                 if (context.catalogItem.growthDurationDays) {
@@ -983,9 +987,18 @@
                     const regionSample = context.catalogItem.regions.slice(0, 3).join(', ');
                     parts.push(`Regions: ${regionSample}${context.catalogItem.regions.length > 3 ? '…' : ''}`);
                 }
+                if (context.maturityNote) {
+                    parts.push(`Maturity note: ${context.maturityNote}`);
+                }
                 if (parts.length) {
                     extraInfo = `<div class="mt-2 small text-muted">${parts.join(' • ')}</div>`;
                 }
+            } else if (context?.source === 'heuristic' && typeof context.baseDays === 'number') {
+                const parts = [`Heuristic growth window: ${context.baseDays} days`];
+                if (context.maturityNote) {
+                    parts.push(`Maturity note: ${context.maturityNote}`);
+                }
+                extraInfo = `<div class="mt-2 small text-muted">${parts.join(' • ')}</div>`;
             } else if (context?.source === 'fallback') {
                 extraInfo = `<div class="mt-2 small text-muted">Using generic estimate — enrich catalog data for more precise guidance.</div>`;
             }
@@ -1393,6 +1406,10 @@
             cassava: { default: 300, 'kuli piqi': 280 },
             capsicum: { default: 90, 'california wonder': 88 },
             lettuce: { default: 45, romaine: 50 },
+            sugarcane: { 'co-0238': 330, ratoon: 300 },
+            'sugar beet': { 'high-sugar hybrids': 165, 'early factory beet': 150 },
+            sugar_beet: { 'high-sugar hybrids': 165, 'early factory beet': 150 },
+            stevia: { 'standard leaf stevia': 125, 'high-stevioside lines': 115 },
             kava: { default: 1095, noble: 1000 },
         };
 
@@ -1524,7 +1541,48 @@
                 
                 // Other Common Crops
                 'cotton': { baseDays: 150, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 120-180 days
-                'sugarcane': { baseDays: 365, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 12-18 months
+                'sugarcane': {
+                    baseDays: 390,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Plant cane commonly matures in about 10-18 months, while ratoon crops often finish in 8-14 months.'
+                },
+                'sugar cane': {
+                    baseDays: 390,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Best suited to tropical and subtropical systems; dry regions depend heavily on irrigation timing for sugar accumulation.'
+                },
+                'sugar beet': {
+                    baseDays: 170,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Temperate and continental sugar beet often matures in about 140-200 days, with early factory beet finishing sooner.'
+                },
+                'sugar_beet': {
+                    baseDays: 170,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Dry irrigated beet may mature faster under heat, but sugar yield still depends on steady water and canopy health.'
+                },
+                'stevia': {
+                    baseDays: 120,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Stevia usually reaches a first leaf harvest in about 90-140 days, with repeat cuts every 45-70 days if regrowth stays healthy.'
+                },
+                'minor sweetener crops': {
+                    baseDays: 130,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Minor sweetener crops are temporarily mapped to stevia-style timing until dedicated crop records are added.'
+                },
+                'monk fruit': {
+                    baseDays: 150,
+                    varietyMultiplier: 1.0,
+                    seasonAdjustment: 0,
+                    maturityNote: 'Monk fruit is temporarily mapped through the minor sweetener crop pathway; dedicated timing should replace this when a separate catalog record is introduced.'
+                },
                 'sunflower': { baseDays: 90, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 80-120 days
                 'flax': { baseDays: 100, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 90-110 days
                 'sesame': { baseDays: 90, varietyMultiplier: 1.0, seasonAdjustment: 0 }, // 80-100 days
@@ -1570,7 +1628,8 @@
             lastAIMaturityContext = {
                 source: maturitySource,
                 baseDays: cropData.baseDays,
-                catalogItem: catalogRecord
+                catalogItem: catalogRecord,
+                maturityNote: catalogRecord?.maturityNotes || cropData?.maturityNote || null
             };
 
             // Calculate maturity days with AI adjustments

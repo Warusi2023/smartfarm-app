@@ -14,7 +14,6 @@ class BiologicalFarming {
     init() {
         this.displayGoodInsects();
         this.displayBadInsects();
-        this.populateCropSelector();
         this.setupCropSelector();
     }
 
@@ -304,28 +303,23 @@ class BiologicalFarming {
         `).join('');
     }
 
-    populateCropSelector() {
-        const selector = document.getElementById('cropSelector');
-        if (!selector) return;
-
-        Object.keys(this.cropGuides).forEach(crop => {
-            const option = document.createElement('option');
-            option.value = crop;
-            option.textContent = crop;
-            selector.appendChild(option);
-        });
-    }
-
     setupCropSelector() {
         const selector = document.getElementById('cropSelector');
         if (!selector) return;
 
         selector.addEventListener('change', (e) => {
             const crop = e.target.value;
-            if (crop) {
-                this.displayCropGuide(crop);
+            const container = document.getElementById('cropGuideContainer');
+            if (!crop) {
+                if (container) {
+                    container.innerHTML = '<p class="text-muted mb-0">Choose a crop to load the pests &amp; protection panel.</p>';
+                }
+                return;
+            }
+            if (window.SmartFarmPestProtection && typeof window.SmartFarmPestProtection.loadAndRender === 'function') {
+                window.SmartFarmPestProtection.loadAndRender(container, crop);
             } else {
-                document.getElementById('cropGuideContainer').innerHTML = '';
+                this.displayCropGuide(crop);
             }
         });
     }

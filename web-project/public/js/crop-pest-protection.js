@@ -131,8 +131,9 @@
 
         var registerBanner = isRegisterBacked && chem.regulatorySource
             ? '<div class="alert alert-info py-2 px-3 small mb-3" role="status">' +
+              '<span class="badge bg-primary me-2">Fiji register-backed</span>' +
               '<i class="fas fa-certificate me-1"></i>' +
-              '<strong>Register-backed guidance</strong> — ' + escapeHtml(chem.regulatorySource) +
+              escapeHtml(chem.regulatorySource) +
               '</div>'
             : '';
 

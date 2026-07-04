@@ -7385,17 +7385,23 @@
       "soil": "loam"
     },
     {
-      "id": "plants:sugar beet",
+      "id": "plants:sugar_beet",
       "group": "plants",
-      "category": "Beverage Crops",
+      "category": "Sugar and Sweetener Crops",
       "subCategory": null,
       "name": "Sugar beet",
       "scientificName": "Beta vulgaris",
-      "aliases": [],
-      "notes": null,
+      "aliases": [
+        "sugar_beet",
+        "sugarbeet",
+        "beet sugar"
+      ],
+      "notes": "Cool-season industrial sugar crop; best suited to temperate and continental production zones, with irrigation support in dry regions.",
       "environment": "terrestrial",
       "tags": [
-        "beverage",
+        "sugar",
+        "sweetener",
+        "root crop",
         "crop",
         "plants"
       ],
@@ -7403,12 +7409,13 @@
       "isCrop": true,
       "isTree": false,
       "isFlower": false,
-      "climate": "tropical",
+      "climate": "temperate",
       "soil": "loam",
       "varieties": [
-        "High-sugar hybrids"
+        "High-sugar hybrids",
+        "Early factory beet"
       ],
-      "plantingSeason": "Sow April; harvest September–October",
+      "plantingSeason": "Sow in cool-season spring or autumn windows; harvest 5-7 months later when roots and sugar content are fully developed",
       "spacing": "45–50 cm rows x 18–22 cm",
       "fertilizerRequirements": "High NPK demand; supply boron on deficient soils",
       "commonDiseases": [
@@ -7420,10 +7427,13 @@
         "Use boron sprays and improve drainage"
       ],
       "growthDurationDays": 170,
+      "maturityNotes": "Temperate and continental sugar beet usually matures in about 140-200 days. Early hybrids finish sooner, while heat and water stress in dry regions can shorten leaf life and limit sugar accumulation.",
       "yieldKgPerAcre": 19190,
       "coldNotes": "Core crop in south/central Russia and Europe; irrigation boosts root yield.",
       "regions": [
-        "russia-europe"
+        "temperate",
+        "continental",
+        "dry-irrigated"
       ],
       "countries": [
         "Russia",
@@ -7437,15 +7447,20 @@
     {
       "id": "plants:sugarcane",
       "group": "plants",
-      "category": "Beverage Crops",
+      "category": "Sugar and Sweetener Crops",
       "subCategory": null,
       "name": "Sugarcane",
       "scientificName": "Saccharum officinarum",
-      "aliases": [],
-      "notes": null,
+      "aliases": [
+        "sugar cane",
+        "cane"
+      ],
+      "notes": "Long-duration cane crop grown as plant cane or ratoon; best suited to tropical and subtropical systems with reliable rainfall or irrigation.",
       "environment": "terrestrial",
       "tags": [
-        "beverage",
+        "sugar",
+        "sweetener",
+        "bioenergy",
         "crop",
         "plants"
       ],
@@ -7456,7 +7471,8 @@
       "climate": "tropical",
       "soil": "loam",
       "varieties": [
-        "Co-0238"
+        "Co-0238",
+        "Mid-season cane hybrids"
       ],
       "plantingSeason": "February–April or September–October depending on region",
       "spacing": "Ridges 90–120 cm apart with 2–3 bud setts per furrow",
@@ -7470,11 +7486,14 @@
         "Use healthy, treated setts and rogue infected stools",
         "Maintain trash mulching and integrated pest management"
       ],
-      "growthDurationDays": 365,
+      "growthDurationDays": 390,
+      "maturityNotes": "Plant cane commonly matures in about 10-18 months, while ratoon crops often finish in 8-14 months. Irrigation timing strongly affects cane weight and sugar content in dry regions.",
       "yieldKgPerAcre": 32375,
       "southAsiaNotes": "Requires assured irrigation and high nutrient inputs for optimal cane yields.",
       "regions": [
-        "south-asia"
+        "tropical",
+        "subtropical",
+        "dry-irrigated"
       ],
       "countries": [
         "India",
@@ -7485,6 +7504,72 @@
         "Bhutan",
         "Maldives",
         "Afghanistan"
+      ]
+    },
+    {
+      "id": "plants:stevia",
+      "group": "plants",
+      "category": "Sugar and Sweetener Crops",
+      "subCategory": "Minor Sweetener Crops",
+      "name": "Stevia",
+      "scientificName": "Stevia rebaudiana",
+      "aliases": [
+        "stevia",
+        "stevia rebaudiana",
+        "sweetleaf",
+        "sweet leaf",
+        "minor sweetener crops",
+        "stevia / minor sweetener crops",
+        "sweetener crops",
+        "monk fruit",
+        "monkfruit",
+        "luo han guo"
+      ],
+      "notes": "This catalog entry currently stands in for stevia and related minor sweetener crops; monk fruit and similar niche sweeteners are temporarily mapped here until they receive dedicated records.",
+      "environment": "terrestrial",
+      "tags": [
+        "sweetener",
+        "herb",
+        "medicinal",
+        "crop",
+        "plants"
+      ],
+      "isEdible": true,
+      "isCrop": true,
+      "isTree": false,
+      "isFlower": false,
+      "climate": "temperate",
+      "soil": "well-drained loam",
+      "varieties": [
+        "Standard leaf stevia",
+        "High-stevioside lines"
+      ],
+      "plantingSeason": "Transplant after frost in warm temperate zones, or maintain year-round in frost-free tropical highlands with irrigation",
+      "spacing": "30–45 cm rows x 20–30 cm",
+      "fertilizerRequirements": "Moderate fertility; avoid excess nitrogen that can reduce leaf sweetness concentration",
+      "commonDiseases": [
+        "Damping off",
+        "Powdery mildew",
+        "Leaf spot"
+      ],
+      "preventiveActions": [
+        "Use raised beds and good airflow to protect the crown",
+        "Harvest before heavy flowering for best leaf quality and stevioside concentration"
+      ],
+      "growthDurationDays": 120,
+      "maturityNotes": "Stevia usually reaches a first leaf harvest in about 90-140 days, with later cuts every 45-70 days where regrowth is strong. Cooler or high-mountain climates often need a longer season or protected cultivation.",
+      "yieldKgPerAcre": 1200,
+      "regions": [
+        "tropical-highland",
+        "temperate",
+        "protected-culture"
+      ],
+      "countries": [
+        "Paraguay",
+        "Brazil",
+        "India",
+        "Kenya",
+        "China"
       ]
     },
     {
