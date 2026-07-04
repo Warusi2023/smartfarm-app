@@ -8,6 +8,7 @@ const { CEREAL_IPM, CEREAL_ALIASES } = require('./cerealPestProtection');
 const { ROOT_TUBER_IPM, ROOT_TUBER_ALIASES } = require('./rootTuberPestProtection');
 const { GRAIN_LEGUME_IPM, GRAIN_LEGUME_ALIASES } = require('./grainLegumePestProtection');
 const { OILSEED_IPM, OILSEED_ALIASES } = require('./oilseedPestProtection');
+const { FIBER_IPM, FIBER_ALIASES } = require('./fiberPestProtection');
 const { SUGAR_SWEETENER_IPM, SUGAR_SWEETENER_ALIASES } = require('./sugarSweetenerPestProtection');
 
 /** @type {{ pests: object[], beneficials: object[], chemicalActives: object, damageToLookFor: string[] }} */
@@ -230,7 +231,7 @@ const CROP_IPM = {
     }
 };
 
-Object.assign(CROP_IPM, CEREAL_IPM, ROOT_TUBER_IPM, GRAIN_LEGUME_IPM, OILSEED_IPM, SUGAR_SWEETENER_IPM);
+Object.assign(CROP_IPM, CEREAL_IPM, ROOT_TUBER_IPM, GRAIN_LEGUME_IPM, OILSEED_IPM, FIBER_IPM, SUGAR_SWEETENER_IPM);
 
 /** Normalize user-facing crop names to lookup keys */
 const CROP_ALIASES = {
@@ -251,6 +252,7 @@ const CROP_ALIASES = {
     ...ROOT_TUBER_ALIASES,
     ...GRAIN_LEGUME_ALIASES,
     ...OILSEED_ALIASES,
+    ...FIBER_ALIASES,
     ...SUGAR_SWEETENER_ALIASES
 };
 

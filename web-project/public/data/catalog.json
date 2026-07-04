@@ -4342,17 +4342,26 @@
       "isFlower": false
     },
     {
-      "id": "plants:agave",
+      "id": "plants:sisal_agave",
       "group": "plants",
-      "category": "Industrial/Fiber Crops",
-      "subCategory": null,
-      "name": "Agave",
-      "scientificName": null,
-      "aliases": [],
-      "notes": null,
+      "category": "Fiber Crops",
+      "subCategory": "Perennial Fiber Crops",
+      "name": "Sisal / agave fibers",
+      "scientificName": "Agave sisalana and related Agave spp.",
+      "aliases": [
+        "sisal_agave",
+        "sisal",
+        "agave",
+        "agave fiber",
+        "agave fibers",
+        "henequen"
+      ],
+      "notes": "Perennial rosette fiber crops for dry and tropical semi-arid production systems; managed for repeated leaf cutting rather than a single annual harvest.",
       "environment": "terrestrial",
       "tags": [
+        "fiber",
         "industrial",
+        "perennial",
         "crop",
         "plants"
       ],
@@ -4360,8 +4369,36 @@
       "isCrop": true,
       "isTree": false,
       "isFlower": false,
-      "climate": "tropical",
-      "soil": "loam"
+      "climate": "dry",
+      "soil": "well-drained sandy loam",
+      "varieties": [
+        "Sisal",
+        "Henequen"
+      ],
+      "plantingSeason": "Establish offsets at the start of rainy periods; manage perennial stands for staggered cutting over multiple years",
+      "spacing": "1.2–2.0 m between plants depending on plantation system",
+      "fertilizerRequirements": "Low to moderate nutrient demand; avoid chronic moisture stress during stand establishment",
+      "commonDiseases": [
+        "Leaf spot",
+        "Crown rot"
+      ],
+      "preventiveActions": [
+        "Remove heavily infested rosettes and damaged leaves promptly",
+        "Maintain drainage and stagger harvests to preserve perennial stand health"
+      ],
+      "growthDurationDays": 1095,
+      "maturityNotes": "Sisal and related agave fibers commonly take about 2-4 years to first commercial cutting, followed by repeated harvest cycles. Dry and tropical semi-arid climates are preferred; cool climates are generally unsuitable.",
+      "yieldKgPerAcre": 3000,
+      "regions": [
+        "tropical",
+        "dry"
+      ],
+      "countries": [
+        "Tanzania",
+        "Kenya",
+        "Brazil",
+        "Mexico"
+      ]
     },
     {
       "id": "plants:aloe vera",
@@ -5330,15 +5367,22 @@
     {
       "id": "plants:cotton",
       "group": "plants",
-      "category": "Industrial/Fiber Crops",
-      "subCategory": null,
+      "category": "Fiber Crops",
+      "subCategory": "Lint Fiber Crops",
       "name": "Cotton",
-      "scientificName": null,
-      "aliases": [],
-      "notes": null,
+      "scientificName": "Gossypium hirsutum",
+      "aliases": [
+        "cotton",
+        "cotton fiber",
+        "lint cotton",
+        "upland cotton"
+      ],
+      "notes": "Warm-season lint crop with high pest pressure and strong dependence on variety choice, irrigation timing, and a reliable frost-free season.",
       "environment": "terrestrial",
       "tags": [
+        "fiber",
         "industrial",
+        "lint",
         "crop",
         "plants"
       ],
@@ -5347,7 +5391,38 @@
       "isTree": false,
       "isFlower": false,
       "climate": "tropical",
-      "soil": "loam"
+      "soil": "well-drained loam",
+      "varieties": [
+        "Early cotton hybrids",
+        "Standard cotton cultivars"
+      ],
+      "plantingSeason": "Plant after soils warm and frost risk passes; schedule around the full picking window in dry or tropical systems",
+      "spacing": "75–100 cm rows x 20–30 cm",
+      "fertilizerRequirements": "Moderate to high nutrient demand; balance nitrogen to avoid rank vegetative growth and delayed boll opening",
+      "commonDiseases": [
+        "Boll rot",
+        "Verticillium wilt",
+        "Bacterial blight"
+      ],
+      "preventiveActions": [
+        "Destroy volunteer cotton and post-harvest residues to break pest cycles",
+        "Use refuge planning, selective sprays, and timely picking to protect lint quality"
+      ],
+      "growthDurationDays": 170,
+      "maturityNotes": "Cotton typically reaches first pick in about 150-190 days, with the full picking window extending longer depending on variety and season. Warm temperate systems must fit within the frost-free period.",
+      "yieldKgPerAcre": 900,
+      "regions": [
+        "tropical",
+        "dry",
+        "temperate"
+      ],
+      "countries": [
+        "India",
+        "Pakistan",
+        "United States",
+        "Brazil",
+        "Australia"
+      ]
     },
     {
       "id": "plants:cottonseed",
@@ -5529,17 +5604,25 @@
       ]
     },
     {
-      "id": "plants:flax",
+      "id": "plants:flax_linen",
       "group": "plants",
-      "category": "Industrial/Fiber Crops",
-      "subCategory": null,
-      "name": "Flax",
-      "scientificName": null,
-      "aliases": [],
-      "notes": null,
+      "category": "Fiber Crops",
+      "subCategory": "Bast Fiber Crops",
+      "name": "Flax (linen)",
+      "scientificName": "Linum usitatissimum",
+      "aliases": [
+        "flax_linen",
+        "flax",
+        "flax (linen)",
+        "linen",
+        "linen flax"
+      ],
+      "notes": "Fiber flax record kept separate from flaxseed/linseed so linen systems can carry distinct pest and maturity guidance.",
       "environment": "terrestrial",
       "tags": [
+        "fiber",
         "industrial",
+        "linen",
         "crop",
         "plants"
       ],
@@ -5547,8 +5630,38 @@
       "isCrop": true,
       "isTree": false,
       "isFlower": false,
-      "climate": "tropical",
-      "soil": "loam"
+      "climate": "temperate",
+      "soil": "well-drained loam",
+      "varieties": [
+        "Fiber flax",
+        "Long-stem linen types"
+      ],
+      "plantingSeason": "Sow in cool-season spring windows and harvest before seed maturity if targeting fine linen fiber",
+      "spacing": "Dense sowing for long, fine stems",
+      "fertilizerRequirements": "Moderate fertility; avoid excess nitrogen that increases lodging and coarse stems",
+      "commonDiseases": [
+        "Rust",
+        "Pasmo",
+        "Wilt"
+      ],
+      "preventiveActions": [
+        "Use long rotations and residue management to reduce disease carryover",
+        "Harvest on time to protect bast quality and reduce lodging losses"
+      ],
+      "growthDurationDays": 105,
+      "maturityNotes": "Fiber flax commonly reaches harvest in about 85-115 days in temperate and continental climates. Heat stress or lodging can force earlier harvest and lower linen quality.",
+      "yieldKgPerAcre": 900,
+      "regions": [
+        "temperate",
+        "continental"
+      ],
+      "countries": [
+        "France",
+        "Belgium",
+        "Netherlands",
+        "Belarus",
+        "Canada"
+      ]
     },
     {
       "id": "plants:flaxseed",
@@ -5693,15 +5806,22 @@
     {
       "id": "plants:hemp",
       "group": "plants",
-      "category": "Industrial/Fiber Crops",
-      "subCategory": null,
+      "category": "Fiber Crops",
+      "subCategory": "Bast Fiber Crops",
       "name": "Hemp",
-      "scientificName": null,
-      "aliases": [],
-      "notes": null,
+      "scientificName": "Cannabis sativa",
+      "aliases": [
+        "hemp",
+        "industrial hemp",
+        "fiber hemp",
+        "dual-purpose hemp"
+      ],
+      "notes": "Multi-purpose crop grown for fiber, hurd, and sometimes seed; harvest timing may also be constrained by local legal and market requirements.",
       "environment": "terrestrial",
       "tags": [
+        "fiber",
         "industrial",
+        "bast fiber",
         "crop",
         "plants"
       ],
@@ -5709,8 +5829,38 @@
       "isCrop": true,
       "isTree": false,
       "isFlower": false,
-      "climate": "tropical",
-      "soil": "loam"
+      "climate": "temperate",
+      "soil": "well-drained loam",
+      "varieties": [
+        "Fiber hemp",
+        "Dual-purpose hemp"
+      ],
+      "plantingSeason": "Sow once soils warm in spring; align variety with daylength and legal harvest constraints",
+      "spacing": "Dense stands for fiber; wider rows for dual-purpose systems",
+      "fertilizerRequirements": "Moderate fertility with balanced nitrogen to support stem growth without excessive lodging risk",
+      "commonDiseases": [
+        "Gray mold",
+        "Powdery mildew",
+        "Stem canker"
+      ],
+      "preventiveActions": [
+        "Use rotations and open-canopy management to limit humid-canopy disease",
+        "Harvest in line with both fiber maturity and local compliance thresholds"
+      ],
+      "growthDurationDays": 115,
+      "maturityNotes": "Fiber hemp often reaches cut stage in about 90-120 days, while dual-purpose systems may run about 120-150 days. Temperate and continental regions are the main fit.",
+      "yieldKgPerAcre": 1800,
+      "regions": [
+        "temperate",
+        "continental"
+      ],
+      "countries": [
+        "Canada",
+        "France",
+        "China",
+        "Germany",
+        "United States"
+      ]
     },
     {
       "id": "plants:indigo",
@@ -5737,15 +5887,21 @@
     {
       "id": "plants:jute",
       "group": "plants",
-      "category": "Industrial/Fiber Crops",
-      "subCategory": null,
+      "category": "Fiber Crops",
+      "subCategory": "Bast Fiber Crops",
       "name": "Jute",
-      "scientificName": null,
-      "aliases": [],
-      "notes": null,
+      "scientificName": "Corchorus olitorius / Corchorus capsularis",
+      "aliases": [
+        "jute",
+        "tossa jute",
+        "white jute"
+      ],
+      "notes": "Warm, humid bast fiber crop linked to monsoon rainfall and retting quality; harvest timing strongly affects both fiber fineness and yield.",
       "environment": "terrestrial",
       "tags": [
+        "fiber",
         "industrial",
+        "bast fiber",
         "crop",
         "plants"
       ],
@@ -5754,7 +5910,36 @@
       "isTree": false,
       "isFlower": false,
       "climate": "tropical",
-      "soil": "loam"
+      "soil": "fertile alluvial loam",
+      "varieties": [
+        "White jute",
+        "Tossa jute"
+      ],
+      "plantingSeason": "Sow into warm, moist soils ahead of the main rainy season and harvest before stems become too coarse",
+      "spacing": "Dense broadcast or narrow-row stands for uniform stems",
+      "fertilizerRequirements": "Moderate fertility with good moisture supply; avoid nutrient stress that reduces stem growth",
+      "commonDiseases": [
+        "Stem rot",
+        "Wilt",
+        "Leaf blight"
+      ],
+      "preventiveActions": [
+        "Rotate away from repeated bast fiber crops and remove diseased residues",
+        "Harvest on time to balance fiber fineness with biomass yield"
+      ],
+      "growthDurationDays": 125,
+      "maturityNotes": "Jute commonly reaches fiber harvest in about 100-140 days in warm humid climates. Dry or cold regions are generally unsuitable without strong irrigation or protection.",
+      "yieldKgPerAcre": 1400,
+      "regions": [
+        "tropical",
+        "temperate"
+      ],
+      "countries": [
+        "Bangladesh",
+        "India",
+        "Nepal",
+        "Myanmar"
+      ]
     },
     {
       "id": "plants:kale",
@@ -5782,15 +5967,20 @@
     {
       "id": "plants:kenaf",
       "group": "plants",
-      "category": "Industrial/Fiber Crops",
-      "subCategory": null,
+      "category": "Fiber Crops",
+      "subCategory": "Bast Fiber Crops",
       "name": "Kenaf",
-      "scientificName": null,
-      "aliases": [],
-      "notes": null,
+      "scientificName": "Hibiscus cannabinus",
+      "aliases": [
+        "kenaf",
+        "bast kenaf"
+      ],
+      "notes": "Fast-growing bast fiber crop used for pulp, composites, and fiber; planting date and rainfall pattern strongly influence stem height and harvest quality.",
       "environment": "terrestrial",
       "tags": [
+        "fiber",
         "industrial",
+        "bast fiber",
         "crop",
         "plants"
       ],
@@ -5799,7 +5989,38 @@
       "isTree": false,
       "isFlower": false,
       "climate": "tropical",
-      "soil": "loam"
+      "soil": "well-drained loam",
+      "varieties": [
+        "Fiber kenaf",
+        "Dual-purpose kenaf"
+      ],
+      "plantingSeason": "Plant into warm soils at the start of the rainy season or with irrigation support in dry areas",
+      "spacing": "Dense stands for bast fiber, slightly wider for dual-purpose systems",
+      "fertilizerRequirements": "Moderate fertility; maintain steady moisture for rapid stem elongation",
+      "commonDiseases": [
+        "Wilt",
+        "Leaf spot",
+        "Stem canker"
+      ],
+      "preventiveActions": [
+        "Use crop rotation and clean residues to reduce wilt carryover",
+        "Harvest before stems become coarse or heavily stressed"
+      ],
+      "growthDurationDays": 130,
+      "maturityNotes": "Kenaf typically reaches fiber harvest in about 110-150 days in tropical and warm temperate climates. Cool continental or high-mountain areas are usually marginal.",
+      "yieldKgPerAcre": 2000,
+      "regions": [
+        "tropical",
+        "temperate",
+        "dry"
+      ],
+      "countries": [
+        "India",
+        "Thailand",
+        "China",
+        "United States",
+        "Kenya"
+      ]
     },
     {
       "id": "plants:lavender",
