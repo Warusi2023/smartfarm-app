@@ -621,6 +621,18 @@ class AIAdvisorySystem {
             kale: { germination: 7, vegetative: 25, maturation: 60 }, // 30-75 days with repeat harvest potential
             chinese_cabbage: { germination: 7, vegetative: 30, head_formation: 50, maturation: 65 }, // 45-80 days, faster Napa types
             
+            // Forage & Pasture
+            alfalfa: { establishment: 30, first_cut: 75, regrowth: 105, stand_maturity: 1460 }, // multi-cut perennial; first cut ~60-90 days temperate
+            lucerne: { establishment: 30, first_cut: 75, regrowth: 105, stand_maturity: 1460 },
+            red_clover: { germination: 7, vegetative: 45, first_cut: 75, maturation: 90 }, // 60-90 days to first use
+            clover: { germination: 7, vegetative: 45, first_cut: 75, maturation: 90 },
+            silage_maize: { germination: 7, vegetative: 45, tasseling: 85, maturation: 115 }, // whole-plant chop ~100-130 days
+            silage_corn: { germination: 7, vegetative: 45, tasseling: 85, maturation: 115 },
+            perennial_ryegrass: { establishment: 30, vegetative: 75, first_graze: 105, maturation: 120 },
+            ryegrass: { establishment: 30, vegetative: 75, first_graze: 105, maturation: 120 },
+            bermuda_grass: { establishment: 30, vegetative: 60, first_graze: 75, maturation: 90 },
+            bermudagrass: { establishment: 30, vegetative: 60, first_graze: 75, maturation: 90 },
+            
             // Fruit Vegetables
             tomatoes: { germination: 7, vegetative: 45, flowering: 60, fruiting: 75 }, // 75 days
             peppers: { germination: 10, vegetative: 50, flowering: 65, fruiting: 75 }, // 75 days

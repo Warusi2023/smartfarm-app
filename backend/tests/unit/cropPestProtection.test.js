@@ -34,6 +34,18 @@ describe('cropPestProtection', () => {
         expect(names).toMatch(/Flea beetle/i);
     });
 
+
+    test('forage family resolves representative aliases with maturity notes', () => {
+        const alfalfa = resolveCropPestProtection('Lucerne');
+        expect(alfalfa.cropKey).toBe('alfalfa');
+        expect(alfalfa.maturityNotes).toMatch(/60-90 days/i);
+        expect(alfalfa.isDefaultTemplate).toBe(false);
+
+        const silage = resolveCropPestProtection('Silage maize');
+        expect(silage.cropKey).toBe('silage_maize');
+        expect(normalizeCropKey('Maize')).toBe('maize');
+    });
+
     test('listPestProtectionCrops includes tomato', () => {
         const list = listPestProtectionCrops();
         expect(list.some((c) => c.cropKey === 'tomato')).toBe(true);

@@ -9,6 +9,7 @@ const { ROOT_TUBER_IPM, ROOT_TUBER_ALIASES } = require('./rootTuberPestProtectio
 const { GRAIN_LEGUME_IPM, GRAIN_LEGUME_ALIASES } = require('./grainLegumePestProtection');
 const { OILSEED_IPM, OILSEED_ALIASES } = require('./oilseedPestProtection');
 const { VEGETABLE_FAMILY_IPM, VEGETABLE_FAMILY_ALIASES } = require('./vegetableFamilyPestProtection');
+const { FORAGE_FAMILY_IPM, FORAGE_FAMILY_ALIASES } = require('./forageFamilyPestProtection');
 const { FIBER_IPM, FIBER_ALIASES } = require('./fiberPestProtection');
 const { FRUIT_IPM, FRUIT_ALIASES } = require('./fruitPestProtection');
 const { SUGAR_SWEETENER_IPM, SUGAR_SWEETENER_ALIASES } = require('./sugarSweetenerPestProtection');
@@ -240,6 +241,7 @@ Object.assign(
     GRAIN_LEGUME_IPM,
     OILSEED_IPM,
     VEGETABLE_FAMILY_IPM,
+    FORAGE_FAMILY_IPM,
     FIBER_IPM,
     FRUIT_IPM,
     SUGAR_SWEETENER_IPM
@@ -261,6 +263,7 @@ const CROP_ALIASES = {
     ...ROOT_TUBER_ALIASES,
     ...GRAIN_LEGUME_ALIASES,
     ...OILSEED_ALIASES,
+    ...FORAGE_FAMILY_ALIASES,
     ...FIBER_ALIASES,
     ...FRUIT_ALIASES,
     ...SUGAR_SWEETENER_ALIASES

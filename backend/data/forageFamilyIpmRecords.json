@@ -1,0 +1,1121 @@
+{
+  "schema_version": "1.0",
+  "climate_keys": ["tropical", "dry", "temperate", "continental", "polar", "high_mountain"],
+  "advisory_scope_values": ["primary", "marginal", "out_of_scope"],
+  "records": [
+    {
+      "crop_key": "alfalfa",
+      "crop_name": "Alfalfa / lucerne",
+      "major_pests": [
+        {
+          "category": "insect",
+          "name": "Alfalfa weevil",
+          "scientific_name": "Hypera postica",
+          "life_stage_note": "Larvae and adults defoliate terminals and first regrowth",
+          "target": "foliage",
+          "note": "Peak damage at early spring growth in temperate and continental systems."
+        },
+        {
+          "category": "insect",
+          "name": "Potato leafhopper",
+          "scientific_name": "Empoasca fabae",
+          "life_stage_note": "Nymphs and adults cause hopperburn",
+          "target": "foliage",
+          "note": "V-shaped yellowing and stunted regrowth; chronic in warm dry and tropical irrigated fields."
+        },
+        {
+          "category": "insect",
+          "name": "Aphids",
+          "scientific_name": null,
+          "life_stage_note": "Colonies build on new regrowth after cutting",
+          "target": "foliage",
+          "note": "Pea, spotted, and blue aphids reduce vigor and can vector viruses."
+        },
+        {
+          "category": "insect",
+          "name": "Caterpillar defoliators",
+          "scientific_name": null,
+          "life_stage_note": "Larval feeding on foliage",
+          "target": "foliage",
+          "note": "Armyworm, alfalfa caterpillar, and loopers often flare after cutting on tender regrowth."
+        },
+        {
+          "category": "insect",
+          "name": "Root-feeding insects",
+          "scientific_name": null,
+          "life_stage_note": "Larval feeding on roots and crowns",
+          "target": "roots_crown",
+          "note": "Clover root curculio, white grubs, and wireworms cause cumulative damage often misdiagnosed as disease."
+        },
+        {
+          "category": "insect",
+          "name": "Blister beetles",
+          "scientific_name": null,
+          "life_stage_note": "Adults contaminate hay at harvest",
+          "target": "forage_quality",
+          "note": "Food-safety and livestock toxicity concern rather than stand-loss pest."
+        },
+        {
+          "category": "disease",
+          "name": "Anthracnose",
+          "scientific_name": "Colletotrichum spp.",
+          "life_stage_note": null,
+          "target": "crown_stem",
+          "note": "Crown and stem lesions; worse in warm, humid regrowth periods."
+        },
+        {
+          "category": "disease",
+          "name": "Bacterial wilt",
+          "scientific_name": null,
+          "life_stage_note": null,
+          "target": "whole_plant",
+          "note": "Systemic wilt favored by wounds and warm soils."
+        },
+        {
+          "category": "disease",
+          "name": "Common and spring black stem",
+          "scientific_name": null,
+          "life_stage_note": null,
+          "target": "stem_foliage",
+          "note": "Stem and leaf lesions reduce quality and regrowth."
+        },
+        {
+          "category": "disease",
+          "name": "Crown and root rots",
+          "scientific_name": null,
+          "life_stage_note": null,
+          "target": "roots_crown",
+          "note": "Phytophthora, Aphanomyces, Rhizoctonia, and Fusarium; linked to poor drainage, compaction, and winter injury."
+        },
+        {
+          "category": "disease",
+          "name": "Sclerotinia crown and stem rot",
+          "scientific_name": null,
+          "life_stage_note": null,
+          "target": "crown_stem",
+          "note": "White mold under cool, humid canopy conditions."
+        },
+        {
+          "category": "disease",
+          "name": "Nematodes",
+          "scientific_name": null,
+          "life_stage_note": null,
+          "target": "roots",
+          "note": "Root-knot, cyst, and lesion nematodes cause root dysfunction and stress symptoms."
+        }
+      ],
+      "biological_controls": [
+        {
+          "type": "natural_enemy",
+          "name": "Lady beetles, lacewings, minute pirate bugs, damsel bugs",
+          "target": "aphids_caterpillars",
+          "note": "Generalist predators suppress soft-bodied pests; conserve field margins and avoid broad-spectrum sprays during peak activity."
+        },
+        {
+          "type": "natural_enemy",
+          "name": "Parasitoid wasps",
+          "target": "aphids_caterpillars",
+          "note": "Important against aphids and caterpillars when habitat support starts early."
+        },
+        {
+          "type": "natural_enemy",
+          "name": "Spiders",
+          "target": "surface_active_pests",
+          "note": "Reduce caterpillars and other surface-active pests in undisturbed sward margins."
+        },
+        {
+          "type": "cultural",
+          "name": "Cutting height and timing",
+          "target": "crown_regrowth",
+          "note": "Maintain 5-7 cm residual height; cut before peak weevil larvae and severe hopperburn thresholds on seedling regrowth."
+        },
+        {
+          "type": "variety",
+          "name": "Dormancy and disease resistance selection",
+          "target": "stand_longevity",
+          "note": "Match fall dormancy to climate; use resistance to anthracnose and bacterial wilt."
+        },
+        {
+          "type": "cultural",
+          "name": "Rotation and field sanitation",
+          "target": "pest_disease_cycles",
+          "note": "Rotate out of alfalfa for 2-4 years; avoid direct re-seeding on old alfalfa ground."
+        },
+        {
+          "type": "cultural",
+          "name": "Grazing and traffic management",
+          "target": "crown_health",
+          "note": "Limit pugging, wheel ruts, and overgrazing that wound crowns and open rot entry points."
+        },
+        {
+          "type": "cultural",
+          "name": "Drainage and compaction management",
+          "target": "root_crown_rots",
+          "note": "Improve drainage and reduce compaction on wet or poorly structured sites."
+        },
+        {
+          "type": "microbial",
+          "name": "Bt-based materials",
+          "target": "caterpillars",
+          "note": "For caterpillar flares where labels and conditions allow."
+        },
+        {
+          "type": "microbial",
+          "name": "Entomopathogenic nematodes",
+          "target": "soil_dwelling_larvae",
+          "note": "Supplement soil-dwelling larval control where labels and soil moisture allow."
+        }
+      ],
+      "chemical_controls": [
+        {
+          "type": "insecticide_principle",
+          "target": "alfalfa_weevil",
+          "irac_group": "5, 28",
+          "note": "Treat when larval counts exceed local thresholds before first cut; rotate MOA groups seasonally."
+        },
+        {
+          "type": "insecticide_principle",
+          "target": "leafhopper_hopperburn",
+          "irac_group": "3A, 4A, 9B, 22A",
+          "note": "Treat when scouting confirms nymph populations threatening stand vigor; avoid IRAC 4A during bloom."
+        },
+        {
+          "type": "insecticide_principle",
+          "target": "aphid_bursts",
+          "irac_group": "5, 9B",
+          "note": "Treat when regrowth colonization exceeds threshold; prefer selective MOA to conserve beneficials."
+        },
+        {
+          "type": "fungicide_principle",
+          "target": "foliar_crown_disease",
+          "frac_group": "3, 11, M",
+          "note": "Defensible in seed or dehydration production or when severe disease threatens stand survival; rotate FRAC groups between cutting cycles."
+        },
+        {
+          "type": "stewardship",
+          "target": "forage_hay_phi",
+          "irac_group": null,
+          "note": "Threshold-based use only; observe PHI for hay and silage; zero tolerance for off-label residues in forage channels."
+        },
+        {
+          "type": "stewardship",
+          "target": "pollinators",
+          "irac_group": null,
+          "note": "Avoid broad-spectrum sprays during bloom to protect pollinators and seed-set in seed fields."
+        }
+      ],
+      "maturity_profile": {
+        "metric_definitions": {
+          "first_cut_days": "Days from seeding to first cut",
+          "cut_interval_days": "Typical interval between cuts in peak season",
+          "cuts_per_year": "Approximate cuts per growing season",
+          "stand_life_years": "Expected productive stand duration"
+        },
+        "localization_note": "Ranges are broad; localize by variety, dormancy class, irrigation level, and cutting management.",
+        "by_climate": {
+          "tropical": {
+            "advisory_scope": "marginal",
+            "first_cut_days": { "min": 55, "max": 75 },
+            "cut_interval_days": { "min": 25, "max": 35 },
+            "cuts_per_year": { "min": 8, "max": 12 },
+            "stand_life_years": { "min": 3, "max": 5 },
+            "note": "Irrigated production only; heat and pest turnover shorten stand life without careful water and drainage management."
+          },
+          "dry": {
+            "advisory_scope": "primary",
+            "first_cut_days": { "min": 60, "max": 80 },
+            "cut_interval_days": { "min": 28, "max": 38 },
+            "cuts_per_year": { "min": 6, "max": 10 },
+            "stand_life_years": { "min": 4, "max": 6 },
+            "rain_fed_advisory_scope": "marginal",
+            "note": "Core zone when irrigated; rain-fed alfalfa marginal except where seasonal moisture supports establishment."
+          },
+          "temperate": {
+            "advisory_scope": "primary",
+            "first_cut_days": { "min": 60, "max": 90 },
+            "cut_interval_days": { "min": 28, "max": 35 },
+            "cuts_per_year": { "min": 3, "max": 5 },
+            "stand_life_years": { "min": 4, "max": 7 },
+            "note": "Primary alfalfa region; seasonal pest windows with strong multi-cut yield."
+          },
+          "continental": {
+            "advisory_scope": "primary",
+            "first_cut_days": { "min": 65, "max": 95 },
+            "cut_interval_days": { "min": 30, "max": 40 },
+            "cuts_per_year": { "min": 3, "max": 4 },
+            "stand_life_years": { "min": 4, "max": 6 },
+            "note": "Winter hardiness and crown rot are primary stand-life limits."
+          },
+          "high_mountain": {
+            "advisory_scope": "marginal",
+            "first_cut_days": { "min": 75, "max": 110 },
+            "cut_interval_days": { "min": 35, "max": 50 },
+            "cuts_per_year": { "min": 2, "max": 3 },
+            "stand_life_years": { "min": 5, "max": 8 },
+            "note": "Cool short-season niche; dormancy class and drainage critical."
+          },
+          "polar": {
+            "advisory_scope": "out_of_scope",
+            "note": "Long-duration lucerne unreliable in open-field polar margins; treat as out-of-scope except protected microclimate exceptions."
+          }
+        }
+      },
+      "climate_notes": {
+        "tropical": {
+          "advisory_scope": "marginal",
+          "pest_pressure": "Chronic leafhopper and aphid pressure under irrigation.",
+          "disease_profile": "Crown and root rots increase where drainage is poor or irrigation is excessive.",
+          "development": "High regrowth potential but shorter stand life without water and drainage management."
+        },
+        "dry": {
+          "advisory_scope": "primary",
+          "pest_pressure": "Leafhopper pressure seasonal and threshold-driven when irrigated.",
+          "disease_profile": "Root and crown stress linked to moisture extremes and compaction.",
+          "development": "Strong yield under irrigation; rain-fed production generally marginal."
+        },
+        "temperate": {
+          "advisory_scope": "primary",
+          "pest_pressure": "Alfalfa weevil and seasonal leafhopper windows.",
+          "disease_profile": "Foliar disease increases with humidity; crown rot on wet sites.",
+          "development": "Defined cutting windows with 3-5 cuts per year typical."
+        },
+        "continental": {
+          "advisory_scope": "primary",
+          "pest_pressure": "Similar to temperate with sharper winter-injury interaction.",
+          "disease_profile": "Winter injury and crown or root rot are stand-life risks.",
+          "development": "Fewer cuts per year; stand life 4-6 years with good crown management."
+        },
+        "high_mountain": {
+          "advisory_scope": "marginal",
+          "pest_pressure": "Lower pest turnover; fewer insect flares per season.",
+          "disease_profile": "Winter injury and drainage-linked rots dominate.",
+          "development": "Longer intervals between cuts; 2-3 cuts per year typical."
+        },
+        "polar": {
+          "advisory_scope": "out_of_scope",
+          "pest_pressure": null,
+          "disease_profile": null,
+          "development": "Perennial alfalfa not a dependable crop class in open polar margins."
+        }
+      }
+    },
+    {
+      "crop_key": "clover_forage",
+      "crop_name": "Clover species (forage)",
+      "major_pests": [
+        {
+          "category": "insect",
+          "name": "Aphids",
+          "scientific_name": null,
+          "life_stage_note": "Colonies on young tissue and post-cut regrowth",
+          "target": "foliage",
+          "note": "Reduce vigor and vector viruses; clover, pea, and spotted aphid complexes."
+        },
+        {
+          "category": "insect",
+          "name": "Leafhoppers",
+          "scientific_name": null,
+          "life_stage_note": "Nymphs and adults on warm regrowth",
+          "target": "foliage",
+          "note": "Hopperburn and virus transmission in warm regrowth periods."
+        },
+        {
+          "category": "insect",
+          "name": "Caterpillar defoliators",
+          "scientific_name": null,
+          "life_stage_note": "Larval defoliation",
+          "target": "foliage",
+          "note": "Armyworm, loopers, and webworms; worst in pure stands and new seedlings."
+        },
+        {
+          "category": "insect",
+          "name": "Root weevils",
+          "scientific_name": null,
+          "life_stage_note": "Adults notch leaves; larvae feed root nodules",
+          "target": "roots_nodules",
+          "note": "Clover root curculio and Sitona weevil reduce N fixation."
+        },
+        {
+          "category": "insect",
+          "name": "Clover head weevil",
+          "scientific_name": null,
+          "life_stage_note": "Adults and larvae in seed heads",
+          "target": "seed_heads",
+          "note": "Primary concern in clover seed production."
+        },
+        {
+          "category": "insect",
+          "name": "Thrips",
+          "scientific_name": null,
+          "life_stage_note": "Flower and terminal feeding",
+          "target": "flowers",
+          "note": "Seed crop concern affecting flower quality."
+        },
+        {
+          "category": "disease",
+          "name": "Powdery mildew, rust, and leaf spot complexes",
+          "scientific_name": null,
+          "life_stage_note": null,
+          "target": "foliage",
+          "note": "Foliar quality loss; worse in humid temperate and tropical conditions."
+        },
+        {
+          "category": "disease",
+          "name": "Sclerotinia stem and crown rot",
+          "scientific_name": null,
+          "life_stage_note": null,
+          "target": "crown_stem",
+          "note": "Devastating in dense pure stands under cool, wet canopy conditions."
+        },
+        {
+          "category": "disease",
+          "name": "Root and crown rots",
+          "scientific_name": null,
+          "life_stage_note": null,
+          "target": "roots_crown",
+          "note": "Phytophthora, Rhizoctonia, and Fusarium linked to waterlogging and compaction."
+        },
+        {
+          "category": "disease",
+          "name": "Virus complexes",
+          "scientific_name": null,
+          "life_stage_note": null,
+          "target": "whole_plant",
+          "note": "Alfalfa mosaic, bean yellow mosaic, and clover yellow vein; aphid-vectored in seed fields."
+        }
+      ],
+      "biological_controls": [
+        {
+          "type": "natural_enemy",
+          "name": "Lady beetles, lacewings, parasitoid wasps, predatory bugs",
+          "target": "aphids_caterpillars",
+          "note": "Clover-grass mixtures often support higher beneficial diversity than pure clover stands."
+        },
+        {
+          "type": "cultural",
+          "name": "Clover-grass mixture design",
+          "target": "pest_dilution",
+          "note": "Mixed swards dilute pest impact and improve sward stability across grazing and hay systems."
+        },
+        {
+          "type": "cultural",
+          "name": "Rotation and fallow",
+          "target": "inoculum_reduction",
+          "note": "Avoid consecutive pure-clover crops on the same ground to cut disease inoculum and root-pest carryover."
+        },
+        {
+          "type": "cultural",
+          "name": "Grazing and cutting strategy",
+          "target": "regrowth_disease",
+          "note": "Remove inoculum-laden tissue before dense humid canopy develops; protect stolons and crowns from overgrazing."
+        },
+        {
+          "type": "cultural",
+          "name": "Drainage and compaction management",
+          "target": "root_crown_rots",
+          "note": "Prevent waterlogging over white clover stolons and red clover crowns; limit traffic on wet soils."
+        },
+        {
+          "type": "variety",
+          "name": "Species and resistance selection",
+          "target": "climate_fit",
+          "note": "Match red, white, subterranean, or annual clover type to rainfall and temperature; use rust- and mildew-resistant varieties where available."
+        }
+      ],
+      "chemical_controls": [
+        {
+          "type": "insecticide_principle",
+          "target": "aphids_leafhoppers",
+          "irac_group": "9B, 5",
+          "note": "Treat when scouting confirms threshold on regrowth; prefer selective MOA over broad-spectrum pyrethroids in mixed pastures."
+        },
+        {
+          "type": "insecticide_principle",
+          "target": "defoliators",
+          "irac_group": "5, 6, 28",
+          "note": "Treat larval flares on seedlings or pure stands with seasonal MOA rotation."
+        },
+        {
+          "type": "fungicide_principle",
+          "target": "rust_mildew",
+          "frac_group": "3, 11, M",
+          "note": "Defensible in seed production or high-value hay; rarely economical in routine grazing pasture."
+        },
+        {
+          "type": "stewardship",
+          "target": "rhizobium_symbiosis",
+          "irac_group": null,
+          "note": "Avoid unnecessary soil-applied broad-spectrum treatments at sowing to preserve N-fixing symbioses."
+        },
+        {
+          "type": "stewardship",
+          "target": "forage_phi",
+          "irac_group": null,
+          "note": "Observe PHI for hay and silage; rotate MOA groups seasonally."
+        }
+      ],
+      "maturity_profile": {
+        "metric_definitions": {
+          "establishment_days": "Days from sowing to usable grazing or first cut",
+          "stand_life_years": "Expected productive stand duration by species"
+        },
+        "localization_note": "Ranges vary by clover species (red, white, subterranean, annual); localize by type and management.",
+        "by_species": {
+          "red_clover": {
+            "establishment_days": { "min": 60, "max": 90 },
+            "stand_life_years": { "min": 2, "max": 3 }
+          },
+          "white_clover": {
+            "establishment_days": { "min": 90, "max": 120 },
+            "stand_life_years": { "min": 3, "max": 10 }
+          },
+          "subterranean_clover": {
+            "establishment_days": null,
+            "stand_life_years": null,
+            "note": "Autumn germination and spring use; annual reseeding cycle if burrs are allowed to set."
+          }
+        },
+        "by_climate": {
+          "tropical": {
+            "advisory_scope": "marginal",
+            "establishment_days": { "min": 50, "max": 70 },
+            "stand_life_years": { "min": 1, "max": 2 },
+            "note": "Cool-season clovers marginal in hot lowlands; heat-tolerant annual types under irrigation only."
+          },
+          "dry": {
+            "advisory_scope": "marginal",
+            "establishment_days": { "min": 50, "max": 70 },
+            "stand_life_years": { "min": 1, "max": 3 },
+            "note": "Berseem and irrigated annual clovers fit; subterranean clover suits Mediterranean winter-rainfall patterns only."
+          },
+          "temperate": {
+            "advisory_scope": "primary",
+            "establishment_days": { "min": 60, "max": 120 },
+            "stand_life_years": { "min": 2, "max": 10 },
+            "note": "Primary clover zone; red and white clover standard in mixed swards."
+          },
+          "continental": {
+            "advisory_scope": "primary",
+            "establishment_days": { "min": 60, "max": 120 },
+            "stand_life_years": { "min": 2, "max": 8 },
+            "note": "Similar to temperate; red clover persistence may shorten under harsher winters."
+          },
+          "high_mountain": {
+            "advisory_scope": "marginal",
+            "establishment_days": { "min": 75, "max": 120 },
+            "stand_life_years": { "min": 2, "max": 8 },
+            "note": "Red and white clover perform in cool moist sites; shorter seasons limit biomass."
+          },
+          "polar": {
+            "advisory_scope": "out_of_scope",
+            "note": "Fringe cool-season niche only; not a primary forage class."
+          }
+        }
+      },
+      "climate_notes": {
+        "tropical": {
+          "advisory_scope": "marginal",
+          "pest_pressure": "Aphid and virus pressure on irrigated annual types.",
+          "disease_profile": "Foliar disease under humid conditions.",
+          "development": "White clover poor persistence in hot lowlands."
+        },
+        "dry": {
+          "advisory_scope": "marginal",
+          "pest_pressure": "Seasonal aphid flares on irrigated stands.",
+          "disease_profile": "Root injury on poorly drained irrigated sites.",
+          "development": "Annual and Mediterranean types fit best; perennials shorten in persistence."
+        },
+        "temperate": {
+          "advisory_scope": "primary",
+          "pest_pressure": "Aphids, leafhoppers, and defoliators on regrowth.",
+          "disease_profile": "Rust, mildew, and Sclerotinia in humid dense stands.",
+          "development": "Red and white clover are standard pasture components."
+        },
+        "continental": {
+          "advisory_scope": "primary",
+          "pest_pressure": "Similar to temperate with sharper winter stress.",
+          "disease_profile": "Crown and root rots on wet compacted sites.",
+          "development": "Strong fit for mixed hay and grazing systems."
+        },
+        "high_mountain": {
+          "advisory_scope": "marginal",
+          "pest_pressure": "Lower foliar pest turnover.",
+          "disease_profile": "Sclerotinia risk in cool wet canopies.",
+          "development": "Good persistence possible but fewer cuts per season."
+        },
+        "polar": {
+          "advisory_scope": "out_of_scope",
+          "pest_pressure": null,
+          "disease_profile": null,
+          "development": "Limited fringe use only."
+        }
+      }
+    },
+    {
+      "crop_key": "silage_maize",
+      "crop_name": "Silage maize",
+      "major_pests": [
+        {
+          "category": "insect",
+          "name": "Stem borers",
+          "scientific_name": null,
+          "life_stage_note": "Larval tunneling in stalks",
+          "target": "stalk",
+          "note": "European corn borer and tropical borer species reduce standability and open stalk rot entry points."
+        },
+        {
+          "category": "insect",
+          "name": "Fall armyworm and true armyworm",
+          "scientific_name": null,
+          "life_stage_note": "Larval defoliation and whorl feeding",
+          "target": "foliage_whorl",
+          "note": "Can destroy stand in seedling and vegetative stages."
+        },
+        {
+          "category": "insect",
+          "name": "Cutworms",
+          "scientific_name": null,
+          "life_stage_note": "Nocturnal larvae cut seedlings at soil line",
+          "target": "seedlings",
+          "note": "Establishment pest causing stand gaps."
+        },
+        {
+          "category": "insect",
+          "name": "Corn earworm",
+          "scientific_name": null,
+          "life_stage_note": "Larval ear feeding",
+          "target": "ears",
+          "note": "Affects grain portion of silage dry matter and mycotoxin risk."
+        },
+        {
+          "category": "insect",
+          "name": "Sap feeders",
+          "scientific_name": null,
+          "life_stage_note": "Aphids, thrips, and leafhoppers on foliage",
+          "target": "foliage",
+          "note": "Secondary unless populations are extreme."
+        },
+        {
+          "category": "insect",
+          "name": "Rootworms",
+          "scientific_name": null,
+          "life_stage_note": "Larval root pruning",
+          "target": "roots",
+          "note": "Where present, causes pre-harvest lodging."
+        },
+        {
+          "category": "insect",
+          "name": "Wireworms and white grubs",
+          "scientific_name": null,
+          "life_stage_note": "Larval feeding at establishment",
+          "target": "roots_seedlings",
+          "note": "Cause stand gaps and uneven emergence."
+        },
+        {
+          "category": "disease",
+          "name": "Foliar blights",
+          "scientific_name": null,
+          "life_stage_note": null,
+          "target": "foliage",
+          "note": "Northern corn leaf blight, gray leaf spot, and anthracnose leaf blight reduce leaf area and silage quality."
+        },
+        {
+          "category": "disease",
+          "name": "Rusts",
+          "scientific_name": null,
+          "life_stage_note": null,
+          "target": "foliage",
+          "note": "Common and southern rust can defoliate susceptible hybrids rapidly under warm humid conditions."
+        },
+        {
+          "category": "disease",
+          "name": "Stalk rots",
+          "scientific_name": null,
+          "life_stage_note": null,
+          "target": "stalk",
+          "note": "Fusarium, Colletotrichum, and Stenocarpella cause lodging and mycotoxin risk; often follow borer injury or drought stress."
+        },
+        {
+          "category": "disease",
+          "name": "Root rots and seedling blights",
+          "scientific_name": null,
+          "life_stage_note": null,
+          "target": "roots_seedlings",
+          "note": "Pythium and Rhizoctonia cause stand gaps at emergence."
+        }
+      ],
+      "biological_controls": [
+        {
+          "type": "variety",
+          "name": "Host-plant resistance traits",
+          "target": "borers_rootworm_foliar",
+          "note": "Select hybrids with appropriate borer, rootworm, and foliar disease traits for region and season length."
+        },
+        {
+          "type": "natural_enemy",
+          "name": "Trichogramma wasps",
+          "target": "borer_eggs",
+          "note": "Egg parasitism against stem borer complexes where releases or habitat support are feasible."
+        },
+        {
+          "type": "microbial",
+          "name": "Bt-based bioinsecticides",
+          "target": "caterpillars",
+          "note": "For caterpillar control where Bt traits are absent or as supplement in threshold-driven programs."
+        },
+        {
+          "type": "microbial",
+          "name": "Entomopathogenic nematodes",
+          "target": "cutworms_grubs",
+          "note": "Supplement cutworm and grub suppression at establishment where labels allow."
+        },
+        {
+          "type": "cultural",
+          "name": "Rotation and residue management",
+          "target": "pest_pathogen_cycles",
+          "note": "Break continuous maize; manage residue to reduce borer overwintering and disease inoculum while controlling erosion."
+        },
+        {
+          "type": "cultural",
+          "name": "Plant density and hybrid maturity matching",
+          "target": "lodging_stalk_rot",
+          "note": "Match maturity class to season length; avoid over-density that increases stalk rot and lodging."
+        },
+        {
+          "type": "cultural",
+          "name": "Harvest timing at target dry matter",
+          "target": "silage_quality",
+          "note": "Chop at 30-38% DM (milk to early dent) to balance fiber digestibility, starch, and disease or lodging risk."
+        }
+      ],
+      "chemical_controls": [
+        {
+          "type": "seed_treatment",
+          "target": "establishment_pests_diseases",
+          "irac_group": "4A",
+          "frac_group": "M, 3, 7",
+          "note": "Neonicotinoid plus fungicide seed treatments protect emergence against soil insects and seedling diseases."
+        },
+        {
+          "type": "insecticide_principle",
+          "target": "cutworms_armyworms_whorl",
+          "irac_group": "5, 6, 22A, 28",
+          "note": "Treat at establishment and whorl stage when scouting confirms threshold; rotate MOA within season."
+        },
+        {
+          "type": "insecticide_principle",
+          "target": "borers_earworm",
+          "irac_group": "5, 6, 28",
+          "note": "Pre-tassel and reproductive treatment when trap or scouting thresholds are met."
+        },
+        {
+          "type": "fungicide_principle",
+          "target": "foliar_disease",
+          "frac_group": "11, 3, 7",
+          "note": "Defensible on susceptible hybrids when foliar disease threatens leaf area before dent stage; stalk rot management is primarily hybrid selection and borer control."
+        },
+        {
+          "type": "stewardship",
+          "target": "whole_plant_phi",
+          "irac_group": null,
+          "note": "Whole-plant harvest requires PHI compliance before chop; monitor drought-stressed or borer-damaged fields for mycotoxin risk."
+        }
+      ],
+      "maturity_profile": {
+        "metric_definitions": {
+          "days_to_optimal_harvest": "Days from planting to whole-plant chop at target 30-38% DM"
+        },
+        "localization_note": "Ranges by hybrid maturity class (early, medium, late); localize by relative maturity and frost window.",
+        "hybrid_classes": ["early", "medium", "late"],
+        "by_climate": {
+          "tropical": {
+            "advisory_scope": "primary",
+            "days_to_optimal_harvest": {
+              "early": { "min": 95, "max": 110 },
+              "medium": { "min": 110, "max": 125 },
+              "late": { "min": 125, "max": 140 }
+            },
+            "note": "Faster calendar cycle but higher mid-season borer and armyworm pressure."
+          },
+          "dry": {
+            "advisory_scope": "primary",
+            "days_to_optimal_harvest": {
+              "early": { "min": 95, "max": 110 },
+              "medium": { "min": 110, "max": 125 },
+              "late": { "min": 125, "max": 140 }
+            },
+            "note": "Similar to tropical when irrigated; drought stress before dent increases stalk rot and lodging risk."
+          },
+          "temperate": {
+            "advisory_scope": "primary",
+            "days_to_optimal_harvest": {
+              "early": { "min": 100, "max": 115 },
+              "medium": { "min": 115, "max": 130 },
+              "late": { "min": 130, "max": 150 }
+            },
+            "note": "Frost is the hard season stop; foliar disease and lodging are late-season concerns."
+          },
+          "continental": {
+            "advisory_scope": "primary",
+            "days_to_optimal_harvest": {
+              "early": { "min": 105, "max": 120 },
+              "medium": { "min": 120, "max": 140 },
+              "late": { "min": 140, "max": 160 }
+            },
+            "note": "Longer duration; late-season stalk rot and lodging are primary harvest-timing concerns."
+          },
+          "high_mountain": {
+            "advisory_scope": "marginal",
+            "days_to_optimal_harvest": {
+              "early": { "min": 90, "max": 105 },
+              "medium": { "min": 100, "max": 115 },
+              "late": null
+            },
+            "note": "Ultra-short and short-season hybrids only; late types not recommended."
+          },
+          "polar": {
+            "advisory_scope": "out_of_scope",
+            "note": "Not viable except niche protected sites."
+          }
+        }
+      },
+      "climate_notes": {
+        "tropical": {
+          "advisory_scope": "primary",
+          "pest_pressure": "High stem borer, armyworm, and stalk pest pressure.",
+          "disease_profile": "Rust and stalk rot under warm humid conditions.",
+          "development": "Shorter calendar duration with continuous pest risk."
+        },
+        "dry": {
+          "advisory_scope": "primary",
+          "pest_pressure": "Armyworm and borer flares in warm irrigated seasons.",
+          "disease_profile": "Stalk rot increases with drought stress before dent.",
+          "development": "Irrigation timing critical for biomass accumulation."
+        },
+        "temperate": {
+          "advisory_scope": "primary",
+          "pest_pressure": "Cutworm at establishment; borer where present.",
+          "disease_profile": "Foliar blights and rust on susceptible hybrids.",
+          "development": "Longer season with frost as termination event."
+        },
+        "continental": {
+          "advisory_scope": "primary",
+          "pest_pressure": "Similar to temperate with lodging risk at harvest.",
+          "disease_profile": "Late-season stalk rot complexes.",
+          "development": "Late hybrids need full warm-season window."
+        },
+        "high_mountain": {
+          "advisory_scope": "marginal",
+          "pest_pressure": "Fewer heat-driven pest flushes.",
+          "disease_profile": "Compressed disease window but frost limits recovery.",
+          "development": "Short-season hybrids with slow cool-period development."
+        },
+        "polar": {
+          "advisory_scope": "out_of_scope",
+          "pest_pressure": null,
+          "disease_profile": null,
+          "development": "Standard silage maize not viable in open polar margins."
+        }
+      }
+    },
+    {
+      "crop_key": "pasture_grasses",
+      "crop_name": "Pasture grasses",
+      "major_pests": [
+        {
+          "category": "insect",
+          "name": "Cutworms",
+          "scientific_name": null,
+          "life_stage_note": "Larval seedling cutting at soil line",
+          "target": "seedlings",
+          "note": "Establishment pest in cool-season grass sowings.",
+          "grass_type": "cool_season"
+        },
+        {
+          "category": "insect",
+          "name": "Armyworms",
+          "scientific_name": null,
+          "life_stage_note": "Larval defoliation flushes",
+          "target": "foliage",
+          "note": "Rapid flares on lush spring or autumn growth in cool-season and warm-season grasses.",
+          "grass_type": "both"
+        },
+        {
+          "category": "insect",
+          "name": "Billbugs",
+          "scientific_name": null,
+          "life_stage_note": "Larval stem and crown feeding; adult leaf notching",
+          "target": "crown_stem",
+          "note": "Primary ryegrass concern.",
+          "grass_type": "cool_season"
+        },
+        {
+          "category": "insect",
+          "name": "Aphids and chinch bug",
+          "scientific_name": null,
+          "life_stage_note": "Sap feeding on stressed swards",
+          "target": "foliage",
+          "note": "Reduce vigor especially under drought or heat stress.",
+          "grass_type": "cool_season"
+        },
+        {
+          "category": "insect",
+          "name": "Leatherjackets",
+          "scientific_name": null,
+          "life_stage_note": "Larval root feeding",
+          "target": "roots",
+          "note": "Temperate pasture concern in some regions.",
+          "grass_type": "cool_season"
+        },
+        {
+          "category": "insect",
+          "name": "Spittlebugs",
+          "scientific_name": null,
+          "life_stage_note": "Nymph and adult xylem feeding",
+          "target": "foliage",
+          "note": "Honeydew and sooty mold reduce bermuda palatability and vigor.",
+          "grass_type": "warm_season"
+        },
+        {
+          "category": "insect",
+          "name": "Bermuda grass mites",
+          "scientific_name": null,
+          "life_stage_note": "Sap feeding causing shortened internodes",
+          "target": "foliage",
+          "note": "Stunted growth and reduced sward quality on bermuda.",
+          "grass_type": "warm_season"
+        },
+        {
+          "category": "insect",
+          "name": "White grubs and mole crickets",
+          "scientific_name": null,
+          "life_stage_note": "Larval root and establishment damage",
+          "target": "roots",
+          "note": "Warm-season grass establishment and persistence concern.",
+          "grass_type": "warm_season"
+        },
+        {
+          "category": "disease",
+          "name": "Rust, powdery mildew, leaf spot, red thread",
+          "scientific_name": null,
+          "life_stage_note": null,
+          "target": "foliage",
+          "note": "Foliar quality loss; worse in humid temperate and tropical conditions.",
+          "grass_type": "cool_season"
+        },
+        {
+          "category": "disease",
+          "name": "Snow mold",
+          "scientific_name": null,
+          "life_stage_note": null,
+          "target": "foliage_crown",
+          "note": "Winter injury and foliar kill in temperate zones.",
+          "grass_type": "cool_season"
+        },
+        {
+          "category": "disease",
+          "name": "Crown and root rots",
+          "scientific_name": null,
+          "life_stage_note": null,
+          "target": "roots_crown",
+          "note": "Linked to wet, compacted soils across grass types.",
+          "grass_type": "both"
+        },
+        {
+          "category": "disease",
+          "name": "Leaf spot, rust, dollar spot, spring dead spot",
+          "scientific_name": null,
+          "life_stage_note": null,
+          "target": "foliage_crown",
+          "note": "Warm-season foliar and crown disease reducing sward density.",
+          "grass_type": "warm_season"
+        },
+        {
+          "category": "disease",
+          "name": "Helminthosporium leaf blight",
+          "scientific_name": null,
+          "life_stage_note": null,
+          "target": "foliage",
+          "note": "Defoliation under warm humid conditions on warm-season grasses.",
+          "grass_type": "warm_season"
+        }
+      ],
+      "biological_controls": [
+        {
+          "type": "natural_enemy",
+          "name": "Ground beetles, rove beetles, parasitoid wasps, predatory mites",
+          "target": "pasture_pests",
+          "note": "Conserved by minimizing broad-spectrum sprays and maintaining field margins."
+        },
+        {
+          "type": "cultural",
+          "name": "Grazing and mowing management",
+          "target": "sward_resilience",
+          "note": "Avoid overgrazing below species-specific residual height; rotate grazing pressure to allow recovery."
+        },
+        {
+          "type": "variety",
+          "name": "Species and variety selection",
+          "target": "climate_end_use",
+          "note": "Match cool-season (ryegrass, fescue) or warm-season (bermuda, bahia, Rhodes) types to site, drainage, and end-use."
+        },
+        {
+          "type": "variety",
+          "name": "Endophyte-enhanced grasses",
+          "target": "insect_resistance",
+          "note": "Fescue and ryegrass endophytes confer insect resistance; manage ergot alkaloid livestock safety."
+        },
+        {
+          "type": "cultural",
+          "name": "Mixed legume-grass swards",
+          "target": "pest_dilution",
+          "note": "Improve diversity and reduce pure-stand pest flares."
+        },
+        {
+          "type": "cultural",
+          "name": "Soil fertility and drainage",
+          "target": "disease_prevention",
+          "note": "Balanced N prevents lush disease-prone growth; lime and drainage reduce red thread and pH-related disease."
+        }
+      ],
+      "chemical_controls": [
+        {
+          "type": "insecticide_principle",
+          "target": "armyworms_cutworms",
+          "irac_group": "5, 6, 28",
+          "note": "Treat when larval counts exceed threshold; prefer selective MOA over blanket pyrethroid across large pasture areas."
+        },
+        {
+          "type": "insecticide_principle",
+          "target": "spittlebugs_bermuda",
+          "irac_group": "3A, 5",
+          "note": "Treat when honeydew, sooty mold, and vigor loss exceed local threshold; spot-treat where possible."
+        },
+        {
+          "type": "fungicide_principle",
+          "target": "rust_leaf_spot",
+          "frac_group": "3, 11, M",
+          "note": "Defensible in seed production or high-value hay; rarely cost-effective on grazing pasture."
+        },
+        {
+          "type": "herbicide_principle",
+          "target": "weed_competition",
+          "hrac_group": "varies",
+          "note": "Selective weed control maintains sward density; rotate HRAC groups and avoid damage to legume components in mixed pastures."
+        },
+        {
+          "type": "stewardship",
+          "target": "beneficial_conservation",
+          "irac_group": null,
+          "note": "Use economic thresholds, spot-treat where possible, and avoid unnecessary broad-spectrum sprays across large pasture areas."
+        }
+      ],
+      "maturity_profile": {
+        "metric_definitions": {
+          "establishment_days": "Days from sowing or planting to first graze or cut",
+          "regrowth_interval_days": "Typical interval between grazings or cuts in peak season",
+          "stand_life_years": "Expected stand persistence"
+        },
+        "localization_note": "Ranges by grass species and functional type (cool_season vs warm_season); localize by management intensity.",
+        "by_species": {
+          "perennial_ryegrass": {
+            "grass_type": "cool_season",
+            "establishment_days": { "min": 90, "max": 120 },
+            "regrowth_interval_days": { "min": 18, "max": 28 },
+            "stand_life_years": { "min": 3, "max": 5 }
+          },
+          "tall_fescue": {
+            "grass_type": "cool_season",
+            "establishment_days": { "min": 120, "max": 150 },
+            "regrowth_interval_days": { "min": 21, "max": 35 },
+            "stand_life_years": { "min": 5, "max": 10 }
+          },
+          "bermuda_grass": {
+            "grass_type": "warm_season",
+            "establishment_days": { "min": 60, "max": 90 },
+            "regrowth_interval_days": { "min": 14, "max": 21 },
+            "stand_life_years": { "min": 10, "max": 20 }
+          },
+          "bahia_rhodes_grass": {
+            "grass_type": "warm_season",
+            "establishment_days": { "min": 90, "max": 120 },
+            "regrowth_interval_days": { "min": 21, "max": 30 },
+            "stand_life_years": { "min": 5, "max": 15 }
+          }
+        },
+        "by_climate": {
+          "tropical": {
+            "advisory_scope": "primary",
+            "dominant_grass_type": "warm_season",
+            "note": "Warm-season grasses dominate; year-round grazing possible with irrigation; continuous pest pressure."
+          },
+          "dry": {
+            "advisory_scope": "primary",
+            "dominant_grass_type": "warm_season",
+            "note": "Warm-season grasses persist with drought tolerance; cool-season grasses seasonal; regrowth slows in dry periods."
+          },
+          "temperate": {
+            "advisory_scope": "primary",
+            "dominant_grass_type": "cool_season",
+            "note": "Cool-season grasses peak; warm-season types summer-active in transition zones."
+          },
+          "continental": {
+            "advisory_scope": "primary",
+            "dominant_grass_type": "cool_season",
+            "note": "Cool-season dominance; summer stress may shorten ryegrass persistence."
+          },
+          "high_mountain": {
+            "advisory_scope": "marginal",
+            "dominant_grass_type": "cool_season",
+            "establishment_days": { "min": 100, "max": 150 },
+            "regrowth_interval_days": { "min": 25, "max": 40 },
+            "stand_life_years": { "min": 4, "max": 8 },
+            "note": "Slow cool-period development; long regrowth intervals."
+          },
+          "polar": {
+            "advisory_scope": "out_of_scope",
+            "note": "Very short cool-season niche; limited advisory scope."
+          }
+        }
+      },
+      "climate_notes": {
+        "tropical": {
+          "advisory_scope": "primary",
+          "pest_pressure": "Armyworm and spittlebug pressure on warm-season grasses; continuous pest risk.",
+          "disease_profile": "Rust and leaf spot under humid conditions.",
+          "development": "Warm-season grasses dominate; year-round grazing with irrigation."
+        },
+        "dry": {
+          "advisory_scope": "primary",
+          "pest_pressure": "Drought-stress-linked sap-feeder and mite outbreaks.",
+          "disease_profile": "Lower foliar disease than humid zones; stress disorders dominate.",
+          "development": "Warm-season persistence; cool-season grasses seasonal only."
+        },
+        "temperate": {
+          "advisory_scope": "primary",
+          "pest_pressure": "Billbugs, armyworms, and aphids on cool-season swards.",
+          "disease_profile": "Rust, red thread, and snow mold in humid seasons.",
+          "development": "Cool-season grasses primary; strong spring and autumn growth."
+        },
+        "continental": {
+          "advisory_scope": "primary",
+          "pest_pressure": "Similar to temperate with sharper summer stress.",
+          "disease_profile": "Crown and root rots on wet compacted sites.",
+          "development": "Fescue persistence often longer than ryegrass."
+        },
+        "high_mountain": {
+          "advisory_scope": "marginal",
+          "pest_pressure": "Lower annual pest turnover.",
+          "disease_profile": "Snow mold and winter injury risks.",
+          "development": "Cool-season types with slow establishment and long regrowth intervals."
+        },
+        "polar": {
+          "advisory_scope": "out_of_scope",
+          "pest_pressure": null,
+          "disease_profile": null,
+          "development": "Very short season; not a primary pasture class."
+        }
+      }
+    }
+  ]
+}

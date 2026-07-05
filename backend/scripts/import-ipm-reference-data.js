@@ -20,10 +20,17 @@ const { CEREAL_CROP_KEYS } = require('../data/cerealPestProtection');
 const { ROOT_TUBER_CROP_KEYS } = require('../data/rootTuberPestProtection');
 const { GRAIN_LEGUME_CROP_KEYS } = require('../data/grainLegumePestProtection');
 const { VEGETABLE_FAMILY_CROP_KEYS } = require('../data/vegetableFamilyPestProtection');
+const { FORAGE_FAMILY_CROP_KEYS } = require('../data/forageFamilyPestProtection');
 const { normalizeLabel } = require('../services/ipmIntelligence/labelNormalizer');
 
 const VEGETABLE_IMPORT_KEYS = ['vegetable_default', 'tomato', 'capsicum', ...VEGETABLE_FAMILY_CROP_KEYS];
-const IMPORT_KEYS = [...VEGETABLE_IMPORT_KEYS, ...CEREAL_CROP_KEYS, ...ROOT_TUBER_CROP_KEYS, ...GRAIN_LEGUME_CROP_KEYS];
+const IMPORT_KEYS = [
+    ...VEGETABLE_IMPORT_KEYS,
+    ...CEREAL_CROP_KEYS,
+    ...ROOT_TUBER_CROP_KEYS,
+    ...GRAIN_LEGUME_CROP_KEYS,
+    ...FORAGE_FAMILY_CROP_KEYS
+];
 
 const CATALOG_META = {
     vegetable_default: {
@@ -60,7 +67,11 @@ const CATALOG_META = {
     pigeon_pea: { displayName: 'Pigeon pea', cropGroup: 'legume', isDefaultTemplate: false },
     cowpea: { displayName: 'Cowpea', cropGroup: 'legume', isDefaultTemplate: false },
     broad_bean: { displayName: 'Broad / fava bean', cropGroup: 'legume', isDefaultTemplate: false },
-    groundnut: { displayName: 'Groundnut / peanut', cropGroup: 'legume', isDefaultTemplate: false }
+    groundnut: { displayName: 'Groundnut / peanut', cropGroup: 'legume', isDefaultTemplate: false },
+    alfalfa: { displayName: 'Alfalfa / lucerne', cropGroup: 'forage', isDefaultTemplate: false },
+    clover_forage: { displayName: 'Clover species (forage)', cropGroup: 'forage', isDefaultTemplate: false },
+    silage_maize: { displayName: 'Silage maize', cropGroup: 'forage', isDefaultTemplate: false },
+    pasture_grasses: { displayName: 'Pasture grasses', cropGroup: 'forage', isDefaultTemplate: false }
 };
 
 function inferPestType(name) {

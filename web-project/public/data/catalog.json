@@ -6270,7 +6270,281 @@
       ]
     },
     {
-      "id": "plants:lavender",
+      "id": "plants:alfalfa",
+      "group": "plants",
+      "category": "Forage & Pasture",
+      "subCategory": "Perennial legumes",
+      "name": "Alfalfa",
+      "scientificName": "Medicago sativa",
+      "aliases": [
+        "alfalfa",
+        "lucerne",
+        "lucerne hay"
+      ],
+      "notes": "Multi-cut perennial legume for hay, silage, and controlled grazing; crown health and regrowth timing are central to IPM success.",
+      "environment": "terrestrial",
+      "tags": [
+        "forage",
+        "pasture",
+        "legume",
+        "hay",
+        "crop",
+        "plants"
+      ],
+      "isEdible": false,
+      "isCrop": true,
+      "isTree": false,
+      "isFlower": false,
+      "climate": "temperate",
+      "soil": "well-drained loam with neutral to slightly alkaline pH",
+      "varieties": [
+        "Fall dormancy-rated hay types",
+        "Grazing-tolerant types"
+      ],
+      "growthDurationDays": 75,
+      "maturityNotes": "First cut commonly about 60-90 days after seeding in temperate zones, with 28-35 day intervals between peak-season cuts and productive stand life often 4-7 years.",
+      "climateSuitability": {
+        "suitable": [
+          "Temperate",
+          "Continental",
+          "Dry"
+        ],
+        "marginal": [
+          "Tropical",
+          "High mountain"
+        ],
+        "notRecommended": [
+          "Polar"
+        ]
+      },
+      "preventiveActions": [
+        "Maintain cutting height and avoid crown damage from traffic or overgrazing",
+        "Rotate fields and improve drainage to reduce crown and root rot carryover",
+        "Scout regrowth after cutting for leafhopper, aphid, and weevil thresholds"
+      ]
+    },
+    {
+      "id": "plants:red_clover",
+      "group": "plants",
+      "category": "Forage & Pasture",
+      "subCategory": "Clovers",
+      "name": "Red clover",
+      "scientificName": "Trifolium pratense",
+      "aliases": [
+        "red clover",
+        "clover",
+        "forage clover"
+      ],
+      "notes": "Short-lived perennial clover for hay, silage mixtures, and pasture renovation; often paired with grasses in mixed swards.",
+      "environment": "terrestrial",
+      "tags": [
+        "forage",
+        "pasture",
+        "legume",
+        "hay",
+        "crop",
+        "plants"
+      ],
+      "isEdible": false,
+      "isCrop": true,
+      "isTree": false,
+      "isFlower": false,
+      "climate": "temperate",
+      "soil": "fertile, well-drained soils",
+      "varieties": [
+        "Early flowering types",
+        "Late flowering types"
+      ],
+      "growthDurationDays": 75,
+      "maturityNotes": "Often establishes in about 60-90 days to first cut or grazing, with typical productive stand life about 2-3 years in temperate systems.",
+      "climateSuitability": {
+        "suitable": [
+          "Temperate",
+          "Continental"
+        ],
+        "marginal": [
+          "Dry",
+          "Tropical",
+          "High mountain"
+        ],
+        "notRecommended": [
+          "Polar"
+        ]
+      },
+      "preventiveActions": [
+        "Use clover-grass mixtures to dilute pest pressure and improve sward stability",
+        "Manage drainage and compaction to protect crowns and stolons",
+        "Remove inoculum-laden tissue before dense humid canopy conditions develop"
+      ]
+    },
+    {
+      "id": "plants:silage_maize",
+      "group": "plants",
+      "category": "Forage & Pasture",
+      "subCategory": "Silage crops",
+      "name": "Silage maize",
+      "scientificName": "Zea mays",
+      "aliases": [
+        "silage maize",
+        "silage corn",
+        "forage maize",
+        "corn silage",
+        "maize silage"
+      ],
+      "notes": "Whole-plant maize grown for silage; IPM protects leaf area, stalk integrity, and feed quality through milk to early dent harvest.",
+      "environment": "terrestrial",
+      "tags": [
+        "forage",
+        "silage",
+        "maize",
+        "crop",
+        "plants"
+      ],
+      "isEdible": false,
+      "isCrop": true,
+      "isTree": false,
+      "isFlower": false,
+      "climate": "temperate",
+      "soil": "fertile loam with good drainage",
+      "varieties": [
+        "Early silage hybrids",
+        "Medium silage hybrids",
+        "Late silage hybrids"
+      ],
+      "growthDurationDays": 115,
+      "maturityNotes": "Optimal whole-plant chop commonly about 100-130 days for medium silage hybrids in temperate zones at roughly 30-38% dry matter.",
+      "climateSuitability": {
+        "suitable": [
+          "Temperate",
+          "Continental",
+          "Tropical",
+          "Dry"
+        ],
+        "marginal": [
+          "High mountain"
+        ],
+        "notRecommended": [
+          "Polar"
+        ]
+      },
+      "preventiveActions": [
+        "Select borer- and disease-appropriate hybrids for the season length",
+        "Break continuous maize and manage residue to reduce pest and stalk-rot carryover",
+        "Scout whorl and pre-tassel stages for armyworm and borer thresholds"
+      ]
+    },
+    {
+      "id": "plants:perennial_ryegrass",
+      "group": "plants",
+      "category": "Forage & Pasture",
+      "subCategory": "Pasture grasses",
+      "name": "Perennial ryegrass",
+      "scientificName": "Lolium perenne",
+      "aliases": [
+        "perennial ryegrass",
+        "ryegrass",
+        "pasture grass",
+        "pasture grasses"
+      ],
+      "notes": "Cool-season pasture and hay grass for temperate grazing systems; dense sward management reduces pest and disease flareups.",
+      "environment": "terrestrial",
+      "tags": [
+        "forage",
+        "pasture",
+        "grass",
+        "grazing",
+        "crop",
+        "plants"
+      ],
+      "isEdible": false,
+      "isCrop": true,
+      "isTree": false,
+      "isFlower": false,
+      "climate": "temperate",
+      "soil": "fertile, moisture-retentive soils",
+      "varieties": [
+        "Diploid grazing types",
+        "Tetraploid hay types"
+      ],
+      "growthDurationDays": 105,
+      "maturityNotes": "Often needs about 90-120 days to establish for first grazing, with 18-28 day regrowth intervals in peak season and stand life commonly 3-5 years.",
+      "climateSuitability": {
+        "suitable": [
+          "Temperate",
+          "Continental"
+        ],
+        "marginal": [
+          "Dry",
+          "High mountain"
+        ],
+        "notRecommended": [
+          "Polar",
+          "Tropical"
+        ]
+      },
+      "preventiveActions": [
+        "Avoid overgrazing below residual height to keep swards resilient",
+        "Use mixed legume-grass pastures where practical to improve diversity",
+        "Treat armyworm or cutworm flares only on confirmed thresholds"
+      ]
+    },
+    {
+      "id": "plants:bermuda_grass",
+      "group": "plants",
+      "category": "Forage & Pasture",
+      "subCategory": "Pasture grasses",
+      "name": "Bermuda grass",
+      "scientificName": "Cynodon dactylon",
+      "aliases": [
+        "bermuda grass",
+        "bermudagrass",
+        "bahia grass",
+        "rhodes grass"
+      ],
+      "notes": "Warm-season grazing grass for tropical and dry pasture systems; spittlebug and armyworm are common IPM concerns on lush growth.",
+      "environment": "terrestrial",
+      "tags": [
+        "forage",
+        "pasture",
+        "grass",
+        "grazing",
+        "warm-season",
+        "crop",
+        "plants"
+      ],
+      "isEdible": false,
+      "isCrop": true,
+      "isTree": false,
+      "isFlower": false,
+      "climate": "tropical",
+      "soil": "well-drained soils; tolerates heat and drought once established",
+      "varieties": [
+        "Grazing hybrids",
+        "Hay types"
+      ],
+      "growthDurationDays": 75,
+      "maturityNotes": "May establish in about 60-90 days from sprig or plant material, with 14-21 day peak-season regrowth intervals and long stand persistence in warm climates.",
+      "climateSuitability": {
+        "suitable": [
+          "Tropical",
+          "Dry"
+        ],
+        "marginal": [
+          "Temperate"
+        ],
+        "notRecommended": [
+          "Polar",
+          "High mountain"
+        ]
+      },
+      "preventiveActions": [
+        "Rotate grazing pressure to avoid stressed, pest-prone swards",
+        "Scout for spittlebug and armyworm on lush bermuda growth",
+        "Maintain balanced fertility and drainage to reduce disease pressure"
+      ]
+    },
+    {
+            "id": "plants:lavender",
       "group": "plants",
       "category": "Medicinal and Aromatic",
       "subCategory": null,
