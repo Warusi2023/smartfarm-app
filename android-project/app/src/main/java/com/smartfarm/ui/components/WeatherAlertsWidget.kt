@@ -14,8 +14,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.smartfarm.shared.data.model.dto.WeatherAlertDto
+import com.smartfarm.shared.ui.viewmodel.WeatherAlertsUiState
 import com.smartfarm.shared.ui.viewmodel.WeatherAlertsViewModel
-import org.koin.compose.viewmodel.viewModel
+import org.koin.compose.koinInject
 
 /**
  * Weather Alerts Widget for Dashboard
@@ -23,12 +24,13 @@ import org.koin.compose.viewmodel.viewModel
  */
 @Composable
 fun WeatherAlertsWidget(
-    viewModel: WeatherAlertsViewModel = viewModel(),
+    viewModel: WeatherAlertsViewModel = koinInject(),
     onViewAll: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val statsState by viewModel.statsState.collectAsState()
+    val state = uiState
     
     // Load alerts on first composition
     LaunchedEffect(Unit) {
@@ -90,40 +92,39 @@ fun WeatherAlertsWidget(
             
             Spacer(Modifier.height(12.dp))
             
-            when (uiState) {
-                is com.smartfarm.shared.ui.viewmodel.WeatherAlertsUiState.Loading -> {
+            when (state) {
+                is WeatherAlertsUiState.Loading -> {
                     CircularProgressIndicator(
                         modifier = Modifier.size(24.dp),
                         strokeWidth = 2.dp
                     )
                 }
-                is com.smartfarm.shared.ui.viewmodel.WeatherAlertsUiState.Error -> {
+                is WeatherAlertsUiState.Error -> {
                     Text(
-                        text = uiState.message,
+                        text = state.message,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.error
                     )
                 }
-                is com.smartfarm.shared.ui.viewmodel.WeatherAlertsUiState.Success -> {
-                    if (uiState.alerts.isEmpty()) {
+                is WeatherAlertsUiState.Success -> {
+                    if (state.alerts.isEmpty()) {
                         Text(
                             text = "No weather alerts",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     } else {
-                        // Show latest 1-3 alerts
-                        uiState.alerts.take(3).forEach { alert ->
+                        state.alerts.take(3).forEach { alert ->
                             AlertItemCompact(alert = alert)
-                            if (alert != uiState.alerts.take(3).last()) {
+                            if (alert != state.alerts.take(3).last()) {
                                 Spacer(Modifier.height(8.dp))
                             }
                         }
                         
-                        if (uiState.alerts.size > 3) {
+                        if (state.alerts.size > 3) {
                             Spacer(Modifier.height(8.dp))
                             Text(
-                                text = "And ${uiState.alerts.size - 3} more...",
+                                text = "And ${state.alerts.size - 3} more...",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.fillMaxWidth()

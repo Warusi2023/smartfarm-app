@@ -97,7 +97,7 @@ echo ""
 echo "📦 Building release AAB..."
 echo ""
 
-if ./gradlew bundleRelease --no-daemon; then
+if ./gradlew :app:bundleRelease --no-daemon; then
     echo ""
     echo -e "${GREEN}=========================================="
     echo "✅ Build Successful!"

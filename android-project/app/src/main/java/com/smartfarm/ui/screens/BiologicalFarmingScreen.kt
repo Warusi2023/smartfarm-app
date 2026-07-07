@@ -17,12 +17,14 @@ import com.smartfarm.shared.ui.viewmodel.BiologicalFarmingViewModel
 import com.smartfarm.ui.components.EmptyState
 import com.smartfarm.ui.components.ErrorState
 import com.smartfarm.ui.components.LoadingState
-import org.koin.compose.viewmodel.viewModel
+import org.koin.compose.koinInject
+import kotlinx.coroutines.launch
 
 @Composable
 fun BiologicalFarmingScreen(
-    viewModel: BiologicalFarmingViewModel = viewModel()
+    viewModel: BiologicalFarmingViewModel = koinInject()
 ) {
+    val scope = rememberCoroutineScope()
     val beneficialInsectsState by viewModel.beneficialInsectsState.collectAsState()
     val harmfulPestsState by viewModel.harmfulPestsState.collectAsState()
     val cropGuidesState by viewModel.cropGuidesState.collectAsState()
@@ -44,7 +46,7 @@ fun BiologicalFarmingScreen(
             TopAppBar(
                 title = { Text("Biological Farming") },
                 actions = {
-                    IconButton(onClick = { viewModel.refresh() }) {
+                    IconButton(onClick = { scope.launch { viewModel.refresh() } }) {
                         Icon(Icons.Default.Refresh, contentDescription = "Refresh")
                     }
                 }
@@ -105,18 +107,18 @@ fun BiologicalFarmingScreen(
                 0 -> BeneficialInsectsTab(
                     state = beneficialInsectsState,
                     onBreedingGuideClick = { showBreedingGuideDialog = it },
-                    onRefresh = { viewModel.refresh() }
+                    onRefresh = { scope.launch { viewModel.refresh() } }
                 )
                 1 -> HarmfulPestsTab(
                     state = harmfulPestsState,
-                    onRefresh = { viewModel.refresh() }
+                    onRefresh = { scope.launch { viewModel.refresh() } }
                 )
                 2 -> CropGuideTab(
                     state = cropGuidesState,
                     selectedCropName = selectedCropName,
                     selectedCropGuide = selectedCropGuide,
                     cropRecommendations = cropRecommendations,
-                    onCropSelected = { viewModel.loadCropGuide(it) },
+                    onCropSelected = { scope.launch { viewModel.loadCropGuide(it) } },
                     onClearSelection = { viewModel.clearSelectedCrop() }
                 )
             }
@@ -153,7 +155,7 @@ private fun BeneficialInsectsTab(
                 EmptyState(
                     title = "No Beneficial Insects",
                     message = "No beneficial insects found",
-                    icon = Icons.Default.Bug
+                    icon = Icons.Default.Eco
                 )
             } else {
                 LazyColumn(

@@ -102,7 +102,7 @@ echo.
 echo 📦 Building release AAB...
 echo.
 
-call gradlew.bat bundleRelease --no-daemon
+call gradlew.bat :app:bundleRelease --no-daemon
 if errorlevel 1 (
     echo.
     echo ==========================================

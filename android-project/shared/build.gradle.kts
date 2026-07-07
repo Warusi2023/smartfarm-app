@@ -115,6 +115,7 @@ kotlin {
             dependencies {
                 // Ktor Android engine
                 implementation("io.ktor:ktor-client-android:2.3.7")
+                implementation("io.insert-koin:koin-android:3.5.0")
             }
         }
         

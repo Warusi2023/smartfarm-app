@@ -1,0 +1,13 @@
+# Copy to app/local.properties (gitignored). Do not commit real secrets.
+
+# Android SDK path (Android Studio usually writes this automatically)
+# sdk.dir=C\:\\Users\\YourUsername\\AppData\\Local\\Android\\Sdk
+
+# Google Maps (optional for local builds)
+MAPS_API_KEY=YOUR_MAPS_API_KEY_HERE
+
+# Release signing (required for Play Store uploads)
+KEYSTORE_PATH=../smartfarm-upload-key.jks
+KEYSTORE_PASSWORD=your_keystore_password
+KEY_ALIAS=smartfarm-upload-key
+KEY_PASSWORD=your_key_password

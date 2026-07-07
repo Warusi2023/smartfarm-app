@@ -1,3 +1,6 @@
+// EXPERIMENTAL KMM shell — not the shippable product module.
+// Build and run :app for release/debug until an explicit migration is planned.
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")

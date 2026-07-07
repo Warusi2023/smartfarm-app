@@ -11,23 +11,28 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.smartfarm.shared.data.model.dto.WeatherAlertDto
+import com.smartfarm.shared.ui.viewmodel.WeatherAlertsUiState
 import com.smartfarm.shared.ui.viewmodel.WeatherAlertsViewModel
 import com.smartfarm.ui.components.EmptyState
 import com.smartfarm.ui.components.ErrorState
 import com.smartfarm.ui.components.LoadingState
-import org.koin.compose.viewmodel.viewModel
+import kotlinx.coroutines.launch
+import org.koin.compose.koinInject
 
 @Composable
 fun WeatherAlertsScreen(
-    viewModel: WeatherAlertsViewModel = viewModel(),
+    viewModel: WeatherAlertsViewModel = koinInject(),
     onAlertClick: (String) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val statsState by viewModel.statsState.collectAsState()
+    val scope = rememberCoroutineScope()
+    val state = uiState
     
     LaunchedEffect(Unit) {
         viewModel.loadAlerts()
@@ -51,26 +56,26 @@ fun WeatherAlertsScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { viewModel.refresh() }) {
+                    IconButton(onClick = { scope.launch { viewModel.refresh() } }) {
                         Icon(Icons.Default.Refresh, contentDescription = "Refresh")
                     }
                 }
             )
         }
     ) { padding ->
-        when (uiState) {
-            is com.smartfarm.shared.ui.viewmodel.WeatherAlertsUiState.Loading -> {
+        when (state) {
+            is WeatherAlertsUiState.Loading -> {
                 LoadingState(Modifier.padding(padding))
             }
-            is com.smartfarm.shared.ui.viewmodel.WeatherAlertsUiState.Error -> {
+            is WeatherAlertsUiState.Error -> {
                 ErrorState(
-                    message = uiState.message,
-                    onRetry = { viewModel.refresh() },
+                    message = state.message,
+                    onRetry = { scope.launch { viewModel.refresh() } },
                     modifier = Modifier.padding(padding)
                 )
             }
-            is com.smartfarm.shared.ui.viewmodel.WeatherAlertsUiState.Success -> {
-                if (uiState.alerts.isEmpty()) {
+            is WeatherAlertsUiState.Success -> {
+                if (state.alerts.isEmpty()) {
                     EmptyState(
                         title = "No Weather Alerts",
                         message = "You'll be notified when important weather events are detected",
@@ -115,12 +120,12 @@ fun WeatherAlertsScreen(
                         LazyColumn(
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            items(uiState.alerts) { alert ->
+                            items(state.alerts) { alert ->
                                 AlertCard(
                                     alert = alert,
                                     onClick = { onAlertClick(alert.id) },
-                                    onMarkRead = { viewModel.markAsRead(alert.id) },
-                                    onDismiss = { viewModel.dismiss(alert.id) }
+                                    onMarkRead = { scope.launch { viewModel.markAsRead(alert.id) } },
+                                    onDismiss = { scope.launch { viewModel.dismiss(alert.id) } }
                                 )
                             }
                         }

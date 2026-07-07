@@ -1,6 +1,7 @@
 package com.smartfarm.ui.navigation
 
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Box
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -15,7 +16,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.smartfarm.ui.screens.*
 import com.smartfarm.shared.ui.viewmodel.AuthViewModel
-import org.koin.compose.viewmodel.viewModel
+import org.koin.compose.koinInject
 
 sealed class Screen(val route: String, val title: String, val icon: androidx.compose.ui.graphics.vector.ImageVector) {
     object Login : Screen("login", "Login", Icons.Default.Login)
@@ -30,13 +31,13 @@ sealed class Screen(val route: String, val title: String, val icon: androidx.com
     object WeatherAlertDetail : Screen("weather_alert_detail/{alertId}", "Alert Details", Icons.Default.Info) {
         fun createRoute(alertId: String) = "weather_alert_detail/$alertId"
     }
-    object BiologicalFarming : Screen("biological_farming", "Biological Farming", Icons.Default.Bug)
+    object BiologicalFarming : Screen("biological_farming", "Biological Farming", Icons.Default.Eco)
 }
 
 @Composable
 fun MainNavigation() {
     val navController = rememberNavController()
-    val authViewModel: AuthViewModel = viewModel()
+    val authViewModel: AuthViewModel = koinInject()
     val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
     
     // Determine start destination based on auth state
@@ -161,12 +162,13 @@ fun MainNavigation() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun MainAppScaffold(
     navController: androidx.navigation.NavController,
     content: @Composable () -> Unit
 ) {
-    val authViewModel: AuthViewModel = viewModel()
+    val authViewModel: AuthViewModel = koinInject()
     
     Scaffold(
         topBar = {

@@ -19,7 +19,7 @@ data class CropUiState(
 @HiltViewModel
 class CropViewModel @Inject constructor(
     private val cropRepository: CropRepository
-) : ViewModel() {
+) : koinViewModel() {
     
     private val _uiState = MutableStateFlow(CropUiState(isLoading = true))
     val uiState: StateFlow<CropUiState> = _uiState.asStateFlow()

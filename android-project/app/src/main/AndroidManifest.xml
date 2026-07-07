@@ -10,7 +10,7 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" 
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
@@ -26,14 +26,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SmartFarm"
         tools:targetApi="31">
-        
-        <!-- Google Maps API Key -->
-        <!-- TODO: Replace with your actual Google Maps API key -->
+
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="${MAPS_API_KEY}"
             tools:replace="android:value" />
-        
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -44,39 +42,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        
-        <activity
-            android:name=".contact.ContactActivity"
-            android:exported="false"
-            android:label="@string/contact_smartfarm"
-            android:theme="@style/Theme.SmartFarm"
-            android:parentActivityName=".MainActivity" />
-        
-        <activity
-            android:name=".auth.LoginActivity"
-            android:exported="false"
-            android:label="@string/sign_in"
-            android:theme="@style/Theme.SmartFarm"
-            android:parentActivityName=".MainActivity" />
-        
-        <activity
-            android:name=".auth.RegisterActivity"
-            android:exported="false"
-            android:label="@string/register"
-            android:theme="@style/Theme.SmartFarm"
-            android:parentActivityName=".auth.LoginActivity" />
-        
-        <!-- WorkManager for notifications -->
-        <provider
-            android:name="androidx.startup.InitializationProvider"
-            android:authorities="${applicationId}.androidx-startup"
-            android:exported="false"
-            tools:node="merge">
-            <meta-data
-                android:name="androidx.work.WorkManagerInitializer"
-                android:value="androidx.startup"
-                tools:node="remove" />
-        </provider>
     </application>
 
 </manifest>

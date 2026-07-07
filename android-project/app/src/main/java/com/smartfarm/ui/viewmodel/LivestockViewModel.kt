@@ -19,7 +19,7 @@ data class LivestockUiState(
 @HiltViewModel
 class LivestockViewModel @Inject constructor(
     private val livestockRepository: LivestockRepository
-) : ViewModel() {
+) : koinViewModel() {
     
     private val _uiState = MutableStateFlow(LivestockUiState(isLoading = true))
     val uiState: StateFlow<LivestockUiState> = _uiState.asStateFlow()

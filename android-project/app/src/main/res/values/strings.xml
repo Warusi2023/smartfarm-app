@@ -35,7 +35,7 @@
     <!-- Icons and UI -->
     <string name="app_logo">SmartFarm Logo</string>
     <string name="success_icon">Success</string>
-    <string name="error_icon">Error</string>
+    <string name="error_icon">Error Icon</string>
     <string name="close_alert">Close alert</string>
     
     <!-- Content Descriptions -->
@@ -83,6 +83,5 @@
     <string name="email_icon">Email Icon</string>
     <string name="clock_icon">Clock Icon</string>
     <string name="globe_icon">Globe Icon</string>
-    <string name="error_icon">Error Icon</string>
     <string name="error_message">Error message</string>
 </resources>

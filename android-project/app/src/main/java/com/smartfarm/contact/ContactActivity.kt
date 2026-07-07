@@ -13,7 +13,7 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.checkbox.MaterialCheckBox
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
-import com.smartfarm.R
+import com.yourcompany.smartfarm.R
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 

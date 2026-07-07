@@ -11,8 +11,8 @@ import java.io.FileInputStream
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("kotlin-kapt")
-    id("dagger.hilt.android.plugin")
+    // id("kotlin-kapt")
+    // id("dagger.hilt.android.plugin")
     id("com.google.gms.google-services")
     id("com.google.firebase.crashlytics")
 }
@@ -52,21 +52,23 @@ android {
 
     signingConfigs {
         create("release") {
-            // Load signing configuration from environment variables or local.properties
-            val keystorePath = localProperties.getProperty("KEYSTORE_PATH", "smartfarm-upload-key.jks")
-            val keystorePassword = localProperties.getProperty("KEYSTORE_PASSWORD", "")
-            val keyAlias = localProperties.getProperty("KEY_ALIAS", "smartfarm-upload-key")
-            val keyPassword = localProperties.getProperty("KEY_PASSWORD", "")
-            
-            // Only create signing config if keystore exists and passwords are provided
-            if (file(keystorePath).exists() && keystorePassword.isNotEmpty() && keyPassword.isNotEmpty()) {
-                storeFile = file(keystorePath)
+            // CI: ANDROID_* env vars. Local: app/local.properties (see local.properties.example).
+            fun signingValue(envKey: String, propertyKey: String, default: String = ""): String {
+                return System.getenv(envKey)?.takeIf { it.isNotEmpty() }
+                    ?: localProperties.getProperty(propertyKey, default)
+            }
+
+            val keystorePath = signingValue("ANDROID_KEYSTORE_PATH", "KEYSTORE_PATH", "smartfarm-upload-key.jks")
+            val keystorePassword = signingValue("ANDROID_KEYSTORE_PASSWORD", "KEYSTORE_PASSWORD")
+            val keyAlias = signingValue("ANDROID_KEY_ALIAS", "KEY_ALIAS", "smartfarm-upload-key")
+            val keyPassword = signingValue("ANDROID_KEY_PASSWORD", "KEY_PASSWORD")
+
+            val keystoreFile = file(keystorePath)
+            if (keystoreFile.exists() && keystorePassword.isNotEmpty() && keyPassword.isNotEmpty()) {
+                storeFile = keystoreFile
                 storePassword = keystorePassword
                 this.keyAlias = keyAlias
                 this.keyPassword = keyPassword
-            } else {
-                // Fallback for development builds
-                // Note: Custom property not supported in this context
             }
         }
     }
@@ -109,6 +111,9 @@ android {
     
     kotlinOptions {
         jvmTarget = "17"
+        freeCompilerArgs += listOf(
+            "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api"
+        )
     }
     
     buildFeatures {
@@ -117,7 +122,7 @@ android {
     }
     
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.13"
+        kotlinCompilerExtensionVersion = "1.5.14"
     }
     
     packaging {
@@ -130,6 +135,16 @@ android {
             excludes += "META-INF/NOTICE.txt"
         }
     }
+
+      // Compile only the canonical Compose entry path for now.
+    sourceSets.getByName("main").java.setSrcDirs(
+        listOf(
+            "src/main/java/com/yourcompany/smartfarm",
+            "src/main/java/com/smartfarm/ui/navigation",
+            "src/main/java/com/smartfarm/ui/screens",
+            "src/main/java/com/smartfarm/ui/components"
+        )
+    )
 }
 
 dependencies {
@@ -138,6 +153,8 @@ dependencies {
     
     // Android-specific dependencies
     implementation("androidx.core:core-ktx:1.12.0")
+    implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation("com.google.android.material:material:1.11.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
     implementation("androidx.activity:activity-compose:1.8.2")
     
@@ -153,9 +170,9 @@ dependencies {
     implementation("androidx.compose.material:material-icons-core")
     implementation("androidx.compose.material:material-icons-extended")
     
-    // Dependency Injection - Koin (replaces Hilt)
+    // Dependency Injection - Koin (Compose screens) + Hilt (legacy app-layer modules)
     implementation("io.insert-koin:koin-android:3.5.0")
-    implementation("io.insert-koin:koin-androidx-compose:1.1.0")
+    implementation("io.insert-koin:koin-compose:1.1.0")
     
     // Networking - Retrofit & OkHttp
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
@@ -164,9 +181,6 @@ dependencies {
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
     
     // Persistence - Room & DataStore
-    implementation("androidx.room:room-runtime:2.6.1")
-    implementation("androidx.room:room-ktx:2.6.1")
-    kapt("androidx.room:room-compiler:2.6.1")
     implementation("androidx.datastore:datastore-preferences:1.0.0")
     
     // ViewModel & Lifecycle

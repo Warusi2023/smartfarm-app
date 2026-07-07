@@ -1,6 +1,6 @@
 package com.smartfarm.di
 
-import com.smartfarm.BuildConfig
+import com.yourcompany.smartfarm.BuildConfig
 import com.smartfarm.network.SmartFarmApi
 import com.smartfarm.network.AuthInterceptor
 import dagger.Module

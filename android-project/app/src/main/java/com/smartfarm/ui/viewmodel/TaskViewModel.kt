@@ -19,7 +19,7 @@ data class TaskUiState(
 @HiltViewModel
 class TaskViewModel @Inject constructor(
     private val taskRepository: TaskRepository
-) : ViewModel() {
+) : koinViewModel() {
     
     private val _uiState = MutableStateFlow(TaskUiState(isLoading = true))
     val uiState: StateFlow<TaskUiState> = _uiState.asStateFlow()

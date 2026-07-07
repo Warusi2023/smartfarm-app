@@ -19,7 +19,7 @@ data class InventoryUiState(
 @HiltViewModel
 class InventoryViewModel @Inject constructor(
     private val inventoryRepository: InventoryRepository
-) : ViewModel() {
+) : koinViewModel() {
     
     private val _uiState = MutableStateFlow(InventoryUiState(isLoading = true))
     val uiState: StateFlow<InventoryUiState> = _uiState.asStateFlow()

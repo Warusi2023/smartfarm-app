@@ -5,11 +5,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Crop
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.smartfarm.ui.components.EmptyState
@@ -17,11 +15,11 @@ import com.smartfarm.ui.components.ErrorState
 import com.smartfarm.ui.components.LoadingState
 import com.smartfarm.shared.ui.viewmodel.CropViewModel
 import com.smartfarm.shared.data.model.dto.CropDto
-import org.koin.compose.viewmodel.viewModel
+import org.koin.compose.koinInject
 
 @Composable
 fun CropsScreen(
-    viewModel: CropViewModel = viewModel()
+    viewModel: CropViewModel = koinInject()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     
@@ -100,9 +98,10 @@ private fun CropCard(crop: CropDto) {
                 text = crop.name,
                 style = MaterialTheme.typography.titleMedium
             )
-            if (crop.variety != null) {
+            val variety = crop.variety
+            if (variety != null) {
                 Text(
-                    text = crop.variety,
+                    text = variety,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

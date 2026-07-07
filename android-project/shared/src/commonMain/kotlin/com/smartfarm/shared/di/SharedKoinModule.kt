@@ -2,6 +2,7 @@ package com.smartfarm.shared.di
 
 import com.russhwolf.settings.Settings
 import com.smartfarm.shared.data.database.DatabaseDriverFactory
+import com.smartfarm.shared.data.preferences.AppPreferences
 import com.smartfarm.shared.data.preferences.PreferencesStorage
 import com.smartfarm.shared.data.repository.*
 import com.smartfarm.shared.network.SmartFarmApi
@@ -37,35 +38,40 @@ fun createSharedKoinModule(
     // HTTP Client
     single { createConfiguredHttpClient() }
     
-    // API - AuthRepository will be injected to provide auth tokens
+    // API — token provider reads prefs directly to avoid circular dependency with AuthRepository
     single<SmartFarmApi> {
-        SmartFarmApi(get(), API_BASE_URL, get())
+        val preferences = get<PreferencesStorage>()
+        SmartFarmApi(
+            client = get(),
+            baseUrl = API_BASE_URL,
+            getAuthToken = { preferences.getString(AppPreferences.ACCESS_TOKEN) }
+        )
     }
     
-    // Repositories - Commented out database-dependent repositories for now
+    // Repositories
     single<AuthRepository> {
         AuthRepository(get(), get())
     }
     
-    // single<FarmRepository> {
-    //     FarmRepository(get(), get())
-    // }
+    single<FarmRepository> {
+        FarmRepository(get())
+    }
     
-    // single<LivestockRepository> {
-    //     LivestockRepository(get(), get())
-    // }
+    single<LivestockRepository> {
+        LivestockRepository(get())
+    }
     
-    // single<CropRepository> {
-    //     CropRepository(get(), get())
-    // }
+    single<CropRepository> {
+        CropRepository(get())
+    }
     
     single<TaskRepository> {
         TaskRepository(get())
     }
     
-    // single<InventoryRepository> {
-    //     InventoryRepository(get(), get())
-    // }
+    single<InventoryRepository> {
+        InventoryRepository(get())
+    }
     
     // single<FinancialRepository> {
     //     FinancialRepository(get(), get())

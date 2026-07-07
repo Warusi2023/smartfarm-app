@@ -27,7 +27,7 @@ class DashboardViewModel @Inject constructor(
     private val cropRepository: CropRepository,
     private val taskRepository: TaskRepository,
     private val analyticsRepository: AnalyticsRepository
-) : ViewModel() {
+) : koinViewModel() {
     
     private val _uiState = MutableStateFlow(DashboardUiState(isLoading = true))
     val uiState: StateFlow<DashboardUiState> = _uiState.asStateFlow()

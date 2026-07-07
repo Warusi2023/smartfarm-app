@@ -29,14 +29,63 @@ jobs:
       run: |
         cd web-project
         npm run build
-    
-    - name: Build Android APK
+
+    - name: Verify Android release secrets
+      env:
+        ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+      run: |
+        missing=0
+        for name in ANDROID_KEYSTORE_BASE64 ANDROID_KEYSTORE_PASSWORD ANDROID_KEY_ALIAS ANDROID_KEY_PASSWORD GOOGLE_SERVICES_JSON; do
+          if [ -z "${!name}" ]; then
+            echo "::error::Missing GitHub secret: $name"
+            missing=1
+          fi
+        done
+        exit $missing
+
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        java-version: '17'
+
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+
+    - name: Install Android SDK packages
+      run: |
+        sdkmanager --install "platforms;android-34" "build-tools;34.0.0"
+        yes | sdkmanager --licenses || true
+
+    - name: Provision Android signing keystore
+      env:
+        ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+      run: |
+        echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > android-project/app/release.keystore
+
+    - name: Provision google-services.json
+      env:
+        GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+      run: |
+        printf '%s' "$GOOGLE_SERVICES_JSON" > android-project/app/google-services.json
+
+    - name: Build Android release artifacts
+      env:
+        ANDROID_KEYSTORE_PATH: release.keystore
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
       run: |
         cd android-project
         chmod +x ./gradlew
-        ./gradlew assembleRelease
+        ./gradlew :app:assembleRelease :app:bundleRelease --stacktrace
     
     - name: Create Release
+      id: create_release
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -49,6 +98,7 @@ jobs:
           ### 📦 Downloads
           - **Web Application**: Built and ready for deployment
           - **Android APK**: Available in release assets
+          - **Android AAB**: Available in release assets (Play Store upload)
           
           ### 🔧 Installation
           1. Download the appropriate package for your platform
@@ -84,3 +134,13 @@ jobs:
         asset_path: ./android-project/app/build/outputs/apk/release/app-release.apk
         asset_name: smartfarm-android-${{ github.ref_name }}.apk
         asset_content_type: application/vnd.android.package-archive
+
+    - name: Upload Android AAB
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./android-project/app/build/outputs/bundle/release/app-release.aab
+        asset_name: smartfarm-android-${{ github.ref_name }}.aab
+        asset_content_type: application/octet-stream

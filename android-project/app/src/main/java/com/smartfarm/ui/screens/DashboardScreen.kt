@@ -18,11 +18,11 @@ import com.smartfarm.ui.components.LoadingState
 import com.smartfarm.ui.components.DailyTipsCard
 import com.smartfarm.ui.components.WeatherAlertsWidget
 import com.smartfarm.shared.ui.viewmodel.DashboardViewModel
-import org.koin.compose.viewmodel.viewModel
+import org.koin.compose.koinInject
 
 @Composable
 fun DashboardScreen(
-    viewModel: DashboardViewModel = viewModel(),
+    viewModel: DashboardViewModel = koinInject(),
     onNavigateToAlerts: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()

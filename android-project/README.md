@@ -7,8 +7,8 @@ SmartFarm is a comprehensive Android application built with Kotlin Multiplatform
 ```
 android-project/
 ├── android/                 # Android-specific code
-├── androidApp/             # Main Android application module
-├── app/                    # Legacy app module
+├── app/                    # Canonical shippable Android application module
+├── androidApp/             # Experimental KMM shell (not used for release)
 ├── ios/                    # iOS-specific code (Kotlin Multiplatform)
 ├── desktop/                # Desktop-specific code
 ├── shared/                 # Shared Kotlin code
@@ -61,34 +61,64 @@ sdk.dir=C\:\\Users\\YourUsername\\AppData\\Local\\Android\\Sdk
 
 ### 4. Build Configuration
 The project uses Kotlin Multiplatform with the following modules:
+- `app`: **Canonical shippable Android application** (auth, navigation, Room, Retrofit)
 - `shared`: Common business logic and data models
-- `androidApp`: Main Android application
+- `androidApp`: Experimental KMM shell (frozen; not used for release builds)
 - `ios`: iOS-specific implementations
 - `desktop`: Desktop application
 
 ## Building the App
 
+### Local secret provisioning
+Before the first local build:
+
+```powershell
+cd android-project
+.\scripts\provision-android-secrets.ps1
+```
+
+Replace `app/google-services.json` with your Firebase download and set signing values in `app/local.properties` (see `app/local.properties.example`).
+
 ### Debug Build
 ```bash
-./gradlew assembleDebug
+./gradlew :app:assembleDebug
 ```
 
 ### Release Build
 ```bash
-./gradlew assembleRelease
+./gradlew :app:assembleRelease
 ```
 
 ### APK Generation
 ```bash
-./gradlew assembleRelease
-# APK will be in: androidApp/build/outputs/apk/release/
+./gradlew :app:assembleRelease
+# APK will be in: app/build/outputs/apk/release/
 ```
+
+### Play Store AAB
+```bash
+./gradlew :app:bundleRelease
+# AAB will be in: app/build/outputs/bundle/release/
+```
+
+### CI / release secrets (GitHub Actions)
+Tag releases (`v*`) require these repository secrets:
+
+| Secret | Purpose |
+|--------|---------|
+| `ANDROID_KEYSTORE_BASE64` | Base64-encoded upload keystore (`.jks`) |
+| `ANDROID_KEYSTORE_PASSWORD` | Keystore password |
+| `ANDROID_KEY_ALIAS` | Key alias |
+| `ANDROID_KEY_PASSWORD` | Key password |
+| `GOOGLE_SERVICES_JSON` | Full contents of `app/google-services.json` |
+
+PR/push Android validation runs via `.github/workflows/android-ci.yml` (`:app:assembleDebug`).
 
 ## App Signing
 The project includes a keystore file for app signing:
 - File: `smartfarm-upload-key.jks`
 - Used for Google Play Store uploads
-- Configured in `androidApp/build.gradle.kts`
+- Configured in `app/build.gradle.kts` (see `app/local.properties` for keystore paths)
 
 ## Testing
 - Unit tests: `./gradlew test`
