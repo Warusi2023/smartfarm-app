@@ -26,13 +26,14 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+          cache: gradle
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
       - name: Install Android SDK packages
         run: |
-          sdkmanager --install "platforms;android-34" "build-tools;34.0.0"
+          sdkmanager --install "platform-tools" "platforms;android-34" "build-tools;34.0.0"
           yes | sdkmanager --licenses || true
 
       - name: Provision local Android config (debug)
@@ -41,14 +42,23 @@ jobs:
           cp app/google-services.json.example app/google-services.json
 
       - name: Build :app debug
+        working-directory: android-project
+        env:
+          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g -Dorg.gradle.daemon=false -Dorg.gradle.configureondemand=false"
         run: |
-          cd android-project
           chmod +x ./gradlew
-          ./gradlew :app:assembleDebug --stacktrace
+          ./gradlew :app:assembleDebug :app:assembleDebugAndroidTest --stacktrace --no-daemon
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
           name: smartfarm-app-debug
           path: android-project/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+
+      - name: Upload androidTest APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: smartfarm-app-debug-androidTest
+          path: android-project/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
           if-no-files-found: error
