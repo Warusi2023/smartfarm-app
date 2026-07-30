@@ -3,10 +3,13 @@ package com.smartfarm.ui.navigation
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Login
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
@@ -19,9 +22,10 @@ import com.smartfarm.shared.ui.viewmodel.AuthViewModel
 import org.koin.compose.koinInject
 
 sealed class Screen(val route: String, val title: String, val icon: androidx.compose.ui.graphics.vector.ImageVector) {
-    object Login : Screen("login", "Login", Icons.Default.Login)
+    object Login : Screen("login", "Login", Icons.AutoMirrored.Filled.Login)
     object Register : Screen("register", "Register", Icons.Default.PersonAdd)
     object Dashboard : Screen("dashboard", "Dashboard", Icons.Default.Home)
+    object Farms : Screen("farms", "Farms", Icons.Default.Agriculture)
     object Crops : Screen("crops", "Crops", Icons.Default.Crop)
     object Livestock : Screen("livestock", "Livestock", Icons.Default.Pets)
     object Tasks : Screen("tasks", "Tasks", Icons.Default.CheckCircle)
@@ -100,6 +104,12 @@ fun MainNavigation() {
                 )
             }
         }
+
+        composable(Screen.Farms.route) {
+            MainAppScaffold(navController = navController) {
+                FarmsScreen()
+            }
+        }
         
         composable(Screen.Crops.route) {
             MainAppScaffold(navController = navController) {
@@ -169,36 +179,73 @@ private fun MainAppScaffold(
     content: @Composable () -> Unit
 ) {
     val authViewModel: AuthViewModel = koinInject()
-    
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = navBackStackEntry?.destination
+    val currentTitle = listOf(
+        Screen.Dashboard,
+        Screen.Farms,
+        Screen.Crops,
+        Screen.Livestock,
+        Screen.Tasks,
+        Screen.Reports,
+        Screen.Inventory,
+        Screen.WeatherAlerts,
+        Screen.BiologicalFarming
+    ).firstOrNull { screen ->
+        currentDestination?.hierarchy?.any { it.route == screen.route } == true
+    }?.title ?: "SmartFarm"
+
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
-                title = { Text("SmartFarm") },
+                title = {
+                    Text(
+                        text = currentTitle,
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    actionIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                ),
                 actions = {
                     IconButton(onClick = { authViewModel.logout() }) {
-                        Icon(Icons.Default.Logout, contentDescription = "Logout")
+                        Icon(
+                            Icons.AutoMirrored.Filled.Logout,
+                            contentDescription = "Logout"
+                        )
                     }
                 }
             )
         },
         bottomBar = {
-            NavigationBar {
-                val navBackStackEntry by navController.currentBackStackEntryAsState()
-                val currentDestination = navBackStackEntry?.destination
-                
+            NavigationBar(
+                containerColor = MaterialTheme.colorScheme.surface,
+                tonalElevation = 2.dp
+            ) {
                 val screens = listOf(
                     Screen.Dashboard,
+                    Screen.Farms,
                     Screen.Crops,
                     Screen.Livestock,
-                    Screen.Tasks,
-                    Screen.Reports
+                    Screen.Tasks
                 )
-                
+
                 screens.forEach { screen ->
+                    val selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true
                     NavigationBarItem(
                         icon = { Icon(screen.icon, contentDescription = screen.title) },
                         label = { Text(screen.title) },
-                        selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
+                        selected = selected,
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = MaterialTheme.colorScheme.primary,
+                            selectedTextColor = MaterialTheme.colorScheme.primary,
+                            indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        ),
                         onClick = {
                             navController.navigate(screen.route) {
                                 popUpTo(navController.graph.findStartDestination().id) {

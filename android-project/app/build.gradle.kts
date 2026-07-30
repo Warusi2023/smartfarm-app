@@ -143,7 +143,8 @@ android {
             "src/main/java/com/yourcompany/smartfarm",
             "src/main/java/com/smartfarm/ui/navigation",
             "src/main/java/com/smartfarm/ui/screens",
-            "src/main/java/com/smartfarm/ui/components"
+            "src/main/java/com/smartfarm/ui/components",
+            "src/main/java/com/smartfarm/ui/theme"
         )
     )
 }

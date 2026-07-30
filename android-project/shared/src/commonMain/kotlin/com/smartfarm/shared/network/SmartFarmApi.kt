@@ -551,24 +551,46 @@ class SmartFarmApi(
     }
 
     /**
+     * Backend: POST /api/farms/:farmId/tasks/:taskId/complete
+     * Sets status=done and records completion metadata.
+     */
+    suspend fun completeTask(farmId: String, taskId: String): Resource<TaskDto> {
+        val resolvedFarmId = farmId.trim()
+        if (resolvedFarmId.isEmpty() || taskId.isBlank()) {
+            return Resource.Error(
+                "farmId and taskId are required to complete a task",
+                Exception("COMPLETE_TASK_MISSING_IDS")
+            )
+        }
+        return postEnvelopedItem(
+            url = "$baseUrl/api/farms/$resolvedFarmId/tasks/$taskId/complete",
+            body = EmptyRequest(),
+            logTag = "COMPLETE_TASK"
+        )
+    }
+
+    /**
      * Backend has no DELETE /api/farms/:farmId/tasks/:taskId.
      * Soft-cancel via PATCH status=cancelled (farm-scoped).
      */
-    suspend fun deleteTask(id: String, farmId: String? = null): Resource<Unit> {
+    suspend fun cancelTask(id: String, farmId: String? = null): Resource<TaskDto> {
         val resolvedFarmId = farmId?.trim().orEmpty()
         if (resolvedFarmId.isEmpty()) {
             return Resource.Error(
                 "farmId is required to cancel a task (backend has no hard delete)",
-                Exception("DELETE_TASK_MISSING_FARM_ID")
+                Exception("CANCEL_TASK_MISSING_FARM_ID")
             )
         }
-        return when (
-            val result = patchEnvelopedItem<UpdateTaskRequest, TaskDto>(
-                url = "$baseUrl/api/farms/$resolvedFarmId/tasks/$id",
-                body = UpdateTaskRequest(status = "cancelled"),
-                logTag = "CANCEL_TASK"
-            )
-        ) {
+        return patchEnvelopedItem(
+            url = "$baseUrl/api/farms/$resolvedFarmId/tasks/$id",
+            body = UpdateTaskRequest(status = "cancelled"),
+            logTag = "CANCEL_TASK"
+        )
+    }
+
+    /** @deprecated Prefer [cancelTask]; kept for repository compatibility. */
+    suspend fun deleteTask(id: String, farmId: String? = null): Resource<Unit> {
+        return when (val result = cancelTask(id, farmId)) {
             is Resource.Success -> Resource.Success(Unit)
             is Resource.Error -> Resource.Error(result.message, result.throwable)
             is Resource.Loading -> Resource.Error("Unexpected loading state", Exception("Unexpected loading state"))

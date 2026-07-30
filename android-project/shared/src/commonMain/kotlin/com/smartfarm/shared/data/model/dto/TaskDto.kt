@@ -15,6 +15,9 @@ data class TaskDto(
     val dueDate: String? = null,
     val assignedToUserId: String? = null,
     val assignedTo: String? = null,
+    /** Joined assignee display fields from farm task service. */
+    val assigneeName: String? = null,
+    val assigneeEmail: String? = null,
     val createdAt: String? = null,
     val updatedAt: String? = null
 )

@@ -13,14 +13,20 @@ import com.smartfarm.ui.components.EntityFormDialog
 fun AddCropDialog(
     farms: List<FarmDto>,
     onDismiss: () -> Unit,
-    onSave: (CropDto) -> Unit
+    onSave: (CropDto) -> Unit,
+    preferredFarmId: String? = null
 ) {
-    var selectedFarmId by remember {
-        mutableStateOf(farms.firstOrNull()?.id.orEmpty())
+    fun initialFarmId(): String {
+        val preferred = preferredFarmId?.takeIf { id -> farms.any { it.id == id } }
+        return preferred ?: farms.firstOrNull()?.id.orEmpty()
     }
-    LaunchedEffect(farms) {
-        if (selectedFarmId.isBlank() && farms.isNotEmpty()) {
-            selectedFarmId = farms.first().id
+
+    var selectedFarmId by remember(preferredFarmId, farms.map { it.id }) {
+        mutableStateOf(initialFarmId())
+    }
+    LaunchedEffect(farms, preferredFarmId) {
+        if (selectedFarmId.isBlank() || farms.none { it.id == selectedFarmId }) {
+            selectedFarmId = initialFarmId()
         }
     }
     var name by remember { mutableStateOf("") }

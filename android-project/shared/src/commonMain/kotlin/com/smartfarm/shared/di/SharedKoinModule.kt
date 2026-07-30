@@ -2,6 +2,7 @@ package com.smartfarm.shared.di
 
 import com.russhwolf.settings.Settings
 import com.smartfarm.shared.data.database.DatabaseDriverFactory
+import com.smartfarm.shared.data.farm.SelectedFarmStore
 import com.smartfarm.shared.data.preferences.AppPreferences
 import com.smartfarm.shared.data.preferences.PreferencesStorage
 import com.smartfarm.shared.data.repository.*
@@ -34,6 +35,7 @@ fun createSharedKoinModule(
     
     // Preferences
     single { PreferencesStorage(settings) }
+    single { SelectedFarmStore(get()) }
     
     // HTTP Client
     single { createConfiguredHttpClient() }

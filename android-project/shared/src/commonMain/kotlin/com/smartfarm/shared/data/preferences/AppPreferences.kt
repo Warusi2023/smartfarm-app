@@ -18,6 +18,7 @@ object AppPreferences {
     
     // App settings
     const val SELECTED_FARM_ID = "selected_farm_id"
+    const val SELECTED_FARM_NAME = "selected_farm_name"
     const val THEME_MODE = "theme_mode"
     const val LANGUAGE = "language"
 }

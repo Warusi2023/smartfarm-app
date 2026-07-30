@@ -71,13 +71,36 @@ class TaskRepository(
         }
     }
     
+    suspend fun completeTask(farmId: String, taskId: String): Resource<TaskDto> {
+        return try {
+            when (val result = api.completeTask(farmId, taskId)) {
+                is Resource.Success -> Resource.Success(result.data)
+                is Resource.Error -> result
+                is Resource.Loading -> Resource.Error("Unexpected loading state", Exception("Unexpected loading state"))
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Failed to complete task", e)
+        }
+    }
+
+    suspend fun cancelTask(taskId: String, farmId: String? = null): Resource<TaskDto> {
+        return try {
+            when (val result = api.cancelTask(taskId, farmId)) {
+                is Resource.Success -> Resource.Success(result.data)
+                is Resource.Error -> result
+                is Resource.Loading -> Resource.Error("Unexpected loading state", Exception("Unexpected loading state"))
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Failed to cancel task", e)
+        }
+    }
+
     suspend fun deleteTask(taskId: String, farmId: String? = null): Resource<Unit> {
         return try {
-            // Backend has no hard delete; API soft-cancels via farm-scoped PATCH.
-            val result = api.deleteTask(taskId, farmId)
-            when (result) {
+            // Backend has no hard delete; soft-cancels via farm-scoped PATCH.
+            when (val result = api.cancelTask(taskId, farmId)) {
                 is Resource.Success -> Resource.Success(Unit)
-                is Resource.Error -> result
+                is Resource.Error -> Resource.Error(result.message, result.throwable)
                 is Resource.Loading -> Resource.Error("Unexpected loading state", Exception("Unexpected loading state"))
             }
         } catch (e: Exception) {
