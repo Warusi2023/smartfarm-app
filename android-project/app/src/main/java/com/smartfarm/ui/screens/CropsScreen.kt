@@ -14,19 +14,23 @@ import com.smartfarm.ui.components.EmptyState
 import com.smartfarm.ui.components.ErrorState
 import com.smartfarm.ui.components.LoadingState
 import com.smartfarm.shared.ui.viewmodel.CropViewModel
+import com.smartfarm.shared.ui.viewmodel.FarmViewModel
 import com.smartfarm.shared.data.model.dto.CropDto
 import org.koin.compose.koinInject
 
 @Composable
 fun CropsScreen(
-    viewModel: CropViewModel = koinInject()
+    viewModel: CropViewModel = koinInject(),
+    farmViewModel: FarmViewModel = koinInject()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    
+    val farmState by farmViewModel.uiState.collectAsState()
+
     LaunchedEffect(Unit) {
         viewModel.loadCrops()
+        farmViewModel.loadFarms()
     }
-    
+
     Scaffold(
         topBar = {
             TopAppBar(title = { Text("Crops") })
@@ -36,10 +40,10 @@ fun CropsScreen(
             FloatingActionButton(onClick = { showDialog = true }) {
                 Icon(Icons.Default.Add, contentDescription = "Add Crop")
             }
-            
+
             if (showDialog) {
                 com.smartfarm.ui.screens.forms.AddCropDialog(
-                    farmId = "", // TODO: Get from selected farm
+                    farms = farmState.farms,
                     onDismiss = { showDialog = false },
                     onSave = { crop ->
                         viewModel.createCrop(crop)
@@ -116,4 +120,3 @@ private fun CropCard(crop: CropDto) {
         }
     }
 }
-

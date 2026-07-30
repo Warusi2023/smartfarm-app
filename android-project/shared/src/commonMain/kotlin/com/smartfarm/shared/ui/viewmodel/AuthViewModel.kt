@@ -51,23 +51,24 @@ class AuthViewModel(
             when (val result = authRepository.login(email, password)) {
                 is Resource.Success -> {
                     val response = result.data
-                    if (response.success && response.user != null) {
+                    val user = response.resolvedUser()
+                    if (response.success && user != null && response.resolvedToken() != null) {
                         _uiState.value = AuthUiState(
                             isLoading = false,
-                            user = response.user,
+                            user = user,
                             error = null
                         )
                     } else {
                         _uiState.value = _uiState.value.copy(
                             isLoading = false,
-                            error = response.message ?: "Login failed"
+                            error = response.resolvedMessage() ?: "Login failed"
                         )
                     }
                 }
                 is Resource.Error -> {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        error = result.message
+                        error = result.message ?: "Login failed"
                     )
                 }
                 is Resource.Loading -> {
@@ -92,23 +93,25 @@ class AuthViewModel(
             )) {
                 is Resource.Success -> {
                     val response = result.data
-                    if (response.success && response.user != null) {
+                    val user = response.resolvedUser()
+                    if (response.success && user != null && response.resolvedToken() != null) {
                         _uiState.value = AuthUiState(
                             isLoading = false,
-                            user = response.user,
+                            user = user,
                             error = null
                         )
                     } else {
                         _uiState.value = _uiState.value.copy(
                             isLoading = false,
-                            error = response.message ?: "Registration failed"
+                            error = response.resolvedMessage()
+                                ?: "Registration succeeded. Please verify your email before signing in."
                         )
                     }
                 }
                 is Resource.Error -> {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        error = result.message
+                        error = result.message ?: "Registration failed"
                     )
                 }
                 is Resource.Loading -> {

@@ -53,7 +53,7 @@ class LivestockViewModel(
             _uiState.value = _uiState.value.copy(isLoading = true)
             when (val result = livestockRepository.createLivestock(livestock)) {
                 is Resource.Success -> {
-                    loadLivestock(livestock.farmId)
+                    loadLivestock(null)
                 }
                 is Resource.Error -> {
                     _uiState.value = _uiState.value.copy(

@@ -22,11 +22,11 @@ fun LivestockScreen(
     viewModel: LivestockViewModel = koinInject()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    
+
     LaunchedEffect(Unit) {
         viewModel.loadLivestock()
     }
-    
+
     Scaffold(
         topBar = {
             TopAppBar(title = { Text("Livestock") })
@@ -36,10 +36,9 @@ fun LivestockScreen(
             FloatingActionButton(onClick = { showDialog = true }) {
                 Icon(Icons.Default.Add, contentDescription = "Add Livestock")
             }
-            
+
             if (showDialog) {
                 com.smartfarm.ui.screens.forms.AddLivestockDialog(
-                    farmId = "", // TODO: Get from selected farm
                     onDismiss = { showDialog = false },
                     onSave = { livestock ->
                         viewModel.createLivestock(livestock)
@@ -106,14 +105,11 @@ private fun LivestockCard(livestock: LivestockDto) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            if (livestock.type != null) {
-                Text(
-                    text = "Type: ${livestock.type}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+            Text(
+                text = "Type: ${livestock.type}",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }
-

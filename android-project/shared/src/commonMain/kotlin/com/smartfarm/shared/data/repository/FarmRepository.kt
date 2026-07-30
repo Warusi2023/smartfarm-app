@@ -1,7 +1,6 @@
 package com.smartfarm.shared.data.repository
 
 import com.smartfarm.shared.data.model.dto.FarmDto
-import com.smartfarm.shared.data.model.dto.LocationDto
 import com.smartfarm.shared.data.util.Resource
 // import com.smartfarm.shared.database.FarmDatabase // Removed - database not available
 import com.smartfarm.shared.network.SmartFarmApi

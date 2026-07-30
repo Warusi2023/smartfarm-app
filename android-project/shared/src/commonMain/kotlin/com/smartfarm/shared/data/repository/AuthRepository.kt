@@ -24,11 +24,18 @@ class AuthRepository(
         return when (result) {
             is Resource.Success -> {
                 val response = result.data
-                if (response.success && response.token != null && response.user != null) {
-                    saveAuthData(response.token, response.user)
+                val token = response.resolvedToken()
+                val user = response.resolvedUser()
+                if (response.success && token != null && user != null) {
+                    saveAuthData(token, user, response.resolvedRefreshToken())
                     _isLoggedIn.value = true
+                    result
+                } else {
+                    Resource.Error(
+                        response.resolvedMessage() ?: "Login failed",
+                        Exception(response.code ?: "LOGIN_FAILED")
+                    )
                 }
-                result
             }
             is Resource.Error -> result
             is Resource.Loading -> result
@@ -40,8 +47,10 @@ class AuthRepository(
         return when (result) {
             is Resource.Success -> {
                 val response = result.data
-                if (response.success && response.token != null && response.user != null) {
-                    saveAuthData(response.token, response.user)
+                val token = response.resolvedToken()
+                val user = response.resolvedUser()
+                if (response.success && token != null && user != null) {
+                    saveAuthData(token, user, response.resolvedRefreshToken())
                     _isLoggedIn.value = true
                 }
                 result
@@ -117,8 +126,11 @@ class AuthRepository(
         }
     }
     
-    private fun saveAuthData(token: String, user: UserDto) {
+    private fun saveAuthData(token: String, user: UserDto, refreshToken: String? = null) {
         preferences.putString(AppPreferences.ACCESS_TOKEN, token)
+        refreshToken?.takeIf { it.isNotBlank() }?.let {
+            preferences.putString(AppPreferences.REFRESH_TOKEN, it)
+        }
         preferences.putString(AppPreferences.USER_ID, user.id)
         preferences.putString(AppPreferences.USER_EMAIL, user.email)
         preferences.putString(AppPreferences.USER_FIRST_NAME, user.firstName)

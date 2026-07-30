@@ -10,7 +10,10 @@ data class TaskDto(
     val farmId: String,
     val status: String,
     val priority: String? = null,
+    /** Backend field from farm_tasks (GET /api/farms/:farmId/tasks). */
+    val dueAt: String? = null,
     val dueDate: String? = null,
+    val assignedToUserId: String? = null,
     val assignedTo: String? = null,
     val createdAt: String? = null,
     val updatedAt: String? = null

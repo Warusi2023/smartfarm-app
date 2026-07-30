@@ -6,30 +6,41 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.smartfarm.shared.data.model.dto.CropDto
+import com.smartfarm.shared.data.model.dto.FarmDto
 import com.smartfarm.ui.components.EntityFormDialog
 
 @Composable
 fun AddCropDialog(
-    farmId: String,
+    farms: List<FarmDto>,
     onDismiss: () -> Unit,
     onSave: (CropDto) -> Unit
 ) {
+    var selectedFarmId by remember {
+        mutableStateOf(farms.firstOrNull()?.id.orEmpty())
+    }
+    LaunchedEffect(farms) {
+        if (selectedFarmId.isBlank() && farms.isNotEmpty()) {
+            selectedFarmId = farms.first().id
+        }
+    }
     var name by remember { mutableStateOf("") }
     var variety by remember { mutableStateOf("") }
+    var type by remember { mutableStateOf("") }
     var area by remember { mutableStateOf("") }
-    var status by remember { mutableStateOf("PLANTED") }
+    var status by remember { mutableStateOf("planted") }
     var notes by remember { mutableStateOf("") }
-    
+
     EntityFormDialog(
         title = "Add Crop",
         onDismiss = onDismiss,
         onSave = {
-            if (name.isNotBlank()) {
+            if (name.isNotBlank() && selectedFarmId.isNotBlank()) {
                 val crop = CropDto(
                     id = "",
-                    name = name,
+                    name = name.trim(),
                     variety = variety.takeIf { it.isNotBlank() },
-                    farmId = farmId,
+                    type = type.takeIf { it.isNotBlank() },
+                    farmId = selectedFarmId,
                     area = area.toDoubleOrNull(),
                     status = status,
                     notes = notes.takeIf { it.isNotBlank() }
@@ -38,6 +49,48 @@ fun AddCropDialog(
             }
         }
     ) {
+        if (farms.isEmpty()) {
+            Text(
+                text = "Create a farm first before adding crops.",
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+        } else {
+            var farmExpanded by remember { mutableStateOf(false) }
+            val selectedFarmName = farms.firstOrNull { it.id == selectedFarmId }?.name
+                ?: "Select farm"
+            ExposedDropdownMenuBox(
+                expanded = farmExpanded,
+                onExpandedChange = { farmExpanded = !farmExpanded },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp)
+            ) {
+                OutlinedTextField(
+                    value = selectedFarmName,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Farm *") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = farmExpanded) },
+                    modifier = Modifier.menuAnchor().fillMaxWidth()
+                )
+                ExposedDropdownMenu(
+                    expanded = farmExpanded,
+                    onDismissRequest = { farmExpanded = false }
+                ) {
+                    farms.forEach { farm ->
+                        DropdownMenuItem(
+                            text = { Text(farm.name) },
+                            onClick = {
+                                selectedFarmId = farm.id
+                                farmExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
+        }
+
         OutlinedTextField(
             value = name,
             onValueChange = { name = it },
@@ -47,7 +100,17 @@ fun AddCropDialog(
                 .padding(bottom = 16.dp),
             singleLine = true
         )
-        
+
+        OutlinedTextField(
+            value = type,
+            onValueChange = { type = it },
+            label = { Text("Type / category") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            singleLine = true
+        )
+
         OutlinedTextField(
             value = variety,
             onValueChange = { variety = it },
@@ -57,17 +120,17 @@ fun AddCropDialog(
                 .padding(bottom = 16.dp),
             singleLine = true
         )
-        
+
         OutlinedTextField(
             value = area,
             onValueChange = { area = it },
-            label = { Text("Area (acres)") },
+            label = { Text("Area") },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 16.dp),
             singleLine = true
         )
-        
+
         var statusExpanded by remember { mutableStateOf(false) }
         ExposedDropdownMenuBox(
             expanded = statusExpanded,
@@ -82,13 +145,13 @@ fun AddCropDialog(
                 readOnly = true,
                 label = { Text("Status") },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = statusExpanded) },
-                modifier = Modifier.menuAnchor()
+                modifier = Modifier.menuAnchor().fillMaxWidth()
             )
             ExposedDropdownMenu(
                 expanded = statusExpanded,
                 onDismissRequest = { statusExpanded = false }
             ) {
-                listOf("PLANNED", "PLANTED", "GROWING", "READY_FOR_HARVEST", "HARVESTED", "FAILED").forEach { option ->
+                listOf("planned", "planted", "growing", "ready_for_harvest", "harvested", "failed").forEach { option ->
                     DropdownMenuItem(
                         text = { Text(option) },
                         onClick = {
@@ -99,7 +162,7 @@ fun AddCropDialog(
                 }
             }
         }
-        
+
         OutlinedTextField(
             value = notes,
             onValueChange = { notes = it },
@@ -111,4 +174,3 @@ fun AddCropDialog(
         )
     }
 }
-

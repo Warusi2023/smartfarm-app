@@ -71,14 +71,12 @@ class TaskRepository(
         }
     }
     
-    suspend fun deleteTask(taskId: String): Resource<Unit> {
+    suspend fun deleteTask(taskId: String, farmId: String? = null): Resource<Unit> {
         return try {
-            val result = api.deleteTask(taskId)
+            // Backend has no hard delete; API soft-cancels via farm-scoped PATCH.
+            val result = api.deleteTask(taskId, farmId)
             when (result) {
-                is Resource.Success -> {
-                    // Database caching removed - just return network result
-                    Resource.Success(Unit)
-                }
+                is Resource.Success -> Resource.Success(Unit)
                 is Resource.Error -> result
                 is Resource.Loading -> Resource.Error("Unexpected loading state", Exception("Unexpected loading state"))
             }

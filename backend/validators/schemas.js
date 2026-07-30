@@ -252,12 +252,50 @@ const validationSchemas = {
     },
 
     // ============ CROPS ENDPOINTS ============
+    // Align with web-project SmartFarmAPI.createCrop / dashboard addNewCropWithData payload.
     crops: {
         list: {
             query: z.object({
+                farmId: commonSchemas.uuid.optional(),
                 page: z.coerce.number().int().positive().optional().default(1),
                 limit: z.coerce.number().int().min(1).max(100).optional().default(20),
             }).optional(),
+        },
+        create: {
+            body: z.object({
+                name: z.string().min(1).max(255),
+                type: z.string().max(100).optional(),
+                farmId: commonSchemas.uuid.optional(),
+                plantedDate: z.string().max(32).optional(),
+                expectedHarvestDate: z.string().max(32).optional(),
+                area: z.coerce.number().positive().optional(),
+                description: z.string().max(2000).optional(),
+                variety: z.string().max(255).optional(),
+                status: z.string().max(50).optional(),
+                notes: z.string().max(1000).optional(),
+            }),
+        },
+        getById: {
+            params: z.object({
+                id: z.string().min(1),
+            }),
+        },
+        update: {
+            params: z.object({
+                id: z.string().min(1),
+            }),
+            body: z.object({
+                name: z.string().min(1).max(255).optional(),
+                type: z.string().max(100).optional(),
+                farmId: commonSchemas.uuid.optional(),
+                plantedDate: z.string().max(32).optional(),
+                expectedHarvestDate: z.string().max(32).optional(),
+                area: z.coerce.number().positive().optional(),
+                description: z.string().max(2000).optional(),
+                variety: z.string().max(255).optional(),
+                status: z.string().max(50).optional(),
+                notes: z.string().max(1000).optional(),
+            }),
         },
         stats: {
             // No params needed

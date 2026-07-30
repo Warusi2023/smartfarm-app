@@ -701,16 +701,50 @@ app.get('/api/farms/stats/overview', validate('farms.stats'), (req, res) => {
   });
 });
 
-// Crops endpoints
-app.get('/api/crops', 
-  cacheMiddleware('crops', CACHE_TTL.CROP_LIST, (req) => 
+// In-memory storage (replace with database in production)
+let cropsStorage = [];
+let livestockStorage = [];
+let feedMixesStorage = [];
+const farmCostsStore = require('./services/farmCostsStore');
+const feedMixAuthMiddleware = new (require('./middleware/auth'))();
+
+// Crops endpoints (in-memory stub aligned with web-project createCrop contract)
+app.get('/api/crops',
+  cacheMiddleware('crops', CACHE_TTL.CROP_LIST, (req) =>
     `crops:user:${req.user?.id || 'anonymous'}`
   ),
-  validate('crops.list'), 
+  validate('crops.list'),
   (req, res) => {
+  const farmId = req.query?.farmId;
+  const data = farmId
+    ? cropsStorage.filter((c) => c.farmId === farmId)
+    : cropsStorage;
   res.status(200).json({
     success: true,
-    data: []
+    data
+  });
+});
+
+app.post('/api/crops',
+  invalidateCache('crops:create'),
+  validate('crops.create'),
+  (req, res) => {
+  logger.debug('POST /api/crops', { origin: req.headers.origin, body: req.body });
+
+  const newCrop = {
+    id: String(Date.now()),
+    status: 'planted',
+    ...req.body,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+
+  cropsStorage.push(newCrop);
+  logger.info('Crop added successfully', { id: newCrop.id });
+
+  res.status(201).json({
+    success: true,
+    data: newCrop
   });
 });
 
@@ -718,18 +752,50 @@ app.get('/api/crops/stats/overview', validate('crops.stats'), (req, res) => {
   res.status(200).json({
     success: true,
     data: {
-      totalCrops: 0,
-      healthyCrops: 0,
-      harvestReady: 0
+      totalCrops: cropsStorage.length,
+      healthyCrops: cropsStorage.filter((c) => !['failed', 'FAILED'].includes(c.status)).length,
+      harvestReady: cropsStorage.filter((c) =>
+        ['READY_FOR_HARVEST', 'ready_for_harvest', 'harvest_ready'].includes(c.status)
+      ).length
     }
   });
 });
 
-// In-memory storage (replace with database in production)
-let livestockStorage = [];
-let feedMixesStorage = [];
-const farmCostsStore = require('./services/farmCostsStore');
-const feedMixAuthMiddleware = new (require('./middleware/auth'))();
+app.get('/api/crops/:id', validate('crops.getById'), (req, res) => {
+  const crop = cropsStorage.find((c) => String(c.id) === String(req.params.id));
+  if (!crop) {
+    return res.status(404).json({ success: false, error: 'Crop not found' });
+  }
+  res.status(200).json({ success: true, data: crop });
+});
+
+app.put('/api/crops/:id',
+  invalidateCache('crops:update'),
+  validate('crops.update'),
+  (req, res) => {
+  const index = cropsStorage.findIndex((c) => String(c.id) === String(req.params.id));
+  if (index === -1) {
+    return res.status(404).json({ success: false, error: 'Crop not found' });
+  }
+  cropsStorage[index] = {
+    ...cropsStorage[index],
+    ...req.body,
+    updatedAt: new Date().toISOString()
+  };
+  res.status(200).json({ success: true, data: cropsStorage[index] });
+});
+
+app.delete('/api/crops/:id',
+  invalidateCache('crops:delete'),
+  validate('crops.getById'),
+  (req, res) => {
+  const index = cropsStorage.findIndex((c) => String(c.id) === String(req.params.id));
+  if (index === -1) {
+    return res.status(404).json({ success: false, error: 'Crop not found' });
+  }
+  cropsStorage.splice(index, 1);
+  res.status(200).json({ success: true, data: { id: req.params.id } });
+});
 
 // Livestock endpoints
 app.get('/api/livestock', 

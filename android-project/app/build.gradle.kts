@@ -13,8 +13,11 @@ plugins {
     id("org.jetbrains.kotlin.android")
     // id("kotlin-kapt")
     // id("dagger.hilt.android.plugin")
-    id("com.google.gms.google-services")
-    id("com.google.firebase.crashlytics")
+    // Disabled until a real Firebase google-services.json is provided.
+    // Current app/google-services.json is a placeholder (PLACEHOLDER_FIREBASE_API_KEY),
+    // which crashes release at FirebaseInitProvider with "Please set a valid API key".
+    // id("com.google.gms.google-services")
+    // id("com.google.firebase.crashlytics")
 }
 
 // Load local.properties for API keys and signing configuration
@@ -26,14 +29,14 @@ if (localPropertiesFile.exists()) {
 
 android {
     namespace = "com.yourcompany.smartfarm"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.yourcompany.smartfarm"
         minSdk = 24
-        targetSdk = 34
-        versionCode = 1
-        versionName = "1.0.0"
+        targetSdk = 35
+        versionCode = 8
+        versionName = "1.0.8"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -60,8 +63,8 @@ android {
 
             val keystorePath = signingValue("ANDROID_KEYSTORE_PATH", "KEYSTORE_PATH", "smartfarm-upload-key.jks")
             val keystorePassword = signingValue("ANDROID_KEYSTORE_PASSWORD", "KEYSTORE_PASSWORD")
-            val keyAlias = signingValue("ANDROID_KEY_ALIAS", "KEY_ALIAS", "smartfarm-upload-key")
-            val keyPassword = signingValue("ANDROID_KEY_PASSWORD", "KEY_PASSWORD")
+            val keyAlias = signingValue("ANDROID_KEY_ALIAS", "KEY_ALIAS", "smartfarm-upload")
+            val keyPassword = signingValue("ANDROID_KEY_PASSWORD", "KEY_PASSWORD").ifEmpty { keystorePassword }
 
             val keystoreFile = file(keystorePath)
             if (keystoreFile.exists() && keystorePassword.isNotEmpty() && keyPassword.isNotEmpty()) {
@@ -80,13 +83,11 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            // Use release signing config if keystore is configured, otherwise fallback to debug
             val releaseSigningConfig = signingConfigs.getByName("release")
             if (releaseSigningConfig.storeFile != null && releaseSigningConfig.storeFile!!.exists()) {
                 signingConfig = releaseSigningConfig
             } else {
-                println("⚠️  WARNING: Release signing config not found. Using debug signing.")
-                signingConfig = signingConfigs.getByName("debug")
+                throw GradleException("Release signing config not found. Check app/local.properties.")
             }
         }
         create("internal") {
@@ -190,18 +191,10 @@ dependencies {
     // Navigation Compose
     implementation("androidx.navigation:navigation-compose:2.7.6")
     
-    // Firebase and Crashlytics
-    implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
-    implementation("com.google.firebase:firebase-analytics")
-    implementation("com.google.firebase:firebase-crashlytics")
-    // Temporarily disabled problematic Firebase dependencies
-    // implementation("com.google.firebase:firebase-perf")
-    // implementation("com.google.firebase:firebase-messaging")
-    // implementation("com.google.firebase:firebase-config")
-    // implementation("com.google.firebase:firebase-auth")
-    // implementation("com.google.firebase:firebase-firestore")
-    // implementation("com.google.firebase:firebase-storage")
-    // implementation("com.google.firebase:firebase-functions")
+    // Firebase/Crashlytics disabled until real google-services.json replaces the placeholder.
+    // implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
+    // implementation("com.google.firebase:firebase-analytics")
+    // implementation("com.google.firebase:firebase-crashlytics")
     
     // Google Maps
     implementation("com.google.android.gms:play-services-maps:18.2.0")

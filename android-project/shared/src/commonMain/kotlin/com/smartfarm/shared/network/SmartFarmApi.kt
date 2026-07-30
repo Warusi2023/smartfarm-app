@@ -2,15 +2,18 @@ package com.smartfarm.shared.network
 
 import com.smartfarm.shared.data.model.dto.*
 import com.smartfarm.shared.data.util.Resource
+import io.github.aakira.napier.Napier
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.serializer
 import kotlinx.serialization.Serializable
 
 /**
@@ -21,16 +24,37 @@ class SmartFarmApi(
     private val baseUrl: String,
     private val getAuthToken: () -> String?
 ) {
+    private val json = Json {
+        ignoreUnknownKeys = true
+        isLenient = true
+        encodeDefaults = false
+    }
     
     // ========== Authentication ==========
     suspend fun login(request: LoginRequest): Resource<LoginResponse> {
+        val url = "$baseUrl/api/auth/login"
         return try {
-            val response: LoginResponse = client.post("$baseUrl/api/auth/login") {
+            Napier.i("LOGIN request url=$url email=${request.email}")
+            val httpResponse = client.post(url) {
                 contentType(ContentType.Application.Json)
                 setBody(request)
-            }.body()
-            Resource.Success(response)
+            }
+            val status = httpResponse.status.value
+            val bodyText = httpResponse.bodyAsText()
+            Napier.i("LOGIN response url=$url status=$status body=$bodyText")
+
+            val parsed = json.decodeFromString(LoginResponse.serializer(), bodyText)
+            val token = parsed.resolvedToken()
+            val user = parsed.resolvedUser()
+            if (status in 200..299 && parsed.success && token != null && user != null) {
+                Resource.Success(parsed)
+            } else {
+                val message = parsed.resolvedMessage()
+                    ?: "Login failed (HTTP $status)"
+                Resource.Error(message, Exception("LOGIN_FAILED status=$status code=${parsed.code} body=$bodyText"))
+            }
         } catch (e: Exception) {
+            Napier.e("LOGIN exception url=$url: ${e.message}", e)
             Resource.Error(e.message ?: "Network error", e)
         }
     }
@@ -41,15 +65,194 @@ class SmartFarmApi(
             header("Authorization", "Bearer $token")
         }
     }
+
+    private suspend inline fun <reified T> getEnvelopedList(
+        url: String,
+        logTag: String = "LIST"
+    ): Resource<List<T>> {
+        return try {
+            Napier.i("$logTag request url=$url")
+            val httpResponse = client.get(url) {
+                addAuthHeader()
+            }
+            val status = httpResponse.status.value
+            val bodyText = httpResponse.bodyAsText()
+            Napier.i("$logTag response url=$url status=$status body=${bodyText.take(800)}")
+
+            val parsed = json.decodeFromString(
+                ApiListResponse.serializer(serializer<T>()),
+                bodyText
+            )
+            if (status in 200..299 && parsed.success) {
+                Resource.Success(parsed.data ?: emptyList())
+            } else {
+                val message = parsed.resolvedMessage() ?: "Request failed (HTTP $status)"
+                Resource.Error(
+                    message,
+                    Exception("${logTag}_FAILED status=$status code=${parsed.code} body=${bodyText.take(400)}")
+                )
+            }
+        } catch (e: Exception) {
+            Napier.e("$logTag exception url=$url: ${e.message}", e)
+            Resource.Error(e.message ?: "Network error", e)
+        }
+    }
+
+    private suspend inline fun <reified T> getEnvelopedItem(
+        url: String,
+        logTag: String = "ITEM"
+    ): Resource<T> {
+        return try {
+            Napier.i("$logTag request url=$url")
+            val httpResponse = client.get(url) {
+                addAuthHeader()
+            }
+            val status = httpResponse.status.value
+            val bodyText = httpResponse.bodyAsText()
+            Napier.i("$logTag response url=$url status=$status body=${bodyText.take(800)}")
+
+            val parsed = json.decodeFromString(
+                ApiItemResponse.serializer(serializer<T>()),
+                bodyText
+            )
+            val item = parsed.data
+            if (status in 200..299 && parsed.success && item != null) {
+                Resource.Success(item)
+            } else {
+                val message = parsed.resolvedMessage()
+                    ?: if (item == null) "No data in response (HTTP $status)" else "Request failed (HTTP $status)"
+                Resource.Error(
+                    message,
+                    Exception("${logTag}_FAILED status=$status code=${parsed.code} body=${bodyText.take(400)}")
+                )
+            }
+        } catch (e: Exception) {
+            Napier.e("$logTag exception url=$url: ${e.message}", e)
+            Resource.Error(e.message ?: "Network error", e)
+        }
+    }
+
+    private suspend inline fun <reified TReq, reified TRes> postEnvelopedItem(
+        url: String,
+        body: TReq,
+        logTag: String = "CREATE"
+    ): Resource<TRes> = sendEnvelopedItem(HttpMethod.Post, url, body, logTag)
+
+    private suspend inline fun <reified TReq, reified TRes> putEnvelopedItem(
+        url: String,
+        body: TReq,
+        logTag: String = "UPDATE"
+    ): Resource<TRes> = sendEnvelopedItem(HttpMethod.Put, url, body, logTag)
+
+    private suspend inline fun <reified TReq, reified TRes> patchEnvelopedItem(
+        url: String,
+        body: TReq,
+        logTag: String = "UPDATE"
+    ): Resource<TRes> = sendEnvelopedItem(HttpMethod.Patch, url, body, logTag)
+
+    private suspend inline fun <reified TReq, reified TRes> sendEnvelopedItem(
+        method: HttpMethod,
+        url: String,
+        body: TReq,
+        logTag: String
+    ): Resource<TRes> {
+        return try {
+            val requestJson = json.encodeToString(serializer<TReq>(), body)
+            Napier.i("$logTag request method=${method.value} url=$url body=$requestJson")
+            val httpResponse = client.request(url) {
+                this.method = method
+                contentType(ContentType.Application.Json)
+                addAuthHeader()
+                setBody(body)
+            }
+            val status = httpResponse.status.value
+            val bodyText = httpResponse.bodyAsText()
+            Napier.i("$logTag response url=$url status=$status body=${bodyText.take(800)}")
+
+            val parsed = json.decodeFromString(
+                ApiItemResponse.serializer(serializer<TRes>()),
+                bodyText
+            )
+            val item = parsed.data
+            if (status in 200..299 && parsed.success && item != null) {
+                Resource.Success(item)
+            } else {
+                val message = parsed.resolvedMessage()
+                    ?: if (item == null) "No data in response (HTTP $status)" else "Request failed (HTTP $status)"
+                Resource.Error(
+                    message,
+                    Exception("${logTag}_FAILED status=$status code=${parsed.code} body=${bodyText.take(400)}")
+                )
+            }
+        } catch (e: Exception) {
+            Napier.e("$logTag exception url=$url: ${e.message}", e)
+            Resource.Error(e.message ?: "Network error", e)
+        }
+    }
+
+    /**
+     * DELETE helpers: crop returns `{ success, data: { id } }`, livestock returns `{ success, message }` (no data).
+     * Only require HTTP success + envelope success flag.
+     */
+    private suspend fun deleteEnveloped(
+        url: String,
+        logTag: String = "DELETE"
+    ): Resource<Unit> {
+        return try {
+            Napier.i("$logTag request method=DELETE url=$url")
+            val httpResponse = client.delete(url) {
+                addAuthHeader()
+            }
+            val status = httpResponse.status.value
+            val bodyText = httpResponse.bodyAsText()
+            Napier.i("$logTag response url=$url status=$status body=${bodyText.take(800)}")
+
+            if (bodyText.isBlank() && status in 200..299) {
+                return Resource.Success(Unit)
+            }
+
+            val parsed = json.decodeFromString(
+                ApiItemResponse.serializer(kotlinx.serialization.json.JsonElement.serializer()),
+                bodyText
+            )
+            if (status in 200..299 && parsed.success) {
+                Resource.Success(Unit)
+            } else {
+                val message = parsed.resolvedMessage() ?: "Request failed (HTTP $status)"
+                Resource.Error(
+                    message,
+                    Exception("${logTag}_FAILED status=$status code=${parsed.code} body=${bodyText.take(400)}")
+                )
+            }
+        } catch (e: Exception) {
+            Napier.e("$logTag exception url=$url: ${e.message}", e)
+            Resource.Error(e.message ?: "Network error", e)
+        }
+    }
     
     suspend fun register(request: RegisterRequest): Resource<RegisterResponse> {
+        val url = "$baseUrl/api/auth/register"
         return try {
-            val response: RegisterResponse = client.post("$baseUrl/api/auth/register") {
+            Napier.i("REGISTER request url=$url email=${request.email}")
+            val httpResponse = client.post(url) {
                 contentType(ContentType.Application.Json)
                 setBody(request)
-            }.body()
-            Resource.Success(response)
+            }
+            val status = httpResponse.status.value
+            val bodyText = httpResponse.bodyAsText()
+            Napier.i("REGISTER response url=$url status=$status body=$bodyText")
+
+            val parsed = json.decodeFromString(RegisterResponse.serializer(), bodyText)
+            // Registration may succeed without an immediate session token (email verification).
+            if (status in 200..299 && parsed.success) {
+                Resource.Success(parsed)
+            } else {
+                val message = parsed.resolvedMessage()
+                    ?: "Registration failed (HTTP $status)"
+                Resource.Error(message, Exception("REGISTER_FAILED status=$status code=${parsed.code} body=$bodyText"))
+            }
         } catch (e: Exception) {
+            Napier.e("REGISTER exception url=$url: ${e.message}", e)
             Resource.Error(e.message ?: "Network error", e)
         }
     }
@@ -79,27 +282,34 @@ class SmartFarmApi(
     
     // ========== Farms ==========
     suspend fun getFarms(): Resource<List<FarmDto>> {
-        return try {
-            val response: List<FarmDto> = client.get("$baseUrl/api/farms") {
-                addAuthHeader()
-            }.body()
-            Resource.Success(response)
-        } catch (e: Exception) {
-            Resource.Error(e.message ?: "Network error", e)
-        }
+        return getEnvelopedList("$baseUrl/api/farms", "FARMS")
     }
     
     suspend fun createFarm(farm: FarmDto): Resource<FarmDto> {
-        return try {
-            val response: FarmDto = client.post("$baseUrl/api/farms") {
-                contentType(ContentType.Application.Json)
-                addAuthHeader()
-                setBody(farm)
-            }.body()
-            Resource.Success(response)
-        } catch (e: Exception) {
-            Resource.Error(e.message ?: "Network error", e)
+        val location = farm.location?.trim().orEmpty()
+        val area = farm.areaHectares
+        val farmType = farm.farmType?.trim().orEmpty()
+        if (farm.name.isBlank() || location.isEmpty() || area == null || area <= 0.0 || farmType.isEmpty()) {
+            return Resource.Error(
+                "name, location, positive areaHectares, and farmType are required",
+                Exception("CREATE_FARM_INVALID_BODY")
+            )
         }
+        // Backend farms.create / web createFarm — do not send id/isActive/timestamps.
+        val request = CreateFarmRequest(
+            name = farm.name.trim(),
+            location = location,
+            areaHectares = area,
+            farmType = farmType,
+            description = farm.description,
+            latitude = farm.latitude,
+            longitude = farm.longitude
+        )
+        return postEnvelopedItem(
+            url = "$baseUrl/api/farms",
+            body = request,
+            logTag = "CREATE_FARM"
+        )
     }
     
     suspend fun updateFarm(id: String, farm: FarmDto): Resource<FarmDto> {
@@ -128,181 +338,251 @@ class SmartFarmApi(
     
     // ========== Livestock ==========
     suspend fun getLivestock(farmId: String? = null): Resource<List<LivestockDto>> {
-        return try {
-            val url = if (farmId != null) {
-                "$baseUrl/api/livestock?farmId=$farmId"
-            } else {
-                "$baseUrl/api/livestock"
-            }
-            val response: List<LivestockDto> = client.get(url) {
-                addAuthHeader()
-            }.body()
-            Resource.Success(response)
-        } catch (e: Exception) {
-            Resource.Error(e.message ?: "Network error", e)
+        val url = if (farmId != null) {
+            "$baseUrl/api/livestock?farmId=$farmId"
+        } else {
+            "$baseUrl/api/livestock"
         }
+        return getEnvelopedList(url, "LIVESTOCK")
     }
     
     suspend fun createLivestock(livestock: LivestockDto): Resource<LivestockDto> {
-        return try {
-            val response: LivestockDto = client.post("$baseUrl/api/livestock") {
-                contentType(ContentType.Application.Json)
-                addAuthHeader()
-                setBody(livestock)
-            }.body()
-            Resource.Success(response)
-        } catch (e: Exception) {
-            Resource.Error(e.message ?: "Network error", e)
-        }
+        // Backend livestock.create accepts only: type, name, breed?, age?, weight?, healthStatus?, location?, notes?
+        val request = CreateLivestockRequest(
+            type = livestock.type,
+            name = livestock.name,
+            breed = livestock.breed,
+            age = livestock.age,
+            weight = livestock.weight,
+            healthStatus = livestock.healthStatus,
+            location = livestock.location,
+            notes = livestock.notes ?: livestock.description
+        )
+        return postEnvelopedItem(
+            url = "$baseUrl/api/livestock",
+            body = request,
+            logTag = "CREATE_LIVESTOCK"
+        )
     }
     
     suspend fun updateLivestock(id: String, livestock: LivestockDto): Resource<LivestockDto> {
-        return try {
-            val response: LivestockDto = client.put("$baseUrl/api/livestock/$id") {
-                contentType(ContentType.Application.Json)
-                addAuthHeader()
-                setBody(livestock)
-            }.body()
-            Resource.Success(response)
-        } catch (e: Exception) {
-            Resource.Error(e.message ?: "Network error", e)
-        }
+        val request = UpdateLivestockRequest(
+            type = livestock.type.takeIf { it.isNotBlank() },
+            name = livestock.name.takeIf { it.isNotBlank() },
+            breed = livestock.breed,
+            age = livestock.age,
+            weight = livestock.weight,
+            healthStatus = livestock.healthStatus,
+            location = livestock.location,
+            notes = livestock.notes ?: livestock.description
+        )
+        return putEnvelopedItem(
+            url = "$baseUrl/api/livestock/$id",
+            body = request,
+            logTag = "UPDATE_LIVESTOCK"
+        )
     }
     
     suspend fun deleteLivestock(id: String): Resource<Unit> {
-        return try {
-            client.delete("$baseUrl/api/livestock/$id") {
-                addAuthHeader()
-            }
-            Resource.Success(Unit)
-        } catch (e: Exception) {
-            Resource.Error(e.message ?: "Network error", e)
-        }
+        return deleteEnveloped("$baseUrl/api/livestock/$id", "DELETE_LIVESTOCK")
     }
     
     // ========== Crops ==========
     suspend fun getCrops(farmId: String? = null): Resource<List<CropDto>> {
-        return try {
-            val url = if (farmId != null) {
-                "$baseUrl/api/crops?farmId=$farmId"
-            } else {
-                "$baseUrl/api/crops"
-            }
-            val response: List<CropDto> = client.get(url) {
-                addAuthHeader()
-            }.body()
-            Resource.Success(response)
-        } catch (e: Exception) {
-            Resource.Error(e.message ?: "Network error", e)
+        val url = if (farmId != null) {
+            "$baseUrl/api/crops?farmId=$farmId"
+        } else {
+            "$baseUrl/api/crops"
         }
+        return getEnvelopedList(url, "CROPS")
     }
     
     suspend fun createCrop(crop: CropDto): Resource<CropDto> {
-        return try {
-            val response: CropDto = client.post("$baseUrl/api/crops") {
-                contentType(ContentType.Application.Json)
-                addAuthHeader()
-                setBody(crop)
-            }.body()
-            Resource.Success(response)
-        } catch (e: Exception) {
-            Resource.Error(e.message ?: "Network error", e)
-        }
+        // Align with web-project createCrop / dashboard addNewCropWithData fields.
+        val request = CreateCropRequest(
+            name = crop.name,
+            type = crop.type,
+            farmId = crop.farmId?.takeIf { it.isNotBlank() },
+            plantedDate = crop.plantedDate,
+            expectedHarvestDate = crop.expectedHarvestDate,
+            area = crop.area,
+            description = crop.description ?: crop.notes,
+            variety = crop.variety,
+            status = crop.status,
+            notes = crop.notes
+        )
+        return postEnvelopedItem(
+            url = "$baseUrl/api/crops",
+            body = request,
+            logTag = "CREATE_CROP"
+        )
     }
     
     suspend fun updateCrop(id: String, crop: CropDto): Resource<CropDto> {
-        return try {
-            val response: CropDto = client.put("$baseUrl/api/crops/$id") {
-                contentType(ContentType.Application.Json)
-                addAuthHeader()
-                setBody(crop)
-            }.body()
-            Resource.Success(response)
-        } catch (e: Exception) {
-            Resource.Error(e.message ?: "Network error", e)
-        }
+        val request = UpdateCropRequest(
+            name = crop.name.takeIf { it.isNotBlank() },
+            type = crop.type,
+            farmId = crop.farmId?.takeIf { it.isNotBlank() },
+            plantedDate = crop.plantedDate,
+            expectedHarvestDate = crop.expectedHarvestDate,
+            area = crop.area,
+            description = crop.description ?: crop.notes,
+            variety = crop.variety,
+            status = crop.status,
+            notes = crop.notes
+        )
+        return putEnvelopedItem(
+            url = "$baseUrl/api/crops/$id",
+            body = request,
+            logTag = "UPDATE_CROP"
+        )
     }
     
     suspend fun deleteCrop(id: String): Resource<Unit> {
-        return try {
-            client.delete("$baseUrl/api/crops/$id") {
-                addAuthHeader()
-            }
-            Resource.Success(Unit)
-        } catch (e: Exception) {
-            Resource.Error(e.message ?: "Network error", e)
-        }
+        return deleteEnveloped("$baseUrl/api/crops/$id", "DELETE_CROP")
     }
     
     // ========== Tasks ==========
+    // Backend mounts tasks under farm team routes: GET /api/farms/:farmId/tasks
+    // (see backend/routes/farmTeam.js — there is no top-level /api/tasks).
     suspend fun getTasks(farmId: String? = null): Resource<List<TaskDto>> {
-        return try {
-            val url = if (farmId != null) {
-                "$baseUrl/api/tasks?farmId=$farmId"
-            } else {
-                "$baseUrl/api/tasks"
+        if (!farmId.isNullOrBlank()) {
+            return getEnvelopedList("$baseUrl/api/farms/$farmId/tasks", "TASKS")
+        }
+
+        // Tasks tab / dashboard call without a farmId — resolve farms then aggregate.
+        return when (val farmsResult = getFarms()) {
+            is Resource.Success -> {
+                if (farmsResult.data.isEmpty()) {
+                    Resource.Success(emptyList())
+                } else {
+                    val allTasks = mutableListOf<TaskDto>()
+                    var firstError: Resource.Error? = null
+                    for (farm in farmsResult.data) {
+                        when (val tasksResult =
+                            getEnvelopedList<TaskDto>("$baseUrl/api/farms/${farm.id}/tasks", "TASKS")
+                        ) {
+                            is Resource.Success -> allTasks.addAll(tasksResult.data)
+                            is Resource.Error -> if (firstError == null) firstError = tasksResult
+                            is Resource.Loading -> {}
+                        }
+                    }
+                    if (allTasks.isEmpty() && firstError != null) {
+                        firstError
+                    } else {
+                        Resource.Success(allTasks)
+                    }
+                }
             }
-            val response: List<TaskDto> = client.get(url) {
-                addAuthHeader()
-            }.body()
-            Resource.Success(response)
-        } catch (e: Exception) {
-            Resource.Error(e.message ?: "Network error", e)
+            is Resource.Error -> Resource.Error(farmsResult.message, farmsResult.throwable)
+            is Resource.Loading -> Resource.Error("Unexpected loading state", Exception("Unexpected loading state"))
         }
     }
     
     suspend fun createTask(task: TaskDto): Resource<TaskDto> {
-        return try {
-            val response: TaskDto = client.post("$baseUrl/api/tasks") {
-                contentType(ContentType.Application.Json)
-                addAuthHeader()
-                setBody(task)
-            }.body()
-            Resource.Success(response)
-        } catch (e: Exception) {
-            Resource.Error(e.message ?: "Network error", e)
+        val farmId = task.farmId.trim()
+        if (farmId.isEmpty()) {
+            return Resource.Error(
+                "farmId is required to create a task",
+                Exception("CREATE_TASK_MISSING_FARM_ID")
+            )
+        }
+        // Backend: POST /api/farms/:farmId/tasks — farmId is path-only; status is server-assigned.
+        val request = CreateTaskRequest(
+            title = task.title,
+            description = task.description,
+            priority = normalizeTaskPriority(task.priority),
+            assignedToUserId = task.assignedToUserId,
+            dueAt = task.dueAt
+        )
+        return postEnvelopedItem(
+            url = "$baseUrl/api/farms/$farmId/tasks",
+            body = request,
+            logTag = "CREATE_TASK"
+        )
+    }
+
+    private fun normalizeTaskPriority(priority: String?): String? {
+        if (priority.isNullOrBlank()) return null
+        return when (priority.trim().lowercase()) {
+            "low" -> "low"
+            "medium" -> "medium"
+            "high" -> "high"
+            "urgent" -> "urgent"
+            else -> priority.trim().lowercase()
         }
     }
-    
+
+    private fun normalizeTaskStatus(status: String?): String? {
+        if (status.isNullOrBlank()) return null
+        return when (status.trim().lowercase().replace('-', '_')) {
+            "open", "pending" -> "open"
+            "in_progress", "inprogress" -> "in_progress"
+            "done", "completed", "complete" -> "done"
+            "cancelled", "canceled" -> "cancelled"
+            else -> status.trim().lowercase()
+        }
+    }
+
+    /**
+     * Backend: PATCH /api/farms/:farmId/tasks/:taskId (not PUT /api/tasks/:id).
+     */
     suspend fun updateTask(id: String, task: TaskDto): Resource<TaskDto> {
-        return try {
-            val response: TaskDto = client.put("$baseUrl/api/tasks/$id") {
-                contentType(ContentType.Application.Json)
-                addAuthHeader()
-                setBody(task)
-            }.body()
-            Resource.Success(response)
-        } catch (e: Exception) {
-            Resource.Error(e.message ?: "Network error", e)
+        val farmId = task.farmId.trim()
+        if (farmId.isEmpty()) {
+            return Resource.Error(
+                "farmId is required to update a task",
+                Exception("UPDATE_TASK_MISSING_FARM_ID")
+            )
         }
+        val request = UpdateTaskRequest(
+            title = task.title.takeIf { it.isNotBlank() },
+            description = task.description,
+            status = normalizeTaskStatus(task.status),
+            priority = normalizeTaskPriority(task.priority),
+            assignedToUserId = task.assignedToUserId,
+            dueAt = task.dueAt
+        )
+        return patchEnvelopedItem(
+            url = "$baseUrl/api/farms/$farmId/tasks/$id",
+            body = request,
+            logTag = "UPDATE_TASK"
+        )
     }
-    
-    suspend fun deleteTask(id: String): Resource<Unit> {
-        return try {
-            client.delete("$baseUrl/api/tasks/$id") {
-                addAuthHeader()
-            }
-            Resource.Success(Unit)
-        } catch (e: Exception) {
-            Resource.Error(e.message ?: "Network error", e)
+
+    /**
+     * Backend has no DELETE /api/farms/:farmId/tasks/:taskId.
+     * Soft-cancel via PATCH status=cancelled (farm-scoped).
+     */
+    suspend fun deleteTask(id: String, farmId: String? = null): Resource<Unit> {
+        val resolvedFarmId = farmId?.trim().orEmpty()
+        if (resolvedFarmId.isEmpty()) {
+            return Resource.Error(
+                "farmId is required to cancel a task (backend has no hard delete)",
+                Exception("DELETE_TASK_MISSING_FARM_ID")
+            )
+        }
+        return when (
+            val result = patchEnvelopedItem<UpdateTaskRequest, TaskDto>(
+                url = "$baseUrl/api/farms/$resolvedFarmId/tasks/$id",
+                body = UpdateTaskRequest(status = "cancelled"),
+                logTag = "CANCEL_TASK"
+            )
+        ) {
+            is Resource.Success -> Resource.Success(Unit)
+            is Resource.Error -> Resource.Error(result.message, result.throwable)
+            is Resource.Loading -> Resource.Error("Unexpected loading state", Exception("Unexpected loading state"))
         }
     }
     
     // ========== Inventory ==========
     suspend fun getInventory(farmId: String? = null): Resource<List<InventoryItemDto>> {
-        return try {
-            val url = if (farmId != null) {
-                "$baseUrl/api/inventory?farmId=$farmId"
-            } else {
-                "$baseUrl/api/inventory"
-            }
-            val response: List<InventoryItemDto> = client.get(url) {
-                addAuthHeader()
-            }.body()
-            Resource.Success(response)
-        } catch (e: Exception) {
-            Resource.Error(e.message ?: "Network error", e)
+        val url = if (farmId != null) {
+            "$baseUrl/api/inventory?farmId=$farmId"
+        } else {
+            "$baseUrl/api/inventory"
         }
+        return getEnvelopedList(url, "INVENTORY")
     }
     
     suspend fun createInventoryItem(item: InventoryItemDto): Resource<InventoryItemDto> {
@@ -344,19 +624,12 @@ class SmartFarmApi(
     
     // ========== Financial Records ==========
     suspend fun getFinancialRecords(farmId: String? = null): Resource<List<FinancialRecordDto>> {
-        return try {
-            val url = if (farmId != null) {
-                "$baseUrl/api/financial?farmId=$farmId"
-            } else {
-                "$baseUrl/api/financial"
-            }
-            val response: List<FinancialRecordDto> = client.get(url) {
-                addAuthHeader()
-            }.body()
-            Resource.Success(response)
-        } catch (e: Exception) {
-            Resource.Error(e.message ?: "Network error", e)
+        val url = if (farmId != null) {
+            "$baseUrl/api/financial?farmId=$farmId"
+        } else {
+            "$baseUrl/api/financial"
         }
+        return getEnvelopedList(url, "FINANCIAL")
     }
     
     suspend fun createFinancialRecord(record: FinancialRecordDto): Resource<FinancialRecordDto> {
@@ -398,19 +671,12 @@ class SmartFarmApi(
     
     // ========== Analytics ==========
     suspend fun getAnalytics(farmId: String? = null): Resource<AnalyticsDto> {
-        return try {
-            val url = if (farmId != null) {
-                "$baseUrl/api/analytics?farmId=$farmId"
-            } else {
-                "$baseUrl/api/analytics"
-            }
-            val response: AnalyticsDto = client.get(url) {
-                addAuthHeader()
-            }.body()
-            Resource.Success(response)
-        } catch (e: Exception) {
-            Resource.Error(e.message ?: "Network error", e)
+        val url = if (farmId != null) {
+            "$baseUrl/api/analytics?farmId=$farmId"
+        } else {
+            "$baseUrl/api/analytics"
         }
+        return getEnvelopedItem(url, "ANALYTICS")
     }
     
     // ========== Health Check ==========

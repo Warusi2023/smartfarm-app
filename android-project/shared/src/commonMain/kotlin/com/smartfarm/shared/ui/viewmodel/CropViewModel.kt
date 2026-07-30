@@ -49,7 +49,7 @@ class CropViewModel(
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
             when (val result = cropRepository.createCrop(crop)) {
-                is Resource.Success -> loadCrops(crop.farmId)
+                is Resource.Success -> loadCrops(null)
                 is Resource.Error -> {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,

@@ -49,7 +49,8 @@ class TaskViewModel(
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
             when (val result = taskRepository.createTask(task)) {
-                is Resource.Success -> loadTasks(task.farmId)
+                // Reload aggregated list so the new task appears in the Tasks tab.
+                is Resource.Success -> loadTasks(null)
                 is Resource.Error -> {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
@@ -80,8 +81,8 @@ class TaskViewModel(
     fun deleteTask(taskId: String, farmId: String?) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
-            when (val result = taskRepository.deleteTask(taskId)) {
-                is Resource.Success -> loadTasks(farmId)
+            when (val result = taskRepository.deleteTask(taskId, farmId)) {
+                is Resource.Success -> loadTasks(null)
                 is Resource.Error -> {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,

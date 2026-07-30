@@ -14,19 +14,23 @@ import com.smartfarm.ui.components.EmptyState
 import com.smartfarm.ui.components.ErrorState
 import com.smartfarm.ui.components.LoadingState
 import com.smartfarm.shared.ui.viewmodel.TaskViewModel
+import com.smartfarm.shared.ui.viewmodel.FarmViewModel
 import com.smartfarm.shared.data.model.dto.TaskDto
 import org.koin.compose.koinInject
 
 @Composable
 fun TasksScreen(
-    viewModel: TaskViewModel = koinInject()
+    viewModel: TaskViewModel = koinInject(),
+    farmViewModel: FarmViewModel = koinInject()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    
+    val farmState by farmViewModel.uiState.collectAsState()
+
     LaunchedEffect(Unit) {
         viewModel.loadTasks()
+        farmViewModel.loadFarms()
     }
-    
+
     Scaffold(
         topBar = {
             TopAppBar(title = { Text("Tasks") })
@@ -36,10 +40,10 @@ fun TasksScreen(
             FloatingActionButton(onClick = { showDialog = true }) {
                 Icon(Icons.Default.Add, contentDescription = "Add Task")
             }
-            
+
             if (showDialog) {
                 com.smartfarm.ui.screens.forms.AddTaskDialog(
-                    farmId = "", // TODO: Get from selected farm
+                    farms = farmState.farms,
                     onDismiss = { showDialog = false },
                     onSave = { task ->
                         viewModel.createTask(task)
@@ -106,14 +110,11 @@ private fun TaskCard(task: TaskDto) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            if (task.status != null) {
-                Text(
-                    text = "Status: ${task.status}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+            Text(
+                text = "Status: ${task.status}",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }
-

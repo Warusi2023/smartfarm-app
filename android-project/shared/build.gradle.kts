@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.smartfarm.shared"
-    compileSdk = 34
+    compileSdk = 35
     defaultConfig {
         minSdk = 24
     }

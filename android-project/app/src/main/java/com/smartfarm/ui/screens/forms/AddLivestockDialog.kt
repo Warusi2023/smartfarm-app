@@ -10,17 +10,17 @@ import com.smartfarm.ui.components.EntityFormDialog
 
 @Composable
 fun AddLivestockDialog(
-    farmId: String,
     onDismiss: () -> Unit,
     onSave: (LivestockDto) -> Unit
 ) {
     var name by remember { mutableStateOf("") }
-    var type by remember { mutableStateOf("CATTLE") }
+    // Backend livestock.create: type + name required; notes (not description)
+    var type by remember { mutableStateOf("cattle") }
     var breed by remember { mutableStateOf("") }
     var weight by remember { mutableStateOf("") }
     var location by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
-    
+    var notes by remember { mutableStateOf("") }
+
     EntityFormDialog(
         title = "Add Livestock",
         onDismiss = onDismiss,
@@ -28,14 +28,12 @@ fun AddLivestockDialog(
             if (name.isNotBlank()) {
                 val livestock = LivestockDto(
                     id = "",
-                    name = name,
+                    name = name.trim(),
                     type = type,
                     breed = breed.takeIf { it.isNotBlank() },
-                    farmId = farmId,
                     weight = weight.toDoubleOrNull(),
                     location = location.takeIf { it.isNotBlank() },
-                    description = description.takeIf { it.isNotBlank() },
-                    status = "ACTIVE"
+                    notes = notes.takeIf { it.isNotBlank() }
                 )
                 onSave(livestock)
             }
@@ -50,7 +48,7 @@ fun AddLivestockDialog(
                 .padding(bottom = 16.dp),
             singleLine = true
         )
-        
+
         var typeExpanded by remember { mutableStateOf(false) }
         ExposedDropdownMenuBox(
             expanded = typeExpanded,
@@ -63,15 +61,15 @@ fun AddLivestockDialog(
                 value = type,
                 onValueChange = {},
                 readOnly = true,
-                label = { Text("Type") },
+                label = { Text("Type *") },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = typeExpanded) },
-                modifier = Modifier.menuAnchor()
+                modifier = Modifier.menuAnchor().fillMaxWidth()
             )
             ExposedDropdownMenu(
                 expanded = typeExpanded,
                 onDismissRequest = { typeExpanded = false }
             ) {
-                listOf("CATTLE", "SHEEP", "GOATS", "PIGS", "POULTRY", "HORSES", "FISH", "OTHER").forEach { option ->
+                listOf("cattle", "sheep", "goats", "pigs", "chickens", "horses", "fish", "other").forEach { option ->
                     DropdownMenuItem(
                         text = { Text(option) },
                         onClick = {
@@ -82,7 +80,7 @@ fun AddLivestockDialog(
                 }
             }
         }
-        
+
         OutlinedTextField(
             value = breed,
             onValueChange = { breed = it },
@@ -92,7 +90,7 @@ fun AddLivestockDialog(
                 .padding(bottom = 16.dp),
             singleLine = true
         )
-        
+
         OutlinedTextField(
             value = weight,
             onValueChange = { weight = it },
@@ -102,7 +100,7 @@ fun AddLivestockDialog(
                 .padding(bottom = 16.dp),
             singleLine = true
         )
-        
+
         OutlinedTextField(
             value = location,
             onValueChange = { location = it },
@@ -112,11 +110,11 @@ fun AddLivestockDialog(
                 .padding(bottom = 16.dp),
             singleLine = true
         )
-        
+
         OutlinedTextField(
-            value = description,
-            onValueChange = { description = it },
-            label = { Text("Description") },
+            value = notes,
+            onValueChange = { notes = it },
+            label = { Text("Notes") },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 16.dp),
@@ -124,4 +122,3 @@ fun AddLivestockDialog(
         )
     }
 }
-
