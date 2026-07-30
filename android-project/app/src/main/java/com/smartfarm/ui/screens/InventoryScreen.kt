@@ -10,78 +10,112 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.smartfarm.shared.data.farm.SelectedFarmStore
+import com.smartfarm.shared.data.model.dto.InventoryItemDto
+import com.smartfarm.shared.ui.viewmodel.FarmViewModel
+import com.smartfarm.shared.ui.viewmodel.InventoryViewModel
+import com.smartfarm.ui.components.CurrentFarmBanner
 import com.smartfarm.ui.components.EmptyState
 import com.smartfarm.ui.components.ErrorState
 import com.smartfarm.ui.components.LoadingState
-import com.smartfarm.shared.ui.viewmodel.InventoryViewModel
-import com.smartfarm.shared.data.model.dto.InventoryItemDto
+import com.smartfarm.ui.screens.forms.AddInventoryDialog
+import com.smartfarm.ui.theme.SmartFarmSpacing
 import org.koin.compose.koinInject
 
 @Composable
 fun InventoryScreen(
-    viewModel: InventoryViewModel = koinInject()
+    viewModel: InventoryViewModel = koinInject(),
+    farmViewModel: FarmViewModel = koinInject(),
+    selectedFarmStore: SelectedFarmStore = koinInject()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    
+    val farmState by farmViewModel.uiState.collectAsState()
+    val selectedFarm by selectedFarmStore.selectedFarm.collectAsState()
+
     LaunchedEffect(Unit) {
         viewModel.loadInventory()
+        farmViewModel.loadFarms()
     }
-    
+
+    LaunchedEffect(farmState.farms) {
+        selectedFarmStore.syncWithAvailableFarms(
+            farmState.farms.map { it.id to it.name }
+        )
+    }
+
+    var showDialog by remember { mutableStateOf(false) }
+
     Scaffold(
-        topBar = {
-            TopAppBar(title = { Text("Inventory") })
-        },
+        containerColor = MaterialTheme.colorScheme.background,
         floatingActionButton = {
-            var showDialog by remember { mutableStateOf(false) }
-            FloatingActionButton(onClick = { showDialog = true }) {
+            FloatingActionButton(
+                onClick = { showDialog = true },
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            ) {
                 Icon(Icons.Default.Add, contentDescription = "Add Item")
-            }
-            
-            if (showDialog) {
-                com.smartfarm.ui.screens.forms.AddInventoryDialog(
-                    farmId = "", // TODO: Get from selected farm
-                    onDismiss = { showDialog = false },
-                    onSave = { item ->
-                        viewModel.createItem(item)
-                        showDialog = false
-                    }
-                )
             }
         }
     ) { padding ->
-        when {
-            uiState.isLoading -> {
-                LoadingState(Modifier.padding(padding))
-            }
-            uiState.error != null && uiState.items.isEmpty() -> {
-                ErrorState(
-                    message = uiState.error ?: "Unknown error",
-                    onRetry = { viewModel.refresh() },
-                    modifier = Modifier.padding(padding)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+        ) {
+            CurrentFarmBanner(
+                farmName = selectedFarm?.name,
+                modifier = Modifier.padding(
+                    horizontal = SmartFarmSpacing.lg,
+                    vertical = SmartFarmSpacing.sm
                 )
-            }
-            uiState.items.isEmpty() -> {
-                EmptyState(
-                    title = "No Inventory Items",
-                    message = "Tap + to add your first inventory item",
-                    icon = Icons.Default.Inventory,
-                    modifier = Modifier.padding(padding)
-                )
-            }
-            else -> {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(padding)
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(uiState.items) { item ->
-                        InventoryCard(item = item)
+            )
+
+            when {
+                uiState.isLoading -> {
+                    LoadingState(Modifier.weight(1f))
+                }
+                uiState.error != null && uiState.items.isEmpty() -> {
+                    ErrorState(
+                        message = uiState.error ?: "Unknown error",
+                        onRetry = { viewModel.refresh() },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                uiState.items.isEmpty() -> {
+                    EmptyState(
+                        title = "No inventory items",
+                        message = "Add supplies, feed, or equipment for your farm.",
+                        icon = Icons.Default.Inventory,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                else -> {
+                    LazyColumn(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(horizontal = SmartFarmSpacing.lg)
+                            .padding(bottom = SmartFarmSpacing.lg),
+                        verticalArrangement = Arrangement.spacedBy(SmartFarmSpacing.sm)
+                    ) {
+                        items(uiState.items, key = { it.id }) { item ->
+                            InventoryCard(item = item)
+                        }
                     }
                 }
             }
         }
+    }
+
+    if (showDialog) {
+        AddInventoryDialog(
+            farms = farmState.farms,
+            preferredFarmId = selectedFarm?.id,
+            onDismiss = { showDialog = false },
+            onSave = { item ->
+                viewModel.createItem(item)
+                showDialog = false
+            }
+        )
     }
 }
 
@@ -89,11 +123,11 @@ fun InventoryScreen(
 private fun InventoryCard(item: InventoryItemDto) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        shape = MaterialTheme.shapes.medium,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
+        Column(modifier = Modifier.padding(SmartFarmSpacing.lg)) {
             Text(
                 text = item.name,
                 style = MaterialTheme.typography.titleMedium
@@ -103,14 +137,13 @@ private fun InventoryCard(item: InventoryItemDto) {
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            if (item.category != null) {
+            item.category?.takeIf { it.isNotBlank() }?.let { category ->
                 Text(
-                    text = "Category: ${item.category}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    text = category,
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
         }
     }
 }
-
