@@ -49,7 +49,7 @@ class InventoryViewModel(
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
             when (val result = inventoryRepository.createInventoryItem(item)) {
-                is Resource.Success -> loadInventory(item.farmId)
+                is Resource.Success -> loadInventory(null)
                 is Resource.Error -> {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
@@ -65,7 +65,7 @@ class InventoryViewModel(
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
             when (val result = inventoryRepository.updateInventoryItem(item)) {
-                is Resource.Success -> loadInventory(item.farmId)
+                is Resource.Success -> loadInventory(null)
                 is Resource.Error -> {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
@@ -81,7 +81,7 @@ class InventoryViewModel(
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
             when (val result = inventoryRepository.deleteInventoryItem(itemId)) {
-                is Resource.Success -> loadInventory(farmId)
+                is Resource.Success -> loadInventory(null)
                 is Resource.Error -> {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
