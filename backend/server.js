@@ -701,101 +701,107 @@ app.get('/api/farms/stats/overview', validate('farms.stats'), (req, res) => {
   });
 });
 
-// In-memory storage (replace with database in production)
-let cropsStorage = [];
+// In-memory storage (legacy stubs; crops are Postgres-backed via cropsStore)
 let livestockStorage = [];
 let feedMixesStorage = [];
 const farmCostsStore = require('./services/farmCostsStore');
+const cropsStore = require('./services/cropsStore');
+const { asyncHandler } = require('./middleware/error-handler');
 const feedMixAuthMiddleware = new (require('./middleware/auth'))();
+const cropsAuthMiddleware = new (require('./middleware/auth'))();
 
-// Crops endpoints (in-memory stub aligned with web-project createCrop contract)
+// Crops endpoints — durable Postgres persistence (Android + web crop-management)
 app.get('/api/crops',
+  cropsAuthMiddleware.authenticate(),
   cacheMiddleware('crops', CACHE_TTL.CROP_LIST, (req) =>
-    `crops:user:${req.user?.id || 'anonymous'}`
+    `crops:user:${req.user?.id || 'anonymous'}:farm:${req.query?.farmId || 'all'}`
   ),
   validate('crops.list'),
-  (req, res) => {
-  const farmId = req.query?.farmId;
-  const data = farmId
-    ? cropsStorage.filter((c) => c.farmId === farmId)
-    : cropsStorage;
-  res.status(200).json({
-    success: true,
-    data
-  });
-});
+  asyncHandler(async (req, res) => {
+    const farmId = req.query?.farmId || null;
+    const page = req.query?.page;
+    const limit = req.query?.limit;
+    const data = await cropsStore.listCrops(dbPool, {
+      userId: req.user.id,
+      farmId,
+      page,
+      limit
+    });
+    res.status(200).json({
+      success: true,
+      data
+    });
+  })
+);
 
 app.post('/api/crops',
+  cropsAuthMiddleware.authenticate(),
   invalidateCache('crops:create'),
   validate('crops.create'),
-  (req, res) => {
-  logger.debug('POST /api/crops', { origin: req.headers.origin, body: req.body });
+  asyncHandler(async (req, res) => {
+    logger.debug('POST /api/crops', { origin: req.headers.origin, body: req.body, userId: req.user.id });
+    const newCrop = await cropsStore.createCrop(dbPool, {
+      userId: req.user.id,
+      payload: req.body || {}
+    });
+    logger.info('Crop added successfully', { id: newCrop.id, userId: req.user.id });
+    res.status(201).json({
+      success: true,
+      data: newCrop
+    });
+  })
+);
 
-  const newCrop = {
-    id: String(Date.now()),
-    status: 'planted',
-    ...req.body,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  };
+app.get('/api/crops/stats/overview',
+  cropsAuthMiddleware.authenticate(),
+  validate('crops.stats'),
+  asyncHandler(async (req, res) => {
+    const data = await cropsStore.getCropStats(dbPool, { userId: req.user.id });
+    res.status(200).json({
+      success: true,
+      data
+    });
+  })
+);
 
-  cropsStorage.push(newCrop);
-  logger.info('Crop added successfully', { id: newCrop.id });
-
-  res.status(201).json({
-    success: true,
-    data: newCrop
-  });
-});
-
-app.get('/api/crops/stats/overview', validate('crops.stats'), (req, res) => {
-  res.status(200).json({
-    success: true,
-    data: {
-      totalCrops: cropsStorage.length,
-      healthyCrops: cropsStorage.filter((c) => !['failed', 'FAILED'].includes(c.status)).length,
-      harvestReady: cropsStorage.filter((c) =>
-        ['READY_FOR_HARVEST', 'ready_for_harvest', 'harvest_ready'].includes(c.status)
-      ).length
-    }
-  });
-});
-
-app.get('/api/crops/:id', validate('crops.getById'), (req, res) => {
-  const crop = cropsStorage.find((c) => String(c.id) === String(req.params.id));
-  if (!crop) {
-    return res.status(404).json({ success: false, error: 'Crop not found' });
-  }
-  res.status(200).json({ success: true, data: crop });
-});
+app.get('/api/crops/:id',
+  cropsAuthMiddleware.authenticate(),
+  validate('crops.getById'),
+  asyncHandler(async (req, res) => {
+    const crop = await cropsStore.getCropById(dbPool, {
+      userId: req.user.id,
+      cropId: req.params.id
+    });
+    res.status(200).json({ success: true, data: crop });
+  })
+);
 
 app.put('/api/crops/:id',
+  cropsAuthMiddleware.authenticate(),
   invalidateCache('crops:update'),
   validate('crops.update'),
-  (req, res) => {
-  const index = cropsStorage.findIndex((c) => String(c.id) === String(req.params.id));
-  if (index === -1) {
-    return res.status(404).json({ success: false, error: 'Crop not found' });
-  }
-  cropsStorage[index] = {
-    ...cropsStorage[index],
-    ...req.body,
-    updatedAt: new Date().toISOString()
-  };
-  res.status(200).json({ success: true, data: cropsStorage[index] });
-});
+  asyncHandler(async (req, res) => {
+    const crop = await cropsStore.updateCrop(dbPool, {
+      userId: req.user.id,
+      cropId: req.params.id,
+      payload: req.body || {}
+    });
+    res.status(200).json({ success: true, data: crop });
+  })
+);
 
 app.delete('/api/crops/:id',
+  cropsAuthMiddleware.authenticate(),
   invalidateCache('crops:delete'),
   validate('crops.getById'),
-  (req, res) => {
-  const index = cropsStorage.findIndex((c) => String(c.id) === String(req.params.id));
-  if (index === -1) {
-    return res.status(404).json({ success: false, error: 'Crop not found' });
-  }
-  cropsStorage.splice(index, 1);
-  res.status(200).json({ success: true, data: { id: req.params.id } });
-});
+  asyncHandler(async (req, res) => {
+    const data = await cropsStore.deleteCrop(dbPool, {
+      userId: req.user.id,
+      cropId: req.params.id
+    });
+    res.status(200).json({ success: true, data });
+  })
+);
 
 // Livestock endpoints
 app.get('/api/livestock', 
