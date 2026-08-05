@@ -40,15 +40,17 @@ Databases created from `001_complete_schema.sql` already had the table in its le
 - **Verification** — after the run it checks `crops` and `livestock` for the columns the API needs and logs
   `Schema verification passed` or the exact missing column names.
 
-## Verify after deploy
+## Post-merge smoke test checklist
 
-1. Railway deploy logs → **pre-deploy** phase shows `Applying migration 018_livestock_legacy_column_reconcile.sql`,
-   then `Schema verification passed` and `All migrations completed successfully`.
-2. `GET /api/health` → **200**.
-3. `GET /api/livestock` without a token → **401**; with a token → **200** and a `data` array.
-4. `node backend/scripts/livestock-persistence-probe.js` with `API_BASE` + `AUTH_TOKEN` set — covers
-   create (web shape and Android shape), photo round-trip, refresh persistence, and cleanup.
-5. Web `livestock-management.html`: add an animal with a photo → hard refresh → animal and photo still render.
+1. Confirm the Railway backend deploy completes successfully.
+2. Check the logs for `Applying migration 018_livestock_legacy_column_reconcile.sql`.
+3. Check the logs for `Schema verification passed`.
+4. Call `/api/health` and confirm 200.
+5. Call `/api/livestock` without a token and confirm 401.
+6. Run the livestock persistence probe with `API_BASE` and `AUTH_TOKEN`.
+7. Create a livestock record with a photo and confirm it round-trips through the API.
+8. Refresh the web app and confirm the same record and photo still appear.
+9. Confirm Android can read the same record and photo from the backend.
 
 ## Notes
 
