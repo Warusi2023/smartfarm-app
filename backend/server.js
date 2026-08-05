@@ -701,14 +701,15 @@ app.get('/api/farms/stats/overview', validate('farms.stats'), (req, res) => {
   });
 });
 
-// In-memory storage (legacy stubs; crops are Postgres-backed via cropsStore)
-let livestockStorage = [];
+// In-memory storage (legacy stubs; crops and livestock are Postgres-backed)
 let feedMixesStorage = [];
 const farmCostsStore = require('./services/farmCostsStore');
 const cropsStore = require('./services/cropsStore');
+const livestockStore = require('./services/livestockStore');
 const { asyncHandler } = require('./middleware/error-handler');
 const feedMixAuthMiddleware = new (require('./middleware/auth'))();
 const cropsAuthMiddleware = new (require('./middleware/auth'))();
+const livestockAuthMiddleware = new (require('./middleware/auth'))();
 
 // Crops endpoints — durable Postgres persistence (Android + web crop-management)
 app.get('/api/crops',
@@ -803,124 +804,98 @@ app.delete('/api/crops/:id',
   })
 );
 
-// Livestock endpoints
-app.get('/api/livestock', 
-  cacheMiddleware('livestock', CACHE_TTL.LIVESTOCK_LIST, (req) => 
-    `livestock:user:${req.user?.id || 'anonymous'}`
+// Livestock endpoints — durable Postgres persistence (Android + web livestock-management)
+app.get('/api/livestock',
+  livestockAuthMiddleware.authenticate(),
+  cacheMiddleware('livestock', CACHE_TTL.LIVESTOCK_LIST, (req) =>
+    `livestock:user:${req.user?.id || 'anonymous'}:farm:${req.query?.farmId || 'all'}`
   ),
-  validate('livestock.list'), 
-  (req, res) => {
-  logger.debug('GET /api/livestock', { origin: req.headers.origin });
-  res.status(200).json({
-    success: true,
-    data: livestockStorage
-  });
-});
+  validate('livestock.list'),
+  asyncHandler(async (req, res) => {
+    logger.debug('GET /api/livestock', { origin: req.headers.origin, userId: req.user.id });
+    const data = await livestockStore.listLivestock(dbPool, {
+      userId: req.user.id,
+      farmId: req.query?.farmId || null,
+      page: req.query?.page,
+      limit: req.query?.limit
+    });
+    res.status(200).json({
+      success: true,
+      data
+    });
+  })
+);
 
-app.post('/api/livestock', 
+app.post('/api/livestock',
+  livestockAuthMiddleware.authenticate(),
   invalidateCache('livestock:create'),
-  validate('livestock.create'), 
-  (req, res) => {
-  logger.debug('POST /api/livestock', { origin: req.headers.origin, body: req.body });
-  
-  const livestockData = req.body;
-  
-  // Create new livestock entry
-  const newLivestock = {
-    id: Date.now(),
-    ...livestockData,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  };
-  
-  livestockStorage.push(newLivestock);
-  logger.info('Livestock added successfully', { id: newLivestock.id });
-  
-  res.status(201).json({
-    success: true,
-    data: newLivestock
-  });
-});
-
-app.get('/api/livestock/:id', validate('livestock.getById'), (req, res) => {
-  logger.debug('GET /api/livestock/:id', { id: req.params.id, origin: req.headers.origin });
-  const livestock = livestockStorage.find(l => l.id === parseInt(req.params.id));
-  
-  if (!livestock) {
-    return res.status(404).json({
-      success: false,
-      error: 'Livestock not found'
+  validate('livestock.create'),
+  asyncHandler(async (req, res) => {
+    logger.debug('POST /api/livestock', { origin: req.headers.origin, userId: req.user.id });
+    const newLivestock = await livestockStore.createLivestock(dbPool, {
+      userId: req.user.id,
+      payload: req.body || {}
     });
-  }
-  
-  res.status(200).json({
-    success: true,
-    data: livestock
-  });
-});
+    logger.info('Livestock added successfully', { id: newLivestock.id, userId: req.user.id });
+    res.status(201).json({
+      success: true,
+      data: newLivestock
+    });
+  })
+);
 
-app.put('/api/livestock/:id', 
+app.get('/api/livestock/stats/overview',
+  livestockAuthMiddleware.authenticate(),
+  asyncHandler(async (req, res) => {
+    const data = await livestockStore.getLivestockStats(dbPool, { userId: req.user.id });
+    res.status(200).json({
+      success: true,
+      data
+    });
+  })
+);
+
+app.get('/api/livestock/:id',
+  livestockAuthMiddleware.authenticate(),
+  validate('livestock.getById'),
+  asyncHandler(async (req, res) => {
+    const animal = await livestockStore.getLivestockById(dbPool, {
+      userId: req.user.id,
+      livestockId: req.params.id
+    });
+    res.status(200).json({ success: true, data: animal });
+  })
+);
+
+app.put('/api/livestock/:id',
+  livestockAuthMiddleware.authenticate(),
   invalidateCache('livestock:update'),
-  validate('livestock.update'), 
-  (req, res) => {
-  logger.debug('PUT /api/livestock/:id', { id: req.params.id, origin: req.headers.origin });
-  const index = livestockStorage.findIndex(l => l.id === parseInt(req.params.id));
-  
-  if (index === -1) {
-    return res.status(404).json({
-      success: false,
-      error: 'Livestock not found'
+  validate('livestock.update'),
+  asyncHandler(async (req, res) => {
+    const animal = await livestockStore.updateLivestock(dbPool, {
+      userId: req.user.id,
+      livestockId: req.params.id,
+      payload: req.body || {}
     });
-  }
-  
-  livestockStorage[index] = {
-    ...livestockStorage[index],
-    ...req.body,
-    updatedAt: new Date().toISOString()
-  };
-  
-  logger.info('Livestock updated successfully', { id: req.params.id });
-  
-  res.status(200).json({
-    success: true,
-    data: livestockStorage[index]
-  });
-});
+    res.status(200).json({ success: true, data: animal });
+  })
+);
 
-app.delete('/api/livestock/:id', 
+app.delete('/api/livestock/:id',
+  livestockAuthMiddleware.authenticate(),
   invalidateCache('livestock:delete'),
-  validate('livestock.getById'), 
-  (req, res) => {
-  logger.debug('DELETE /api/livestock/:id', { id: req.params.id, origin: req.headers.origin });
-  const index = livestockStorage.findIndex(l => l.id === parseInt(req.params.id));
-  
-  if (index === -1) {
-    return res.status(404).json({
-      success: false,
-      error: 'Livestock not found'
+  validate('livestock.getById'),
+  asyncHandler(async (req, res) => {
+    await livestockStore.deleteLivestock(dbPool, {
+      userId: req.user.id,
+      livestockId: req.params.id
     });
-  }
-  
-  livestockStorage.splice(index, 1);
-  logger.info('Livestock deleted successfully', { id: req.params.id });
-  
-  res.status(200).json({
-    success: true,
-    message: 'Livestock deleted successfully'
-  });
-});
-
-app.get('/api/livestock/stats/overview', (req, res) => {
-  logger.debug('GET /api/livestock/stats/overview', { origin: req.headers.origin });
-  res.status(200).json({
-    success: true,
-    data: {
-      totalAnimals: livestockStorage.length,
-      healthyAnimals: livestockStorage.filter(l => l.healthStatus === 'healthy').length,
-      totalValue: livestockStorage.reduce((sum, l) => sum + (l.value || 0), 0)
-    }
-  });
-});
+    res.status(200).json({
+      success: true,
+      message: 'Livestock deleted successfully'
+    });
+  })
+);
 
 // Feed Mix endpoints
 app.get('/api/feed-mixes', (req, res) => {

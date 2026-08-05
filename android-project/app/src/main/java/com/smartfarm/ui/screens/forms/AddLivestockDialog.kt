@@ -1,58 +1,109 @@
 package com.smartfarm.ui.screens.forms
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.smartfarm.shared.data.model.dto.FarmDto
 import com.smartfarm.shared.data.model.dto.LivestockDto
+import com.smartfarm.ui.components.AnimalPhotoField
 import com.smartfarm.ui.components.EntityFormDialog
+import com.smartfarm.ui.util.LivestockPhotoCodec
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddLivestockDialog(
     farms: List<FarmDto> = emptyList(),
     onDismiss: () -> Unit,
     onSave: (LivestockDto) -> Unit,
-    preferredFarmId: String? = null
+    preferredFarmId: String? = null,
+    /** When set, the dialog edits an existing animal (including its photo). */
+    initialLivestock: LivestockDto? = null
 ) {
+    val isEditing = initialLivestock != null && !initialLivestock.id.isBlank()
+
     fun initialFarmId(): String {
+        val fromAnimal = initialLivestock?.farmId?.takeIf { id -> farms.any { it.id == id } }
         val preferred = preferredFarmId?.takeIf { id -> farms.any { it.id == id } }
-        return preferred ?: farms.firstOrNull()?.id.orEmpty()
+        return fromAnimal ?: preferred ?: farms.firstOrNull()?.id.orEmpty()
     }
 
-    var selectedFarmId by remember(preferredFarmId, farms.map { it.id }) {
+    var selectedFarmId by remember(preferredFarmId, farms.map { it.id }, initialLivestock?.id) {
         mutableStateOf(initialFarmId())
     }
-    LaunchedEffect(farms, preferredFarmId) {
+    LaunchedEffect(farms, preferredFarmId, initialLivestock?.id) {
         if (selectedFarmId.isBlank() || farms.none { it.id == selectedFarmId }) {
             selectedFarmId = initialFarmId()
         }
     }
 
-    var name by remember { mutableStateOf("") }
-    // Backend livestock.create: type + name required; notes (not description). farmId is not in create schema.
-    var type by remember { mutableStateOf("cattle") }
-    var breed by remember { mutableStateOf("") }
-    var weight by remember { mutableStateOf("") }
-    var location by remember { mutableStateOf("") }
-    var notes by remember { mutableStateOf("") }
+    var name by remember(initialLivestock?.id) {
+        mutableStateOf(initialLivestock?.name.orEmpty())
+    }
+    var type by remember(initialLivestock?.id) {
+        mutableStateOf(initialLivestock?.type?.takeIf { it.isNotBlank() } ?: "cattle")
+    }
+    var breed by remember(initialLivestock?.id) {
+        mutableStateOf(initialLivestock?.breed.orEmpty())
+    }
+    var weight by remember(initialLivestock?.id) {
+        mutableStateOf(initialLivestock?.weight?.toString().orEmpty())
+    }
+    var location by remember(initialLivestock?.id) {
+        mutableStateOf(initialLivestock?.location.orEmpty())
+    }
+    var notes by remember(initialLivestock?.id) {
+        mutableStateOf(
+            initialLivestock?.notes
+                ?: initialLivestock?.description
+                ?: ""
+        )
+    }
+    var photo by remember(initialLivestock?.id) {
+        mutableStateOf(
+            LivestockPhotoCodec.resolvePhoto(initialLivestock?.photo, initialLivestock?.photoUrl)
+        )
+    }
 
     EntityFormDialog(
-        title = "Add Livestock",
+        title = if (isEditing) "Edit Livestock" else "Add Livestock",
         onDismiss = onDismiss,
         onSave = {
             if (name.isNotBlank()) {
                 val livestock = LivestockDto(
-                    id = "",
+                    id = initialLivestock?.id.orEmpty(),
                     name = name.trim(),
                     type = type,
                     breed = breed.takeIf { it.isNotBlank() },
                     weight = weight.toDoubleOrNull(),
                     location = location.takeIf { it.isNotBlank() },
                     notes = notes.takeIf { it.isNotBlank() },
+                    photo = photo,
+                    photoUrl = photo,
+                    healthStatus = initialLivestock?.healthStatus,
+                    status = initialLivestock?.status,
+                    tag = initialLivestock?.tag,
+                    sex = initialLivestock?.sex,
+                    purpose = initialLivestock?.purpose,
+                    value = initialLivestock?.value,
+                    birthDate = initialLivestock?.birthDate,
+                    age = initialLivestock?.age,
                     // Client-side context only; create payload still omits farmId per backend contract.
                     farmId = selectedFarmId.takeIf { it.isNotBlank() }
+                        ?: initialLivestock?.farmId
                 )
                 onSave(livestock)
             }
@@ -176,11 +227,17 @@ fun AddLivestockDialog(
         OutlinedTextField(
             value = notes,
             onValueChange = { notes = it },
-            label = { Text("Notes") },
+            label = { Text("Health Notes") },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 16.dp),
             maxLines = 3
+        )
+
+        AnimalPhotoField(
+            photoDataUrl = photo,
+            onPhotoChange = { photo = it },
+            modifier = Modifier.padding(bottom = 8.dp)
         )
     }
 }

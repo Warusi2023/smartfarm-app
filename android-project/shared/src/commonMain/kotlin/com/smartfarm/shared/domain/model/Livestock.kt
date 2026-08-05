@@ -23,6 +23,8 @@ data class Livestock(
     val firstCalvingDate: Long? = null, // For cows
     val lastCalvingDate: Long? = null, // For cows
     val breedingStatus: BreedingStatus? = null,
+    /** Optional animal photo as a base64 data URL or remote URL. */
+    val photo: String? = null,
     val createdAt: Long,
     val updatedAt: Long
 )

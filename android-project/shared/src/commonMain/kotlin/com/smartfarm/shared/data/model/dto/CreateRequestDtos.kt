@@ -82,7 +82,8 @@ data class CreateLivestockRequest(
     val weight: Double? = null,
     val healthStatus: String? = null,
     val location: String? = null,
-    val notes: String? = null
+    val notes: String? = null,
+    val photo: String? = null
 )
 
 /**
@@ -97,7 +98,8 @@ data class UpdateLivestockRequest(
     val weight: Double? = null,
     val healthStatus: String? = null,
     val location: String? = null,
-    val notes: String? = null
+    val notes: String? = null,
+    val photo: String? = null
 )
 
 /**
@@ -116,3 +118,7 @@ data class UpdateTaskRequest(
     val assignedToUserId: String? = null,
     val dueAt: String? = null
 )
+
+/** Empty JSON object body for POST endpoints that require no fields (e.g. task complete). */
+@Serializable
+class EmptyRequest

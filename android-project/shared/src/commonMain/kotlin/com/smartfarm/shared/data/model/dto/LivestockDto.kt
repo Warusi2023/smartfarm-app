@@ -26,6 +26,9 @@ data class LivestockDto(
     val sex: String? = null,
     val purpose: String? = null,
     val value: Double? = null,
+    /** Base64 data URL or remote image URL returned by the livestock API. */
+    val photo: String? = null,
+    val photoUrl: String? = null,
     val createdAt: String? = null,
     val updatedAt: String? = null
 )

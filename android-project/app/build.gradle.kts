@@ -35,8 +35,8 @@ android {
         applicationId = "com.yourcompany.smartfarm"
         minSdk = 24
         targetSdk = 35
-        versionCode = 8
-        versionName = "1.0.8"
+        versionCode = 9
+        versionName = "1.0.9"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -144,7 +144,8 @@ android {
             "src/main/java/com/smartfarm/ui/navigation",
             "src/main/java/com/smartfarm/ui/screens",
             "src/main/java/com/smartfarm/ui/components",
-            "src/main/java/com/smartfarm/ui/theme"
+            "src/main/java/com/smartfarm/ui/theme",
+            "src/main/java/com/smartfarm/ui/util"
         )
     )
 }

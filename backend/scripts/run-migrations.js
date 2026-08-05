@@ -26,7 +26,8 @@ const MIGRATION_ORDER = [
     '013_ipm_reference_data.sql',
     '014_ipm_maturity_notes.sql',
     '015_ipm_regulatory_products.sql',
-    '016_crops_api_persistence.sql'
+    '016_crops_api_persistence.sql',
+    '017_livestock_api_persistence.sql'
 ];
 
 async function runMigrations() {

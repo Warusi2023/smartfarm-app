@@ -347,7 +347,6 @@ class SmartFarmApi(
     }
     
     suspend fun createLivestock(livestock: LivestockDto): Resource<LivestockDto> {
-        // Backend livestock.create accepts only: type, name, breed?, age?, weight?, healthStatus?, location?, notes?
         val request = CreateLivestockRequest(
             type = livestock.type,
             name = livestock.name,
@@ -356,7 +355,8 @@ class SmartFarmApi(
             weight = livestock.weight,
             healthStatus = livestock.healthStatus,
             location = livestock.location,
-            notes = livestock.notes ?: livestock.description
+            notes = livestock.notes ?: livestock.description,
+            photo = livestock.photo ?: livestock.photoUrl
         )
         return postEnvelopedItem(
             url = "$baseUrl/api/livestock",
@@ -366,6 +366,7 @@ class SmartFarmApi(
     }
     
     suspend fun updateLivestock(id: String, livestock: LivestockDto): Resource<LivestockDto> {
+        // encodeDefaults=false omits nulls; send "" so an explicit clear reaches the store.
         val request = UpdateLivestockRequest(
             type = livestock.type.takeIf { it.isNotBlank() },
             name = livestock.name.takeIf { it.isNotBlank() },
@@ -374,7 +375,8 @@ class SmartFarmApi(
             weight = livestock.weight,
             healthStatus = livestock.healthStatus,
             location = livestock.location,
-            notes = livestock.notes ?: livestock.description
+            notes = livestock.notes ?: livestock.description,
+            photo = livestock.photo ?: livestock.photoUrl ?: ""
         )
         return putEnvelopedItem(
             url = "$baseUrl/api/livestock/$id",

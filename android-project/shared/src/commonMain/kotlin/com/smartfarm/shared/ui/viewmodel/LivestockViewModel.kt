@@ -71,7 +71,8 @@ class LivestockViewModel(
             _uiState.value = _uiState.value.copy(isLoading = true)
             when (val result = livestockRepository.updateLivestock(livestock)) {
                 is Resource.Success -> {
-                    loadLivestock(livestock.farmId)
+                    // Reload the full list so photo and other fields match the API source of truth.
+                    loadLivestock(null)
                 }
                 is Resource.Error -> {
                     _uiState.value = _uiState.value.copy(
