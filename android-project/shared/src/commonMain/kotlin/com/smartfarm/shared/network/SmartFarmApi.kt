@@ -356,7 +356,12 @@ class SmartFarmApi(
             healthStatus = livestock.healthStatus,
             location = livestock.location,
             notes = livestock.notes ?: livestock.description,
-            photo = livestock.photo ?: livestock.photoUrl
+            photo = livestock.photo ?: livestock.photoUrl,
+            sex = livestock.sex,
+            birthDate = livestock.birthDate,
+            purpose = livestock.purpose,
+            value = livestock.value,
+            tag = livestock.tag
         )
         return postEnvelopedItem(
             url = "$baseUrl/api/livestock",
@@ -376,7 +381,12 @@ class SmartFarmApi(
             healthStatus = livestock.healthStatus,
             location = livestock.location,
             notes = livestock.notes ?: livestock.description,
-            photo = livestock.photo ?: livestock.photoUrl ?: ""
+            photo = livestock.photo ?: livestock.photoUrl ?: "",
+            sex = livestock.sex,
+            birthDate = livestock.birthDate,
+            purpose = livestock.purpose,
+            value = livestock.value,
+            tag = livestock.tag
         )
         return putEnvelopedItem(
             url = "$baseUrl/api/livestock/$id",

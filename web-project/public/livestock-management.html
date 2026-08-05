@@ -1455,15 +1455,25 @@
         }
         
         function showLifecycleTimeline(animalId) {
-            const animal = livestock.find(a => String(a.id) === String(animalId));
-            if (!animal) return;
+            const animal = findLivestockById(animalId);
+            if (!animal) {
+                showAlert('Animal not found!', 'warning');
+                return;
+            }
             
             const timeline = getBreedingTimeline(animal.birthDate);
             if (!timeline) {
                 showAlert('Cannot build timeline — birth date is missing or invalid.', 'warning');
                 return;
             }
-            const currentStage = calculateLifecycleStage(animal.species, animal.birthDate, animal.sex);
+            const currentStage = calculateLifecycleStage(animal.species, animal.birthDate, animal.sex) || 'unknown';
+            const sexLabel = animal.sex
+                ? String(animal.sex).charAt(0).toUpperCase() + String(animal.sex).slice(1)
+                : '—';
+            const breedLabel = animal.breed || '—';
+            const recommendedPurpose = (getRecommendedProductionPurpose(animal.breed, animal.sex) || 'beef')
+                .replace(/_/g, ' ')
+                .replace(/\b\w/g, (l) => l.toUpperCase());
             
             const modal = document.createElement('div');
             modal.className = 'modal fade';
@@ -1472,7 +1482,7 @@
                     <div class="modal-content">
                         <div class="modal-header bg-primary text-white">
                             <h5 class="modal-title">
-                                <i class="fas fa-timeline me-2"></i>Cattle Lifecycle Timeline - ${animal.tag}
+                                <i class="fas fa-timeline me-2"></i>Cattle Lifecycle Timeline - ${animal.tag || animal.name || ''}
                             </h5>
                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                         </div>
@@ -1481,15 +1491,15 @@
                                 <div class="col-md-6">
                                     <h6>Current Status</h6>
                                     <ul class="list-unstyled">
-                                        <li><strong>Current Stage:</strong> ${currentStage.charAt(0).toUpperCase() + currentStage.slice(1)}</li>
+                                        <li><strong>Current Stage:</strong> ${String(currentStage).charAt(0).toUpperCase() + String(currentStage).slice(1)}</li>
                                         <li><strong>Age:</strong> ${calculateAge(animal.birthDate)}</li>
-                                        <li><strong>Sex:</strong> ${animal.sex.charAt(0).toUpperCase() + animal.sex.slice(1)}</li>
-                                        <li><strong>Breed:</strong> ${animal.breed}</li>
+                                        <li><strong>Sex:</strong> ${sexLabel}</li>
+                                        <li><strong>Breed:</strong> ${breedLabel}</li>
                                     </ul>
                                 </div>
                                 <div class="col-md-6">
                                     <h6>Production Purpose</h6>
-                                    <p><strong>Recommended:</strong> ${getRecommendedProductionPurpose(animal.breed, animal.sex).replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</p>
+                                    <p><strong>Recommended:</strong> ${recommendedPurpose}</p>
                                 </div>
                             </div>
                             
@@ -2002,6 +2012,27 @@
             updateStatistics();
         }
 
+        /**
+         * Encode a value as a JS string literal safe inside a double-quoted HTML attribute.
+         * JSON.stringify alone breaks onclick="fn("uuid")" when IDs are strings (e.g. UUIDs).
+         */
+        function jsStringAttr(value) {
+            return JSON.stringify(String(value ?? ''))
+                .replace(/&/g, '&amp;')
+                .replace(/"/g, '&quot;')
+                .replace(/</g, '&lt;');
+        }
+
+        function findLivestockById(id) {
+            const needle = String(id ?? '');
+            return livestock.find((a) => String(a.id) === needle) || null;
+        }
+
+        function findLivestockIndexById(id) {
+            const needle = String(id ?? '');
+            return livestock.findIndex((a) => String(a.id) === needle);
+        }
+
         function createLivestockCard(animal) {
             const col = document.createElement('div');
             col.className = 'col-lg-4 col-md-6 mb-4';
@@ -2018,7 +2049,7 @@
             const weight = animal.weight != null ? animal.weight : 0;
             const location = animal.location || '—';
             const value = animal.value != null ? animal.value : 0;
-            const animalIdAttr = JSON.stringify(String(animal.id));
+            const animalIdAttr = jsStringAttr(animal.id);
             const safeTag = String(tag)
                 .replace(/&/g, '&amp;')
                 .replace(/</g, '&lt;')
@@ -2165,6 +2196,13 @@
             const years = Math.floor(ageInMonths / 12);
             const months = ageInMonths % 12;
             return months > 0 ? `${years}y ${months}m` : `${years} years`;
+        }
+
+        function calculateAgeYears(birthDate) {
+            if (!isRenderableDate(birthDate)) return 0;
+            const birth = new Date(birthDate);
+            const years = Math.floor((Date.now() - birth.getTime()) / (1000 * 60 * 60 * 24 * 365.25));
+            return years >= 0 ? years : 0;
         }
 
         function getStatusClass(status) {
@@ -2842,18 +2880,21 @@
         }
 
         function editLivestock(id) {
-            const animal = livestock.find(a => String(a.id) === String(id));
-            if (!animal) return;
+            const animal = findLivestockById(id);
+            if (!animal) {
+                showAlert('Animal not found!', 'warning');
+                return;
+            }
             
             // Populate edit form
             document.getElementById('editAnimalId').value = animal.id;
-            document.getElementById('editAnimalSpecies').value = animal.species;
-            document.getElementById('editAnimalBreed').value = animal.breed;
-            document.getElementById('editAnimalTag').value = animal.tag;
-            document.getElementById('editHealthStatus').value = animal.healthStatus;
-            document.getElementById('editAnimalWeight').value = animal.weight;
-            document.getElementById('editAnimalValue').value = animal.value;
-            document.getElementById('editHealthNotes').value = animal.healthNotes;
+            document.getElementById('editAnimalSpecies').value = animal.species || '';
+            document.getElementById('editAnimalBreed').value = animal.breed || '';
+            document.getElementById('editAnimalTag').value = animal.tag || '';
+            document.getElementById('editHealthStatus').value = animal.healthStatus || 'healthy';
+            document.getElementById('editAnimalWeight').value = animal.weight != null ? animal.weight : '';
+            document.getElementById('editAnimalValue').value = animal.value != null ? animal.value : '';
+            document.getElementById('editHealthNotes').value = animal.healthNotes || '';
 
             const existingPhoto = document.getElementById('editAnimalPhotoExisting');
             const preview = document.getElementById('editImagePreview');
@@ -2875,7 +2916,7 @@
 
         async function updateLivestock() {
             const id = String(document.getElementById('editAnimalId').value || '').trim();
-            const animalIndex = livestock.findIndex(a => String(a.id) === id);
+            const animalIndex = findLivestockIndexById(id);
             
             if (!id || animalIndex === -1) {
                 showAlert('Animal not found!', 'danger');
@@ -3040,7 +3081,7 @@
                 }
                 
                 // Remove from local array
-                livestock = livestock.filter(a => a.id !== id);
+                livestock = livestock.filter(a => String(a.id) !== String(id));
                 lastGoodLivestock = [...livestock];
                 saveLivestockToStorage();
                 
@@ -3051,14 +3092,14 @@
                 showAlert('Animal deleted successfully!', 'success');
             } catch (error) {
                 console.error('❌ Error deleting livestock:', error);
-                showAlert('Error deleting animal: ' + error.message, 'error');
+                showAlert('Error deleting animal: ' + error.message, 'danger');
             }
         }
 
         function addHealthRecord(id) {
-            const animalIndex = livestock.findIndex(a => a.id === id);
+            const animalIndex = findLivestockIndexById(id);
             if (animalIndex === -1) {
-                showAlert('Animal not found!', 'error');
+                showAlert('Animal not found!', 'warning');
                 return;
             }
 
@@ -3279,7 +3320,7 @@
                                     ${typeBadge}
                                     ${conditionBadge}
                                 </div>
-                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteHealthRecord(${animal.id}, ${record.id}, event)">
+                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteHealthRecord(${jsStringAttr(animal.id)}, ${jsStringAttr(record.id)}, event)">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </div>
@@ -3298,22 +3339,22 @@
         function saveHealthRecordFromModal(event) {
             event.preventDefault();
             const modal = ensureHealthRecordModal();
-            const animalId = Number(modal.dataset.animalId);
+            const animalId = String(modal.dataset.animalId || '').trim();
 
             if (!animalId) {
-                showAlert('No animal selected for health record.', 'error');
+                showAlert('No animal selected for health record.', 'warning');
                 return;
             }
 
-            const animalIndex = livestock.findIndex(a => a.id === animalId);
+            const animalIndex = findLivestockIndexById(animalId);
             if (animalIndex === -1) {
-                showAlert('Animal not found!', 'error');
+                showAlert('Animal not found!', 'warning');
                 return;
             }
 
             const form = modal.querySelector('#healthRecordForm');
             if (!form) {
-                showAlert('Unable to locate health record form.', 'error');
+                showAlert('Unable to locate health record form.', 'warning');
                 return;
             }
 
@@ -3398,15 +3439,17 @@
                 return;
             }
 
-            const animalIndex = livestock.findIndex(a => a.id === animalId);
+            const animalIndex = findLivestockIndexById(animalId);
             if (animalIndex === -1) {
-                showAlert('Animal not found!', 'error');
+                showAlert('Animal not found!', 'warning');
                 return;
             }
 
             const animal = { ...livestock[animalIndex] };
             const currentRecords = Array.isArray(animal.healthRecords) ? animal.healthRecords : [];
-            animal.healthRecords = currentRecords.filter(record => record.id !== recordId);
+            animal.healthRecords = currentRecords.filter(
+                (record) => String(record.id) !== String(recordId)
+            );
 
             livestock[animalIndex] = animal;
             lastGoodLivestock = [...livestock];
@@ -3426,9 +3469,9 @@
 
         async function getAILivestockAdvice(animalId) {
             try {
-                const animal = livestock.find(a => a.id === animalId);
+                const animal = findLivestockById(animalId);
                 if (!animal) {
-                    showAlert('Animal not found!', 'error');
+                    showAlert('Animal not found!', 'warning');
                     return;
                 }
 
@@ -3466,9 +3509,9 @@
                 
                 // Add animal data as query parameters
                 const params = new URLSearchParams({
-                    type: animal.animalType || '',
+                    type: animal.species || animal.animalType || animal.type || '',
                     breed: animal.breed || '',
-                    age: animal.age || 0,
+                    age: String(animal.age || calculateAgeYears(animal.birthDate) || 0),
                     healthStatus: animal.healthStatus || 'healthy'
                 });
                 apiUrl += '?' + params.toString();
@@ -3701,7 +3744,7 @@
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                <button type="button" class="btn btn-primary" onclick="applyAILivestockRecommendations(${animal.id})">Apply Recommendations</button>
+                                <button type="button" class="btn btn-primary" onclick="applyAILivestockRecommendations(${jsStringAttr(animal.id)})">Apply Recommendations</button>
                             </div>
                         </div>
                     </div>
@@ -3925,9 +3968,11 @@
         }
 
         function showAlert(message, type) {
+            // Bootstrap alert variants use "danger", not "error"
+            const alertType = type === 'error' ? 'danger' : (type || 'info');
             // Create and show alert
             const alertDiv = document.createElement('div');
-            alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+            alertDiv.className = `alert alert-${alertType} alert-dismissible fade show position-fixed`;
             alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
             alertDiv.innerHTML = `
                 ${message}

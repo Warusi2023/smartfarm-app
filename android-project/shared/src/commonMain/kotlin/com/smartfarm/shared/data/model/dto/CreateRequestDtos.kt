@@ -83,7 +83,12 @@ data class CreateLivestockRequest(
     val healthStatus: String? = null,
     val location: String? = null,
     val notes: String? = null,
-    val photo: String? = null
+    val photo: String? = null,
+    val sex: String? = null,
+    val birthDate: String? = null,
+    val purpose: String? = null,
+    val value: Double? = null,
+    val tag: String? = null
 )
 
 /**
@@ -99,7 +104,12 @@ data class UpdateLivestockRequest(
     val healthStatus: String? = null,
     val location: String? = null,
     val notes: String? = null,
-    val photo: String? = null
+    val photo: String? = null,
+    val sex: String? = null,
+    val birthDate: String? = null,
+    val purpose: String? = null,
+    val value: Double? = null,
+    val tag: String? = null
 )
 
 /**
