@@ -5,6 +5,7 @@
 
 const SubscriptionRepository = require('../repositories/subscriptionRepository');
 const logger = require('../utils/logger');
+const { buildSubscriptionView, normalizeStripeStatus } = require('../utils/subscriptionBillingPresentation');
 
 class SubscriptionService {
     constructor(dbPool) {
@@ -18,10 +19,23 @@ class SubscriptionService {
      */
     async getUserAccessStatus(userId) {
         const sub = await this.repository.getUserSubscription(userId);
-        if (sub && sub.status === 'active') {
+        if (sub) {
+            const status = normalizeStripeStatus(sub.status);
             const planRaw = sub.plan || sub.plan_type || sub.plan_name || '';
             const plan = String(planRaw).toLowerCase();
-            if (['professional', 'enterprise', 'free', 'trial'].includes(plan)) {
+            const paidPlan = ['professional', 'enterprise'].includes(plan);
+            if (paidPlan && ['active', 'trialing', 'past_due'].includes(status)) {
+                if (sub.cancel_at_period_end && sub.current_period_end) {
+                    const end = new Date(sub.current_period_end);
+                    if (end <= new Date()) {
+                        return { valid: false, reason: 'SUBSCRIPTION_ENDED' };
+                    }
+                }
+                return { valid: true };
+            }
+            if (plan === 'free' && status === 'canceled') {
+                /* fall through to trial check */
+            } else if (sub.status === 'active' && ['professional', 'enterprise', 'free', 'trial'].includes(plan)) {
                 return { valid: true };
             }
         }
@@ -90,6 +104,22 @@ class SubscriptionService {
         if (data.status === 'no_subscription') {
             return { valid: false, reason: 'NO_SUBSCRIPTION', level: 'none', maxFarms: 0 };
         }
+
+        const stripeStatus = normalizeStripeStatus(data.status || data.stripeStatus);
+        const periodEnd = data.current_period_end || data.currentPeriodEnd || data.nextBillingDate;
+        if (stripeStatus === 'canceled' || stripeStatus === 'incomplete' || stripeStatus === 'unpaid') {
+            if (periodEnd) {
+                const end = new Date(periodEnd);
+                if (end > new Date() && data.cancelAtPeriodEnd) {
+                    return { valid: true, reason: 'OK', level: 'pro', maxFarms: 3 };
+                }
+            }
+            return { valid: false, reason: 'NO_SUBSCRIPTION', level: 'none', maxFarms: 0 };
+        }
+        if (stripeStatus === 'past_due') {
+            return { valid: true, reason: 'OK', level: 'pro', maxFarms: 3 };
+        }
+
         const p = String(data.plan || data.plan_type || data.plan_name || '').toLowerCase();
         if (p === 'enterprise') {
             return { valid: true, reason: 'OK', level: 'enterprise', maxFarms: -1 };
@@ -98,6 +128,9 @@ class SubscriptionService {
             return { valid: true, reason: 'OK', level: 'trial', maxFarms: 1 };
         }
         if (['professional', 'free', 'pro'].includes(p)) {
+            return { valid: true, reason: 'OK', level: 'pro', maxFarms: 3 };
+        }
+        if (stripeStatus === 'active' || stripeStatus === 'trialing') {
             return { valid: true, reason: 'OK', level: 'pro', maxFarms: 3 };
         }
         if (data.status === 'active') {
@@ -122,57 +155,30 @@ class SubscriptionService {
     async getCurrentSubscription(userId) {
         const subscription = await this.repository.getUserSubscription(userId);
         const userTrialInfo = await this.repository.getUserTrialInfo(userId);
+        const stripeCustomerId = await this.repository.getUserStripeCustomerId(userId);
 
         if (!subscription) {
-            if (userTrialInfo && userTrialInfo.trial_end) {
-                const trialEnd = new Date(userTrialInfo.trial_end);
-                const now = new Date();
-
-                if (trialEnd > now) {
-                    const daysRemaining = Math.ceil((trialEnd - now) / (1000 * 60 * 60 * 24));
-                    return {
-                        plan: 'trial',
-                        planName: '30-Day Free Trial',
-                        status: 'active',
-                        trialEnd: trialEnd.toISOString(),
-                        daysRemaining: daysRemaining,
-                        maxFarms: 1,
-                        priceMonthly: 0,
-                        startDate: userTrialInfo.created_at || new Date().toISOString(),
-                        nextBillingDate: null,
-                        autoRenew: false,
-                        requiresSubscription: true,
-                        canUpgrade: true
-                    };
-                }
-                return {
-                    plan: null,
-                    status: 'trial_expired',
-                    trialEnd: trialEnd.toISOString(),
-                    daysRemaining: 0,
-                    maxFarms: 0,
-                    requiresSubscription: true,
-                    canUpgrade: true,
-                    message: 'Your free trial has ended. Upgrade to Farm Pro to continue using SmartFarm.'
-                };
+            const view = buildSubscriptionView(null, userTrialInfo);
+            if (view.status === 'trial_expired') {
+                view.message = view.billingAlert?.message ||
+                    'Your free trial has ended. Upgrade to Farm Pro to continue using SmartFarm.';
+            } else if (view.status === 'no_subscription') {
+                view.message = 'Please start your free trial or subscribe to a plan.';
             }
-
-            return {
-                plan: null,
-                status: 'no_subscription',
-                requiresSubscription: true,
-                message: 'Please start your free trial or subscribe to a plan.'
-            };
+            view.canManageBilling = !!stripeCustomerId;
+            return view;
         }
 
         const planKey = String(subscription.plan || subscription.plan_type || '').toLowerCase();
         const evaluated = this.evaluateSubscription(subscription);
+        const view = buildSubscriptionView(subscription, userTrialInfo);
         return {
-            ...subscription,
-            planName: subscription.planName || (planKey === 'professional' ? 'Farm Pro' : subscription.plan_name),
+            ...view,
+            planName: view.planName || (planKey === 'professional' ? 'Farm Pro' : subscription.plan_name),
             maxFarms: evaluated.maxFarms,
             priceMonthly: planKey === 'professional' ? 29 : undefined,
-            canUpgrade: planKey !== 'professional' && planKey !== 'enterprise'
+            canUpgrade: planKey !== 'professional' && planKey !== 'enterprise',
+            canManageBilling: !!(stripeCustomerId || subscription.stripe_subscription_id)
         };
     }
 

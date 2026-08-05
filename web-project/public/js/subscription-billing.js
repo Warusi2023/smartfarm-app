@@ -4,6 +4,14 @@
 (function (global) {
     'use strict';
 
+    var BADGE_CLASS = {
+        success: 'bg-success',
+        info: 'bg-info',
+        warning: 'bg-warning text-dark',
+        danger: 'bg-danger',
+        secondary: 'bg-secondary'
+    };
+
     function getToken() {
         return localStorage.getItem('authToken') ||
             localStorage.getItem('smartfarm_token') ||
@@ -19,20 +27,20 @@
     }
 
     async function apiRequest(path, options) {
-        const token = getToken();
-        const headers = Object.assign(
+        var token = getToken();
+        var headers = Object.assign(
             { 'Content-Type': 'application/json', Accept: 'application/json' },
             options && options.headers ? options.headers : {}
         );
         if (token) {
             headers.Authorization = 'Bearer ' + token;
         }
-        const res = await fetch(apiUrl(path), Object.assign({}, options || {}, { headers }));
-        const data = await res.json().catch(function () {
+        var res = await fetch(apiUrl(path), Object.assign({}, options || {}, { headers }));
+        var data = await res.json().catch(function () {
             return { success: false, error: 'Invalid response' };
         });
         if (!res.ok) {
-            const err = new Error(data.error || data.message || 'Request failed');
+            var err = new Error(data.error || data.message || 'Request failed');
             err.code = data.code;
             err.status = res.status;
             err.data = data;
@@ -60,9 +68,17 @@
     }
 
     async function startFarmProCheckout() {
-        const res = await apiRequest('/subscriptions/create-checkout-session', { method: 'POST', body: '{}' });
+        var res = await apiRequest('/subscriptions/create-checkout-session', { method: 'POST', body: '{}' });
         if (!res.success || !res.data || !res.data.url) {
             throw new Error('Could not start checkout');
+        }
+        global.location.href = res.data.url;
+    }
+
+    async function openBillingPortal() {
+        var res = await apiRequest('/billing/portal', { method: 'POST', body: '{}' });
+        if (!res.success || !res.data || !res.data.url) {
+            throw new Error('Could not open billing portal');
         }
         global.location.href = res.data.url;
     }
@@ -75,9 +91,71 @@
         return sub.plan || '—';
     }
 
-    function renderUpgradeBanner(sub) {
+    function badgeHtml(sub) {
+        if (!sub || !sub.statusBadge) {
+            return '<span class="badge bg-secondary">—</span>';
+        }
+        var badge = sub.statusBadge;
+        var cls = BADGE_CLASS[badge.tone] || BADGE_CLASS.secondary;
+        var html = '<span class="badge ' + cls + '">' + badge.label + '</span>';
+        if (badge.cancelScheduled) {
+            html += ' <span class="badge bg-warning text-dark ms-1">Cancels at period end</span>';
+        }
+        return html;
+    }
+
+    function alertClass(tone) {
+        if (tone === 'danger') return 'alert-danger';
+        if (tone === 'warning') return 'alert-warning';
+        if (tone === 'success') return 'alert-success';
+        return 'alert-info';
+    }
+
+    function renderBillingAlertContent(alertEl, billingAlert, sub) {
+        if (!alertEl || !billingAlert) {
+            return;
+        }
+        var actionBtn = '';
+        if (billingAlert.action === 'manage_billing' && sub && sub.canManageBilling) {
+            actionBtn =
+                '<button type="button" class="btn btn-sm btn-outline-dark ms-md-3 mt-2 mt-md-0" id="sfAlertPortalBtn">' +
+                'Update payment method</button>';
+        } else if (billingAlert.action === 'upgrade') {
+            actionBtn =
+                '<button type="button" class="btn btn-sm btn-success ms-md-3 mt-2 mt-md-0" id="sfAlertUpgradeBtn">' +
+                'Upgrade to Farm Pro</button>';
+        }
+        alertEl.className = 'alert ' + alertClass(billingAlert.tone) + ' d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-3';
+        alertEl.innerHTML = '<div>' + billingAlert.message + '</div>' + actionBtn;
+        alertEl.classList.remove('d-none');
+
+        var portalBtn = document.getElementById('sfAlertPortalBtn');
+        if (portalBtn) {
+            portalBtn.addEventListener('click', function () {
+                openBillingPortal().catch(function (err) {
+                    alert(err.message || 'Could not open billing portal');
+                });
+            });
+        }
+        var upgradeBtn = document.getElementById('sfAlertUpgradeBtn');
+        if (upgradeBtn) {
+            upgradeBtn.addEventListener('click', function () {
+                startFarmProCheckout().catch(function (err) {
+                    alert(err.message || 'Could not start checkout');
+                });
+            });
+        }
+    }
+
+    function renderDashboardBilling(sub) {
         var mount = document.getElementById('subscription-upgrade-banner');
         if (!mount || !sub) return;
+
+        if (sub.billingAlert && sub.billingAlert.code === 'PAYMENT_FAILED') {
+            mount.classList.remove('d-none');
+            renderBillingAlertContent(mount, sub.billingAlert, sub);
+            return;
+        }
 
         if (sub.status === 'trial_expired') {
             logEvent('trial_expired', { source: 'dashboard' });
@@ -85,7 +163,13 @@
             return;
         }
 
-        if (sub.plan !== 'trial' || sub.status !== 'active') {
+        if (sub.billingAlert && sub.billingAlert.code === 'CANCEL_SCHEDULED') {
+            mount.classList.remove('d-none');
+            renderBillingAlertContent(mount, sub.billingAlert, sub);
+            return;
+        }
+
+        if (sub.plan !== 'trial' || (sub.status !== 'trialing' && sub.status !== 'active')) {
             mount.innerHTML = '';
             mount.classList.add('d-none');
             return;
@@ -121,7 +205,7 @@
         try {
             var res = await getCurrentSubscription();
             if (res && res.success && res.data) {
-                renderUpgradeBanner(res.data);
+                renderDashboardBilling(res.data);
             }
             logEvent('dashboard_load', {});
         } catch (err) {
@@ -172,31 +256,44 @@
         }
 
         var planEl = document.getElementById('sfCurrentPlan');
-        var statusEl = document.getElementById('sfPlanStatus');
+        var statusBadgeEl = document.getElementById('sfStatusBadge');
+        var renewalEl = document.getElementById('sfRenewalLabel');
+        var renewalRow = document.getElementById('sfRenewalRow');
         var trialEl = document.getElementById('sfTrialDays');
+        var trialRow = document.getElementById('sfTrialRow');
         var upgradeBtn = document.getElementById('sfUpgradeBtn');
+        var portalBtn = document.getElementById('sfManageBillingBtn');
         var alertEl = document.getElementById('sfBillingAlert');
+        var stateAlertEl = document.getElementById('sfBillingStateAlert');
 
         try {
             var res = await getCurrentSubscription();
             var sub = res && res.data ? res.data : null;
 
             if (planEl) planEl.textContent = planLabel(sub);
-            if (statusEl) {
-                statusEl.textContent = sub && sub.status ? sub.status.replace(/_/g, ' ') : '—';
+            if (statusBadgeEl) statusBadgeEl.innerHTML = badgeHtml(sub);
+
+            if (renewalEl && renewalRow) {
+                if (sub && sub.renewalLabel) {
+                    renewalEl.textContent = sub.renewalLabel;
+                    renewalRow.classList.remove('d-none');
+                } else {
+                    renewalRow.classList.add('d-none');
+                }
             }
 
-            if (trialEl) {
+            if (trialEl && trialRow) {
                 if (sub && sub.plan === 'trial' && sub.daysRemaining != null) {
                     trialEl.textContent = sub.daysRemaining + ' day' + (sub.daysRemaining === 1 ? '' : 's') + ' remaining';
-                    trialEl.parentElement.classList.remove('d-none');
+                    trialRow.classList.remove('d-none');
                 } else {
-                    trialEl.parentElement.classList.add('d-none');
+                    trialRow.classList.add('d-none');
                 }
             }
 
             var showUpgrade = sub && sub.canUpgrade !== false &&
-                (sub.plan === 'trial' || sub.status === 'trial_expired' || sub.status === 'no_subscription');
+                (sub.plan === 'trial' || sub.status === 'trial_expired' || sub.status === 'no_subscription' ||
+                    (sub.billingAlert && sub.billingAlert.action === 'upgrade'));
             if (upgradeBtn) {
                 upgradeBtn.classList.toggle('d-none', !showUpgrade);
                 upgradeBtn.onclick = function () {
@@ -204,6 +301,24 @@
                         alert(err.message || 'Could not start checkout');
                     });
                 };
+            }
+
+            if (portalBtn) {
+                var showPortal = sub && sub.canManageBilling;
+                portalBtn.classList.toggle('d-none', !showPortal);
+                portalBtn.onclick = function () {
+                    openBillingPortal().catch(function (err) {
+                        alert(err.message || 'Could not open billing portal');
+                    });
+                };
+            }
+
+            if (stateAlertEl) {
+                stateAlertEl.classList.add('d-none');
+                stateAlertEl.innerHTML = '';
+                if (sub && sub.billingAlert && sub.billingAlert.code !== 'TRIAL_EXPIRED') {
+                    renderBillingAlertContent(stateAlertEl, sub.billingAlert, sub);
+                }
             }
 
             if (alertEl) {
@@ -234,6 +349,7 @@
     global.SmartFarmBilling = {
         getCurrentSubscription: getCurrentSubscription,
         startFarmProCheckout: startFarmProCheckout,
+        openBillingPortal: openBillingPortal,
         logEvent: logEvent,
         initDashboardBilling: initDashboardBilling,
         initCheckoutPage: initCheckoutPage,

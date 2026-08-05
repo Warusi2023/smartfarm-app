@@ -67,7 +67,12 @@ class SubscriptionController {
      * POST /api/subscriptions/cancel
      */
     async cancelSubscription(req, res) {
-        return this.billingNotEnabled(res);
+        return res.status(400).json({
+            success: false,
+            error: 'Use Stripe Customer Portal to cancel',
+            code: 'USE_BILLING_PORTAL',
+            message: 'Open Manage billing in Stripe to cancel at period end or update your payment method.'
+        });
     }
 
     /**
@@ -128,6 +133,23 @@ class SubscriptionController {
     }
 
     /**
+     * Ops-facing billing readiness (no secrets).
+     * GET /api/subscriptions/billing-status
+     * Query: checkStripe=true — list webhook endpoints from Stripe API
+     */
+    async getBillingStatus(req, res) {
+        const status = this.stripeBilling.getBillingStatus();
+        const checkStripe = String(req.query.checkStripe || '').toLowerCase() === 'true';
+        if (checkStripe) {
+            await this.stripeBilling.enrichBillingStatusWithStripeWebhooks(status);
+        }
+        res.json({
+            success: true,
+            data: status
+        });
+    }
+
+    /**
      * Create Stripe Checkout Session for Farm Pro.
      * POST /api/subscriptions/create-checkout-session
      */
@@ -161,6 +183,37 @@ class SubscriptionController {
                     code: error.code
                 });
             }
+            throw error;
+        }
+    }
+
+    /**
+     * Stripe Customer Portal session.
+     * POST /api/billing/portal
+     */
+    async createBillingPortalSession(req, res) {
+        if (!this.stripeBilling.isConfigured()) {
+            return res.status(503).json({
+                success: false,
+                error: 'Stripe billing is not configured',
+                code: 'BILLING_NOT_CONFIGURED'
+            });
+        }
+
+        const userId = req.user.id;
+        const email = req.user.email;
+
+        try {
+            const session = await this.stripeBilling.createBillingPortalSession(userId, email);
+            res.json({
+                success: true,
+                data: session
+            });
+        } catch (error) {
+            logger.errorWithContext('createBillingPortalSession failed', {
+                userId,
+                error: error.message
+            });
             throw error;
         }
     }
