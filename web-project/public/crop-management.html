@@ -370,10 +370,6 @@
                 <div class="col-md-3">
                     <select class="form-select" id="fieldFilter">
                         <option value="">All Fields</option>
-                        <option value="Field A">Field A</option>
-                        <option value="Field B">Field B</option>
-                        <option value="Field C">Field C</option>
-                        <option value="Greenhouse 1">Greenhouse 1</option>
                     </select>
                 </div>
                 <div class="col-md-2">
@@ -617,67 +613,17 @@
     <script src="js/api-origin.js"></script>
     <script src="js/api-config.js"></script>
     <script src="js/config.js"></script>
+    <script src="js/api-service.js"></script>
     <script src="js/crop-pest-protection.js"></script>
     <script src="js/offline-write-queue.js"></script>
     <script src="js/command-center-focus.js"></script>
     <script src="js/crop-recommendation-log.js"></script>
     
     <script>
-        // Sample crops data
-        let crops = [
-            {
-                id: 1,
-                name: "Tomatoes",
-                variety: "Cherry",
-                field: "Field A",
-                status: "growing",
-                plantingDate: "2025-01-10",
-                harvestDate: "2025-03-15",
-                maturityDate: "2025-03-20", // AI calculated
-                area: 0.5,
-                yield: 0,
-                notes: "Planted in greenhouse for better control"
-            },
-            {
-                id: 2,
-                name: "Capsicum",
-                variety: "California Wonder",
-                field: "Field B",
-                status: "flowering",
-                plantingDate: "2025-01-05",
-                harvestDate: "2025-03-10",
-                maturityDate: "2025-03-15", // AI calculated
-                area: 0.8,
-                yield: 0,
-                notes: "Organic farming methods"
-            },
-            {
-                id: 3,
-                name: "Lettuce",
-                variety: "Romaine",
-                field: "Greenhouse 1",
-                status: "harvesting",
-                plantingDate: "2024-12-20",
-                harvestDate: "2025-01-20",
-                maturityDate: "2025-01-25", // AI calculated
-                area: 0.3,
-                yield: 45.5,
-                notes: "Hydroponic system"
-            },
-            {
-                id: 4,
-                name: "Kava",
-                variety: "Noble Kava",
-                field: "Medicinal Garden",
-                status: "growing",
-                plantingDate: "2022-01-15",
-                harvestDate: "2025-01-15",
-                maturityDate: "2025-01-15", // AI calculated (3 years)
-                area: 0.2,
-                yield: 0,
-                notes: "Traditional Pacific Island medicinal plant, requires 3-year growth cycle"
-            }
-        ];
+        // Source of truth: GET/POST /api/crops via SmartFarmAPI.
+        // localStorage (smartfarm_crops) is offline fallback / cache only — not demo defaults.
+        let crops = [];
+        let farmNameById = {};
 
         const catalogGrowthData = {
             map: new Map(),
@@ -798,29 +744,192 @@
             return catalogGrowthData.map.get(key) || null;
         }
 
-        // Save crops to localStorage
+        // Cache crops locally as an offline read-only copy of the last API response.
+        // Pre-API demo caches are ignored via the version marker.
+        const CROP_CACHE_KEY = 'smartfarm_crops';
+        const CROP_CACHE_VERSION_KEY = 'smartfarm_crops_cache_version';
+        const CROP_CACHE_VERSION = 'api-v1';
+
         function saveCropsToStorage() {
             try {
-                localStorage.setItem('smartfarm_crops', JSON.stringify(crops));
-                console.log('Crops saved to localStorage');
+                localStorage.setItem(CROP_CACHE_KEY, JSON.stringify(crops));
+                localStorage.setItem(CROP_CACHE_VERSION_KEY, CROP_CACHE_VERSION);
             } catch (error) {
                 console.error('Error saving crops to localStorage:', error);
             }
         }
 
-        // Load crops from localStorage
         function loadCropsFromStorage() {
             try {
-                const savedCrops = localStorage.getItem('smartfarm_crops');
+                if (localStorage.getItem(CROP_CACHE_VERSION_KEY) !== CROP_CACHE_VERSION) {
+                    localStorage.removeItem(CROP_CACHE_KEY);
+                    return false;
+                }
+                const savedCrops = localStorage.getItem(CROP_CACHE_KEY);
                 if (savedCrops) {
-                    crops = JSON.parse(savedCrops);
-                    console.log('Crops loaded from localStorage:', crops.length);
-                    return true;
+                    const parsed = JSON.parse(savedCrops);
+                    if (Array.isArray(parsed)) {
+                        crops = parsed.map((c) => mapApiCropToUi(c, farmNameById));
+                        console.log('Crops loaded from offline cache:', crops.length);
+                        return true;
+                    }
                 }
             } catch (error) {
                 console.error('Error loading crops from localStorage:', error);
             }
             return false;
+        }
+
+        /**
+         * Map API (or cached) crop into the card UI shape.
+         * plantedDate → plantingDate; expectedHarvestDate → harvestDate;
+         * farmId → field label via farm name when no field/location is present.
+         */
+        function mapApiCropToUi(crop, names = farmNameById) {
+            if (!crop || typeof crop !== 'object') {
+                return {
+                    id: '',
+                    name: '',
+                    variety: '',
+                    field: '',
+                    farmId: null,
+                    status: 'planted',
+                    plantingDate: '',
+                    harvestDate: '',
+                    maturityDate: '',
+                    area: 0,
+                    yield: 0,
+                    notes: '',
+                    type: ''
+                };
+            }
+            const plantingDate = crop.plantedDate || crop.plantingDate || '';
+            const harvestDate = crop.expectedHarvestDate || crop.harvestDate || '';
+            const farmLabel =
+                crop.farmName || (crop.farmId && names[crop.farmId] ? names[crop.farmId] : '');
+            const field = crop.field || crop.location || farmLabel || '';
+            return {
+                id: crop.id,
+                name: crop.name || crop.cropName || '',
+                variety: crop.variety || crop.type || '',
+                field: field,
+                farmId: crop.farmId || null,
+                status: String(crop.status || 'planted').toLowerCase(),
+                plantingDate: plantingDate,
+                harvestDate: harvestDate,
+                maturityDate: crop.maturityDate || harvestDate || '',
+                area: Number(crop.area) || 0,
+                yield: Number(crop.yield) || 0,
+                notes: crop.notes || crop.description || '',
+                type: crop.type || ''
+            };
+        }
+
+        function extractFarmsList(response) {
+            if (!response || !response.success) return [];
+            const data = response.data;
+            if (Array.isArray(data)) return data;
+            if (data && Array.isArray(data.farms)) return data.farms;
+            if (data && Array.isArray(data.items)) return data.items;
+            return [];
+        }
+
+        function extractCropsList(response) {
+            if (!response || !response.success) return null;
+            const data = response.data;
+            if (Array.isArray(data)) return data;
+            if (data && Array.isArray(data.crops)) return data.crops;
+            if (data && Array.isArray(data.items)) return data.items;
+            return [];
+        }
+
+        async function refreshFarmNameMap() {
+            farmNameById = {};
+            if (!window.SmartFarmAPI || typeof window.SmartFarmAPI.getFarms !== 'function') {
+                return farmNameById;
+            }
+            try {
+                const response = await window.SmartFarmAPI.getFarms();
+                extractFarmsList(response).forEach((farm) => {
+                    if (farm && farm.id) {
+                        farmNameById[farm.id] = farm.name || String(farm.id);
+                    }
+                });
+            } catch (error) {
+                console.warn('Unable to load farms for crop field labels:', error);
+            }
+            return farmNameById;
+        }
+
+        async function resolveCreateFarmId() {
+            const cached =
+                sessionStorage.getItem('smartfarm_current_farm_id') ||
+                localStorage.getItem('smartfarm_current_farm_id') ||
+                localStorage.getItem('selected_farm_id');
+            if (cached && String(cached).trim()) {
+                return String(cached).trim();
+            }
+            await refreshFarmNameMap();
+            const firstId = Object.keys(farmNameById)[0];
+            return firstId || null;
+        }
+
+        function refreshFieldFilterOptions() {
+            const select = document.getElementById('fieldFilter');
+            if (!select) return;
+            const current = select.value;
+            const fields = [...new Set(crops.map((c) => c.field).filter(Boolean))].sort();
+            select.innerHTML = '<option value="">All Fields</option>';
+            fields.forEach((field) => {
+                const opt = document.createElement('option');
+                opt.value = field;
+                opt.textContent = field;
+                select.appendChild(opt);
+            });
+            if (current && fields.includes(current)) {
+                select.value = current;
+            }
+        }
+
+        async function loadCropsFromApiOrFallback() {
+            await refreshFarmNameMap();
+
+            let apiError = 'Crop API unavailable in this page context.';
+
+            if (window.SmartFarmAPI && typeof window.SmartFarmAPI.getCrops === 'function') {
+                try {
+                    const response = await window.SmartFarmAPI.getCrops();
+                    const list = extractCropsList(response);
+                    if (list) {
+                        crops = list.map((c) => mapApiCropToUi(c, farmNameById));
+                        saveCropsToStorage();
+                        refreshFieldFilterOptions();
+                        console.log('Crops loaded from API:', crops.length);
+                        return true;
+                    }
+                    apiError = (response && response.error) || 'Crop request failed.';
+                } catch (error) {
+                    apiError = (error && error.message) || 'Crop request failed.';
+                }
+            }
+
+            console.warn('Crop API load failed:', apiError);
+
+            // Only fall back to the cached copy when the browser is actually offline.
+            // Otherwise a failed/expired-auth request must not silently render stale crops.
+            const offline = typeof navigator !== 'undefined' && navigator.onLine === false;
+            const loaded = offline ? loadCropsFromStorage() : false;
+            if (!loaded) {
+                crops = [];
+            }
+            refreshFieldFilterOptions();
+            showAlert(
+                offline && loaded
+                    ? 'Offline — showing the last saved copy of your crops.'
+                    : 'Could not load crops from the server: ' + apiError,
+                offline && loaded ? 'warning' : 'error'
+            );
+            return loaded;
         }
 
         // Initialize page
@@ -835,12 +944,8 @@
 
             // Check authentication first
             checkAuthentication();
-            
-            // Try to load crops from localStorage
-            const loaded = loadCropsFromStorage();
-            if (!loaded) {
-                console.log('No saved crops found, using default crops');
-            }
+
+            await loadCropsFromApiOrFallback();
             
             loadCrops();
             updateStatistics();
@@ -1060,29 +1165,26 @@
                 return;
             }
             
-            // Auto-update lifecycle stage for all crops based on current date
+            // Auto-update lifecycle stage for card display when planting dates exist
             crops.forEach(crop => {
-                if (crop.plantingDate) {
+                if (isRenderableDate(crop.plantingDate)) {
                     const currentStatus = calculateLifecycleStage(crop.plantingDate, crop.maturityDate || crop.harvestDate);
                     crop.status = currentStatus.toLowerCase();
                 }
             });
             
-            // Save updated statuses
+            // Cache display state for offline fallback only
             saveCropsToStorage();
             
             noCropsMessage.style.display = 'none';
             container.innerHTML = '';
             
-            crops.forEach(crop => {
-                const cropCard = createCropCard(crop);
-                container.appendChild(cropCard);
-            });
+            renderCropCards(container, crops);
 
             refreshAllCropSoilSummaries();
 
             if (selectedCropPestId != null) {
-                const stillThere = crops.some((c) => c.id == selectedCropPestId);
+                const stillThere = crops.some((c) => String(c.id) === String(selectedCropPestId));
                 if (stillThere) {
                     showCropPestProtection(selectedCropPestId);
                 } else {
@@ -1190,32 +1292,59 @@
             await CropRecommendationLog.openSoilTestFormForCrop(crop, recommendations);
         }
 
+        function isRenderableDate(value) {
+            if (!value) return false;
+            const parsed = new Date(value);
+            return !Number.isNaN(parsed.getTime());
+        }
+
+        /** Render cards defensively: one bad record must never blank the whole grid. */
+        function renderCropCards(container, list) {
+            list.forEach(crop => {
+                try {
+                    container.appendChild(createCropCard(crop));
+                } catch (error) {
+                    console.error('Failed to render crop card', crop && crop.id, error);
+                }
+            });
+        }
+
         function createCropCard(crop) {
             const col = document.createElement('div');
             col.className = 'col-lg-4 col-md-6 mb-4';
             
             const progress = calculateProgress(crop);
             const statusClass = getStatusClass(crop.status);
-            const statusText = getStatusText(crop.status);
+            const statusText = getStatusText(crop.status || 'planted');
+            const cropIdAttr = JSON.stringify(String(crop.id));
+            const variety = crop.variety || '—';
+            const field = crop.field || '—';
+            const area = crop.area != null ? crop.area : 0;
+            const yieldKg = crop.yield != null ? crop.yield : 0;
+            const plantedLabel = formatDate(crop.plantingDate);
+            const harvestLabel = formatDate(crop.harvestDate);
+            const maturitySource =
+                crop.maturityDate || crop.harvestDate || (isRenderableDate(crop.plantingDate) ? calculateMaturityDate(crop) : '');
+            const maturityLabel = formatDate(maturitySource);
             
             col.innerHTML = `
                 <div class="crop-card" data-crop-card-id="${crop.id}">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div>
-                            <h5 class="mb-1">${crop.name}</h5>
-                            <p class="text-muted mb-0">${crop.variety}</p>
+                            <h5 class="mb-1">${crop.name || 'Crop'}</h5>
+                            <p class="text-muted mb-0">${variety}</p>
                         </div>
                         <span class="status-badge ${statusClass}">${statusText}</span>
                     </div>
                     
                     <div class="row mb-3">
                         <div class="col-6">
-                            <small class="text-muted">Field:</small>
-                            <div class="fw-bold">${crop.field}</div>
+                            <small class="text-muted">Field / Farm:</small>
+                            <div class="fw-bold">${field}</div>
                         </div>
                         <div class="col-6">
                             <small class="text-muted">Area:</small>
-                            <div class="fw-bold">${crop.area} ha</div>
+                            <div class="fw-bold">${area} ha</div>
                         </div>
                     </div>
                     
@@ -1232,15 +1361,15 @@
                     <div class="row mb-3">
                         <div class="col-4">
                             <small class="text-muted">Planted:</small>
-                            <div class="fw-bold">${formatDate(crop.plantingDate)}</div>
+                            <div class="fw-bold">${plantedLabel}</div>
                         </div>
                         <div class="col-4">
                             <small class="text-muted">Yield:</small>
-                            <div class="fw-bold">${crop.yield} kg</div>
+                            <div class="fw-bold">${yieldKg} kg</div>
                         </div>
                         <div class="col-4">
                             <small class="text-muted">Harvest:</small>
-                            <div class="fw-bold">${formatDate(crop.harvestDate)}</div>
+                            <div class="fw-bold">${harvestLabel}</div>
                         </div>
                     </div>
                     
@@ -1249,28 +1378,28 @@
                             <i class="fas fa-robot ai-icon"></i>
                             <div>
                                 <small class="text-muted">AI Predicted Maturity:</small>
-                                <div class="maturity-date">${formatDate(crop.maturityDate || calculateMaturityDate(crop))}</div>
+                                <div class="maturity-date">${maturityLabel}</div>
                             </div>
                         </div>
                     </div>
 
                     <div class="crop-card-actions mb-3">
-                        <button type="button" class="btn btn-success btn-sm w-100 btn-pest-protection mb-2" onclick="showCropPestProtection(${crop.id})" aria-label="Pests and protection guide for ${crop.name}">
+                        <button type="button" class="btn btn-success btn-sm w-100 btn-pest-protection mb-2" onclick="showCropPestProtection(${cropIdAttr})" aria-label="Pests and protection guide for ${crop.name || 'crop'}">
                             <i class="fas fa-shield-alt me-1"></i>Pests &amp; Protection
                         </button>
                         <div class="d-flex gap-2 flex-wrap mb-2">
-                            <button type="button" class="btn btn-sm btn-outline-primary flex-fill" onclick="editCrop(${crop.id})">
+                            <button type="button" class="btn btn-sm btn-outline-primary flex-fill" onclick="editCrop(${cropIdAttr})">
                                 <i class="fas fa-edit me-1"></i>Edit
                             </button>
-                            <button type="button" class="btn btn-sm btn-outline-success flex-fill" onclick="addYield(${crop.id})">
+                            <button type="button" class="btn btn-sm btn-outline-success flex-fill" onclick="addYield(${cropIdAttr})">
                                 <i class="fas fa-plus me-1"></i>Add Yield
                             </button>
                         </div>
                         <div class="d-flex gap-2 flex-wrap">
-                            <button type="button" class="btn btn-sm btn-outline-info flex-fill" onclick="getAICropAdvice(${crop.id})">
+                            <button type="button" class="btn btn-sm btn-outline-info flex-fill" onclick="getAICropAdvice(${cropIdAttr})">
                                 <i class="fas fa-robot me-1"></i>AI Nutrition
                             </button>
-                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteCrop(${crop.id})" aria-label="Delete crop">
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteCrop(${cropIdAttr})" aria-label="Delete crop">
                                 <i class="fas fa-trash me-1"></i>Delete
                             </button>
                         </div>
@@ -1335,11 +1464,20 @@
         }
 
         function calculateProgress(crop) {
+            if (!crop || !crop.plantingDate || !crop.harvestDate) {
+                return 0;
+            }
             const planted = new Date(crop.plantingDate);
             const harvest = new Date(crop.harvestDate);
             const now = new Date();
+            if (Number.isNaN(planted.getTime()) || Number.isNaN(harvest.getTime())) {
+                return 0;
+            }
             
             const totalDays = (harvest - planted) / (1000 * 60 * 60 * 24);
+            if (!totalDays || totalDays <= 0) {
+                return 0;
+            }
             const daysPassed = (now - planted) / (1000 * 60 * 60 * 24);
             
             const progress = Math.min(Math.max((daysPassed / totalDays) * 100, 0), 100);
@@ -1458,6 +1596,9 @@
         }
 
         function calculateMaturityDate(crop) {
+            if (!isRenderableDate(crop && crop.plantingDate)) {
+                return '';
+            }
             const normalizedCropName = (crop.name || '').trim().toLowerCase();
             const catalogRecord = getCatalogPlantRecord(normalizedCropName);
             let catalogBaseDays = null;
@@ -1985,7 +2126,7 @@
             }
 
             // Try to find by variety if crop name doesn't match
-            if (!cropData) {
+            if (!cropData && variety) {
                 for (const [key, data] of Object.entries(cropDatabase)) {
                     if (variety.includes(key) || key.includes(variety)) {
                         cropData = data;
@@ -2061,11 +2202,14 @@
         }
 
         function getStatusText(status) {
-            return status.charAt(0).toUpperCase() + status.slice(1);
+            const value = String(status || 'planted');
+            return value.charAt(0).toUpperCase() + value.slice(1);
         }
 
         function formatDate(dateString) {
+            if (!dateString) return '—';
             const date = new Date(dateString);
+            if (Number.isNaN(date.getTime())) return '—';
             return date.toLocaleDateString();
         }
 
@@ -2073,7 +2217,7 @@
             document.getElementById('totalCrops').textContent = crops.length;
             document.getElementById('activeCrops').textContent = crops.filter(c => c.status !== 'completed').length;
             document.getElementById('readyHarvest').textContent = crops.filter(c => c.status === 'harvesting').length;
-            document.getElementById('totalYield').textContent = crops.reduce((sum, c) => sum + c.yield, 0).toFixed(1);
+            document.getElementById('totalYield').textContent = crops.reduce((sum, c) => sum + (Number(c.yield) || 0), 0).toFixed(1);
         }
 
         async function saveNewCrop() {
@@ -2086,10 +2230,11 @@
                 const field = document.getElementById('cropField').value;
                 const plantingDate = document.getElementById('plantingDate').value;
                 const area = parseFloat(document.getElementById('cropArea').value) || 0;
+                const notesInput = document.getElementById('cropNotes').value || '';
                 
                 console.log('Form values:', { cropName, variety, field, plantingDate, area });
                 
-                // Validate required fields
+                // Validate required fields (keep existing modal UX)
                 if (!cropName || !field || !plantingDate) {
                     showAlert('Please fill in all required fields (Crop Name, Field Name, and Planting Date).', 'error');
                     return;
@@ -2111,32 +2256,48 @@
             // Auto-calculate lifecycle stage
             const calculatedStatus = calculateLifecycleStage(plantingDate, aiMaturityDate);
             console.log('Lifecycle stage calculated:', calculatedStatus);
-            
-            const cropData = {
-                id: Date.now(),
-                name: cropName,
-                variety: variety,
-                field: field,
-                status: calculatedStatus.toLowerCase(), // Use auto-calculated status
-                plantingDate: plantingDate,
-                harvestDate: document.getElementById('harvestDate').value || aiMaturityDate,
-                maturityDate: aiMaturityDate, // Store AI calculated maturity date
-                area: area,
-                yield: 0,
-                notes: document.getElementById('cropNotes').value
+
+            const harvestDate = document.getElementById('harvestDate').value || aiMaturityDate;
+            const notes = notesInput
+                ? `${notesInput}${field ? ` [Field: ${field}]` : ''}`
+                : (field ? `Field: ${field}` : '');
+
+            const farmId = await resolveCreateFarmId();
+            const apiPayload = {
+                name: cropName.trim(),
+                variety: variety || undefined,
+                type: variety || undefined,
+                farmId: farmId || undefined,
+                plantedDate: plantingDate,
+                expectedHarvestDate: harvestDate || undefined,
+                area: area > 0 ? area : undefined,
+                status: calculatedStatus.toLowerCase(),
+                notes: notes || undefined
             };
-                
-                console.log('Crop data to save:', cropData);
-                
-                // Ensure crops array exists
-                if (!crops) {
-                    crops = [];
+
+            if (window.SmartFarmAPI && typeof window.SmartFarmAPI.createCrop === 'function') {
+                const response = await window.SmartFarmAPI.createCrop(apiPayload);
+                if (!response.success) {
+                    showAlert(response.error || 'Failed to add crop via API.', 'error');
+                    return;
                 }
-                
+                await loadCropsFromApiOrFallback();
+            } else {
+                // Offline / API unavailable: local fallback only
+                const cropData = mapApiCropToUi({
+                    id: Date.now(),
+                    ...apiPayload,
+                    plantingDate,
+                    harvestDate,
+                    maturityDate: aiMaturityDate,
+                    field,
+                    yield: 0
+                }, farmNameById);
+                cropData.field = field;
                 crops.push(cropData);
-                
-                // Save to localStorage
                 saveCropsToStorage();
+                refreshFieldFilterOptions();
+            }
                 
                 // Sync Farm-to-Table recommendations
                 if (window.FarmToTableRecommendationService) {
@@ -2170,19 +2331,19 @@
         }
 
         function editCrop(id) {
-            const crop = crops.find(c => c.id === id);
+            const crop = crops.find(c => String(c.id) === String(id));
             if (!crop) return;
             
             // Populate edit form
             document.getElementById('editCropId').value = crop.id;
-            document.getElementById('editCropName').value = crop.name;
-            document.getElementById('editCropVariety').value = crop.variety;
-            document.getElementById('editCropField').value = crop.field;
-            document.getElementById('editPlantingDate').value = crop.plantingDate;
-            document.getElementById('editHarvestDate').value = crop.harvestDate;
-            document.getElementById('editCropArea').value = crop.area;
-            document.getElementById('editCropYield').value = crop.yield;
-            document.getElementById('editCropNotes').value = crop.notes;
+            document.getElementById('editCropName').value = crop.name || '';
+            document.getElementById('editCropVariety').value = crop.variety || '';
+            document.getElementById('editCropField').value = crop.field || '';
+            document.getElementById('editPlantingDate').value = crop.plantingDate || '';
+            document.getElementById('editHarvestDate').value = crop.harvestDate || '';
+            document.getElementById('editCropArea').value = crop.area || '';
+            document.getElementById('editCropYield').value = crop.yield || 0;
+            document.getElementById('editCropNotes').value = crop.notes || '';
             
             // Calculate and display auto-calculated lifecycle stage
             const calculatedStatus = calculateLifecycleStage(crop.plantingDate, crop.maturityDate || crop.harvestDate);
@@ -2193,8 +2354,8 @@
         }
 
         async function updateCrop() {
-            const id = parseInt(document.getElementById('editCropId').value);
-            const cropIndex = crops.findIndex(c => c.id === id);
+            const id = document.getElementById('editCropId').value;
+            const cropIndex = crops.findIndex(c => String(c.id) === String(id));
             
             if (cropIndex === -1) return;
             
@@ -2218,23 +2379,58 @@
             
             // Auto-calculate lifecycle stage
             const calculatedStatus = calculateLifecycleStage(plantingDate, aiMaturityDate);
-            
-            crops[cropIndex] = {
+            const harvestDate = document.getElementById('editHarvestDate').value || aiMaturityDate;
+            const notes = document.getElementById('editCropNotes').value;
+            const yieldVal = parseFloat(document.getElementById('editCropYield').value) || 0;
+
+            const localUpdated = {
                 ...crops[cropIndex],
                 name: cropName,
                 variety: variety,
                 field: field,
-                status: calculatedStatus.toLowerCase(), // Use auto-calculated status
+                status: calculatedStatus.toLowerCase(),
                 plantingDate: plantingDate,
-                harvestDate: document.getElementById('editHarvestDate').value || aiMaturityDate,
-                maturityDate: aiMaturityDate, // Update AI calculated maturity date
+                harvestDate: harvestDate,
+                maturityDate: aiMaturityDate,
                 area: area,
-                yield: parseFloat(document.getElementById('editCropYield').value) || 0,
-                notes: document.getElementById('editCropNotes').value
+                yield: yieldVal,
+                notes: notes
             };
-            
-            // Save to localStorage
-            saveCropsToStorage();
+
+            if (window.SmartFarmAPI && typeof window.SmartFarmAPI.updateCrop === 'function') {
+                try {
+                    const response = await window.SmartFarmAPI.updateCrop(id, {
+                        name: cropName,
+                        variety: variety || undefined,
+                        type: variety || undefined,
+                        farmId: crops[cropIndex].farmId || undefined,
+                        plantedDate: plantingDate || undefined,
+                        expectedHarvestDate: harvestDate || undefined,
+                        area: Number.isFinite(area) && area > 0 ? area : undefined,
+                        status: calculatedStatus.toLowerCase(),
+                        notes: notes || undefined
+                    });
+                    if (response.success) {
+                        await loadCropsFromApiOrFallback();
+                        const refreshed = crops.findIndex(c => String(c.id) === String(id));
+                        if (refreshed !== -1) {
+                            if (field) crops[refreshed].field = field;
+                            crops[refreshed].yield = yieldVal;
+                        }
+                    } else {
+                        showAlert(response.error || 'Failed to update crop via API.', 'error');
+                        return;
+                    }
+                } catch (error) {
+                    console.warn('updateCrop API failed, applying local update:', error);
+                    crops[cropIndex] = localUpdated;
+                    saveCropsToStorage();
+                }
+            } else {
+                crops[cropIndex] = localUpdated;
+                // Save to localStorage
+                saveCropsToStorage();
+            }
             
             // Sync Farm-to-Table recommendations
             if (window.FarmToTableRecommendationService) {
@@ -2269,11 +2465,24 @@
                         console.warn('⚠️ Error cleaning up Farm-to-Table products:', error);
                     }
                 }
-                
-                crops = crops.filter(c => c.id !== id);
-                
-                // Save to localStorage
-                saveCropsToStorage();
+
+                if (window.SmartFarmAPI && typeof window.SmartFarmAPI.deleteCrop === 'function') {
+                    try {
+                        const response = await window.SmartFarmAPI.deleteCrop(id);
+                        if (!response.success) {
+                            showAlert(response.error || 'Failed to delete crop via API.', 'error');
+                            return;
+                        }
+                        await loadCropsFromApiOrFallback();
+                    } catch (error) {
+                        console.warn('deleteCrop API failed, removing locally:', error);
+                        crops = crops.filter(c => String(c.id) !== String(id));
+                        saveCropsToStorage();
+                    }
+                } else {
+                    crops = crops.filter(c => String(c.id) !== String(id));
+                    saveCropsToStorage();
+                }
                 
                 loadCrops();
                 updateStatistics();
@@ -2284,9 +2493,9 @@
         function addYield(id) {
             const yieldAmount = prompt('Enter yield amount (kg):');
             if (yieldAmount && !isNaN(yieldAmount)) {
-                const cropIndex = crops.findIndex(c => c.id === id);
+                const cropIndex = crops.findIndex(c => String(c.id) === String(id));
                 if (cropIndex !== -1) {
-                    crops[cropIndex].yield += parseFloat(yieldAmount);
+                    crops[cropIndex].yield = (Number(crops[cropIndex].yield) || 0) + parseFloat(yieldAmount);
                     
                     // Save to localStorage
                     saveCropsToStorage();
@@ -2300,7 +2509,7 @@
 
         async function getAICropAdvice(cropId) {
             try {
-                const crop = crops.find(c => c.id === cropId);
+                const crop = crops.find(c => String(c.id) === String(cropId));
                 if (!crop) {
                     showAlert('Crop not found!', 'error');
                     return;
@@ -2714,8 +2923,9 @@
             
             if (searchTerm) {
                 filteredCrops = filteredCrops.filter(crop => 
-                    crop.name.toLowerCase().includes(searchTerm) ||
-                    crop.variety.toLowerCase().includes(searchTerm)
+                    String(crop.name || '').toLowerCase().includes(searchTerm) ||
+                    String(crop.variety || '').toLowerCase().includes(searchTerm) ||
+                    String(crop.field || '').toLowerCase().includes(searchTerm)
                 );
             }
             
@@ -2740,10 +2950,7 @@
             noCropsMessage.style.display = 'none';
             container.innerHTML = '';
             
-            filteredCrops.forEach(crop => {
-                const cropCard = createCropCard(crop);
-                container.appendChild(cropCard);
-            });
+            renderCropCards(container, filteredCrops);
         }
 
         function showAlert(message, type) {
