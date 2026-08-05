@@ -10,6 +10,7 @@
     "build": "echo \"(backend) nothing to build\"",
     "migrate": "node scripts/run-migrations.js",
     "migrate:prod": "node scripts/run-migrations.js",
+    "predeploy": "node scripts/run-migrations.js",
     "import:ipm": "node scripts/import-ipm-reference-data.js",
     "import:ipm-regulatory": "node scripts/import-ipm-regulatory-data.js",
     "import:ipm-register": "node scripts/import-ipm-register-data.js",
