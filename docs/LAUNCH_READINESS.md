@@ -2,7 +2,7 @@
 
 **Status (2026-08):** End-of-month ship target **2026-08-31**. Day-by-day runway: **[`RELEASE_RUNWAY_AUG2026.md`](RELEASE_RUNWAY_AUG2026.md)**.
 
-**2026-08-07 deploy truth:** Billing portal code is on `main` and live (`POST /api/billing/portal` → **401** without JWT). Migration `012` is in `MIGRATION_ORDER` with livestock `018`. Auth inbox + livestock browser + AAB sync matrix remain **operator-blocked** — see [`../POST_DEPLOY_NOTES.md`](../POST_DEPLOY_NOTES.md) August sign-off log.
+**2026-08-07 deploy truth:** Billing portal live (`POST /api/billing/portal` → **401** without JWT). **Schema truth: 012 + 018 verified in Railway logs (2026-08-07)** — Backend deploy predeploy skipped both as already applied; `Schema verification passed` for crops/livestock. Auth inbox, interactive livestock buttons, and AAB sync remain **❌** pending human operator session — see [`../POST_DEPLOY_NOTES.md`](../POST_DEPLOY_NOTES.md) August sign-off log.
 
 **Status (2026-07):** Billing is **production-shaped** ([`BILLING_SHIP_NOTE.md`](BILLING_SHIP_NOTE.md)). Current focus: **command center reliability**, **account/team UX**, and **mobile-friendly web** — see [`LAUNCH_PHASE_PRODUCT.md`](LAUNCH_PHASE_PRODUCT.md).
 
@@ -40,7 +40,7 @@ flowchart LR
 |-------|--------|--------|
 | **Billing (test + UX foundations)** | ✅ Complete | Stripe sync, Portal route live on Railway (2026-08-07), badges, failed-payment UI — [`BILLING_SHIP_NOTE.md`](BILLING_SHIP_NOTE.md) |
 | **Live billing cutover** | 🔲 Operator | Live keys, descriptor, one real payment — [`BILLING_LIVE_CUTOVER_CHECKLIST.md`](BILLING_LIVE_CUTOVER_CHECKLIST.md) |
-| **Auth email + refresh sign-off** | ⛔ Blocked | Real mailbox + Remember-me refresh — [`POST_DEPLOY_NOTES.md`](../POST_DEPLOY_NOTES.md) |
+| **Auth email + refresh sign-off** | ❌ Not verified (2026-08-07) | Needs `sfarm663` mailbox + Remember-me browser pass — [`POST_DEPLOY_NOTES.md`](../POST_DEPLOY_NOTES.md) |
 | **Command center + offline** | 🔲 In progress | Reconnect, today/week accuracy — [`LAUNCH_PHASE_PRODUCT.md`](LAUNCH_PHASE_PRODUCT.md) §1 |
 | **Account, team, billing copy** | 🔲 In progress | Trust copy, support links, farm-team on `sfarm663@gmail.com` — §2 |
 | **Mobile-friendly web** | 🔲 Next | 375px sweep — §3 |

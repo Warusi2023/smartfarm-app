@@ -42,22 +42,32 @@ No production JWT, browser session, or test email inbox in CI/agent environment.
 | Livestock web Edit/Health/AI/Timeline | ⛔ Blocked | Needs logged-in browser on live web host |
 | AAB 1.0.10 sync matrix | ⛔ Blocked | Local AAB exists; needs device install + JWT |
 
-#### 2026-08-07 (post merge)
+#### 2026-08-07 (post merge + operator attempt)
 
 | Check | Result | Evidence |
 |-------|--------|----------|
-| Merge billing to `main` | ✅ | Merge `4b91334` → tip `f168f13` pushed to `origin/main` |
-| Merge launch docs to `main` | ✅ | Merge `f168f13`; `LAUNCH_READINESS.md` → `RELEASE_RUNWAY_AUG2026.md` |
-| `GET /api/health` | ✅ 200 | Live Railway after deploy |
-| `GET /api/livestock` (no token) | ✅ 401 | Unchanged / still gated |
-| `POST /api/billing/portal` (no token) | ✅ 401 | Was 404 pre-merge; route live (auth required) |
-| Schema path `012` + `018` | ⚠️ Assumed via deploy | Confirm in Railway pre-deploy logs: `012_subscription_billing_state.sql`, `018_livestock_legacy_column_reconcile.sql` |
-| Forgot/reset + Remember-me refresh | ⛔ Blocked | Operator: `sfarm663@gmail.com` mailbox + session |
-| Livestock web button retest | ⛔ Blocked | Operator: hard-refresh live web, logged in |
-| AAB 1.0.10 sync matrix | ⛔ Blocked | Operator: install local AAB, web↔Android photo matrix |
+| Merge billing to `main` | ✅ | Merge `4b91334`; tip later `be2a1a7` |
+| Merge launch docs to `main` | ✅ | `LAUNCH_READINESS.md` → `RELEASE_RUNWAY_AUG2026.md` |
+| `GET /api/health` | ✅ 200 | Live Railway / `api.smartfarm-app.com` |
+| `GET /api/livestock` (no token) | ✅ 401 | Auth gate live |
+| `POST /api/billing/portal` (no token) | ✅ 401 | Was 404 pre-merge; route live |
+| Railway migration logs `012` + `018` | ✅ | Backend deploy `e03a4974…` predeploy: both `Migration already applied, skipping` for `012_subscription_billing_state.sql` and `018_livestock_legacy_column_reconcile.sql`; `Schema verification passed` (crops, livestock); `skipped=18` |
+| Auth forgot/reset + Remember-me (`sfarm663@gmail.com`) | ❌ | Agent env has no `SMARTFARM_SMOKE_PASSWORD` / mailbox. `POST /api/auth/forgot-password` for `sfarm663@gmail.com` returned **200** generic body only — inbox delivery, reset link, and Remember-me refresh **not** verified |
+| Livestock web Edit/Health/AI/Timeline | ❌ | Interactive login session unavailable. Static live HTML check on `www.smartfarm-app.com/livestock-management.html`: `jsStringAttr` / `findLivestockById` / handlers present; broken `onclick="editLivestock("` pattern count **0**. Button click flows **not** exercised |
+| AAB 1.0.10 sync matrix | ❌ | Bundle present locally (`android-project/app/build/outputs/bundle/release/app-release.aab`, versionCode 10); no test device / Play install / JWT session in agent env |
 
-**Merged:** `fix/august-billing-ship`, `docs/august-launch-runway`  
-**Next August PR branch:** `fix/august-farm-team-android-hygiene` (farm-team API-first JS, versionCode 10, Android CI SDK 35, keystore removal from repo)  
+#### AAB 1.0.10 sync (2026-08-07)
+
+| Case | Result | Notes |
+|------|--------|-------|
+| Install AAB 1.0.10 on device | ❌ | Not run — no Android device attached to agent |
+| Login against live Railway API | ❌ | Not run |
+| Android create/update livestock + photo → web refresh | ❌ | Not run |
+| Web create/update livestock → Android pull | ❌ | Not run |
+
+**Unblock auth / livestock UI / AAB:** set `SMARTFARM_SMOKE_EMAIL` + `SMARTFARM_SMOKE_PASSWORD` in a local shell (never commit), re-run mailbox + browser + device checks, then flip ❌ → ✅ in this table.
+
+**Merged:** billing, launch docs, farm-team/Android hygiene (`be2a1a7`)  
 **Frozen off August:** `wip/september-defer` (local)  
 
 
