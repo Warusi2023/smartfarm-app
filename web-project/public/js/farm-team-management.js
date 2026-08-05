@@ -23,6 +23,10 @@
         revoked: 'secondary'
     };
 
+    const TASK_CACHE_KEY = 'smartfarm_farm_tasks';
+    const TASK_CACHE_VERSION_KEY = 'smartfarm_farm_tasks_cache_version';
+    const TASK_CACHE_VERSION = 'api-v1';
+
     let currentFarmId = null;
     let currentFarmRole = null;
     let membersCache = [];
@@ -49,14 +53,105 @@
         return div.innerHTML;
     }
 
+    function isRenderableDate(value) {
+        if (!value) {
+            return false;
+        }
+        const parsed = new Date(value);
+        return !Number.isNaN(parsed.getTime());
+    }
+
     function formatDate(iso) {
-        if (!iso) {
+        if (!isRenderableDate(iso)) {
             return '—';
         }
         try {
             return new Date(iso).toLocaleDateString();
         } catch (_) {
             return String(iso).slice(0, 10);
+        }
+    }
+
+    function mapApiTaskToUi(task) {
+        if (!task || typeof task !== 'object') {
+            return {
+                id: '',
+                title: '',
+                description: '',
+                status: 'open',
+                priority: 'medium',
+                dueAt: null,
+                assignedToUserId: null,
+                assigneeName: null,
+                assigneeEmail: null
+            };
+        }
+        return {
+            ...task,
+            id: task.id != null ? task.id : (task._id != null ? task._id : ''),
+            title: task.title || task.name || task.subject || '',
+            description: task.description || task.notes || task.body || '',
+            status: String(task.status || task.state || 'open').toLowerCase(),
+            priority: String(task.priority || 'medium').toLowerCase(),
+            dueAt: task.dueAt || task.dueDate || task.due_at || task.due_date || null,
+            assignedToUserId: task.assignedToUserId || task.assigned_to_user_id || null,
+            assigneeName: task.assigneeName || task.assignee_name || null,
+            assigneeEmail: task.assigneeEmail || task.assignee_email || null,
+            createdAt: task.createdAt || task.created_at || null
+        };
+    }
+
+    function extractTasksList(response) {
+        if (!response || response.success === false) {
+            return null;
+        }
+        const data = response.data;
+        if (Array.isArray(data)) {
+            return data;
+        }
+        if (data && Array.isArray(data.tasks)) {
+            return data.tasks;
+        }
+        if (data && Array.isArray(data.items)) {
+            return data.items;
+        }
+        return [];
+    }
+
+    function saveTasksToStorage(farmId, tasks) {
+        if (!farmId) {
+            return;
+        }
+        try {
+            const payload = {
+                farmId: String(farmId),
+                tasks: Array.isArray(tasks) ? tasks : []
+            };
+            localStorage.setItem(TASK_CACHE_KEY, JSON.stringify(payload));
+            localStorage.setItem(TASK_CACHE_VERSION_KEY, TASK_CACHE_VERSION);
+        } catch (error) {
+            console.warn('[FarmTeam] Unable to cache tasks offline:', error);
+        }
+    }
+
+    function loadTasksFromStorage(farmId) {
+        try {
+            if (localStorage.getItem(TASK_CACHE_VERSION_KEY) !== TASK_CACHE_VERSION) {
+                localStorage.removeItem(TASK_CACHE_KEY);
+                return null;
+            }
+            const raw = localStorage.getItem(TASK_CACHE_KEY);
+            if (!raw) {
+                return null;
+            }
+            const parsed = JSON.parse(raw);
+            if (!parsed || String(parsed.farmId) !== String(farmId) || !Array.isArray(parsed.tasks)) {
+                return null;
+            }
+            return parsed.tasks.map(mapApiTaskToUi);
+        } catch (error) {
+            console.warn('[FarmTeam] Unable to read offline task cache:', error);
+            return null;
         }
     }
 
@@ -215,33 +310,44 @@
         if (!el) {
             return;
         }
-        if (!tasks.length) {
+        const list = Array.isArray(tasks) ? tasks : [];
+        if (!list.length) {
             el.innerHTML = '<p class="text-muted mb-0">No tasks yet.</p>';
             return;
         }
-        el.innerHTML = tasks.map((t) => {
-            const pClass = PRIORITY_CLASS[t.priority] || 'secondary';
-            const sClass = STATUS_CLASS[t.status] || 'secondary';
-            const canComplete = t.status !== 'done' && (canManageTasks() || t.assignedToUserId);
-            return `
+        const cards = [];
+        list.forEach((raw) => {
+            try {
+                const t = mapApiTaskToUi(raw);
+                const pClass = PRIORITY_CLASS[t.priority] || 'secondary';
+                const sClass = STATUS_CLASS[t.status] || 'secondary';
+                const canComplete = t.status !== 'done' && (canManageTasks() || t.assignedToUserId);
+                const taskIdAttr = escapeHtml(String(t.id));
+                cards.push(`
                 <div class="border rounded p-3 mb-2">
                     <div class="d-flex justify-content-between align-items-start gap-2">
                         <div>
-                            <strong>${escapeHtml(t.title)}</strong>
-                            <span class="badge bg-${pClass} ms-2">${escapeHtml(t.priority)}</span>
-                            <span class="badge bg-${sClass} ms-1">${escapeHtml(t.status)}</span>
+                            <strong>${escapeHtml(t.title || 'Untitled task')}</strong>
+                            <span class="badge bg-${pClass} ms-2">${escapeHtml(t.priority || 'medium')}</span>
+                            <span class="badge bg-${sClass} ms-1">${escapeHtml(t.status || 'open')}</span>
                             ${t.description ? `<p class="small text-muted mb-1 mt-1">${escapeHtml(t.description)}</p>` : ''}
                             <p class="small mb-0">Due: ${formatDate(t.dueAt)} · Assigned: ${escapeHtml(t.assigneeName || t.assigneeEmail || 'Unassigned')}</p>
                         </div>
                         <div class="text-nowrap">
                             ${showAssignActions && canComplete
-                                ? `<button type="button" class="btn btn-sm btn-success me-1" onclick="FarmTeamManagement.completeTask('${t.id}')">Complete</button>`
+                                ? `<button type="button" class="btn btn-sm btn-success me-1" onclick="FarmTeamManagement.completeTask('${taskIdAttr}')">Complete</button>`
                                 : ''}
-                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="FarmTeamManagement.promptComment('${t.id}')">Note</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="FarmTeamManagement.promptComment('${taskIdAttr}')">Note</button>
                         </div>
                     </div>
-                </div>`;
-        }).join('');
+                </div>`);
+            } catch (error) {
+                console.error('[FarmTeam] Failed to render task card', raw && raw.id, error);
+            }
+        });
+        el.innerHTML = cards.length
+            ? cards.join('')
+            : '<p class="text-muted mb-0">No tasks yet.</p>';
     }
 
     async function loadMembers() {
@@ -294,12 +400,34 @@
         if (!currentFarmId) {
             return;
         }
-        const response = await global.SmartFarmAPI.getFarmTasks(currentFarmId);
-        if (!response || response.success === false) {
-            notify(response && response.error ? response.error : 'Failed to load tasks', 'danger');
-            return;
+        let loadedFromApi = false;
+        let loadError = null;
+        try {
+            const response = await global.SmartFarmAPI.getFarmTasks(currentFarmId);
+            const list = extractTasksList(response);
+            if (list) {
+                tasksCache = list.map(mapApiTaskToUi);
+                saveTasksToStorage(currentFarmId, tasksCache);
+                loadedFromApi = true;
+            } else {
+                loadError = (response && response.error) || 'Failed to load tasks';
+            }
+        } catch (error) {
+            loadError = (error && error.message) || 'Failed to load tasks';
         }
-        tasksCache = response.data || [];
+
+        if (!loadedFromApi) {
+            const offline = typeof navigator !== 'undefined' && navigator.onLine === false;
+            const cached = offline ? loadTasksFromStorage(currentFarmId) : null;
+            if (cached) {
+                tasksCache = cached;
+                notify('Offline — showing the last saved copy of farm tasks.', 'warning');
+            } else {
+                tasksCache = [];
+                notify(loadError || 'Failed to load tasks', 'danger');
+            }
+        }
+
         renderTasks(tasksCache, 'ftTasksList', true);
         updateTeamUiVisibility();
     }
@@ -311,12 +439,35 @@
         if (!currentFarmId) {
             return;
         }
-        const response = await global.SmartFarmAPI.getMyFarmTasks(currentFarmId);
-        if (!response || response.success === false) {
-            notify(response && response.error ? response.error : 'Failed to load my tasks', 'danger');
-            return;
+        let loadedFromApi = false;
+        let loadError = null;
+        let myTasks = [];
+        try {
+            const response = await global.SmartFarmAPI.getMyFarmTasks(currentFarmId);
+            const list = extractTasksList(response);
+            if (list) {
+                myTasks = list.map(mapApiTaskToUi);
+                loadedFromApi = true;
+            } else {
+                loadError = (response && response.error) || 'Failed to load my tasks';
+            }
+        } catch (error) {
+            loadError = (error && error.message) || 'Failed to load my tasks';
         }
-        renderTasks(response.data || [], 'ftMyTasksList', true);
+
+        if (!loadedFromApi) {
+            const offline = typeof navigator !== 'undefined' && navigator.onLine === false;
+            if (offline && tasksCache.length) {
+                // Best-effort offline view from last farm task cache.
+                myTasks = tasksCache.filter((t) => t.status !== 'done');
+                notify('Offline — showing cached tasks.', 'warning');
+            } else {
+                myTasks = [];
+                notify(loadError || 'Failed to load my tasks', 'danger');
+            }
+        }
+
+        renderTasks(myTasks, 'ftMyTasksList', true);
     }
 
     function fullAcceptUrl(relative) {
