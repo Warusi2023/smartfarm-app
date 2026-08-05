@@ -166,7 +166,7 @@ Use this account for the full invite checklist — it has a real farm, one membe
 - **Existing member 409:** run if possible — confirm an email that is already an active member cannot be re-invited (`409 User is already a member of this farm`).
 - **Accept / revoke:** run on **existing** pending invitations only (revoke via Team panel; accept via `dashboard.html?farmInvite=<token>`).
 
-**Constraint (androsat only):** new invites depend on an active subscription path. Billing is currently **configured off** on Railway (`billingEnabled: false` — see [`stripe-billing-flow.md`](./stripe-billing-flow.md)).
+**Constraint (androsat only):** new invites depend on an active subscription path. **Billing is configured** — expired-trial accounts can upgrade via Farm Pro Checkout (see [`stripe-billing-flow.md`](./stripe-billing-flow.md)).
 
 **Implication:** prefer **`sfarm663@gmail.com`** for invite-flow verification going forward — real farm, no stale pending invites, and likely not subject to the expired-trial gate that blocked `androsat.kv@gmail.com`.
 
