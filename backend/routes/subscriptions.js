@@ -26,6 +26,11 @@ class SubscriptionRoutes {
             asyncHandler(this.controller.getBillingConfig.bind(this.controller))
         );
 
+        // Billing readiness for deploy verification (public — no secrets)
+        this.router.get('/billing-status',
+            asyncHandler(this.controller.getBillingStatus.bind(this.controller))
+        );
+
         // Get subscription plans (public) - cached (static data)
         this.router.get('/plans', 
             cacheMiddleware('subscriptions:plans', CACHE_TTL.SUBSCRIPTION_PLANS),

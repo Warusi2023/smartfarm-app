@@ -66,6 +66,32 @@ function pkMode(key) {
     return 'unknown';
 }
 
+function billingSummary(config, status) {
+    const enabled = config?.billingEnabled === true;
+    const mode = status?.mode?.active || pkMode(config?.publishableKey);
+    if (!enabled) {
+        const missing = [];
+        const cfg = status?.config;
+        if (cfg) {
+            if (!cfg.secretKeyPresent) missing.push('STRIPE_SECRET_KEY');
+            if (!cfg.publishableKeyPresent) missing.push('STRIPE_PUBLISHABLE_KEY');
+            if (!cfg.priceIdPresent) missing.push('STRIPE_PRICE_ID_FARM_PRO');
+            if (!cfg.webhookSecretPresent) missing.push('STRIPE_WEBHOOK_SECRET');
+        }
+        return {
+            message: 'BILLING DISABLED — set Stripe env vars on Railway Backend and redeploy',
+            mode,
+            missing: missing.length ? missing : ['STRIPE_* (see docs/BILLING_PRODUCTION_ACTIVATION.md)']
+        };
+    }
+    const webhookNote = status?.webhookReady ? 'webhook secret set' : 'STRIPE_WEBHOOK_SECRET missing';
+    return {
+        message: `BILLING READY (${mode} mode) — checkout enabled; ${webhookNote}`,
+        mode,
+        webhookRegistered: status?.webhook?.registeredInStripe
+    };
+}
+
 async function login() {
     const email = (process.env.SMARTFARM_SMOKE_EMAIL || '').trim();
     const password = (process.env.SMARTFARM_SMOKE_PASSWORD || '').trim();
@@ -89,11 +115,13 @@ async function main() {
         public: {},
         authenticated: {},
         blockers: [],
-        nextSteps: []
+        nextSteps: [],
+        summary: null
     };
 
     const plansRailway = await request('GET', `${API}/api/subscriptions/plans`);
     const configRailway = await request('GET', `${API}/api/subscriptions/billing-config`);
+    const statusRailway = await request('GET', `${API}/api/subscriptions/billing-status?checkStripe=true`);
     const configWeb = await request('GET', `${WEB}/api/subscriptions/billing-config`);
     const pages = ['pricing.html', 'subscription-management.html', 'checkout.html'];
 
@@ -114,6 +142,12 @@ async function main() {
             publishableKeyMode: pkMode(configWeb.json?.data?.publishableKey)
         }
     };
+    report.public.billingStatus = {
+        status: statusRailway.status,
+        data: statusRailway.json?.data || null
+    };
+
+    report.summary = billingSummary(configRailway.json?.data, statusRailway.json?.data);
 
     report.public.pages = {};
     for (const page of pages) {
@@ -123,15 +157,28 @@ async function main() {
 
     if (!configRailway.json?.data?.billingEnabled) {
         report.blockers.push(
-            'Railway STRIPE_* env not configured: billingEnabled=false, publishableKey empty. ' +
+            'Railway STRIPE_* env not configured: billingEnabled=false. ' +
             'Set STRIPE_SECRET_KEY, STRIPE_PUBLISHABLE_KEY, STRIPE_WEBHOOK_SECRET, STRIPE_PRICE_ID_FARM_PRO on Backend service.'
         );
         report.nextSteps.push(
-            'Configure Stripe env vars on Railway Backend, redeploy, confirm billing-config shows billingEnabled=true.'
+            'See docs/BILLING_PRODUCTION_ACTIVATION.md — configure test-mode vars, redeploy, re-run this probe.'
         );
-        report.nextSteps.push(
-            'Register webhook https://web-production-86d39.up.railway.app/api/webhooks/stripe in Stripe Dashboard.'
-        );
+    } else {
+        const st = statusRailway.json?.data;
+        if (st?.mode?.mismatch) {
+            report.blockers.push('Stripe secret and publishable key mode mismatch (test vs live)');
+        }
+        if (!st?.webhookReady) {
+            report.blockers.push('STRIPE_WEBHOOK_SECRET missing — payments will not activate subscriptions');
+        }
+        if (st?.webhook?.stripeApiChecked && st.webhook.registeredInStripe === false) {
+            report.blockers.push(
+                'No Stripe webhook endpoint registered for ' + (st.webhook.expectedUrl || '/api/webhooks/stripe')
+            );
+            report.nextSteps.push(
+                'Stripe Dashboard → Webhooks → add endpoint with checkout.session.completed (+ subscription events).'
+            );
+        }
     }
 
     let token = (process.env.SMARTFARM_SMOKE_JWT || '').trim();
@@ -194,6 +241,8 @@ async function main() {
 
     report.pass = report.blockers.length === 0 && report.public.plans.ok;
     console.log(JSON.stringify(report, null, 2));
+    console.log('');
+    console.log(report.summary.message);
     process.exit(report.blockers.length ? 1 : 0);
 }
 

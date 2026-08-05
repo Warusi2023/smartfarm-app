@@ -96,6 +96,17 @@ class SubscriptionRepository {
         return await dbHelpers.getUserTrialInfo(userId);
     }
 
+    async getUserStripeCustomerId(userId) {
+        if (!this.dbPool) {
+            return null;
+        }
+        const result = await this.dbPool.query(
+            'SELECT stripe_customer_id FROM users WHERE id = $1',
+            [userId]
+        );
+        return result.rows[0]?.stripe_customer_id || null;
+    }
+
     /**
      * Create or update subscription
      * @param {Object} subscriptionData - Subscription data

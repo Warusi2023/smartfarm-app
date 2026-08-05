@@ -4,6 +4,10 @@
 
 **Probe script:** `backend/scripts/stripe-billing-production-probe.js`
 
+**Activation runbook:** [`docs/BILLING_PRODUCTION_ACTIVATION.md`](../BILLING_PRODUCTION_ACTIVATION.md)
+
+**Ship note (deploy + verify):** [`docs/BILLING_SHIP_NOTE.md`](../BILLING_SHIP_NOTE.md)
+
 ## Problem / goal
 
 Verify the web-first billing path from **30-day trial → Farm Pro ($29/mo)** via Stripe Checkout, including webhook activation on Railway and UI on `www.smartfarm-app.com`.
@@ -26,8 +30,10 @@ Verify the web-first billing path from **30-day trial → Farm Pro ($29/mo)** vi
 |--------|------|------|---------|
 | GET | `/api/subscriptions/plans` | No | Public plan catalog |
 | GET | `/api/subscriptions/billing-config` | No | Publishable key + billing enabled flag |
+| GET | `/api/subscriptions/billing-status` | No | Ops readiness (mode, config flags, optional Stripe webhook check) |
 | GET | `/api/subscriptions/current` | Yes | Current plan / trial days remaining |
 | POST | `/api/subscriptions/create-checkout-session` | Yes | Returns Stripe Checkout URL |
+| POST | `/api/billing/portal` | Yes | Stripe Customer Portal (cancel, payment method, invoices) |
 | POST | `/api/subscriptions/events` | Yes | Client analytics (`trial_started`, `upgrade_started`, etc.) |
 | POST | `/api/webhooks/stripe` | Stripe signature | Raw body — **must** be registered on Railway, not Netlify |
 | POST | `/api/farms` | Yes | Farm limit enforced by plan |
@@ -68,13 +74,17 @@ FRONTEND_URL=https://www.smartfarm-app.com
 
 **Webhook URL (production):** `https://web-production-86d39.up.railway.app/api/webhooks/stripe`
 
-## Verification (production / test mode)
+## Verification (production)
 
-### Status: **BLOCKED** — Stripe not configured on Railway (2026-06-28)
+### Status: **TEST MODE PASS** — E2E Checkout + webhook activation verified (2026-06)
 
-Public UI and API proxy paths respond correctly, but **end-to-end Checkout cannot run** until Railway Backend has Stripe env vars.
+Test-mode billing is operational: `billingEnabled: true`, Checkout sessions, webhook `checkout.session.completed`, and Farm Pro access updates. **Next:** live-mode cutover (see [`LAUNCH_READINESS.md`](../LAUNCH_READINESS.md) §1 and Run 3 below).
 
-### Automated probe evidence (2026-06-28)
+### Run 1 — 2026-06-28 (probe only, pre-config)
+
+Public UI and API proxy paths responded correctly before Stripe env was set.
+
+### Automated probe
 
 Run:
 
@@ -82,21 +92,15 @@ Run:
 node backend/scripts/stripe-billing-production-probe.js
 ```
 
-Observed:
+Run 1 observed (pre-config):
 
 | Check | Result |
 |-------|--------|
 | `GET /api/subscriptions/plans` (Railway) | ✅ 200 JSON |
 | `GET /api/subscriptions/billing-config` (Railway) | ✅ 200 — **`billingEnabled: false`**, `publishableKey` empty |
-| `GET /api/subscriptions/billing-config` (Netlify proxy) | ✅ 200 — same payload |
-| `/pricing.html`, `/subscription-management.html`, `/checkout.html` | ✅ 200 HTML |
-| `POST /api/subscriptions/create-checkout-session` | ⏸️ Not run — requires JWT; expected **503 `BILLING_NOT_CONFIGURED`** until env set |
-| Full Checkout `4242...` | ⏸️ **Blocked** — no Checkout URL without Stripe config |
-| Webhook `checkout.session.completed` | ⏸️ **Blocked** |
-| `upgrade_completed` in DB | ⏸️ **Blocked** |
-| Before/after `/api/subscriptions/current` | ⏸️ **Blocked** — set `SMARTFARM_SMOKE_EMAIL` / `SMARTFARM_SMOKE_PASSWORD` after Stripe config |
+| Full Checkout `4242...` | ⏸️ Blocked — no Stripe config |
 
-**Blocker:** Railway Backend service missing `STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_ID_FARM_PRO`.
+**Blocker (resolved):** Railway Backend missing `STRIPE_*` vars.
 
 ### Prerequisite — configure Railway (operator)
 
@@ -178,16 +182,25 @@ fetch("/api/subscriptions/current", {
 | **DB `upgrade_completed`** | Not verified |
 | **Verdict** | **BLOCKED** — configure Railway `STRIPE_*` env vars, redeploy, re-run checklist |
 
-### Run 2 — (fill after Stripe configured + manual Checkout)
+### Run 2 — test-mode E2E (2026-06)
+
+| Field | Value |
+|-------|--------|
+| **Stripe mode** | test |
+| **Verdict** | **PASS** — Checkout, webhook activation, Farm Pro applied after payment |
+| **Details** | Fill session/webhook IDs when recording formal audit |
+
+### Run 3 — live-mode E2E (fill before public launch)
 
 | Field | Value |
 |-------|--------|
 | **Date / tester** | |
-| **Stripe mode** | test / live |
+| **Stripe mode** | live |
 | **Test account email** | |
+| **Statement descriptor** | verified in Stripe Dashboard |
+| **Customer receipt email** | received |
 | **Before `/api/subscriptions/current`** | paste JSON |
-| **Checkout session ID** | `cs_test_...` |
+| **Checkout session ID** | `cs_live_...` |
 | **Webhook event ID** | `evt_...` (Stripe Dashboard → 200 response) |
 | **After `/api/subscriptions/current`** | paste JSON |
-| **DB `subscription_events`** | `upgrade_started`, `upgrade_completed` timestamps |
 | **Verdict** | PASS / FAIL |
