@@ -59,6 +59,25 @@ No production JWT, browser session, or test email inbox in CI/agent environment.
 | Livestock web Edit/Health/AI/Timeline | ❌ | Interactive login session unavailable. Static live HTML check on `www.smartfarm-app.com/livestock-management.html`: `jsStringAttr` / `findLivestockById` / handlers present; broken `onclick="editLivestock("` pattern count **0**. Button click flows **not** exercised |
 | AAB 1.0.10 sync matrix | ❌ | Bundle present locally (`android-project/app/build/outputs/bundle/release/app-release.aab`, versionCode 10); no test device / Play install / JWT session in agent env |
 
+#### 2026-08-07 (evening) — PR #1 + #2 merge + production re-verify
+
+| Check | Result | Evidence |
+|-------|--------|----------|
+| Merge PR #1 `fix/auth-ai-health` | ✅ | https://github.com/Warusi2023/smartfarm-app/pull/1 → `40bb135` |
+| Merge PR #2 `fix/livestock-timeline-android-camera` | ✅ | https://github.com/Warusi2023/smartfarm-app/pull/2 → `fce5a04` |
+| Railway boot + `GET /api/health` | ✅ 200 | Post-merge deploy; migrations skipped=18; Schema verification passed |
+| Forgot-password reliability (known user) | ✅ | `POST /api/auth/forgot-password` for `sfarm663@gmail.com` → **500** `{"success":false,"code":"EMAIL_ERROR"}` (no silent 200). Railway log: `EAUTH` / Gmail `535 BadCredentials` |
+| Forgot-password inbox delivery | ❌ | Gmail rejects `EMAIL_PASS` (App Password invalid/revoked). **Action:** Google Account → App Passwords → create new 16-char secret → set Railway `EMAIL_PASS` (spaces optional; code now strips them) → redeploy → retest until **200** + mailbox message |
+| Unknown-email privacy | ✅ | Unknown address still **200** generic success body |
+| AI health species (cat vs cattle) | ✅ | Live API: `type=cat` → `species":"cat"`, feedType **Complete feline diet**; `type=cattle` → `species":"cattle"`, feedType **Cattle feed mix with hay**. Railway log: `species="cat"` / `species="cattle"` |
+| Timeline for all animals (web static) | ✅ | Live `www.smartfarm-app.com/livestock-management.html` contains `resolveAnimalSpecies`, id-based Timeline gate (`animal.id != null`); old cattle-only Timeline gate absent |
+| AAB 1.0.12 build | ✅ | `android-project/app/build/outputs/bundle/release/app-release.aab` (~16.5 MB, built 2026-08-07). Upload to Play **Internal testing** as versionCode **12** / versionName **1.0.12** |
+| Android camera → web photo sync | ❌ | AAB ready; Play upload + device install not run in agent env |
+
+**Unblock inbox:** rotate Gmail App Password for `sfarm663@gmail.com` in Railway `EMAIL_PASS`, confirm transporter verify succeeds in logs, then complete reset + login + Remember-me.
+
+**Unblock Android camera:** upload AAB 1.0.12 to Play Internal → install on device → Camera permission → capture → save → confirm on web.
+
 #### AAB 1.0.10 sync (2026-08-07)
 
 | Case | Result | Notes |

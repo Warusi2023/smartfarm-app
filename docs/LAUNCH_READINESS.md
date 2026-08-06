@@ -2,7 +2,7 @@
 
 **Status (2026-08):** End-of-month ship target **2026-08-31**. Day-by-day runway: **[`RELEASE_RUNWAY_AUG2026.md`](RELEASE_RUNWAY_AUG2026.md)**.
 
-**2026-08-07 deploy truth:** Billing portal live (`POST /api/billing/portal` → **401** without JWT). **Schema truth: 012 + 018 verified in Railway logs (2026-08-07)** — Backend deploy predeploy skipped both as already applied; `Schema verification passed` for crops/livestock. **Operator bugfix pass (code ready, redeploy + retest):** forgot-password now fails loud on SMTP (`EMAIL_ERROR`); livestock Timeline on all animals; AI health species-aware (no cattle default); Android camera runtime permission in **1.0.12**. Inbox / device / interactive livestock still need human re-verify after deploy — see [`../POST_DEPLOY_NOTES.md`](../POST_DEPLOY_NOTES.md).
+**2026-08-07 deploy truth (post PR #1 + #2):** Merged [`#1`](https://github.com/Warusi2023/smartfarm-app/pull/1) + [`#2`](https://github.com/Warusi2023/smartfarm-app/pull/2). Live: health **200**; AI health species ✅ (cat ≠ cattle); Timeline HTML ✅ on www; forgot-password ✅ surfaces **500 EMAIL_ERROR** (Gmail App Password still BadCredentials — rotate `EMAIL_PASS` for inbox delivery). AAB **1.0.12** built locally — Play upload + device camera sync still open. See [`../POST_DEPLOY_NOTES.md`](../POST_DEPLOY_NOTES.md) evening sign-off table.
 
 **Status (2026-07):** Billing is **production-shaped** ([`BILLING_SHIP_NOTE.md`](BILLING_SHIP_NOTE.md)). Current focus: **command center reliability**, **account/team UX**, and **mobile-friendly web** — see [`LAUNCH_PHASE_PRODUCT.md`](LAUNCH_PHASE_PRODUCT.md).
 

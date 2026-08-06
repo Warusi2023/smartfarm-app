@@ -30,7 +30,10 @@ class EmailService {
     initializeTransporter() {
         const emailService = process.env.EMAIL_SERVICE || 'gmail';
         const emailUser = process.env.EMAIL_USER;
-        const emailPass = process.env.EMAIL_PASS;
+        // Gmail App Passwords are often pasted with spaces; SMTP expects the 16-char secret.
+        const emailPass = process.env.EMAIL_PASS
+            ? String(process.env.EMAIL_PASS).replace(/\s+/g, '')
+            : '';
 
         if (!emailUser || !emailPass) {
             console.warn('⚠️ Email service not configured - EMAIL_USER and EMAIL_PASS required');
