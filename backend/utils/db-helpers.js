@@ -414,9 +414,10 @@ class DatabaseHelpers {
         }
 
         try {
+            const normalized = String(email || '').trim().toLowerCase();
             const result = await this.dbPool.query(
-                'SELECT * FROM users WHERE email = $1',
-                [email]
+                'SELECT * FROM users WHERE LOWER(TRIM(email)) = $1',
+                [normalized]
             );
 
             return result.rows.length > 0 ? this._mapUserRow(result.rows[0]) : null;

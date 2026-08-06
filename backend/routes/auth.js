@@ -830,6 +830,11 @@ class AuthRoutes {
 
     /**
      * Forgot password endpoint
+     *
+     * Privacy: unknown emails still get HTTP 200 with a generic message.
+     * Known users: persist reset_token/reset_expires, then send email. If SMTP fails,
+     * return EMAIL_ERROR (500) so operators can see the failure — never claim success
+     * when the reset email was not sent.
      */
     async forgotPassword(req, res) {
         try {
@@ -843,9 +848,15 @@ class AuthRoutes {
                 });
             }
 
-            const user = await this.dbHelpers.findUserByEmail(email);
+            const normalizedEmail = String(email).trim().toLowerCase();
+            const user = await this.dbHelpers.findUserByEmail(normalizedEmail);
             if (!user) {
                 // Don't reveal if user exists or not (security best practice)
+                logger.info('Forgot password requested for unknown email', {
+                    emailDomain: normalizedEmail.includes('@')
+                        ? normalizedEmail.split('@')[1]
+                        : 'invalid'
+                });
                 return res.json({
                     success: true,
                     message: 'If an account with that email exists, a password reset link has been sent.'
@@ -863,11 +874,23 @@ class AuthRoutes {
                 resetExpires
             });
 
-            // Send reset email
+            // Send reset email — must succeed or we surface EMAIL_ERROR
             try {
-                await this.emailService.sendPasswordResetEmail(email, resetToken);
+                const sendResult = await this.emailService.sendPasswordResetEmail(
+                    user.email || normalizedEmail,
+                    resetToken,
+                    user.firstName || user.first_name || 'User'
+                );
+                logger.info('Password reset email dispatched', {
+                    userId: user.id,
+                    messageId: sendResult && sendResult.messageId ? sendResult.messageId : null
+                });
             } catch (emailError) {
-                logger.error('Failed to send password reset email', { error: emailError, userId: user.id });
+                logger.error('Failed to send password reset email', {
+                    error: emailError.message,
+                    code: emailError.code,
+                    userId: user.id
+                });
                 return res.status(500).json({
                     success: false,
                     error: 'Failed to send password reset email',

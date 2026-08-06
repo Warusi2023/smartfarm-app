@@ -154,21 +154,33 @@ class EmailService {
     }
 
     /**
-     * Send password reset email
+     * Send password reset email.
+     *
+     * Flow: caller persists reset_token → this builds PUBLIC_FRONTEND_URL/reset-password.html?token=…
+     * → SMTP send. Throws on misconfiguration or provider failure so /forgot-password can return EMAIL_ERROR
+     * instead of a false "success" 200. Privacy-safe "user not found" 200 stays in the auth route.
+     *
+     * @returns {Promise<{ messageId: string, to: string }>}
      */
     async sendPasswordResetEmail(email, resetToken, firstName = 'User') {
-        if (!this.isConfigured || !this.transporter) {
-            console.warn('⚠️ Email service not configured, skipping password reset email');
-            return false;
+        if (!this.transporter) {
+            const err = new Error(
+                'Email transporter is not configured (set EMAIL_USER and EMAIL_PASS)'
+            );
+            err.code = 'EMAIL_NOT_CONFIGURED';
+            throw err;
         }
 
+        // Async verify() may still be pending or may have failed; still attempt send if we have a transporter.
         let resetUrl;
         try {
             resetUrl = buildPublicFrontendUrl('/reset-password.html', { token: resetToken });
         } catch (err) {
-            console.error(`❌ Failed to build password reset link for ${email}:`, err.message);
-            return false;
+            const buildErr = new Error(`Failed to build password reset link: ${err.message}`);
+            buildErr.code = 'EMAIL_LINK_BUILD_FAILED';
+            throw buildErr;
         }
+
         const emailHtml = `
 <!DOCTYPE html>
 <html lang="en">
@@ -204,11 +216,20 @@ class EmailService {
                 text: `We received a request to reset your SmartFarm password. Use this link (valid for 1 hour): ${resetUrl}`
             });
 
-            console.log(`✅ Password reset email sent to ${email}:`, info.messageId);
-            return true;
+            this.isConfigured = true;
+            console.log(
+                `✅ Password reset email sent to=${email} messageId=${info.messageId || 'n/a'} ` +
+                    `configuredFlag=${this.isConfigured} frontendOrigin=${this.getPublicFrontendOrigin()}`
+            );
+            return { messageId: info.messageId || '', to: email };
         } catch (error) {
-            console.error(`❌ Failed to send password reset email to ${email}:`, error.message);
-            return false;
+            console.error(
+                `❌ Failed to send password reset email to=${email} code=${error.code || 'n/a'} ` +
+                    `message=${error.message}`
+            );
+            const sendErr = new Error(`Failed to send password reset email: ${error.message}`);
+            sendErr.code = error.code || 'EMAIL_SEND_FAILED';
+            throw sendErr;
         }
     }
 

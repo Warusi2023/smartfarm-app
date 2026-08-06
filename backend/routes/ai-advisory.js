@@ -7,6 +7,7 @@ const express = require('express');
 const { validate } = require('../middleware/validator');
 const { cacheMiddleware } = require('../middleware/cache-middleware');
 const { CACHE_TTL } = require('../config/cache-config');
+const { buildLivestockHealthAdvice } = require('../services/livestockHealthAdvice');
 
 class AIAdvisoryRoutes {
     constructor() {
@@ -308,17 +309,14 @@ class AIAdvisoryRoutes {
         try {
             const { animalId } = req.params;
 
-            // Mock animal data - in production, fetch from database
-            const animal = {
+            // Client must pass species via ?type= (from animal.species). No cattle default.
+            const recommendations = buildLivestockHealthAdvice({
                 id: animalId,
-                type: req.query.type || 'Cattle',
+                type: req.query.type,
                 breed: req.query.breed || 'Mixed',
-                age: req.query.age || 12,
+                age: req.query.age,
                 healthStatus: req.query.healthStatus || 'healthy'
-            };
-
-            // Generate AI health recommendations
-            const recommendations = this.generateLivestockHealthAdvice(animal);
+            });
 
             res.json({
                 success: true,
@@ -336,91 +334,13 @@ class AIAdvisoryRoutes {
         }
     }
 
-    /**
-     * Generate livestock health advice
-     */
     generateLivestockHealthAdvice(animal) {
-        const recommendations = {
-            healthStatus: animal.healthStatus,
-            nutrition: this.getLivestockNutritionAdvice(animal),
-            vaccinations: this.getVaccinationSchedule(animal),
-            healthChecks: this.getHealthCheckRecommendations(animal),
-            warnings: this.getLivestockWarnings(animal),
-            tips: this.getLivestockTips(animal)
-        };
-
-        return recommendations;
-    }
-
-    /**
-     * Get livestock nutrition advice
-     */
-    getLivestockNutritionAdvice(animal) {
-        return {
-            feedType: 'Balanced feed mix',
-            dailyAmount: '2-3% of body weight',
-            frequency: '2-3 times daily',
-            supplements: ['Mineral salt', 'Calcium supplement'],
-            notes: 'Ensure access to clean water at all times'
-        };
-    }
-
-    /**
-     * Get vaccination schedule
-     */
-    getVaccinationSchedule(animal) {
-        return {
-            nextVaccination: 'In 3 months',
-            recommended: ['Annual health check', 'Deworming every 6 months'],
-            critical: 'Keep vaccination records up to date'
-        };
-    }
-
-    /**
-     * Get health check recommendations
-     */
-    getHealthCheckRecommendations(animal) {
-        return {
-            frequency: 'Monthly',
-            checks: ['Body condition score', 'Hoof health', 'Coat condition', 'Appetite'],
-            signs: 'Watch for changes in behavior, appetite, or appearance'
-        };
-    }
-
-    /**
-     * Get livestock warnings
-     */
-    getLivestockWarnings(animal) {
-        const warnings = [];
-
-        if (animal.healthStatus !== 'healthy') {
-            warnings.push({
-                type: 'critical',
-                message: 'Animal requires immediate veterinary attention',
-                impact: 'Delayed treatment can worsen condition'
-            });
-        }
-
-        warnings.push({
-            type: 'info',
-            message: 'Maintain clean living environment',
-            impact: 'Prevents disease spread'
+        return buildLivestockHealthAdvice({
+            type: animal.type || animal.species,
+            breed: animal.breed,
+            age: animal.age,
+            healthStatus: animal.healthStatus
         });
-
-        return warnings;
-    }
-
-    /**
-     * Get livestock tips
-     */
-    getLivestockTips(animal) {
-        return [
-            'Provide adequate shelter from extreme weather',
-            'Ensure proper ventilation in housing',
-            'Monitor feed quality and storage',
-            'Keep detailed health records',
-            'Quarantine new animals before introducing to herd'
-        ];
     }
 
     getRouter() {
