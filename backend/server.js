@@ -13,6 +13,7 @@ const { CACHE_TTL } = require('./config/cache-config');
 const metricsMiddleware = require('./middleware/metrics-middleware');
 const metricsService = require('./utils/metrics');
 const HealthCheckService = require('./utils/health-check');
+const { buildLivestockHealthAdvice } = require('./services/livestockHealthAdvice');
 
 // --- Sentry Error Tracking ---
 let Sentry;
@@ -230,78 +231,18 @@ app.get('/api/ai-advisory/livestock-health/:animalId', validate('aiAdvisory.live
   
   try {
     const { animalId } = req.params;
-    const animalType = req.query.type || 'Cattle';
-    const breed = req.query.breed || 'Mixed';
-    const age = parseInt(req.query.age) || 12;
-    const healthStatus = req.query.healthStatus || 'healthy';
-    
-    // Generate AI health recommendations
-    const recommendations = {
-      healthStatus: healthStatus,
-      nutrition: {
-        feedType: 'Balanced feed mix',
-        dailyAmount: '2-3% of body weight',
-        frequency: '2-3 times daily',
-        supplements: ['Mineral salt', 'Calcium supplement'],
-        notes: 'Ensure access to clean water at all times'
-      },
-      vaccinations: {
-        nextVaccination: 'In 3 months',
-        recommended: ['Annual health check', 'Deworming every 6 months'],
-        critical: 'Keep vaccination records up to date'
-      },
-      healthChecks: {
-        frequency: 'Monthly',
-        checks: ['Body condition score', 'Hoof health', 'Coat condition', 'Appetite'],
-        signs: 'Watch for changes in behavior, appetite, or appearance'
-      },
-      warnings: [],
-      tips: [
-        'Provide adequate shelter from extreme weather',
-        'Ensure proper ventilation in housing',
-        'Monitor feed quality and storage',
-        'Keep detailed health records',
-        'Quarantine new animals before introducing to herd'
-      ]
-    };
-    
-    // Add warnings based on health status
-    if (healthStatus !== 'healthy') {
-      recommendations.warnings.push({
-        type: 'critical',
-        message: 'Animal requires immediate veterinary attention',
-        impact: 'Delayed treatment can worsen condition'
-      });
-    }
-    
-    recommendations.warnings.push({
-      type: 'info',
-      message: 'Maintain clean living environment',
-      impact: 'Prevents disease spread'
+    // Prefer query.type from the client (species). Do not default to Cattle — unknown stays generic.
+    const recommendations = buildLivestockHealthAdvice({
+      type: req.query.type,
+      breed: req.query.breed || 'Mixed',
+      age: req.query.age,
+      healthStatus: req.query.healthStatus || 'healthy'
     });
-    
-    // Adjust recommendations based on animal type and age
-    if (animalType.toLowerCase().includes('cattle') || animalType.toLowerCase().includes('cow')) {
-      recommendations.nutrition.feedType = 'Cattle feed mix with hay';
-      recommendations.nutrition.supplements.push('Salt lick', 'Mineral block');
-    } else if (animalType.toLowerCase().includes('pig') || animalType.toLowerCase().includes('swine')) {
-      recommendations.nutrition.feedType = 'Swine feed mix';
-      recommendations.nutrition.supplements.push('Vitamin D supplement');
-    } else if (animalType.toLowerCase().includes('chicken') || animalType.toLowerCase().includes('poultry')) {
-      recommendations.nutrition.feedType = 'Poultry feed';
-      recommendations.nutrition.dailyAmount = '100-150g per bird';
-      recommendations.healthChecks.frequency = 'Weekly';
-    }
-    
-    // Age-specific recommendations
-    if (age < 6) {
-      recommendations.nutrition.notes = 'Young animal - requires higher protein feed';
-      recommendations.vaccinations.recommended.push('Age-appropriate vaccinations');
-    } else if (age > 60) {
-      recommendations.nutrition.notes = 'Senior animal - may require specialized diet';
-      recommendations.healthChecks.frequency = 'Bi-weekly';
-      recommendations.healthChecks.checks.push('Joint health', 'Dental check');
-    }
+    logger.info('Livestock health advice generated', {
+      animalId,
+      species: recommendations.species,
+      breed: recommendations.breed
+    });
     
     res.json({
       success: true,

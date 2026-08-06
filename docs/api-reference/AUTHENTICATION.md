@@ -122,10 +122,19 @@ Request password reset email.
 }
 ```
 
+**Flow (production):**
+1. Normalize email (`trim` + lowercase) and look up the user (`LOWER(TRIM(email))`).
+2. **Unknown email:** still returns **200** with a generic message (privacy — no enumeration).
+3. **Known user:** generate a reset token, persist `resetToken` / `resetExpires` (1 hour), then call `EmailService.sendPasswordResetEmail`.
+4. **Email send must succeed.** Misconfigured SMTP / provider failure throws and the route returns **500** `EMAIL_ERROR` (not a false success). Logs include `userId` and `messageId` only — never passwords or full tokens.
+5. Reset link is built from `PUBLIC_FRONTEND_URL` (or fallback) → `/reset-password.html?token=…`.
+
+**Railway env required for real delivery:** `EMAIL_SERVICE`, `EMAIL_USER`, `EMAIL_PASS`, `EMAIL_FROM` (and `PUBLIC_FRONTEND_URL`). Unit coverage: `backend/tests/unit/forgotPasswordEmail.test.js`.
+
 ### Reset Password
 `POST /api/auth/reset-password`
 
-Reset password using reset token.
+Reset password using reset token from the email link.
 
 **Request Body:**
 ```json
