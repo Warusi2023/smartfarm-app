@@ -1,5 +1,7 @@
 package com.smartfarm.ui.components
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -25,7 +27,6 @@ import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -43,6 +44,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import com.smartfarm.ui.util.LivestockPhotoCodec
 import kotlinx.coroutines.Dispatchers
@@ -51,7 +53,10 @@ import java.io.File
 
 /**
  * Animal photo selector with gallery/camera pick, thumbnail preview, and clear action.
- * Stores a base64 data URL (or existing remote URL) in [photoDataUrl] for the livestock API.
+ *
+ * Camera: requests CAMERA runtime permission (required on API 23+), then TakePicture via FileProvider
+ * cache path `livestock_photos/`. Gallery uses PickVisualMedia (no storage permission needed).
+ * Both paths encode to a JPEG data URL for the livestock API, same as web.
  */
 @Composable
 fun AnimalPhotoField(
@@ -89,7 +94,12 @@ fun AnimalPhotoField(
     ) { success ->
         val uri = pendingCameraUri
         pendingCameraUri = null
-        if (!success || uri == null) return@rememberLauncherForActivityResult
+        if (!success || uri == null) {
+            if (!success) {
+                encodeError = "Camera capture was cancelled."
+            }
+            return@rememberLauncherForActivityResult
+        }
         val encoded = LivestockPhotoCodec.uriToDataUrl(context, uri)
         if (encoded == null) {
             encodeError = "Could not capture that photo. Please try again."
@@ -99,7 +109,7 @@ fun AnimalPhotoField(
         }
     }
 
-    fun launchCamera() {
+    fun launchCameraCapture() {
         try {
             val photosDir = File(context.cacheDir, "livestock_photos").apply { mkdirs() }
             val file = File(photosDir, "animal_${System.currentTimeMillis()}.jpg")
@@ -110,8 +120,30 @@ fun AnimalPhotoField(
             )
             pendingCameraUri = uri
             cameraLauncher.launch(uri)
-        } catch (_: Exception) {
-            encodeError = "Camera is unavailable on this device."
+        } catch (ex: Exception) {
+            encodeError = "Camera is unavailable: ${ex.message ?: "unknown error"}"
+        }
+    }
+
+    val cameraPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            launchCameraCapture()
+        } else {
+            encodeError = "Camera permission is required to take a photo. Enable it in system settings."
+        }
+    }
+
+    fun launchCamera() {
+        val granted = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.CAMERA
+        ) == PackageManager.PERMISSION_GRANTED
+        if (granted) {
+            launchCameraCapture()
+        } else {
+            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
         }
     }
 
@@ -122,7 +154,7 @@ fun AnimalPhotoField(
             color = MaterialTheme.colorScheme.onSurface
         )
         Text(
-            text = "Upload a photo to help identify the animal (optional).",
+            text = "Choose from gallery or take a photo with the camera (optional).",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(top = 4.dp, bottom = 8.dp)
@@ -203,7 +235,7 @@ fun AnimalPhotoField(
                             contentDescription = null,
                             modifier = Modifier.size(16.dp)
                         )
-                        Spacer(Modifier.width(4.dp))
+                        Spacer(modifier.width(4.dp))
                         Text("Remove photo")
                     }
                 }
@@ -211,7 +243,7 @@ fun AnimalPhotoField(
         }
 
         if (encodeError != null) {
-            Spacer(Modifier.height(6.dp))
+            Spacer(modifier.height(6.dp))
             Text(
                 text = encodeError.orEmpty(),
                 style = MaterialTheme.typography.bodySmall,

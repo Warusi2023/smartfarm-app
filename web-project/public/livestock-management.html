@@ -1436,7 +1436,7 @@
                 return null;
             }
             const birth = new Date(birthDate);
-            const targetBreedingAge = 15; // months
+            const targetBreedingAge = 15; // months (cattle reference)
             const gestationPeriod = 9.5; // months
             const targetCalvingAge = targetBreedingAge + gestationPeriod;
             
@@ -1453,6 +1453,42 @@
                 gestationPeriod: gestationPeriod
             };
         }
+
+        function resolveAnimalSpecies(animal) {
+            return String(animal && (animal.species || animal.animalType || animal.type) || '')
+                .trim();
+        }
+
+        function buildGenericLifecycleStages(species, currentStage) {
+            const label = capitalizeLabel(species || 'animal');
+            const stage = String(currentStage || '').toLowerCase();
+            const youngActive = !stage || stage === 'unknown' || /young|calf|kid|lamb|piglet|chick|foal|kitten|puppy/.test(stage);
+            const juvenileActive = /heifer|bullock|gilt|pullet|yearling|juvenile/.test(stage);
+            const adultActive = /cow|bull|steer|sow|boar|hen|rooster|ewe|ram|doe|buck|mare|stallion|adult|mature/.test(stage);
+            return `
+                <div class="timeline-item ${youngActive && !juvenileActive && !adultActive ? 'active' : ''}">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <h6>Young ${label}</h6>
+                        <p>Early growth — nutrition and health monitoring are critical.</p>
+                    </div>
+                </div>
+                <div class="timeline-item ${juvenileActive ? 'active' : ''}">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <h6>Growing ${label}</h6>
+                        <p>Intermediate stage — track weight, parasites, and reproductive readiness if applicable.</p>
+                    </div>
+                </div>
+                <div class="timeline-item ${adultActive ? 'active' : ''}">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <h6>Mature ${label}</h6>
+                        <p>Adult maintenance — routine checks and species-appropriate husbandry.</p>
+                    </div>
+                </div>
+            `;
+        }
         
         function showLifecycleTimeline(animalId) {
             const animal = findLivestockById(animalId);
@@ -1460,20 +1496,67 @@
                 showAlert('Animal not found!', 'warning');
                 return;
             }
-            
-            const timeline = getBreedingTimeline(animal.birthDate);
-            if (!timeline) {
-                showAlert('Cannot build timeline — birth date is missing or invalid.', 'warning');
-                return;
-            }
-            const currentStage = calculateLifecycleStage(animal.species, animal.birthDate, animal.sex) || 'unknown';
+
+            const species = resolveAnimalSpecies(animal) || 'animal';
+            const speciesLower = species.toLowerCase();
+            const isCattle = speciesLower === 'cattle' || speciesLower === 'cow' || speciesLower === 'cows';
+            const hasBirth = isRenderableDate(animal.birthDate);
+            const timeline = hasBirth ? getBreedingTimeline(animal.birthDate) : null;
+            const currentStage = calculateLifecycleStage(species, animal.birthDate, animal.sex) || 'unknown';
             const sexLabel = animal.sex
                 ? String(animal.sex).charAt(0).toUpperCase() + String(animal.sex).slice(1)
                 : '—';
             const breedLabel = animal.breed || '—';
-            const recommendedPurpose = (getRecommendedProductionPurpose(animal.breed, animal.sex) || 'beef')
-                .replace(/_/g, ' ')
-                .replace(/\b\w/g, (l) => l.toUpperCase());
+            const recommendedPurpose = isCattle
+                ? (getRecommendedProductionPurpose(animal.breed, animal.sex) || 'beef')
+                    .replace(/_/g, ' ')
+                    .replace(/\b\w/g, (l) => l.toUpperCase())
+                : '—';
+
+            let stagesHtml;
+            if (isCattle) {
+                stagesHtml = `
+                    <div class="timeline-item ${currentStage === 'calf' || currentStage === 'Calf' ? 'active' : ''}">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <h6>Calf (0-12 months)</h6>
+                            <p>Initial growth phase, weaning at 6-8 months</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item ${currentStage === 'heifer' || currentStage === 'bullock' || currentStage === 'Heifer' || currentStage === 'Bullock' ? 'active' : ''}">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <h6>${animal.sex === 'female' ? 'Heifer' : 'Bullock'} (12-24 months)</h6>
+                            <p>${animal.sex === 'female' ? 'Pre-breeding phase, target breeding at 15 months' : 'Young male, can be castrated to become steer'}</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item ${currentStage === 'cow' || currentStage === 'bull' || currentStage === 'steer' || currentStage === 'Cow' || currentStage === 'Bull' || currentStage === 'Steer' ? 'active' : ''}">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <h6>${animal.sex === 'female' ? 'Cow' : animal.sex === 'neutered' ? 'Steer' : 'Bull'} (24+ months)</h6>
+                            <p>${animal.sex === 'female' ? 'Mature female, can produce milk and calves' : animal.sex === 'neutered' ? 'Castrated male, raised for beef production' : 'Mature male, used for breeding'}</p>
+                        </div>
+                    </div>
+                `;
+            } else {
+                stagesHtml = buildGenericLifecycleStages(species, currentStage);
+            }
+
+            const breedingBlock = (isCattle && animal.sex === 'female' && timeline)
+                ? `
+                            <div class="mt-4">
+                                <h6>Breeding Timeline</h6>
+                                <div class="alert alert-info">
+                                    <strong>Recommended Breeding Age:</strong> ${timeline.recommendedBreedingAge} months<br>
+                                    <strong>Target Breeding Date:</strong> ${timeline.recommendedBreedingDate}<br>
+                                    <strong>Expected Calving:</strong> ${timeline.expectedCalvingDate}<br>
+                                    <strong>Gestation Period:</strong> ${timeline.gestationPeriod} months
+                                </div>
+                            </div>
+                `
+                : (!hasBirth
+                    ? `<div class="alert alert-secondary mt-3">Add a birth date to unlock age-based breeding milestones.</div>`
+                    : '');
             
             const modal = document.createElement('div');
             modal.className = 'modal fade';
@@ -1482,7 +1565,7 @@
                     <div class="modal-content">
                         <div class="modal-header bg-primary text-white">
                             <h5 class="modal-title">
-                                <i class="fas fa-timeline me-2"></i>Cattle Lifecycle Timeline - ${animal.tag || animal.name || ''}
+                                <i class="fas fa-timeline me-2"></i>${capitalizeLabel(species)} Lifecycle Timeline - ${animal.tag || animal.name || ''}
                             </h5>
                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                         </div>
@@ -1491,6 +1574,7 @@
                                 <div class="col-md-6">
                                     <h6>Current Status</h6>
                                     <ul class="list-unstyled">
+                                        <li><strong>Species:</strong> ${capitalizeLabel(species)}</li>
                                         <li><strong>Current Stage:</strong> ${String(currentStage).charAt(0).toUpperCase() + String(currentStage).slice(1)}</li>
                                         <li><strong>Age:</strong> ${calculateAge(animal.birthDate)}</li>
                                         <li><strong>Sex:</strong> ${sexLabel}</li>
@@ -1506,41 +1590,11 @@
                             <div class="timeline-container">
                                 <h6>Lifecycle Timeline</h6>
                                 <div class="timeline">
-                                    <div class="timeline-item ${currentStage === 'calf' ? 'active' : ''}">
-                                        <div class="timeline-marker"></div>
-                                        <div class="timeline-content">
-                                            <h6>Calf (0-12 months)</h6>
-                                            <p>Initial growth phase, weaning at 6-8 months</p>
-                                        </div>
-                                    </div>
-                                    <div class="timeline-item ${currentStage === 'heifer' || currentStage === 'bullock' ? 'active' : ''}">
-                                        <div class="timeline-marker"></div>
-                                        <div class="timeline-content">
-                                            <h6>${animal.sex === 'female' ? 'Heifer' : 'Bullock'} (12-24 months)</h6>
-                                            <p>${animal.sex === 'female' ? 'Pre-breeding phase, target breeding at 15 months' : 'Young male, can be castrated to become steer'}</p>
-                                        </div>
-                                    </div>
-                                    <div class="timeline-item ${currentStage === 'cow' || currentStage === 'bull' || currentStage === 'steer' ? 'active' : ''}">
-                                        <div class="timeline-marker"></div>
-                                        <div class="timeline-content">
-                                            <h6>${animal.sex === 'female' ? 'Cow' : animal.sex === 'neutered' ? 'Steer' : 'Bull'} (24+ months)</h6>
-                                            <p>${animal.sex === 'female' ? 'Mature female, can produce milk and calves' : animal.sex === 'neutered' ? 'Castrated male, raised for beef production' : 'Mature male, used for breeding'}</p>
-                                        </div>
-                                    </div>
+                                    ${stagesHtml}
                                 </div>
                             </div>
                             
-                            ${animal.sex === 'female' ? `
-                            <div class="mt-4">
-                                <h6>Breeding Timeline</h6>
-                                <div class="alert alert-info">
-                                    <strong>Recommended Breeding Age:</strong> ${timeline.recommendedBreedingAge} months<br>
-                                    <strong>Target Breeding Date:</strong> ${timeline.recommendedBreedingDate}<br>
-                                    <strong>Expected Calving:</strong> ${timeline.expectedCalvingDate}<br>
-                                    <strong>Gestation Period:</strong> ${timeline.gestationPeriod} months
-                                </div>
-                            </div>
-                            ` : ''}
+                            ${breedingBlock}
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -2077,6 +2131,7 @@
                 `;
             }
 
+            // Production purpose badge remains cattle-oriented; Timeline is for every saved animal.
             if (species === 'cattle') {
                 const productionPurpose = animal.productionPurpose || getRecommendedProductionPurpose(animal.breed, sex) || 'beef';
 
@@ -2086,7 +2141,10 @@
                         <span class="lifecycle-badge purpose-${productionPurpose}">${String(productionPurpose).replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
                     </div>
                 `;
+            }
 
+            // Every valid saved animal (has an id) shows Timeline — even if history is sparse.
+            if (animal.id != null && String(animal.id).trim() !== '') {
                 timelineButton = `
                     <button class="btn btn-sm btn-outline-info flex-fill" onclick="showLifecycleTimeline(${animalIdAttr})">
                         <i class="fas fa-timeline me-1"></i>Timeline
@@ -3468,8 +3526,10 @@
         }
 
         async function getAILivestockAdvice(animalId) {
+            let apiUrl;
+            let animal;
             try {
-                const animal = findLivestockById(animalId);
+                animal = findLivestockById(animalId);
                 if (!animal) {
                     showAlert('Animal not found!', 'warning');
                     return;
@@ -3479,7 +3539,6 @@
                 showAlert('Getting AI health advice...', 'info');
 
                 // Build API URL correctly - prevent double /api
-                let apiUrl;
                 let baseUrl = null;
                 
                 if (window.SmartFarmApiConfig && window.SmartFarmApiConfig.baseUrl) {
@@ -3507,16 +3566,17 @@
                     }
                 }
                 
-                // Add animal data as query parameters
+                // Add animal data as query parameters — species must come from the record (no Cattle default).
+                const speciesForAdvice = resolveAnimalSpecies(animal);
                 const params = new URLSearchParams({
-                    type: animal.species || animal.animalType || animal.type || '',
+                    type: speciesForAdvice,
                     breed: animal.breed || '',
                     age: String(animal.age || calculateAgeYears(animal.birthDate) || 0),
                     healthStatus: animal.healthStatus || 'healthy'
                 });
                 apiUrl += '?' + params.toString();
 
-                console.log('🔍 Fetching AI livestock health advice from:', apiUrl);
+                console.log('🔍 Fetching AI livestock health advice from:', apiUrl, 'species=', speciesForAdvice);
 
                 const response = await fetch(apiUrl, {
                     method: 'GET',
@@ -3537,7 +3597,7 @@
                         step4: 'Verify animal parameters are correct',
                         apiUrl: apiUrl,
                         animalId: animalId,
-                        animalType: animal.animalType
+                        animalType: resolveAnimalSpecies(animal)
                     });
                     
                     showAlert(
@@ -3617,7 +3677,7 @@
                     message: error.message,
                     stack: error.stack,
                     animalId: animalId,
-                    animalType: animal.animalType,
+                    animalType: typeof resolveAnimalSpecies === 'function' ? resolveAnimalSpecies(animal) : (animal && animal.species),
                     apiUrl: apiUrl
                 });
                 
@@ -3642,13 +3702,18 @@
         }
 
         function showAILivestockAdviceModal(animal, recommendations) {
+            const speciesLabel = capitalizeLabel(
+                (recommendations && recommendations.speciesLabel) ||
+                resolveAnimalSpecies(animal) ||
+                'Animal'
+            );
             const modalHtml = `
                 <div class="modal fade" id="aiLivestockAdviceModal" tabindex="-1">
                     <div class="modal-dialog modal-lg">
                         <div class="modal-content">
                             <div class="modal-header">
                                 <h5 class="modal-title">
-                                    <i class="fas fa-robot me-2"></i>AI Health Advice for ${animal.animalType || animal.type || 'Animal'}
+                                    <i class="fas fa-robot me-2"></i>AI Health Advice for ${speciesLabel}
                                 </h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                             </div>
@@ -3656,9 +3721,10 @@
                                 <div class="row">
                                     <div class="col-md-6">
                                         <h6>Animal Information</h6>
+                                        <p><strong>Species:</strong> ${speciesLabel}</p>
                                         <p><strong>Tag:</strong> ${animal.tag || 'N/A'}</p>
                                         <p><strong>Breed:</strong> ${animal.breed || 'Mixed'}</p>
-                                        <p><strong>Age:</strong> ${animal.age || 0} months</p>
+                                        <p><strong>Age:</strong> ${animal.age || calculateAge(animal.birthDate) || '—'}</p>
                                         <p><strong>Health Status:</strong> <span class="badge bg-${animal.healthStatus === 'healthy' ? 'success' : 'warning'}">${animal.healthStatus || 'Healthy'}</span></p>
                                     </div>
                                     <div class="col-md-6">
@@ -3776,40 +3842,40 @@
 
         /**
          * Show fallback livestock health advice when API is unavailable
-         * Provides basic recommendations based on animal data
+         * Uses the animal's species (never defaults to Cattle).
          */
         function showFallbackLivestockHealthAdvice(animal) {
-            const animalType = animal.animalType || animal.type || 'Cattle';
-            const age = parseInt(animal.age) || 12;
+            const animalType = resolveAnimalSpecies(animal) || 'animal';
+            const age = parseInt(animal.age, 10) || calculateAgeYears(animal.birthDate) || 0;
             const healthStatus = animal.healthStatus || 'healthy';
+            const typeLower = animalType.toLowerCase();
             
             // Generate basic fallback recommendations
             const fallbackRecommendations = {
+                speciesLabel: capitalizeLabel(animalType),
                 healthStatus: healthStatus,
                 nutrition: {
-                    feedType: 'Balanced feed mix',
-                    dailyAmount: '2-3% of body weight',
-                    frequency: '2-3 times daily',
-                    supplements: ['Mineral salt', 'Calcium supplement'],
+                    feedType: `Balanced ${animalType} diet`,
+                    dailyAmount: 'Follow species guidelines or veterinary advice',
+                    frequency: '2 times daily',
+                    supplements: [],
                     notes: 'Ensure access to clean water at all times'
                 },
                 vaccinations: {
-                    nextVaccination: 'In 3 months',
-                    recommended: ['Annual health check', 'Deworming every 6 months'],
+                    nextVaccination: 'Follow veterinarian schedule for this species',
+                    recommended: ['Annual health check', 'Parasite control per veterinary guidance'],
                     critical: 'Keep vaccination records up to date'
                 },
                 healthChecks: {
                     frequency: 'Monthly',
-                    checks: ['Body condition score', 'Hoof health', 'Coat condition', 'Appetite'],
+                    checks: ['Body condition', 'Appetite', 'Activity', 'Coat/skin'],
                     signs: 'Watch for changes in behavior, appetite, or appearance'
                 },
                 warnings: [],
                 tips: [
                     'Provide adequate shelter from extreme weather',
-                    'Ensure proper ventilation in housing',
-                    'Monitor feed quality and storage',
                     'Keep detailed health records',
-                    'Quarantine new animals before introducing to herd',
+                    `Use care appropriate for ${animalType} — do not assume cattle practices`,
                     'Note: This is basic advice. For AI-powered recommendations, ensure backend is deployed.'
                 ]
             };
@@ -3818,7 +3884,7 @@
             if (healthStatus !== 'healthy') {
                 fallbackRecommendations.warnings.push({
                     type: 'critical',
-                    message: 'Animal requires immediate veterinary attention',
+                    message: `This ${animalType} requires immediate veterinary attention`,
                     impact: 'Delayed treatment can worsen condition'
                 });
             }
@@ -3829,14 +3895,24 @@
                 impact: 'These are general guidelines. For animal-specific advice, contact a veterinarian.'
             });
 
-            // Adjust based on animal type
-            if (animalType.toLowerCase().includes('cattle') || animalType.toLowerCase().includes('cow')) {
+            // Adjust based on animal type (species from the record — no silent cattle default)
+            if (typeLower.includes('cattle') || typeLower === 'cow' || typeLower === 'cows') {
                 fallbackRecommendations.nutrition.feedType = 'Cattle feed mix with hay';
                 fallbackRecommendations.nutrition.supplements.push('Salt lick', 'Mineral block');
-            } else if (animalType.toLowerCase().includes('pig') || animalType.toLowerCase().includes('swine')) {
+            } else if (typeLower === 'cat' || typeLower === 'cats' || typeLower.includes('feline')) {
+                fallbackRecommendations.nutrition.feedType = 'Complete feline diet';
+                fallbackRecommendations.nutrition.notes = 'Cats are obligate carnivores — do not feed cattle or dog rations.';
+                fallbackRecommendations.healthChecks.checks = ['Weight', 'Dental health', 'Litter box habits', 'Parasite prevention'];
+            } else if (typeLower.includes('goat')) {
+                fallbackRecommendations.nutrition.feedType = 'Goat browse and quality hay';
+                fallbackRecommendations.nutrition.supplements.push('Goat-specific mineral mix');
+            } else if (typeLower.includes('horse') || typeLower.includes('equine')) {
+                fallbackRecommendations.nutrition.feedType = 'Forage-first equine diet';
+                fallbackRecommendations.nutrition.supplements.push('Salt', 'Equine minerals as advised');
+            } else if (typeLower.includes('pig') || typeLower.includes('swine')) {
                 fallbackRecommendations.nutrition.feedType = 'Swine feed mix';
                 fallbackRecommendations.nutrition.supplements.push('Vitamin D supplement');
-            } else if (animalType.toLowerCase().includes('chicken') || animalType.toLowerCase().includes('poultry')) {
+            } else if (typeLower.includes('chicken') || typeLower.includes('poultry')) {
                 fallbackRecommendations.nutrition.feedType = 'Poultry feed';
                 fallbackRecommendations.nutrition.dailyAmount = '100-150g per bird';
                 fallbackRecommendations.healthChecks.frequency = 'Weekly';
@@ -3844,10 +3920,10 @@
 
             // Age-specific recommendations
             if (age < 6) {
-                fallbackRecommendations.nutrition.notes = 'Young animal - requires higher protein feed';
+                fallbackRecommendations.nutrition.notes = `Young ${animalType} - may require higher protein / growth nutrition. ${fallbackRecommendations.nutrition.notes}`;
                 fallbackRecommendations.vaccinations.recommended.push('Age-appropriate vaccinations');
             } else if (age > 60) {
-                fallbackRecommendations.nutrition.notes = 'Senior animal - may require specialized diet';
+                fallbackRecommendations.nutrition.notes = `Senior ${animalType} - may require specialized diet. ${fallbackRecommendations.nutrition.notes}`;
                 fallbackRecommendations.healthChecks.frequency = 'Bi-weekly';
                 fallbackRecommendations.healthChecks.checks.push('Joint health', 'Dental check');
             }
@@ -3862,9 +3938,9 @@
                     const notice = document.createElement('div');
                     notice.className = 'alert alert-warning mt-3';
                     notice.innerHTML = `
-                        <strong>⚠️ Note:</strong> AI health service is currently unavailable. 
-                        Showing basic recommendations. For AI-powered animal-specific health advice, 
-                        please ensure the backend service is deployed and try again.
+                        <strong>Note:</strong> AI health service is currently unavailable. 
+                        Showing basic recommendations for <strong>${capitalizeLabel(animalType)}</strong>. 
+                        For fuller species-specific advice, ensure the backend service is deployed and try again.
                     `;
                     modalBody.insertBefore(notice, modalBody.firstChild);
                 }

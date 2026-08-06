@@ -22,10 +22,13 @@
 No production JWT, browser session, or test email inbox in CI/agent environment.
 
 1. **Authenticated profile** — Login → `GET /api/auth/profile` and `/api/auth/me` with Bearer token; expect **200** and identical `data`.
-2. **Forgot-password** — Submit registered email; expect **200** + email (or **500** `EMAIL_ERROR` if Railway email env missing).
+2. **Forgot-password** — Submit registered email; expect **200** + email when SMTP works, or **500** `EMAIL_ERROR` if Railway email env / Gmail app password fails (never a silent false success for known users). See `docs/api-reference/AUTHENTICATION.md`.
 3. **Reset-password** — Open email link → set password → login with new password.
 4. **Token refresh** — Login with Remember me → delete `smartfarm_token` → open Team → expect `POST /api/auth/refresh` **200** then protected API **200**.
 5. **Pricing scroll** — Click Features → URL `/#features` and scroll to features section.
+6. **Livestock Timeline** — Every saved animal card shows Timeline (not cattle-only). Cat/goat/horse open a species-labeled timeline.
+7. **AI health species** — Advice for a `cat` must not cite cattle feed; query `type=` must match `animal.species`.
+8. **Android camera** — AAB **1.0.12**: Choose Photo → Camera requests CAMERA permission, capture attaches like gallery.
 
 ### August release sign-off log
 
