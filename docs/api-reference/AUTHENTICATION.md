@@ -131,6 +131,8 @@ Request password reset email.
 
 **Shared mail transport:** Confirmation (`sendVerificationEmail`) and password-reset (`sendPasswordResetEmail`) both send through `backend/utils/mailTransport.js` → one nodemailer transporter, one `EMAIL_*` config, one `EMAIL_FROM` sender. Auth routes use `getEmailService()` singleton. See `backend/EMAIL_SERVICE_SETUP.md`.
 
+**Registration / confirmation honesty:** After account creation, verification email is sent via the shared transport. The API only says “Please check your email…” when send **succeeded** (`verificationEmailSent: true`). If send fails, response is still **201** (account exists) with `code: "VERIFICATION_EMAIL_FAILED"` and an actionable message to use **Resend verification** — it does **not** silently claim inbox delivery.
+
 **Railway env required for real delivery:**
 | Variable | Notes |
 |----------|--------|
@@ -140,14 +142,16 @@ Request password reset email.
 | `EMAIL_FROM` | e.g. `SmartFarm <sfarm663@gmail.com>` |
 | `PUBLIC_FRONTEND_URL` | Single origin, e.g. `https://www.smartfarm-app.com` |
 
-Unit coverage: `forgotPasswordEmail.test.js`, `sharedMailTransport.test.js`.
+Unit coverage: `forgotPasswordEmail.test.js`, `sharedMailTransport.test.js`, `registerVerificationEmail.test.js`.
 
 ### Post-deploy operator checklist (email)
 
-1. Railway Backend logs show `Email service configured successfully provider=… from=…` (no `535 BadCredentials` / `EAUTH`).
-2. Trigger a **confirmation** email (register or resend-verification) for the smoke account → message arrives.
-3. Trigger **forgot-password** for the same account → **200** (not `EMAIL_ERROR`) and reset message arrives.
-4. Complete reset link → login → Remember-me refresh **200**.
+1. Set Railway Backend `EMAIL_PASS` to a **newly generated** Google Gmail [App Password](https://support.google.com/mail/answer/185833?hl=en) (2-Step Verification required). Never commit the secret.
+2. Redeploy Railway Backend (or wait for auto-redeploy after variable change).
+3. Confirm logs show `Email service configured successfully provider=… from=…` (no `535 BadCredentials` / `EAUTH`).
+4. Confirm a **verification** email arrives (register or resend-verification for smoke account).
+5. Confirm **forgot-password** returns **200** (not `EMAIL_ERROR`) and the reset email arrives.
+6. Complete reset → log in with Remember-me → confirm refresh **200**, then protected API calls **200**.
 
 ### Reset Password
 `POST /api/auth/reset-password`

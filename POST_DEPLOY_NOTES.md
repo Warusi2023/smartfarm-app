@@ -80,10 +80,12 @@ No production JWT, browser session, or test email inbox in CI/agent environment.
 
 #### Email shared-transport operator checklist (after mail PR deploy)
 
-1. Logs: `Email service configured successfully provider=… from=…` (no `BadCredentials` / `EAUTH`).
-2. Confirmation email for smoke account arrives.
-3. Forgot-password for same account → **200** + reset email arrives (not `EMAIL_ERROR`).
-4. Reset link → login → Remember-me refresh **200**.
+1. Set Railway Backend `EMAIL_PASS` to a newly generated Google Gmail App Password (never commit).
+2. Redeploy Railway Backend.
+3. Logs: `Email service configured successfully provider=… from=…` (no `BadCredentials` / `EAUTH`).
+4. Verification email arrives for smoke account (register or resend).
+5. Forgot-password → **200** + reset email arrives (not `EMAIL_ERROR`).
+6. Reset → login (Remember-me) → refresh **200** → protected API **200**.
 
 #### AAB 1.0.10 sync (2026-08-07)
 
