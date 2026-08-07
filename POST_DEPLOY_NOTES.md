@@ -74,9 +74,16 @@ No production JWT, browser session, or test email inbox in CI/agent environment.
 | AAB 1.0.12 build | ✅ | `android-project/app/build/outputs/bundle/release/app-release.aab` (~16.5 MB, built 2026-08-07). Upload to Play **Internal testing** as versionCode **12** / versionName **1.0.12** |
 | Android camera → web photo sync | ❌ | AAB ready; Play upload + device install not run in agent env |
 
-**Unblock inbox:** rotate Gmail App Password for `sfarm663@gmail.com` in Railway `EMAIL_PASS`, confirm transporter verify succeeds in logs, then complete reset + login + Remember-me.
+**Unblock inbox:** rotate Gmail App Password for `sfarm663@gmail.com` in Railway `EMAIL_PASS`, confirm transporter verify succeeds in logs, then complete reset + login + Remember-me. Confirmation + reset now share `mailTransport.js` (one SMTP config) — after App Password rotate, both must deliver.
 
 **Unblock Android camera:** upload AAB 1.0.12 to Play Internal → install on device → Camera permission → capture → save → confirm on web.
+
+#### Email shared-transport operator checklist (after mail PR deploy)
+
+1. Logs: `Email service configured successfully provider=… from=…` (no `BadCredentials` / `EAUTH`).
+2. Confirmation email for smoke account arrives.
+3. Forgot-password for same account → **200** + reset email arrives (not `EMAIL_ERROR`).
+4. Reset link → login → Remember-me refresh **200**.
 
 #### AAB 1.0.10 sync (2026-08-07)
 

@@ -1,5 +1,14 @@
 # 📧 Email Service Configuration Guide
 
+## Architecture (shared transport)
+
+All transactional mail — **account confirmation**, **password reset**, farm invites, and welcome — uses one shared factory:
+
+- `backend/utils/mailTransport.js` — reads `EMAIL_*`, creates a single nodemailer transporter
+- `backend/utils/emailService.js` — templates + `sendMail()`; `getEmailService()` singleton used by auth/farm-team routes
+
+Password reset must not create a separate SMTP client. If confirmation delivery works, reset uses the same authenticated transport and sender.
+
 ## Quick Setup
 
 Run the interactive setup:
@@ -18,20 +27,24 @@ This will guide you through:
 
 ## Manual Email Configuration
 
-### Step 1: Add to `.env` file
-
-Edit `backend/.env` and add:
+### Step 1: Add to `.env` / Railway
 
 ```env
-# Email Configuration
+# Email Configuration (shared by verify + reset)
 EMAIL_SERVICE=gmail
 EMAIL_USER=your-email@gmail.com
 EMAIL_PASS=your-app-password
-EMAIL_FROM="SmartFarm <noreply@smartfarm.com>"
+EMAIL_FROM="SmartFarm <your-email@gmail.com>"
 PUBLIC_FRONTEND_URL=https://www.smartfarm-app.com
 ```
 
 Use **one** canonical public URL for `PUBLIC_FRONTEND_URL`. Do not copy comma-separated `CORS_ORIGINS` into email link variables. Details: `EMAIL_LINKS_PRODUCTION.md`.
+
+**Gmail App Password rules:**
+- Enable [2-Step Verification](https://support.google.com/accounts/answer/185839), then create an [App Password](https://support.google.com/mail/answer/185833?hl=en).
+- Store only in Railway / `.env` — never commit.
+- Displayed passwords may include spaces; the server strips whitespace to the 16-character secret.
+- Do **not** use the normal Google account password as `EMAIL_PASS`.
 
 ### Step 2: Choose Email Provider
 
@@ -50,7 +63,7 @@ Use **one** canonical public URL for `PUBLIC_FRONTEND_URL`. Do not copy comma-se
 EMAIL_SERVICE=gmail
 EMAIL_USER=your-email@gmail.com
 EMAIL_PASS=abcdefghijklmnop  # 16 chars, no spaces
-EMAIL_FROM="SmartFarm <noreply@smartfarm.com>"
+EMAIL_FROM="SmartFarm <your-email@gmail.com>"
 PUBLIC_FRONTEND_URL=https://www.smartfarm-app.com
 ```
 

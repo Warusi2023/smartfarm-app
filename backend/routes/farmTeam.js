@@ -16,7 +16,7 @@ const {
 const FarmMembershipService = require('../services/farmMembershipService');
 const FarmInvitationService = require('../services/farmInvitationService');
 const FarmTaskService = require('../services/farmTaskService');
-const EmailService = require('../utils/emailService');
+const { getEmailService } = require('../utils/emailService');
 const logger = require('../utils/logger');
 
 class FarmTeamRoutes {
@@ -28,7 +28,7 @@ class FarmTeamRoutes {
         this.membershipService = dbPool ? new FarmMembershipService(dbPool) : null;
         this.invitationService = dbPool ? new FarmInvitationService(dbPool) : null;
         this.taskService = dbPool ? new FarmTaskService(dbPool) : null;
-        this.emailService = new EmailService();
+        this.emailService = getEmailService();
         this.setupRoutes();
     }
 

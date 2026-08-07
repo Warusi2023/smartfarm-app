@@ -73,7 +73,7 @@ OPENWEATHER_API_KEY=your_openweathermap_api_key
 - OpenWeatherMap: `WEATHER_API_KEY` (legacy alias: `OPENWEATHER_API_KEY`)
 - Sentry backend: `SENTRY_DSN`, optional `SENTRY_ENVIRONMENT`, `SENTRY_RELEASE`
 - Sentry frontend: `VITE_SENTRY_DSN`, optional `VITE_SENTRY_ENVIRONMENT`, `VITE_SENTRY_RELEASE`
-- Email provider: `EMAIL_SERVICE`, `EMAIL_USER`, `EMAIL_PASS`, `EMAIL_FROM`
+- Email provider (shared by verification + password reset): `EMAIL_SERVICE`, `EMAIL_USER`, `EMAIL_PASS`, `EMAIL_FROM`, plus `PUBLIC_FRONTEND_URL` for links. See `backend/EMAIL_SERVICE_SETUP.md` and `docs/api-reference/AUTHENTICATION.md`.
 
 ## Monitoring vars
 

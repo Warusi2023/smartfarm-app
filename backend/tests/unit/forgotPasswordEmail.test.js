@@ -5,7 +5,6 @@
 describe('forgotPassword email dispatch', () => {
     function buildAuthRoutes({ user, emailService }) {
         const AuthRoutes = require('../../routes/auth');
-        // Avoid constructing full AuthRoutes (needs JWT/DB). Exercise handler in isolation.
         const handlerCtx = {
             dbHelpers: {
                 findUserByEmail: jest.fn(async () => user),
@@ -16,9 +15,6 @@ describe('forgotPassword email dispatch', () => {
             },
             emailService
         };
-        const { forgotPassword } = require('../../routes/auth').prototype
-            ? { forgotPassword: AuthRoutes.prototype.forgotPassword }
-            : {};
         return { handlerCtx, forgotPassword: AuthRoutes.prototype.forgotPassword };
     }
 
@@ -104,7 +100,7 @@ describe('forgotPassword email dispatch', () => {
     });
 });
 
-describe('EmailService.sendPasswordResetEmail', () => {
+describe('EmailService.sendPasswordResetEmail / sendVerificationEmail', () => {
     const originalEnv = { ...process.env };
 
     afterEach(() => {
@@ -116,32 +112,64 @@ describe('EmailService.sendPasswordResetEmail', () => {
         process.env.PUBLIC_FRONTEND_URL = 'https://www.smartfarm-app.com';
         process.env.EMAIL_USER = '';
         process.env.EMAIL_PASS = '';
-        const EmailService = require('../../utils/emailService');
+        jest.resetModules();
+        const {
+            EmailService,
+            __resetEmailServiceForTests,
+            __setSharedMailTransportForTests
+        } = require('../../utils/emailService');
+        __resetEmailServiceForTests();
+        __setSharedMailTransportForTests({
+            transporter: null,
+            from: 'SmartFarm <noreply@smartfarm.com>',
+            provider: 'gmail',
+            isConfigured: false
+        });
         const service = new EmailService();
-        service.transporter = null;
-        service.isConfigured = false;
 
         await expect(service.sendPasswordResetEmail('a@b.com', 'tok')).rejects.toMatchObject({
             code: 'EMAIL_NOT_CONFIGURED'
         });
+        await expect(service.sendVerificationEmail('a@b.com', 'tok')).rejects.toMatchObject({
+            code: 'EMAIL_NOT_CONFIGURED'
+        });
     });
 
-    it('invokes transporter.sendMail with the recipient address', async () => {
+    it('invokes shared sendMail with the recipient for reset and verification', async () => {
         process.env.PUBLIC_FRONTEND_URL = 'https://www.smartfarm-app.com';
-        const EmailService = require('../../utils/emailService');
+        jest.resetModules();
+        const {
+            EmailService,
+            __resetEmailServiceForTests,
+            __setSharedMailTransportForTests
+        } = require('../../utils/emailService');
+        __resetEmailServiceForTests();
+        const sendMail = jest.fn(async () => ({ messageId: 'mid-99' }));
+        __setSharedMailTransportForTests({
+            transporter: { sendMail },
+            from: 'SmartFarm <sfarm663@gmail.com>',
+            provider: 'gmail',
+            isConfigured: true
+        });
         const service = new EmailService();
-        service.transporter = {
-            sendMail: jest.fn(async () => ({ messageId: 'mid-99' }))
-        };
-        service.isConfigured = false;
 
-        const result = await service.sendPasswordResetEmail('user@example.com', 'reset-tok');
-        expect(service.transporter.sendMail).toHaveBeenCalledWith(
+        const resetResult = await service.sendPasswordResetEmail('user@example.com', 'reset-tok');
+        expect(sendMail).toHaveBeenCalledWith(
             expect.objectContaining({
                 to: 'user@example.com',
-                subject: expect.stringMatching(/reset/i)
+                subject: expect.stringMatching(/reset/i),
+                from: 'SmartFarm <sfarm663@gmail.com>'
             })
         );
-        expect(result).toEqual({ messageId: 'mid-99', to: 'user@example.com' });
+        expect(resetResult).toEqual({ messageId: 'mid-99', to: 'user@example.com' });
+
+        await service.sendVerificationEmail('user@example.com', 'verify-tok', 'Sam');
+        expect(sendMail).toHaveBeenCalledWith(
+            expect.objectContaining({
+                to: 'user@example.com',
+                subject: expect.stringMatching(/verify/i),
+                from: 'SmartFarm <sfarm663@gmail.com>'
+            })
+        );
     });
 });

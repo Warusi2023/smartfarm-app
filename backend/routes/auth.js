@@ -6,7 +6,7 @@
 const express = require('express');
 const AuthService = require('../auth/auth');
 const AuthMiddleware = require('../middleware/auth');
-const EmailService = require('../utils/emailService');
+const { getEmailService } = require('../utils/emailService');
 const { formatUserProfile } = require('../utils/authProfile');
 const DatabaseHelpers = require('../utils/db-helpers');
 const SubscriptionService = require('../services/subscriptionService');
@@ -19,7 +19,7 @@ class AuthRoutes {
         this.router = express.Router();
         this.authService = new AuthService();
         this.authMiddleware = new AuthMiddleware();
-        this.emailService = new EmailService();
+        this.emailService = getEmailService();
         this.dbHelpers = new DatabaseHelpers(dbPool);
         this.dbPool = dbPool; // Store for subscription service
         

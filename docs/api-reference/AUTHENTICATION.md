@@ -126,10 +126,28 @@ Request password reset email.
 1. Normalize email (`trim` + lowercase) and look up the user (`LOWER(TRIM(email))`).
 2. **Unknown email:** still returns **200** with a generic message (privacy — no enumeration).
 3. **Known user:** generate a reset token, persist `resetToken` / `resetExpires` (1 hour), then call `EmailService.sendPasswordResetEmail`.
-4. **Email send must succeed.** Misconfigured SMTP / provider failure throws and the route returns **500** `EMAIL_ERROR` (not a false success). Logs include `userId` and `messageId` only — never passwords or full tokens.
+4. **Email send must succeed.** Misconfigured SMTP / provider failure throws and the route returns **500** `EMAIL_ERROR` (not a false success). Logs include `userId`, provider, `from`, recipient domain, and `messageId` — never passwords, app passwords, reset tokens, or full reset URLs.
 5. Reset link is built from `PUBLIC_FRONTEND_URL` (or fallback) → `/reset-password.html?token=…`.
 
-**Railway env required for real delivery:** `EMAIL_SERVICE`, `EMAIL_USER`, `EMAIL_PASS`, `EMAIL_FROM` (and `PUBLIC_FRONTEND_URL`). Unit coverage: `backend/tests/unit/forgotPasswordEmail.test.js`.
+**Shared mail transport:** Confirmation (`sendVerificationEmail`) and password-reset (`sendPasswordResetEmail`) both send through `backend/utils/mailTransport.js` → one nodemailer transporter, one `EMAIL_*` config, one `EMAIL_FROM` sender. Auth routes use `getEmailService()` singleton. See `backend/EMAIL_SERVICE_SETUP.md`.
+
+**Railway env required for real delivery:**
+| Variable | Notes |
+|----------|--------|
+| `EMAIL_SERVICE` | `gmail` (or `sendgrid` / `mailgun` / `smtp`) |
+| `EMAIL_USER` | Full Gmail address when using Gmail |
+| `EMAIL_PASS` | Google **App Password** (16 chars; spaces stripped automatically). Not the Google account login password. Requires 2-Step Verification. |
+| `EMAIL_FROM` | e.g. `SmartFarm <sfarm663@gmail.com>` |
+| `PUBLIC_FRONTEND_URL` | Single origin, e.g. `https://www.smartfarm-app.com` |
+
+Unit coverage: `forgotPasswordEmail.test.js`, `sharedMailTransport.test.js`.
+
+### Post-deploy operator checklist (email)
+
+1. Railway Backend logs show `Email service configured successfully provider=… from=…` (no `535 BadCredentials` / `EAUTH`).
+2. Trigger a **confirmation** email (register or resend-verification) for the smoke account → message arrives.
+3. Trigger **forgot-password** for the same account → **200** (not `EMAIL_ERROR`) and reset message arrives.
+4. Complete reset link → login → Remember-me refresh **200**.
 
 ### Reset Password
 `POST /api/auth/reset-password`
