@@ -18,6 +18,14 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: '18'
+
+    - name: Verify static publish directory
+      run: |
+        # Static web assets live under web-project/public (not repo-root public/).
+        test -d web-project/public || (echo "❌ web-project/public missing" && exit 1)
+        test -f web-project/public/index.html || (echo "❌ index.html missing" && exit 1)
+        test -f web-project/public/livestock-management.html || (echo "❌ livestock-management.html missing" && exit 1)
+        echo "✅ Publish directory web-project/public OK"
         
     - name: Install dependencies
       run: |
@@ -39,7 +47,8 @@ jobs:
     - name: Deploy to Netlify
       uses: nwtgck/actions-netlify@v2.0
       with:
-        publish-dir: './public'
+        # Confirmed path: web-project/public (contains index.html, livestock-management.html, etc.)
+        publish-dir: './web-project/public'
         production-branch: main
         github-token: ${{ secrets.GITHUB_TOKEN }}
         deploy-message: "Deploy from GitHub Actions - ${{ github.event.head_commit.message }}"

@@ -42,11 +42,33 @@ jobs:
     - name: Build check
       run: npm run build --if-present
     
+    # Server refuses to boot without JWT_SECRET (secure by design).
+    # Use repository secret CI_JWT_SECRET — a random non-production value,
+    # never the Railway production JWT_SECRET.
     - name: Health check
+      env:
+        NODE_ENV: test
+        JWT_SECRET: ${{ secrets.CI_JWT_SECRET }}
+        PORT: '3000'
       run: |
+        if [ -z "$JWT_SECRET" ]; then
+          echo "❌ Missing GitHub Actions secret CI_JWT_SECRET."
+          echo "Add it under Settings → Secrets and variables → Actions (random non-production value)."
+          exit 1
+        fi
         npm start &
-        sleep 10
-        curl -f http://localhost:3000/api/health || exit 1
+        SERVER_PID=$!
+        trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
+        for i in 1 2 3 4 5 6 7 8 9 10; do
+          if curl -sf http://localhost:3000/api/health; then
+            echo ""
+            echo "✅ Health check passed"
+            exit 0
+          fi
+          sleep 2
+        done
+        echo "❌ Health check failed after waiting for server"
+        exit 1
 
   security:
     runs-on: ubuntu-latest
