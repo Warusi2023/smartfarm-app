@@ -16,7 +16,7 @@ const {
 const FarmMembershipService = require('../services/farmMembershipService');
 const FarmInvitationService = require('../services/farmInvitationService');
 const FarmTaskService = require('../services/farmTaskService');
-const EmailService = require('../utils/emailService');
+const { getEmailService } = require('../utils/emailService');
 const logger = require('../utils/logger');
 
 class FarmTeamRoutes {
@@ -28,7 +28,7 @@ class FarmTeamRoutes {
         this.membershipService = dbPool ? new FarmMembershipService(dbPool) : null;
         this.invitationService = dbPool ? new FarmInvitationService(dbPool) : null;
         this.taskService = dbPool ? new FarmTaskService(dbPool) : null;
-        this.emailService = new EmailService();
+        this.emailService = getEmailService();
         this.setupRoutes();
     }
 
@@ -242,29 +242,35 @@ class FarmTeamRoutes {
             const invitedByName = [req.user.first_name, req.user.last_name]
                 .filter(Boolean)
                 .join(' ') || req.user.email || 'A farm owner';
+            let invitationEmailSent = false;
             try {
-                await this.emailService.sendFarmInvitationEmail({
+                invitationEmailSent = !!(await this.emailService.sendFarmInvitationEmail({
                     email: req.body.email,
                     farmName,
                     role: req.body.role,
                     inviteToken: result.token,
                     invitedByName,
                     isResend: !!result.resent
-                });
+                }));
             } catch (emailError) {
                 logger.warn('Failed to send farm invitation email', {
-                    error: emailError,
+                    code: emailError.code || 'EMAIL_SEND_FAILED',
                     farmId: req.params.farmId,
-                    email: req.body.email
+                    message: emailError.message
                 });
             }
+            const baseMessage = result.resent ? 'Pending invitation refreshed' : 'Invitation created';
             res.status(result.resent ? 200 : 201).json({
                 success: true,
-                message: result.resent ? 'Pending invitation refreshed' : 'Invitation created',
+                message: invitationEmailSent
+                    ? baseMessage
+                    : `${baseMessage}, but the invitation email could not be sent. Share the accept link manually.`,
+                code: invitationEmailSent ? undefined : 'INVITATION_EMAIL_FAILED',
                 data: {
                     invitation: result.invitation,
                     acceptUrl: result.acceptUrl,
-                    resent: !!result.resent
+                    resent: !!result.resent,
+                    invitationEmailSent
                 }
             });
         } catch (error) {

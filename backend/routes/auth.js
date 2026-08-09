@@ -6,7 +6,7 @@
 const express = require('express');
 const AuthService = require('../auth/auth');
 const AuthMiddleware = require('../middleware/auth');
-const EmailService = require('../utils/emailService');
+const { getEmailService } = require('../utils/emailService');
 const { formatUserProfile } = require('../utils/authProfile');
 const DatabaseHelpers = require('../utils/db-helpers');
 const SubscriptionService = require('../services/subscriptionService');
@@ -19,7 +19,7 @@ class AuthRoutes {
         this.router = express.Router();
         this.authService = new AuthService();
         this.authMiddleware = new AuthMiddleware();
-        this.emailService = new EmailService();
+        this.emailService = getEmailService();
         this.dbHelpers = new DatabaseHelpers(dbPool);
         this.dbPool = dbPool; // Store for subscription service
         
@@ -562,12 +562,21 @@ class AuthRoutes {
                 verificationExpires
             });
 
-            // Send verification email
+            // Send verification email — do not claim inbox delivery unless send succeeded
+            let verificationEmailSent = false;
             try {
-                await this.emailService.sendVerificationEmail(email, verificationToken);
+                await this.emailService.sendVerificationEmail(
+                    email,
+                    verificationToken,
+                    firstName || 'User'
+                );
+                verificationEmailSent = true;
             } catch (emailError) {
-                // Log but don't fail registration if email fails
-                logger.warn('Failed to send verification email', { error: emailError, userId });
+                logger.warn('Failed to send verification email', {
+                    code: emailError.code || 'EMAIL_SEND_FAILED',
+                    userId,
+                    message: emailError.message
+                });
             }
 
             // Create trial subscription
@@ -580,6 +589,27 @@ class AuthRoutes {
                 logger.warn('Failed to create trial subscription', { error: trialError, userId });
             }
 
+            if (!verificationEmailSent) {
+                return res.status(201).json({
+                    success: true,
+                    code: 'VERIFICATION_EMAIL_FAILED',
+                    error: 'Failed to send verification email',
+                    data: {
+                        id: userId,
+                        email,
+                        firstName,
+                        lastName,
+                        phone: phone || null,
+                        country: country || null,
+                        isVerified: false,
+                        verificationEmailSent: false
+                    },
+                    message:
+                        'Account created, but the verification email could not be sent. ' +
+                        'Please use Resend verification once email service is available, or contact support.'
+                });
+            }
+
             res.status(201).json({
                 success: true,
                 data: {
@@ -589,7 +619,8 @@ class AuthRoutes {
                     lastName,
                     phone: phone || null,
                     country: country || null,
-                    isVerified: false
+                    isVerified: false,
+                    verificationEmailSent: true
                 },
                 message: 'User registered successfully. Please check your email to verify your account.'
             });

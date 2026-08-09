@@ -1,172 +1,70 @@
-/**
- * Email Service for SmartFarm
- * Handles sending verification emails, welcome emails, and other transactional emails
+﻿/**
+ * SmartFarm transactional email service.
+ *
+ * Confirmation (verification) and password-reset both send through the same
+ * shared nodemailer transport from mailTransport.js — one provider config,
+ * one sender identity, one authenticated SMTP session factory.
  */
 
-const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 const { resolvePublicFrontendUrl, buildPublicFrontendUrl } = require('./frontendUrl');
+const {
+    getSharedMailTransport,
+    __resetSharedMailTransportForTests,
+    __setSharedMailTransportForTests
+} = require('./mailTransport');
+
+let emailServiceSingleton = null;
+
+function recipientDomain(email) {
+    const parts = String(email || '').split('@');
+    return parts.length === 2 ? parts[1] : 'invalid';
+}
 
 class EmailService {
-    constructor() {
-        this.transporter = null;
-        this.fromEmail = process.env.EMAIL_FROM || 'SmartFarm <noreply@smartfarm.com>';
-        this.isConfigured = false;
-
-        const frontendOrigin = resolvePublicFrontendUrl();
-        console.log(`📧 Email links will use frontend origin: ${frontendOrigin}`);
-
-        this.initializeTransporter();
+    /**
+     * @param {{ mail?: object }|undefined} options - optional injected mail bundle for tests
+     */
+    constructor(options = {}) {
+        this._mail = options.mail || getSharedMailTransport();
+        console.log(`📧 Email links will use frontend origin: ${resolvePublicFrontendUrl()}`);
     }
 
-    /** Single canonical origin for transactional email links (resolved per send). */
+    get transporter() {
+        return this._mail.transporter;
+    }
+
+    set transporter(value) {
+        this._mail.transporter = value;
+    }
+
+    get isConfigured() {
+        return Boolean(this._mail.isConfigured);
+    }
+
+    set isConfigured(value) {
+        this._mail.isConfigured = Boolean(value);
+    }
+
+    get fromEmail() {
+        return this._mail.from;
+    }
+
     getPublicFrontendOrigin() {
         return resolvePublicFrontendUrl();
     }
 
     /**
-     * Initialize email transporter based on EMAIL_SERVICE environment variable
-     */
-    initializeTransporter() {
-        const emailService = process.env.EMAIL_SERVICE || 'gmail';
-        const emailUser = process.env.EMAIL_USER;
-        // Gmail App Passwords are often pasted with spaces; SMTP expects the 16-char secret.
-        const emailPass = process.env.EMAIL_PASS
-            ? String(process.env.EMAIL_PASS).replace(/\s+/g, '')
-            : '';
-
-        if (!emailUser || !emailPass) {
-            console.warn('⚠️ Email service not configured - EMAIL_USER and EMAIL_PASS required');
-            console.warn('   Email verification will be disabled until configured');
-            return;
-        }
-
-        try {
-            switch (emailService.toLowerCase()) {
-                case 'gmail':
-                    this.transporter = nodemailer.createTransport({
-                        service: 'gmail',
-                        auth: {
-                            user: emailUser,
-                            pass: emailPass
-                        }
-                    });
-                    break;
-
-                case 'sendgrid':
-                    this.transporter = nodemailer.createTransport({
-                        host: 'smtp.sendgrid.net',
-                        port: 587,
-                        secure: false,
-                        auth: {
-                            user: 'apikey',
-                            pass: emailPass
-                        }
-                    });
-                    break;
-
-                case 'mailgun':
-                    this.transporter = nodemailer.createTransport({
-                        host: process.env.SMTP_HOST || 'smtp.mailgun.org',
-                        port: parseInt(process.env.SMTP_PORT || '587', 10),
-                        secure: false,
-                        auth: {
-                            user: emailUser,
-                            pass: emailPass
-                        }
-                    });
-                    break;
-
-                case 'ses':
-                case 'aws':
-                    this.transporter = nodemailer.createTransport({
-                        host: process.env.SMTP_HOST || `email-smtp.${process.env.AWS_REGION || 'us-east-1'}.amazonaws.com`,
-                        port: parseInt(process.env.SMTP_PORT || '587', 10),
-                        secure: false,
-                        auth: {
-                            user: emailUser,
-                            pass: emailPass
-                        }
-                    });
-                    break;
-
-                case 'smtp':
-                default:
-                    this.transporter = nodemailer.createTransport({
-                        host: process.env.SMTP_HOST || 'smtp.gmail.com',
-                        port: parseInt(process.env.SMTP_PORT || '587', 10),
-                        secure: process.env.SMTP_SECURE === 'true',
-                        auth: {
-                            user: emailUser,
-                            pass: emailPass
-                        }
-                    });
-                    break;
-            }
-
-            // Verify transporter configuration
-            this.transporter.verify((error, success) => {
-                if (error) {
-                    console.error('❌ Email transporter verification failed:', error.message);
-                    this.isConfigured = false;
-                } else {
-                    console.log('✅ Email service configured successfully');
-                    this.isConfigured = true;
-                }
-            });
-
-        } catch (error) {
-            console.error('❌ Failed to initialize email transporter:', error.message);
-            this.isConfigured = false;
-        }
-    }
-
-    /**
-     * Send verification email
-     */
-    async sendVerificationEmail(email, token, firstName = 'User') {
-        if (!this.isConfigured || !this.transporter) {
-            console.warn('⚠️ Email service not configured, skipping verification email');
-            return false;
-        }
-
-        let verificationUrl;
-        try {
-            verificationUrl = buildPublicFrontendUrl('/verify-email.html', { token });
-        } catch (err) {
-            console.error(`❌ Failed to build verification link for ${email}:`, err.message);
-            return false;
-        }
-        const emailHtml = this.getVerificationEmailTemplate(firstName, verificationUrl);
-
-        try {
-            const info = await this.transporter.sendMail({
-                from: this.fromEmail,
-                to: email,
-                subject: 'Verify Your SmartFarm Account',
-                html: emailHtml,
-                text: `Welcome to SmartFarm! Please verify your email address by clicking this link: ${verificationUrl}`
-            });
-
-            console.log(`✅ Verification email sent to ${email}:`, info.messageId);
-            return true;
-        } catch (error) {
-            console.error(`❌ Failed to send verification email to ${email}:`, error.message);
-            return false;
-        }
-    }
-
-    /**
-     * Send password reset email.
+     * Shared send path for all transactional mail (verify, reset, invite, welcome).
+     * Throws on misconfiguration or provider failure — never silently succeeds.
      *
-     * Flow: caller persists reset_token → this builds PUBLIC_FRONTEND_URL/reset-password.html?token=…
-     * → SMTP send. Throws on misconfiguration or provider failure so /forgot-password can return EMAIL_ERROR
-     * instead of a false "success" 200. Privacy-safe "user not found" 200 stays in the auth route.
-     *
+     * @param {{ to: string, subject: string, html: string, text: string, kind?: string }} options
      * @returns {Promise<{ messageId: string, to: string }>}
      */
-    async sendPasswordResetEmail(email, resetToken, firstName = 'User') {
-        if (!this.transporter) {
+    async sendMail(options) {
+        const { to, subject, html, text, kind = 'transactional' } = options;
+
+        if (!this._mail.transporter) {
             const err = new Error(
                 'Email transporter is not configured (set EMAIL_USER and EMAIL_PASS)'
             );
@@ -174,7 +72,66 @@ class EmailService {
             throw err;
         }
 
-        // Async verify() may still be pending or may have failed; still attempt send if we have a transporter.
+        try {
+            const info = await this._mail.transporter.sendMail({
+                from: this._mail.from,
+                to,
+                subject,
+                html,
+                text
+            });
+
+            this._mail.isConfigured = true;
+            this._mail.configError = null;
+            console.log(
+                `✅ Email sent kind=${kind} provider=${this._mail.provider} from=${this._mail.from} ` +
+                    `toDomain=${recipientDomain(to)} messageId=${info.messageId || 'n/a'}`
+            );
+            return { messageId: info.messageId || '', to };
+        } catch (error) {
+            const category = error.code || 'EMAIL_SEND_FAILED';
+            console.error(
+                `❌ Email send failed kind=${kind} provider=${this._mail.provider} from=${this._mail.from} ` +
+                    `toDomain=${recipientDomain(to)} code=${category} message=${error.message}`
+            );
+            const sendErr = new Error(`Failed to send email: ${error.message}`);
+            sendErr.code = category;
+            throw sendErr;
+        }
+    }
+
+    /**
+     * Account confirmation / verification email (registration + resend).
+     * Uses the same shared transport as password reset.
+     */
+    async sendVerificationEmail(email, token, firstName = 'User') {
+        let verificationUrl;
+        try {
+            verificationUrl = buildPublicFrontendUrl('/verify-email.html', { token });
+        } catch (err) {
+            const buildErr = new Error(`Failed to build verification link: ${err.message}`);
+            buildErr.code = 'EMAIL_LINK_BUILD_FAILED';
+            throw buildErr;
+        }
+
+        const emailHtml = this.getVerificationEmailTemplate(firstName, verificationUrl);
+        await this.sendMail({
+            to: email,
+            subject: 'Verify Your SmartFarm Account',
+            html: emailHtml,
+            text: `Welcome to SmartFarm! Please verify your email address by clicking this link: ${verificationUrl}`,
+            kind: 'verification'
+        });
+        return true;
+    }
+
+    /**
+     * Password reset email.
+     * Same transport/from as verification. Throws so /forgot-password can return EMAIL_ERROR.
+     *
+     * @returns {Promise<{ messageId: string, to: string }>}
+     */
+    async sendPasswordResetEmail(email, resetToken, firstName = 'User') {
         let resetUrl;
         try {
             resetUrl = buildPublicFrontendUrl('/reset-password.html', { token: resetToken });
@@ -210,34 +167,18 @@ class EmailService {
 </body>
 </html>`;
 
-        try {
-            const info = await this.transporter.sendMail({
-                from: this.fromEmail,
-                to: email,
-                subject: 'Reset Your SmartFarm Password',
-                html: emailHtml,
-                text: `We received a request to reset your SmartFarm password. Use this link (valid for 1 hour): ${resetUrl}`
-            });
-
-            this.isConfigured = true;
-            console.log(
-                `✅ Password reset email sent to=${email} messageId=${info.messageId || 'n/a'} ` +
-                    `configuredFlag=${this.isConfigured} frontendOrigin=${this.getPublicFrontendOrigin()}`
-            );
-            return { messageId: info.messageId || '', to: email };
-        } catch (error) {
-            console.error(
-                `❌ Failed to send password reset email to=${email} code=${error.code || 'n/a'} ` +
-                    `message=${error.message}`
-            );
-            const sendErr = new Error(`Failed to send password reset email: ${error.message}`);
-            sendErr.code = error.code || 'EMAIL_SEND_FAILED';
-            throw sendErr;
-        }
+        return this.sendMail({
+            to: email,
+            subject: 'Reset Your SmartFarm Password',
+            html: emailHtml,
+            text: `We received a request to reset your SmartFarm password. Use this link (valid for 1 hour): ${resetUrl}`,
+            kind: 'password-reset'
+        });
     }
 
     /**
-     * Send farm team invitation email
+     * Farm team invitation — same shared transport.
+     * Returns false on failure (invite flow is best-effort).
      */
     async sendFarmInvitationEmail({
         email,
@@ -247,16 +188,11 @@ class EmailService {
         invitedByName = 'A farm owner',
         isResend = false
     }) {
-        if (!this.isConfigured || !this.transporter) {
-            console.warn('⚠️ Email service not configured, skipping farm invitation email');
-            return false;
-        }
-
         let acceptUrl;
         try {
             acceptUrl = buildPublicFrontendUrl('/dashboard.html', { farmInvite: inviteToken });
         } catch (err) {
-            console.error(`❌ Failed to build farm invite link for ${email}:`, err.message);
+            console.error(`❌ Failed to build farm invite link: ${err.message}`);
             return false;
         }
 
@@ -289,44 +225,34 @@ class EmailService {
 </html>`;
 
         try {
-            const info = await this.transporter.sendMail({
-                from: this.fromEmail,
+            await this.sendMail({
                 to: email,
                 subject,
                 html: emailHtml,
-                text: `${invitedByName} invited you to join ${farmName} as ${roleLabel}. Accept (7-day link): ${acceptUrl}`
+                text: `${invitedByName} invited you to join ${farmName} as ${roleLabel}. Accept (7-day link): ${acceptUrl}`,
+                kind: 'farm-invite'
             });
-            console.log(`✅ Farm invitation email sent to ${email}:`, info.messageId);
             return true;
         } catch (error) {
-            console.error(`❌ Failed to send farm invitation email to ${email}:`, error.message);
             return false;
         }
     }
 
     /**
-     * Send welcome email (after verification)
+     * Welcome email after verification — same shared transport.
      */
     async sendWelcomeEmail(email, firstName = 'User') {
-        if (!this.isConfigured || !this.transporter) {
-            return false;
-        }
-
-        const emailHtml = this.getWelcomeEmailTemplate(firstName);
-
         try {
-            const info = await this.transporter.sendMail({
-                from: this.fromEmail,
+            const emailHtml = this.getWelcomeEmailTemplate(firstName);
+            await this.sendMail({
                 to: email,
                 subject: 'Welcome to SmartFarm!',
                 html: emailHtml,
-                text: `Welcome to SmartFarm, ${firstName}! Your account has been verified and you're ready to start managing your farm.`
+                text: `Welcome to SmartFarm, ${firstName}! Your account has been verified and you're ready to start managing your farm.`,
+                kind: 'welcome'
             });
-
-            console.log(`✅ Welcome email sent to ${email}:`, info.messageId);
             return true;
         } catch (error) {
-            console.error(`❌ Failed to send welcome email to ${email}:`, error.message);
             return false;
         }
     }
@@ -420,7 +346,7 @@ class EmailService {
 <body>
     <div class="container">
         <div class="header">
-            <h1>🌱 SmartFarm</h1>
+            <h1>ðŸŒ± SmartFarm</h1>
             <p style="margin: 10px 0 0 0;">Verify Your Email Address</p>
         </div>
         
@@ -439,11 +365,11 @@ class EmailService {
             
             <div class="features">
                 <h3>What you'll get after verification:</h3>
-                <div class="feature-item">✅ Complete farm management tools</div>
-                <div class="feature-item">✅ Crop and livestock tracking</div>
-                <div class="feature-item">✅ Weather integration and forecasts</div>
-                <div class="feature-item">✅ Financial tracking and analytics</div>
-                <div class="feature-item">✅ AI-powered insights and recommendations</div>
+                <div class="feature-item">âœ… Complete farm management tools</div>
+                <div class="feature-item">âœ… Crop and livestock tracking</div>
+                <div class="feature-item">âœ… Weather integration and forecasts</div>
+                <div class="feature-item">âœ… Financial tracking and analytics</div>
+                <div class="feature-item">âœ… AI-powered insights and recommendations</div>
             </div>
             
             <p>If you didn't create an account with SmartFarm, please ignore this email.</p>
@@ -533,7 +459,7 @@ class EmailService {
 <body>
     <div class="container">
         <div class="header">
-            <h1>🌱 Welcome to SmartFarm!</h1>
+            <h1>ðŸŒ± Welcome to SmartFarm!</h1>
         </div>
         
         <div class="content">
@@ -546,12 +472,12 @@ class EmailService {
             
             <div class="features">
                 <h3>Get started with SmartFarm:</h3>
-                <div class="feature-item">📊 <strong>Dashboard:</strong> View your farm overview and key metrics</div>
-                <div class="feature-item">🌾 <strong>Crop Management:</strong> Track planting, growth, and harvest</div>
-                <div class="feature-item">🐄 <strong>Livestock:</strong> Monitor animal health and breeding</div>
-                <div class="feature-item">🌤️ <strong>Weather:</strong> Get real-time forecasts and alerts</div>
-                <div class="feature-item">💰 <strong>Finance:</strong> Track income, expenses, and profits</div>
-                <div class="feature-item">📈 <strong>Analytics:</strong> AI-powered insights and recommendations</div>
+                <div class="feature-item">ðŸ“Š <strong>Dashboard:</strong> View your farm overview and key metrics</div>
+                <div class="feature-item">ðŸŒ¾ <strong>Crop Management:</strong> Track planting, growth, and harvest</div>
+                <div class="feature-item">ðŸ„ <strong>Livestock:</strong> Monitor animal health and breeding</div>
+                <div class="feature-item">ðŸŒ¤ï¸ <strong>Weather:</strong> Get real-time forecasts and alerts</div>
+                <div class="feature-item">ðŸ’° <strong>Finance:</strong> Track income, expenses, and profits</div>
+                <div class="feature-item">ðŸ“ˆ <strong>Analytics:</strong> AI-powered insights and recommendations</div>
             </div>
             
             <p>If you have any questions or need help getting started, don't hesitate to contact our support team.</p>
@@ -576,12 +502,29 @@ class EmailService {
     }
 
     /**
-     * Check if email service is configured
+     * Check if email service has a transport (env credentials present).
      */
     isEmailConfigured() {
-        return this.isConfigured && this.transporter !== null;
+        return Boolean(this._mail.transporter);
     }
 }
 
+function getEmailService() {
+    if (!emailServiceSingleton) {
+        emailServiceSingleton = new EmailService();
+    }
+    return emailServiceSingleton;
+}
+
+function __resetEmailServiceForTests() {
+    emailServiceSingleton = null;
+    __resetSharedMailTransportForTests();
+}
+
 module.exports = EmailService;
+module.exports.EmailService = EmailService;
+module.exports.getEmailService = getEmailService;
+module.exports.__resetEmailServiceForTests = __resetEmailServiceForTests;
+module.exports.__setSharedMailTransportForTests = __setSharedMailTransportForTests;
+module.exports.__resetSharedMailTransportForTests = __resetSharedMailTransportForTests;
 
