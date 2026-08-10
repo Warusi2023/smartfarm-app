@@ -51,18 +51,27 @@ jobs:
         echo "✅ Security check completed"
     
     - name: Test API connectivity
+      env:
+        # Exact name expected by this workflow historically (was read from netlify.toml).
+        # Configure as a GitHub Actions *repository variable* (not a secret): Settings →
+        # Secrets and variables → Actions → Variables → VITE_API_URL
+        VITE_API_URL: ${{ vars.VITE_API_URL }}
       run: |
         echo "Testing API connectivity..."
-        # Test if the API URL in netlify.toml is accessible
-        API_URL=$(grep "VITE_API_URL" web-project/netlify.toml | sed 's/.*VITE_API_URL = "\(.*\)"/\1/')
-        if [ -n "$API_URL" ]; then
-          echo "API URL found: $API_URL"
-          # Note: We can't actually test external URLs in CI without network access
-          echo "✅ API URL configuration found"
-        else
+        if [ -z "${VITE_API_URL}" ]; then
           echo "❌ API URL not configured"
+          echo "Set repository variable VITE_API_URL to the production API origin,"
+          echo "e.g. https://web-production-86d39.up.railway.app"
           exit 1
         fi
+        API_BASE="${VITE_API_URL%/}"
+        echo "API origin configured; probing /api/health"
+        code=$(curl -sS -o /tmp/frontend-ci-health.json -w "%{http_code}" "${API_BASE}/api/health" || true)
+        if [ "$code" != "200" ]; then
+          echo "❌ GET ${API_BASE}/api/health returned HTTP ${code} (expected 200)"
+          exit 1
+        fi
+        echo "✅ API /api/health OK (HTTP 200)"
 
   accessibility:
     runs-on: ubuntu-latest
