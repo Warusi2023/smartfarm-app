@@ -166,6 +166,10 @@ Reset password using reset token from the email link.
 }
 ```
 
+**Behavior:** Completing reset via the emailed link proves mailbox ownership. The account is marked **verified** (`isVerified: true`) and verification tokens are cleared. **No verification email is sent** as part of password reset — registration / resend-verification remain separate flows. The user can log in immediately with the new password.
+
+Unit coverage: `backend/tests/unit/resetPasswordNoVerificationEmail.test.js`.
+
 ### Verify Email
 `POST /api/auth/verify-email/:token`
 

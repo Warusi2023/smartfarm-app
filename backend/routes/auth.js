@@ -982,16 +982,25 @@ class AuthRoutes {
             // Hash new password
             const passwordHash = await this.authService.hashPassword(newPassword);
 
-            // Update user password and clear reset token
+            // Completing reset via emailed link proves mailbox ownership.
+            // Mark verified so login works — do NOT send a verification email here.
             await this.dbHelpers.updateUser(user.id, {
                 passwordHash,
                 resetToken: null,
-                resetExpires: null
+                resetExpires: null,
+                isVerified: true,
+                verificationToken: null,
+                verificationExpires: null
+            });
+
+            logger.info('Password reset completed', {
+                userId: user.id,
+                emailVerifiedViaReset: true
             });
 
             res.json({
                 success: true,
-                message: 'Password reset successfully'
+                message: 'Password reset successfully. You can log in with your new password.'
             });
         } catch (error) {
             logger.errorWithContext('Reset password error', { error });
