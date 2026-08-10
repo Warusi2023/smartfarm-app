@@ -182,7 +182,7 @@ Verify user email address.
 ### Resend Verification
 `POST /api/auth/resend-verification`
 
-Resend email verification.
+Resend the registration verification email (shared Gmail SMTP via `getEmailService()`).
 
 **Request Body:**
 ```json
@@ -190,4 +190,16 @@ Resend email verification.
   "email": "user@example.com"
 }
 ```
+
+**Response codes (selected):**
+| HTTP | `code` | Meaning |
+|------|--------|---------|
+| 200 | `VERIFICATION_EMAIL_SENT` | Email sent, **or** unknown email (generic success — no account disclosure) |
+| 200 | `ALREADY_VERIFIED` | Account exists and is already verified |
+| 429 | `RATE_LIMITED` | Too many requests for this email or IP |
+| 500 | `EMAIL_ERROR` | Known unverified user, but delivery failed (does **not** claim sent) |
+
+Rate limits: 3 requests / 15 minutes per email, 10 / 15 minutes per IP (in-memory).
+
+The login page shows a **Resend verification email** button only after `EMAIL_NOT_VERIFIED` login failure; it posts the email already entered in the login field.
 
