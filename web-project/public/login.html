@@ -338,6 +338,22 @@
             border-left: 4px solid #16A34A;
         }
 
+        .login-resend-panel {
+            margin: -10px 0 25px;
+        }
+
+        .login-resend-btn {
+            border-radius: 12px;
+            padding: 12px 20px;
+            font-weight: 600;
+            border-width: 2px;
+        }
+
+        .login-resend-btn:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+        }
+
         .loading {
             display: none;
         }
@@ -413,6 +429,8 @@
 
                         <!-- Alert Messages -->
                         <div id="alertContainer"></div>
+                        <!-- Shown only after EMAIL_NOT_VERIFIED login failure -->
+                        <div id="loginResendVerificationMount"></div>
 
                         <!-- Login Form -->
                         <form id="loginForm" novalidate>
@@ -466,6 +484,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/api-url-fix.js?v=sfm20260510"></script>
     <script src="js/api-client.js?v=sfm20260510"></script>
+    <script src="js/login-resend-verification.js?v=sfm20260810"></script>
     <script src="js/login-fix.js?v=sfm20260510"></script>
     <script src="js/navigation-dropdown.js?v=sfm20260510"></script>
     <script>
@@ -475,6 +494,44 @@
             }
             const host = window.location.hostname;
             return host === 'localhost' || host === '127.0.0.1';
+        }
+
+        var loginResendController = null;
+
+        function ensureLoginResendController() {
+            if (loginResendController) {
+                return loginResendController;
+            }
+            if (!window.SmartFarmLoginResend || !window.SmartFarmApiClient) {
+                return null;
+            }
+            loginResendController = window.SmartFarmLoginResend.createLoginResendController({
+                panelEl: document.getElementById('loginResendVerificationMount'),
+                getEmail: function () {
+                    return document.getElementById('email').value;
+                },
+                postJson: function (path, body) {
+                    return window.SmartFarmApiClient.post(path, body);
+                },
+                showAlert: showAlert
+            });
+            document.getElementById('email').addEventListener('input', function () {
+                if (loginResendController) {
+                    loginResendController.syncButtonEnabled();
+                }
+            });
+            return loginResendController;
+        }
+
+        function handleUnverifiedLogin(payload) {
+            const msg =
+                (payload && (payload.error || payload.message)) ||
+                'Email not verified. Please check your inbox or resend verification.';
+            showAlert(msg, 'danger');
+            const controller = ensureLoginResendController();
+            if (controller) {
+                controller.show();
+            }
         }
 
         // Form validation and submission
@@ -576,8 +633,15 @@
                 }, 1500);
             }
 
-            function finishError(msg) {
-                showAlert(msg, 'danger');
+            function finishError(msg, payload) {
+                if (payload && payload.code === 'EMAIL_NOT_VERIFIED') {
+                    handleUnverifiedLogin(payload);
+                } else {
+                    if (loginResendController) {
+                        loginResendController.hide();
+                    }
+                    showAlert(msg, 'danger');
+                }
                 btnText.style.display = 'inline';
                 loading.classList.remove('show');
             }
@@ -586,14 +650,23 @@
             .then(async (data) => {
                 clearTimeout(timeoutId);
                 if (data.success === true && data.data && data.data.token && data.data.user) {
+                    if (loginResendController) {
+                        loginResendController.hide();
+                    }
                     storeSessionSuccess(data);
+                } else if (data && data.code === 'EMAIL_NOT_VERIFIED') {
+                    finishError(data.error || data.message || 'Email not verified.', data);
                 } else {
-                    finishError(data.error || data.message || 'Login failed.');
+                    finishError(data.error || data.message || 'Login failed.', data);
                 }
             })
             .catch((error) => {
                 clearTimeout(timeoutId);
                 console.error('Login error:', error);
+                if (error && error.code === 'EMAIL_NOT_VERIFIED') {
+                    finishError(error.error || error.message || 'Email not verified.', error);
+                    return;
+                }
                 if (demo) {
                     handleFallbackLogin(email, password, rememberMe)
                         .then((d) => {
@@ -620,7 +693,7 @@
                         })
                         .catch(() => finishError('Network error. Please try again.'));
                 } else {
-                    finishError(error?.error || error?.message || 'Network error. Please try again.');
+                    finishError(error?.error || error?.message || 'Network error. Please try again.', error);
                 }
             });
         }
@@ -656,10 +729,17 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Clear any partial authentication data that might cause issues
             clearPartialAuthData();
+            ensureLoginResendController();
             
             const rememberedUser = localStorage.getItem('smartfarm_user') || sessionStorage.getItem('smartfarm_user');
             if (rememberedUser) {
-                document.getElementById('email').value = rememberedUser;
+                try {
+                    const parsed = JSON.parse(rememberedUser);
+                    document.getElementById('email').value =
+                        (parsed && parsed.email) ? parsed.email : rememberedUser;
+                } catch (_) {
+                    document.getElementById('email').value = rememberedUser;
+                }
                 document.getElementById('rememberMe').checked = true;
             }
         });

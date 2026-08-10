@@ -13,6 +13,10 @@ const SubscriptionService = require('../services/subscriptionService');
 const SubscriptionEventService = require('../services/subscriptionEventService');
 const { validate } = require('../middleware/validator');
 const logger = require('../utils/logger');
+const {
+    checkResendVerificationLimit,
+    recordResendVerificationAttempt
+} = require('../utils/resendVerificationRateLimit');
 
 class AuthRoutes {
     constructor(dbPool = null) {
@@ -1077,11 +1081,21 @@ class AuthRoutes {
     }
 
     /**
-     * Resend verification email endpoint
+     * Resend verification email endpoint.
+     * Uses shared getEmailService() / EmailService.sendVerificationEmail (shared SMTP transport).
+     * Unknown emails receive a generic success response (no account enumeration).
      */
     async resendVerification(req, res) {
         try {
-            const email = req.body.email || req.user?.email;
+            const emailRaw = req.body.email || req.user?.email;
+            const email = typeof emailRaw === 'string' ? emailRaw.trim() : '';
+            const clientIp =
+                req.ip ||
+                (typeof req.headers?.['x-forwarded-for'] === 'string'
+                    ? req.headers['x-forwarded-for'].split(',')[0].trim()
+                    : null) ||
+                req.connection?.remoteAddress ||
+                'unknown';
 
             if (!email) {
                 return res.status(400).json({
@@ -1091,11 +1105,29 @@ class AuthRoutes {
                 });
             }
 
+            const limit = checkResendVerificationLimit({ email, ip: clientIp });
+            if (!limit.allowed) {
+                logger.warn('Resend verification rate limited', {
+                    scope: limit.scope,
+                    retryAfterSec: limit.retryAfterSec
+                });
+                return res.status(429).json({
+                    success: false,
+                    error: 'Too many verification email requests. Please try again later.',
+                    code: 'RATE_LIMITED',
+                    retryAfter: limit.retryAfterSec
+                });
+            }
+
+            // Count attempt for every valid request (including unknown emails) to limit probing.
+            recordResendVerificationAttempt({ email, ip: clientIp });
+
             const user = await this.dbHelpers.findUserByEmail(email);
             if (!user) {
-                // Don't reveal if user exists
+                // Don't reveal if user exists — same success shape as a real send.
                 return res.json({
                     success: true,
+                    code: 'VERIFICATION_EMAIL_SENT',
                     message: 'If an account with that email exists and is not verified, a verification email has been sent.'
                 });
             }
@@ -1103,35 +1135,40 @@ class AuthRoutes {
             if (user.isVerified) {
                 return res.json({
                     success: true,
+                    code: 'ALREADY_VERIFIED',
                     message: 'Email is already verified'
                 });
             }
 
-            // Generate new verification token
+            // Generate new verification token (never log the token or full verify URL)
             const verificationToken = this.emailService.generateVerificationToken();
             const verificationExpires = new Date();
             verificationExpires.setHours(verificationExpires.getHours() + 24);
 
-            // Update user with new token
             await this.dbHelpers.updateUser(user.id, {
                 verificationToken,
                 verificationExpires
             });
 
-            // Send verification email
             try {
                 await this.emailService.sendVerificationEmail(email, verificationToken);
             } catch (emailError) {
-                logger.error('Failed to send verification email', { error: emailError, userId: user.id });
+                logger.error('Failed to send verification email', {
+                    errorCode: emailError?.code || emailError?.name || 'EMAIL_SEND_FAILED',
+                    userId: user.id
+                });
                 return res.status(500).json({
                     success: false,
                     error: 'Failed to send verification email',
+                    message: 'We could not send the verification email right now. Please try again shortly.',
                     code: 'EMAIL_ERROR'
                 });
             }
 
-            res.json({
+            logger.info('Verification email resent', { userId: user.id });
+            return res.json({
                 success: true,
+                code: 'VERIFICATION_EMAIL_SENT',
                 message: 'Verification email sent successfully'
             });
         } catch (error) {

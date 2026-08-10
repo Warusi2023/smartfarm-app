@@ -34,4 +34,17 @@ describe('post-deploy auth and link pages', () => {
         const html = readPublic('pricing.html');
         expect(html).toMatch(/href="\/#features"/);
     });
+
+    it('login shows resend verification only after EMAIL_NOT_VERIFIED', () => {
+        const html = readPublic('login.html');
+        const resendJs = fs.readFileSync(
+            path.join(publicDir, 'js/login-resend-verification.js'),
+            'utf8'
+        );
+        expect(html).toMatch(/login-resend-verification\.js/);
+        expect(html).toMatch(/loginResendVerificationMount/);
+        expect(html).toMatch(/EMAIL_NOT_VERIFIED/);
+        expect(resendJs).toMatch(/\/api\/auth\/resend-verification/);
+        expect(resendJs).toMatch(/Resend verification email/);
+    });
 });
