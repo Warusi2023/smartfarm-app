@@ -51,14 +51,14 @@ jobs:
       run: npm run test
       
     - name: Upload test results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: frontend-test-results
         path: web-project/test-results/
         
     - name: Upload test report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: frontend-test-report
@@ -92,7 +92,7 @@ jobs:
       run: npx playwright test --grep="accessibility"
       
     - name: Upload accessibility report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: accessibility-report
@@ -126,7 +126,7 @@ jobs:
       run: npx playwright test --grep="performance"
       
     - name: Upload performance report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: performance-report
@@ -170,7 +170,7 @@ jobs:
 
     # Netlify must publish this folder — not web-project/public/ (pre-build sources only)
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: frontend-build
         path: web-project/dist/
@@ -187,9 +187,10 @@ jobs:
       uses: actions/checkout@v4
       
     - name: Download build artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: frontend-build
+        path: web-project/dist
 
     - name: Verify Vite output exists
       run: test -f web-project/dist/index.html
@@ -221,9 +222,10 @@ jobs:
       uses: actions/checkout@v4
       
     - name: Download build artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: frontend-build
+        path: web-project/dist
 
     - name: Verify Vite output exists
       run: test -f web-project/dist/index.html

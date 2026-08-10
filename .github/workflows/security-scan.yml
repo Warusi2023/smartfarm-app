@@ -49,7 +49,7 @@ jobs:
           echo '{"vulnerabilities": [], "summary": "Skipped - no token"}' > snyk-results.json
       
       - name: Upload Snyk results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: snyk-results
@@ -98,7 +98,7 @@ jobs:
         continue-on-error: true
       
       - name: Upload ESLint results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: eslint-security-results

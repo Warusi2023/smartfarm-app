@@ -29,3 +29,26 @@ openssl rand -hex 32
 `.github/workflows/netlify-deploy.yml` publishes **`web-project/public`** (not repo-root `public/`, which does not exist).
 
 Site ID / auth token secrets (existing): `NETLIFY_AUTH_TOKEN`, `NETLIFY_SITE_ID`.
+
+## Required repository variables
+
+### `VITE_API_URL` (Frontend CI API connectivity)
+
+`.github/workflows/frontend-ci.yml` step **Test API connectivity** requires the public API origin. It historically grepped `VITE_API_URL` from `web-project/netlify.toml`; that file no longer embeds the URL, so CI reads the same name from a **repository variable**.
+
+1. Open the GitHub repo → **Settings** → **Secrets and variables** → **Actions** → **Variables**
+2. Add variable name: `VITE_API_URL` (exact name — do not rename)
+3. Value (production SmartFarm backend origin, no trailing slash):
+
+   `https://web-production-86d39.up.railway.app`
+
+4. Use a **variable**, not a secret — this is a public HTTPS origin, not a credential.
+
+Used by:
+
+```yaml
+env:
+  VITE_API_URL: ${{ vars.VITE_API_URL }}
+```
+
+The step then `GET ${VITE_API_URL}/api/health` and expects HTTP **200**. Without the variable, the job fails with `API URL not configured`.
