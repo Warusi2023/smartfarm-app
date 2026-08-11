@@ -4,14 +4,11 @@
  */
 
 const { test, expect } = require('@playwright/test');
+const { gotoDashboardReady } = require('./helpers/dashboard-ready');
 
 test.describe('SmartFarm Navigation E2E Tests', () => {
     test.beforeEach(async ({ page }) => {
-        // Navigate to the dashboard
-        await page.goto('/dashboard.html');
-        
-        // Wait for page to load
-        await page.waitForLoadState('networkidle');
+        await gotoDashboardReady(page);
     });
 
     test('should navigate to Dashboard and display correct content', async ({ page }) => {
@@ -43,7 +40,7 @@ test.describe('SmartFarm Navigation E2E Tests', () => {
         
         // Verify nav item is active
         const activeNav = await page.locator('.sidebar .nav-link.active');
-        await expect(activeNav).toContainText('Farm Management');
+        await expect(activeNav).toContainText('Farm Overview');
     });
 
     test('should navigate to Crop Management and display correct content', async ({ page }) => {
@@ -139,7 +136,7 @@ test.describe('SmartFarm Navigation E2E Tests', () => {
         
         // Verify nav item is active
         const activeNav = await page.locator('.sidebar .nav-link.active');
-        await expect(activeNav).toContainText('Tasks');
+        await expect(activeNav).toContainText('Farm Tasks');
     });
 
     test('should navigate to Reports and display correct content', async ({ page }) => {
@@ -240,10 +237,8 @@ test.describe('SmartFarm Navigation E2E Tests', () => {
         await page.click('a[onclick*="showLivestockManagement"]');
         await page.waitForSelector('#livestockManagementView', { state: 'visible' });
         
-        // Check if URL was updated (this depends on the URL routing implementation)
-        const currentUrl = page.url();
-        // Note: The exact URL format depends on your routing implementation
-        // This test verifies that navigation doesn't break the URL
-        expect(currentUrl).toContain('dashboard.html');
+        // Client routing may push /livestock-management; stay on dashboard shell (not marketing index)
+        await expect(page.locator('#livestockManagementView')).toBeVisible();
+        await expect(page.locator('.preview-placeholder')).toHaveCount(0);
     });
 });

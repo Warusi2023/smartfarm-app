@@ -10,8 +10,11 @@ module.exports = defineConfig({
   // Note: Tests should run from web-project directory
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
+  retries: process.env.CI ? 1 : 0,
   workers: process.env.CI ? 1 : undefined,
+  // Bound overall suite so one stuck click cannot hold a runner for hours
+  globalTimeout: process.env.CI ? 45 * 60 * 1000 : undefined,
+  timeout: 45 * 1000,
   reporter: [
     ['html'],
     ['json', { outputFile: 'test-results/results.json' }],
@@ -22,6 +25,8 @@ module.exports = defineConfig({
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
+    actionTimeout: 12 * 1000,
+    navigationTimeout: 25 * 1000,
   },
   projects: [
     {
@@ -46,7 +51,9 @@ module.exports = defineConfig({
     },
   ],
   webServer: {
-    command: 'npx --yes serve -s public -l 8080',
+    // Do NOT use `serve -s` (SPA fallback). Client routes like /analytics would
+    // otherwise serve index.html and expose .preview-placeholder click intercepts.
+    command: 'npx --yes serve public -l 8080',
     port: 8080,
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,

@@ -1,55 +1,33 @@
 /**
  * Global Setup for Playwright Tests
- * Prepares test environment and starts necessary services
+ * Confirms the webServer is reachable without launching a browser
+ * (browser binaries are installed by the CI job / local `playwright install`).
  */
 
-const { chromium } = require('@playwright/test');
-
-async function globalSetup(config) {
+async function globalSetup() {
   console.log('🔧 Starting global test setup...');
-  
-  // Start browser for setup tasks
-  const browser = await chromium.launch();
-  const page = await browser.newPage();
-  
-  try {
-    // Wait for the server to be ready
-    await page.goto('http://localhost:8080');
-    await page.waitForLoadState('networkidle');
-    
-    console.log('✅ Test server is ready');
-    
-    // Initialize test data if needed
-    await initializeTestData(page);
-    
-  } catch (error) {
-    console.error('❌ Global setup failed:', error);
-    throw error;
-  } finally {
-    await browser.close();
-  }
-  
-  console.log('✅ Global test setup completed');
-}
 
-async function initializeTestData(page) {
-  try {
-    // Create test farm if needed
-    await page.evaluate(() => {
-      if (window.SmartFarmAPI) {
-        return window.SmartFarmAPI.createFarm({
-          name: 'Test Farm',
-          location: 'Test Location',
-          area: 10,
-          type: 'mixed'
-        });
+  const base = 'http://localhost:8080/';
+  const deadline = Date.now() + 90_000;
+  let lastError;
+
+  while (Date.now() < deadline) {
+    try {
+      const res = await fetch(base, { redirect: 'follow' });
+      if (res.ok || res.status === 404) {
+        console.log('✅ Test server is ready');
+        console.log('✅ Global test setup completed');
+        return;
       }
-    });
-    
-    console.log('✅ Test data initialized');
-  } catch (error) {
-    console.warn('⚠️ Test data initialization failed:', error);
+      lastError = new Error(`Unexpected status ${res.status}`);
+    } catch (error) {
+      lastError = error;
+    }
+    await new Promise((r) => setTimeout(r, 1000));
   }
+
+  console.error('❌ Global setup failed:', lastError);
+  throw lastError || new Error('webServer did not become ready');
 }
 
 module.exports = globalSetup;
