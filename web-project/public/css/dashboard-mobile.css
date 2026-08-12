@@ -102,6 +102,9 @@
         min-width: 44px;
         min-height: 44px;
         padding: 0.5rem 0.65rem;
+        /* Above breadcrumb / alerts so the real mobile menu control remains clickable */
+        position: relative;
+        z-index: 1055;
     }
 
     /* Touch-friendly controls */

@@ -31,6 +31,8 @@ class ModalAccessibility {
         document.addEventListener('show.bs.modal', (event) => {
             const modal = event.target;
             this.lastFocusedElement = document.activeElement;
+            // Set active early so Escape works before shown.bs.modal (WebKit timing)
+            this.activeModal = modal;
             console.log('🔧 ModalAccessibility: Modal show event - stored focus:', this.lastFocusedElement);
             
             // CRITICAL: Prevent Bootstrap from setting aria-hidden="true" on show
@@ -69,15 +71,72 @@ class ModalAccessibility {
 
         observer.observe(document.body, { childList: true, subtree: true });
 
-        // Handle Escape key globally for modals
+        // Capture phase so Escape closes even when ModalValidator / other
+        // bubble listeners call stopPropagation (a11y dismissible modals).
         document.addEventListener('keydown', (event) => {
-            if (event.key === 'Escape' && this.activeModal) {
-                const bsModal = bootstrap.Modal.getInstance(this.activeModal);
-                if (bsModal) {
-                    bsModal.hide();
-                }
+            if (event.key !== 'Escape') {
+                return;
             }
-        });
+            const openModal = this.activeModal
+                || document.querySelector('.modal.show');
+            if (!openModal) {
+                return;
+            }
+            // Opt-out only via explicit data-allow-escape="false"
+            if (openModal.getAttribute('data-allow-escape') === 'false') {
+                return;
+            }
+            event.preventDefault();
+            event.stopPropagation();
+            if (typeof event.stopImmediatePropagation === 'function') {
+                event.stopImmediatePropagation();
+            }
+            try {
+                let instance = typeof bootstrap !== 'undefined'
+                    ? bootstrap.Modal.getInstance(openModal)
+                    : null;
+                if (!instance && typeof bootstrap !== 'undefined' && bootstrap.Modal.getOrCreateInstance) {
+                    instance = bootstrap.Modal.getOrCreateInstance(openModal);
+                }
+                    if (instance) {
+                    // Bootstrap Modal.hide() is a no-op while _isTransitioning
+                    // (e.g. Escape right after .show appears but before shown.bs.modal).
+                    const hideNowOrWhenReady = () => {
+                        const inst = bootstrap.Modal.getInstance(openModal) || instance;
+                        if (!inst) {
+                            return;
+                        }
+                        if (inst._isTransitioning) {
+                            openModal._pendingEscapeClose = true;
+                            const onReady = () => {
+                                openModal.removeEventListener('shown.bs.modal', onReady);
+                                openModal.removeEventListener('hidden.bs.modal', onReady);
+                                openModal._pendingEscapeClose = false;
+                                // If still open after transition, dismiss
+                                if (openModal.classList.contains('show')) {
+                                    inst.hide();
+                                }
+                            };
+                            openModal.addEventListener('shown.bs.modal', onReady, { once: true });
+                            openModal.addEventListener('hidden.bs.modal', onReady, { once: true });
+                            return;
+                        }
+                        inst.hide();
+                    };
+                    hideNowOrWhenReady();
+                } else {
+                    openModal.classList.remove('show');
+                    openModal.setAttribute('aria-hidden', 'true');
+                    openModal.style.display = 'none';
+                    document.body.classList.remove('modal-open');
+                    document.querySelectorAll('.modal-backdrop').forEach((b) => b.remove());
+                    this.toggleModalAccessibility(openModal, false);
+                    this.handleModalHidden(openModal);
+                }
+            } catch (err) {
+                console.warn('ModalAccessibility: Escape close failed', err);
+            }
+        }, true);
 
         // Ensure all modal close buttons actually close, even if attributes are missing
         document.addEventListener('click', (event) => {
@@ -316,19 +375,9 @@ class ModalAccessibility {
             // Apply inert to background elements
             this.applyInertToBackground();
 
-            // Focus management - focus on first focusable element
-            const focusableElements = modalEl.querySelectorAll(
-                'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-            );
-            
-            if (focusableElements.length > 0) {
-                // Small delay to ensure DOM is ready
-                setTimeout(() => {
-                    focusableElements[0].focus();
-                    console.log('🔧 ModalAccessibility: Focused first element:', focusableElements[0]);
-                }, 10);
-            } else {
-                console.warn('⚠️ ModalAccessibility: No focusable elements found in modal');
+            // Focus first meaningful interactive control after the modal has finished opening
+            if (!modalEl._pendingEscapeClose) {
+                this.focusFirstMeaningfulControl(modalEl);
             }
             
             // Trap focus within modal
@@ -382,6 +431,90 @@ class ModalAccessibility {
     handleModalShown(modal) {
         console.log('🔧 ModalAccessibility: Modal shown:', modal.id || 'unnamed modal');
         this.toggleModalAccessibility(modal, true);
+    }
+
+    focusFirstMeaningfulControl(modalEl) {
+        const catalogSelectsReady = () => {
+            const pending = modalEl.querySelectorAll('select[data-catalog-group][disabled]');
+            return pending.length === 0;
+        };
+
+        const pick = () => {
+            if (!catalogSelectsReady()) {
+                return null;
+            }
+            const preferred = modalEl.querySelectorAll(
+                'select:not([disabled]), input:not([type="hidden"]):not([disabled]), textarea:not([disabled])'
+            );
+            for (const el of preferred) {
+                // Visible check: getClientRects works inside Bootstrap modals (fixed positioning)
+                if (el.getClientRects().length > 0) {
+                    return el;
+                }
+            }
+            const fallback = modalEl.querySelectorAll(
+                'button:not(.btn-close):not([data-bs-dismiss="modal"]), [href], [tabindex]:not([tabindex="-1"])'
+            );
+            for (const el of fallback) {
+                if (el.classList.contains('btn-close')) continue;
+                if (el.getAttribute('data-bs-dismiss') === 'modal') continue;
+                if (el.disabled) continue;
+                if (el.getClientRects().length > 0) {
+                    return el;
+                }
+            }
+            return null;
+        };
+
+        const attemptFocus = (attempt) => {
+            if (!modalEl.classList.contains('show') && attempt > 0) {
+                return;
+            }
+            if (modalEl._pendingEscapeClose) {
+                return;
+            }
+            const target = pick();
+            if (!target) {
+                // Catalog enhancers may temporarily disable the first select; keep waiting.
+                if (attempt < 40) {
+                    setTimeout(() => attemptFocus(attempt + 1), 50);
+                } else {
+                    console.warn('⚠️ ModalAccessibility: No focusable elements found in modal');
+                }
+                return;
+            }
+            try {
+                target.focus({ preventScroll: false });
+                if (document.activeElement !== target) {
+                    target.focus();
+                }
+                // Confirm focus stuck for a beat (catalog/validation must not steal it)
+                if (attempt < 40) {
+                    setTimeout(() => {
+                        if (!modalEl.classList.contains('show') || modalEl._pendingEscapeClose) {
+                            return;
+                        }
+                        const preferred = pick();
+                        if (preferred && document.activeElement !== preferred) {
+                            attemptFocus(attempt + 1);
+                        } else {
+                            console.log('🔧 ModalAccessibility: Focused first meaningful control:', preferred || target);
+                        }
+                    }, 60);
+                } else {
+                    console.log('🔧 ModalAccessibility: Focused first meaningful control:', target);
+                }
+            } catch (err) {
+                console.warn('ModalAccessibility: focus failed', err);
+                if (attempt < 40) {
+                    setTimeout(() => attemptFocus(attempt + 1), 50);
+                }
+            }
+        };
+
+        requestAnimationFrame(() => {
+            setTimeout(() => attemptFocus(0), 40);
+        });
     }
 
     handleModalHide(modal) {

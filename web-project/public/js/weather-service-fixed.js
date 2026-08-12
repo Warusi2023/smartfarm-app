@@ -252,8 +252,8 @@ class WeatherService {
     subscribe(callback) {
         this.callbacks.push(callback);
         
-        // Immediately call with current data if available
-        if (this.weatherData) {
+        // Only invoke when observations exist; never call with null/incomplete payloads
+        if (this.weatherData && this.weatherData.current) {
             try {
                 callback(this.weatherData);
             } catch (error) {
@@ -267,6 +267,9 @@ class WeatherService {
     }
 
     notifySubscribers() {
+        if (!this.weatherData || !this.weatherData.current) {
+            return;
+        }
         this.callbacks.forEach(callback => {
             try {
                 callback(this.weatherData);

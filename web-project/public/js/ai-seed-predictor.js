@@ -232,9 +232,13 @@ class AISeedPredictor {
     async fetchCurrentWeather() {
         // Use the centralized weather service
         if (window.WeatherService) {
-            // Subscribe to weather updates
+            // Subscribe to weather updates (adapter is null-safe; never throw)
             window.WeatherService.subscribe((weatherData) => {
                 this.weatherData = this.convertWeatherServiceData(weatherData);
+                if (this.weatherData && this.weatherData.status === 'unavailable') {
+                    this.useDemoWeatherData();
+                    return;
+                }
                 this.updateWeatherDisplay();
                 this.generateSeedRecommendations();
             });
@@ -243,8 +247,12 @@ class AISeedPredictor {
             const weatherData = window.WeatherService.weatherData;
             if (weatherData) {
                 this.weatherData = this.convertWeatherServiceData(weatherData);
+                if (this.weatherData && this.weatherData.status === 'unavailable') {
+                    this.useDemoWeatherData();
+                }
             } else {
-                // Fallback to demo data if weather service not ready
+                // Explicit loading/unavailable until WeatherService has data
+                this.weatherData = this.convertWeatherServiceData(null);
                 this.useDemoWeatherData();
             }
         } else {
@@ -254,7 +262,40 @@ class AISeedPredictor {
     }
 
     convertWeatherServiceData(weatherData) {
+        const adapter = (typeof window !== 'undefined' && window.SmartFarmWeatherDataAdapter)
+            || (typeof require === 'function' ? require('./weather-data-adapter') : null);
+        if (adapter && typeof adapter.convertWeatherServiceData === 'function') {
+            return adapter.convertWeatherServiceData(weatherData);
+        }
+        // Last-resort inline null-safe path if adapter script failed to load
+        if (!weatherData || !weatherData.current) {
+            return {
+                status: 'unavailable',
+                temperature: null,
+                humidity: null,
+                rainfall: null,
+                windSpeed: null,
+                pressure: null,
+                uvIndex: null,
+                cloudCover: null,
+                description: 'Weather unavailable',
+                forecast: { next7Days: [] },
+                season: 'Unknown',
+                location: 'Unknown',
+                isRealData: false,
+                reason: 'adapter_missing'
+            };
+        }
+        const loc = weatherData.location;
+        const locationName = (loc && typeof loc === 'object' && loc.name)
+            || (typeof loc === 'string' ? loc : 'Unknown');
+        const forecastDays = Array.isArray(weatherData.forecast)
+            ? weatherData.forecast
+            : (weatherData.forecast && Array.isArray(weatherData.forecast.next7Days)
+                ? weatherData.forecast.next7Days
+                : []);
         return {
+            status: 'ready',
             temperature: weatherData.current.temperature,
             humidity: weatherData.current.humidity,
             rainfall: weatherData.current.rainfall,
@@ -264,17 +305,17 @@ class AISeedPredictor {
             cloudCover: weatherData.current.cloudCover,
             description: weatherData.current.description,
             forecast: {
-                next7Days: weatherData.forecast.map(day => ({
-                    day: day.day,
-                    temp: day.temp,
-                    humidity: day.humidity,
-                    rain: day.rainfall,
-                    wind: day.windSpeed,
-                    description: day.description
+                next7Days: forecastDays.map(day => ({
+                    day: day && day.day,
+                    temp: day && (day.temp != null ? day.temp : day.temperature),
+                    humidity: day && day.humidity,
+                    rain: day && (day.rain != null ? day.rain : day.rainfall),
+                    wind: day && (day.wind != null ? day.wind : day.windSpeed),
+                    description: day && day.description
                 }))
             },
-            season: weatherData.season,
-            location: weatherData.location.name,
+            season: weatherData.season || 'Unknown',
+            location: locationName || 'Unknown',
             isRealData: weatherData.source === 'OpenWeatherMap'
         };
     }

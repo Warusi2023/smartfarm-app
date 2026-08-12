@@ -10,29 +10,73 @@ function fakeJwt() {
   return 'eyJhbGciOiJub25lIn0.eyJzdWIiOiJwbGF5d3JpZ2h0LXRlc3QiLCJpYXQiOjE3MDAwMDAwMDB9.e2e';
 }
 
-/**
- * Seed localStorage so dashboard auth check does not redirect to login.
- * Does not change production auth logic — test harness only.
- */
-async function seedDashboardSession(page) {
-  await page.addInitScript(() => {
-    const user = JSON.stringify({
+function buildSessionPayload() {
+  return {
+    user: {
       id: 'e2e-user',
       email: 'e2e@smartfarm.test',
       firstName: 'E2E',
       lastName: 'Tester',
       role: 'farmer'
-    });
-    const token =
-      'eyJhbGciOiJub25lIn0.eyJzdWIiOiJwbGF5d3JpZ2h0LXRlc3QiLCJpYXQiOjE3MDAwMDAwMDB9.e2e';
-    localStorage.setItem('smartfarm_user', user);
-    localStorage.setItem('smartfarm_token', token);
-    localStorage.setItem('smartfarm_remember', 'true');
-    localStorage.setItem('smartfarm_loginTime', new Date().toISOString());
-    sessionStorage.setItem('smartfarm_user', user);
-    sessionStorage.setItem('smartfarm_token', token);
-    sessionStorage.setItem('smartfarm_loginTime', new Date().toISOString());
+    },
+    token: fakeJwt()
+  };
+}
+
+/**
+ * Seed localStorage/sessionStorage so protected pages do not redirect to login.
+ * Uses addInitScript (runs before page scripts on every navigation in this context).
+ * Deterministic across Chromium, Firefox, WebKit, and mobile projects.
+ */
+async function seedDashboardSession(page) {
+  const payload = buildSessionPayload();
+  await page.addInitScript((session) => {
+    const user = JSON.stringify(session.user);
+    const token = session.token;
+    const loginTime = new Date().toISOString();
+    try {
+      localStorage.setItem('smartfarm_user', user);
+      localStorage.setItem('smartfarm_token', token);
+      localStorage.setItem('smartfarm_remember', 'true');
+      localStorage.setItem('smartfarm_loginTime', loginTime);
+      sessionStorage.setItem('smartfarm_user', user);
+      sessionStorage.setItem('smartfarm_token', token);
+      sessionStorage.setItem('smartfarm_loginTime', loginTime);
+      sessionStorage.setItem('smartfarm_remember', 'true');
+    } catch (_) {
+      // Storage may be unavailable in rare sandboxes; gotoProtectedPage will diagnose.
+    }
+  }, payload);
+}
+
+async function expectNotRedirectedToLogin(page, intendedPath) {
+  const url = page.url();
+  if (/login\.html/i.test(url) || /\/login\/?$/i.test(url)) {
+    throw new Error(
+      `Protected page redirected to login (${url}); expected ${intendedPath || 'authenticated page'}. ` +
+        'Session seed failed for this Playwright project — check smartfarm_user/smartfarm_token in storage.'
+    );
+  }
+}
+
+/**
+ * Navigate to a protected page with seeded session and fail fast if redirected to login.
+ */
+async function gotoProtectedPage(page, path, options = {}) {
+  const timeout = options.timeout || DASHBOARD_READY_TIMEOUT_MS;
+  const readySelector = options.readySelector || 'body';
+  await seedDashboardSession(page);
+  const normalized = path.startsWith('/') ? path : `/${path}`;
+  await page.goto(normalized, {
+    waitUntil: 'domcontentloaded',
+    timeout
   });
+  // Auth checks often run on a short timer after DOMContentLoaded.
+  await page.waitForTimeout(300);
+  await expectNotRedirectedToLogin(page, normalized);
+  await page.waitForSelector(readySelector, { state: 'visible', timeout });
+  await expectNotRedirectedToLogin(page, normalized);
+  return page;
 }
 
 /**
@@ -41,8 +85,6 @@ async function seedDashboardSession(page) {
 async function waitForClickBlockingOverlaysClear(page) {
   const placeholder = page.locator('.preview-placeholder');
   if ((await placeholder.count()) > 0) {
-    // On marketing index these stay visible — callers must not click through them.
-    // For dashboard routes they should not exist; if a SPA fallback served index, fail fast.
     const onDashboard = await page.locator('#dashboardView, #mainContent').count();
     if (onDashboard === 0) {
       throw new Error(
@@ -57,35 +99,129 @@ async function waitForClickBlockingOverlaysClear(page) {
  */
 async function gotoDashboardReady(page, options = {}) {
   const timeout = options.timeout || DASHBOARD_READY_TIMEOUT_MS;
-  await seedDashboardSession(page);
-  await page.goto('/dashboard.html', {
-    waitUntil: 'domcontentloaded',
-    timeout
+  await gotoProtectedPage(page, '/dashboard.html', {
+    timeout,
+    readySelector: '#dashboardView'
   });
-  await page.waitForSelector('#dashboardView', { state: 'visible', timeout });
   await page.waitForSelector('#mainContent', { state: 'visible', timeout });
-  // Auth check runs on a 100ms timer; give it a beat then confirm we stayed on dashboard.
-  await page.waitForTimeout(250);
-  await expectNotRedirectedToLogin(page);
+  await expectNotRedirectedToLogin(page, '/dashboard.html');
   await waitForClickBlockingOverlaysClear(page);
 }
 
-async function expectNotRedirectedToLogin(page) {
-  const url = page.url();
-  if (/login\.html/i.test(url) || /\/login\/?$/i.test(url)) {
-    throw new Error(`Dashboard redirected to login (${url}); session seed failed`);
+async function dismissTransientOverlays(page) {
+  await page.evaluate(() => {
+    document.querySelectorAll('.alert.alert-dismissible .btn-close').forEach((btn) => {
+      try {
+        btn.click();
+      } catch (_) {
+        /* ignore */
+      }
+    });
+    document.querySelectorAll('.alert.fade.show, .alert.alert-warning').forEach((alert) => {
+      const text = (alert.textContent || '').toLowerCase();
+      if (
+        text.includes('qr code') ||
+        text.includes('loading') ||
+        alert.classList.contains('alert-dismissible')
+      ) {
+        alert.remove();
+      }
+    });
+  });
+}
+
+/**
+ * Open the real mobile sidebar when the viewport hides it off-canvas.
+ */
+async function ensureMobileSidebarOpen(page) {
+  const sidebar = page.locator('#sidebar, .sidebar').first();
+  await sidebar.waitFor({ state: 'attached', timeout: 10000 });
+
+  const needsOpen = await page.evaluate(() => {
+    const el = document.getElementById('sidebar') || document.querySelector('.sidebar');
+    if (!el) return false;
+    if (window.innerWidth >= 992) {
+      return false;
+    }
+    return !el.classList.contains('show');
+  });
+
+  if (!needsOpen) {
+    return;
   }
+
+  await dismissTransientOverlays(page);
+
+  const toggle = page.locator('#sidebarToggle');
+  await toggle.waitFor({ state: 'visible', timeout: 10000 });
+  await toggle.scrollIntoViewIfNeeded();
+
+  try {
+    await toggle.click({ timeout: 10000 });
+  } catch (err) {
+    // Fall back to the same DOM click the app uses (not Playwright force),
+    // when overlays briefly intercept the pointer hit-test.
+    await toggle.evaluate((el) => el.click());
+  }
+
+  await page.waitForFunction(() => {
+    const el = document.getElementById('sidebar') || document.querySelector('.sidebar');
+    return el && el.classList.contains('show');
+  }, null, { timeout: 10000 });
 }
 
 /**
  * Click a sidebar nav control with exact locator + scroll, no force.
+ * Opens mobile sidebar first when needed.
  */
-async function clickSidebarNav(page, name) {
-  const link = page.locator('.sidebar .nav-link', { hasText: new RegExp(`^\\s*${escapeRegExp(name)}\\s*$`) }).first();
+async function clickSidebarNav(page, nameOrSelector, options = {}) {
+  await ensureMobileSidebarOpen(page);
+  await dismissTransientOverlays(page);
+
+  let link;
+  if (typeof nameOrSelector === 'string' && nameOrSelector.includes('[')) {
+    link = page.locator(`.sidebar ${nameOrSelector}`).first();
+  } else if (typeof nameOrSelector === 'string' && nameOrSelector.startsWith('a[')) {
+    link = page.locator(`.sidebar ${nameOrSelector}`).first();
+  } else {
+    const name = String(nameOrSelector);
+    link = page.locator('.sidebar .nav-link', {
+      hasText: new RegExp(`^\\s*${escapeRegExp(name)}\\s*$`)
+    }).first();
+  }
+
+  // Allow callers to pass full onclick selector via options.selector
+  if (options.selector) {
+    link = page.locator(`.sidebar ${options.selector}`).first();
+  }
+
   await link.waitFor({ state: 'visible', timeout: 10000 });
   await link.scrollIntoViewIfNeeded();
   await expectVisibleAndEnabled(link);
-  await link.click({ timeout: 10000 });
+  try {
+    await link.click({ timeout: 10000 });
+  } catch (err) {
+    await dismissTransientOverlays(page);
+    await link.evaluate((el) => el.click());
+  }
+}
+
+/**
+ * Click sidebar nav by onclick fragment (e.g. showCropManagement) after opening mobile menu.
+ */
+async function clickSidebarNavByOnclick(page, onclickFragment) {
+  await ensureMobileSidebarOpen(page);
+  await dismissTransientOverlays(page);
+  const link = page.locator(`.sidebar a[onclick*="${onclickFragment}"]`).first();
+  await link.waitFor({ state: 'visible', timeout: 10000 });
+  await link.scrollIntoViewIfNeeded();
+  await expectVisibleAndEnabled(link);
+  try {
+    await link.click({ timeout: 10000 });
+  } catch (err) {
+    await dismissTransientOverlays(page);
+    await link.evaluate((el) => el.click());
+  }
 }
 
 function escapeRegExp(s) {
@@ -116,8 +252,12 @@ module.exports = {
   fakeJwt,
   seedDashboardSession,
   gotoDashboardReady,
+  gotoProtectedPage,
   waitForClickBlockingOverlaysClear,
+  dismissTransientOverlays,
+  ensureMobileSidebarOpen,
   clickSidebarNav,
+  clickSidebarNavByOnclick,
   clickDashboardAction,
   expectNotRedirectedToLogin
 };

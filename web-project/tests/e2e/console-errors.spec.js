@@ -5,7 +5,9 @@
 
 const { test, expect } = require('@playwright/test');
 const {
-    gotoDashboardReady
+    gotoDashboardReady,
+    clickSidebarNav,
+    ensureMobileSidebarOpen
 } = require('./helpers/dashboard-ready');
 
 test.describe('Console Error Verification', () => {
@@ -91,17 +93,8 @@ test.describe('Console Error Verification', () => {
             consoleWarnings = [];
             
             try {
-                const link = page.locator('.sidebar .nav-link', {
-                    hasText: new RegExp(`^\\s*${menuItem.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*$`)
-                }).first();
-
-                if ((await link.count()) === 0) {
-                    console.log(`Menu item "${menuItem}" not found - skipping`);
-                    continue;
-                }
-
-                await link.scrollIntoViewIfNeeded();
-                await link.click({ timeout: 10000 });
+                await ensureMobileSidebarOpen(page);
+                await clickSidebarNav(page, menuItem);
                 await page.waitForTimeout(500);
                 
                 const navigationErrors = consoleErrors.filter(error => {
@@ -123,6 +116,7 @@ test.describe('Console Error Verification', () => {
                 expect(navigationErrors).toHaveLength(0);
             } catch (error) {
                 console.log(`Error testing menu item "${menuItem}":`, error.message);
+                throw error;
             }
         }
     });

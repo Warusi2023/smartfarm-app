@@ -66,8 +66,8 @@ class ModalValidator {
         let bsModal = bootstrap.Modal.getInstance(modalElement);
         if (!bsModal) {
             bsModal = new bootstrap.Modal(modalElement, {
-                backdrop: 'static',
-                keyboard: false
+                backdrop: modalData.config.allowBackdropClick ? true : 'static',
+                keyboard: !!modalData.config.allowEscapeKey
             });
         }
 
@@ -75,9 +75,9 @@ class ModalValidator {
         modalData.originalBackdrop = bsModal._config.backdrop;
         modalData.originalKeyboard = bsModal._config.keyboard;
 
-        // Override settings to prevent closing
-        bsModal._config.backdrop = 'static';
-        bsModal._config.keyboard = false;
+        // Override settings to prevent closing (keyboard follows allowEscapeKey for a11y)
+        bsModal._config.backdrop = modalData.config.allowBackdropClick ? true : 'static';
+        bsModal._config.keyboard = !!modalData.config.allowEscapeKey;
 
         // Disable close button
         const closeButtons = modalElement.querySelectorAll('[data-bs-dismiss="modal"]');

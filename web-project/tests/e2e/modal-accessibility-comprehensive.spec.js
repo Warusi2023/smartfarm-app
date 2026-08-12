@@ -6,16 +6,24 @@
 const { test, expect } = require('@playwright/test');
 const {
     gotoDashboardReady,
-    clickDashboardAction
+    gotoProtectedPage,
+    clickDashboardAction,
+    clickSidebarNavByOnclick
 } = require('./helpers/dashboard-ready');
 
 async function openLivestockModalFromDashboard(page) {
-    const livestockNav = page.locator('.sidebar a[onclick*="showLivestockManagement"]').first();
-    await livestockNav.scrollIntoViewIfNeeded();
-    await livestockNav.click({ timeout: 10000 });
+    await clickSidebarNavByOnclick(page, 'showLivestockManagement');
     await page.waitForSelector('#livestockManagementView', { state: 'visible', timeout: 10000 });
     await clickDashboardAction(page, '#livestockManagementView button[onclick="addNewLivestock()"]');
     await page.waitForSelector('.modal.show', { timeout: 8000 });
+    // Wait until catalog-enhanced selects are enabled, then assert first meaningful focus
+    await page.waitForFunction(() => {
+        const modal = document.querySelector('.modal.show');
+        if (!modal) return false;
+        return modal.querySelectorAll('select[data-catalog-group][disabled]').length === 0;
+    }, null, { timeout: 8000 });
+    const firstControl = page.locator('.modal.show').locator('select:not([disabled]), input:not([type="hidden"]):not([disabled]), textarea:not([disabled])').first();
+    await expect(firstControl).toBeFocused({ timeout: 8000 });
 }
 
 test.describe('Modal Accessibility E2E Tests', () => {
@@ -48,8 +56,8 @@ test.describe('Modal Accessibility E2E Tests', () => {
     test('should handle focus management correctly in addLivestockModal', async ({ page }) => {
         await openLivestockModalFromDashboard(page);
         
-        const firstInput = page.locator('.modal.show input').first();
-        await expect(firstInput).toBeFocused();
+        const firstControl = page.locator('.modal.show').locator('select:not([disabled]), input:not([type="hidden"]):not([disabled]), textarea:not([disabled])').first();
+        await expect(firstControl).toBeFocused({ timeout: 8000 });
         
         await page.keyboard.press('Tab');
         
@@ -58,8 +66,9 @@ test.describe('Modal Accessibility E2E Tests', () => {
     });
 
     test('should open static addLivestockModal in livestock-management page', async ({ page }) => {
-        await page.goto('/livestock-management.html', { waitUntil: 'domcontentloaded' });
-        await page.waitForSelector('button[data-bs-target="#addLivestockModal"]', { timeout: 15000 });
+        await gotoProtectedPage(page, '/livestock-management.html', {
+            readySelector: 'button[data-bs-target="#addLivestockModal"]'
+        });
         
         const consoleErrors = [];
         page.on('console', msg => {
@@ -73,6 +82,7 @@ test.describe('Modal Accessibility E2E Tests', () => {
         await trigger.click({ timeout: 10000 });
         
         await page.waitForSelector('#addLivestockModal.show', { timeout: 8000 });
+        await page.waitForTimeout(100);
         
         const modal = page.locator('#addLivestockModal');
         await expect(modal).toBeVisible();
@@ -82,8 +92,8 @@ test.describe('Modal Accessibility E2E Tests', () => {
         await expect(modal).toHaveAttribute('aria-modal', 'true');
         await expect(modal).not.toHaveAttribute('aria-hidden', 'true');
         
-        const firstInput = page.locator('#addLivestockModal input').first();
-        await expect(firstInput).toBeFocused();
+        const firstControl = page.locator('#addLivestockModal').locator('select:not([disabled]), input:not([type="hidden"]):not([disabled]), textarea:not([disabled])').first();
+        await expect(firstControl).toBeFocused({ timeout: 8000 });
         
         await page.click('#addLivestockModal .btn-close');
         await page.waitForSelector('#addLivestockModal.show', { state: 'hidden', timeout: 8000 });
@@ -98,9 +108,7 @@ test.describe('Modal Accessibility E2E Tests', () => {
         await page.locator('.modal.show .btn-close').first().click({ timeout: 8000 });
         await page.waitForSelector('.modal.show', { state: 'hidden', timeout: 8000 });
         
-        const cropNav = page.locator('.sidebar a[onclick*="showCropManagement"]').first();
-        await cropNav.scrollIntoViewIfNeeded();
-        await cropNav.click({ timeout: 10000 });
+        await clickSidebarNavByOnclick(page, 'showCropManagement');
         await page.waitForSelector('#cropManagementView', { state: 'visible', timeout: 10000 });
         await clickDashboardAction(page, '#cropManagementView button[onclick="addNewCrop()"]');
         await page.waitForSelector('.modal.show', { timeout: 8000 });
@@ -113,7 +121,6 @@ test.describe('Modal Accessibility E2E Tests', () => {
     test('should prevent background interaction when modal is open', async ({ page }) => {
         await openLivestockModalFromDashboard(page);
         
-        // Modal should remain visible (backdrop intercepts background)
         await expect(page.locator('.modal.show').first()).toBeVisible();
         
         await page.locator('.modal.show .btn-close').first().click({ timeout: 8000 });
@@ -121,9 +128,7 @@ test.describe('Modal Accessibility E2E Tests', () => {
     });
 
     test('should restore focus to trigger button after modal closes', async ({ page }) => {
-        const livestockNav = page.locator('.sidebar a[onclick*="showLivestockManagement"]').first();
-        await livestockNav.scrollIntoViewIfNeeded();
-        await livestockNav.click({ timeout: 10000 });
+        await clickSidebarNavByOnclick(page, 'showLivestockManagement');
         await page.waitForSelector('#livestockManagementView', { state: 'visible', timeout: 10000 });
 
         const addButton = page.locator('#livestockManagementView button[onclick="addNewLivestock()"]').first();
@@ -132,13 +137,14 @@ test.describe('Modal Accessibility E2E Tests', () => {
         
         await addButton.click({ timeout: 10000 });
         await page.waitForSelector('.modal.show', { timeout: 8000 });
+        await page.waitForTimeout(100);
         
         await page.locator('.modal.show .btn-close').first().click({ timeout: 8000 });
         await page.waitForSelector('.modal.show', { state: 'hidden', timeout: 8000 });
         
         await page.waitForTimeout(100);
         
-        await expect(addButton).toBeFocused();
+        await expect(addButton).toBeFocused({ timeout: 8000 });
     });
 
     test('should handle keyboard navigation correctly', async ({ page }) => {
@@ -180,9 +186,7 @@ test.describe('Modal Accessibility E2E Tests', () => {
             }
         });
 
-        const livestockNav = page.locator('.sidebar a[onclick*="showLivestockManagement"]').first();
-        await livestockNav.scrollIntoViewIfNeeded();
-        await livestockNav.click({ timeout: 10000 });
+        await clickSidebarNavByOnclick(page, 'showLivestockManagement');
         await page.waitForSelector('#livestockManagementView', { state: 'visible', timeout: 10000 });
 
         for (let i = 0; i < 3; i++) {

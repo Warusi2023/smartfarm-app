@@ -146,11 +146,12 @@
                     
                     const errorMsg = document.createElement('div');
                     errorMsg.className = 'alert alert-warning alert-dismissible fade show';
-                    errorMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+                    errorMsg.setAttribute('role', 'status');
+                    errorMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 1030; max-width: min(320px, calc(100vw - 40px)); pointer-events: auto;';
                     errorMsg.innerHTML = `
                         <strong>⚠️ QR Code Library Loading...</strong><br>
                         The QR code library is being loaded from CDN. Please wait a moment.
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     `;
                     document.body.appendChild(errorMsg);
                     
@@ -161,8 +162,14 @@
                                 <strong>⚠️ QR Code Library Issue</strong><br>
                                 Unable to load QR code library. Some features may not work.<br>
                                 <small>You can manually download qrcode.min.js and place it in /js/ directory.</small>
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                             `;
+                            // Do not leave a permanent click-blocking toast on mobile
+                            setTimeout(() => {
+                                if (errorMsg.parentNode) {
+                                    errorMsg.remove();
+                                }
+                            }, 6000);
                         } else {
                             errorMsg.remove();
                         }
@@ -182,6 +189,7 @@
     <script src="js/currency-config.js"></script>
     <script src="js/currency-selector.js"></script>
     <script src="js/weather-service.js"></script>
+    <script src="js/weather-data-adapter.js"></script>
     <script src="js/location-selector.js"></script>
     <script src="js/accessibility-helpers.js"></script>
     <script src="js/button-handlers.js"></script>
@@ -9079,7 +9087,7 @@
             if (modal) {
                 const bsModal = new bootstrap.Modal(modal, {
                     backdrop: 'static',  // Prevent closing by clicking backdrop
-                    keyboard: false      // Prevent closing with ESC key
+                    keyboard: true       // Escape closes for accessibility (ModalAccessibility also handles Escape)
                 });
                 bsModal.show();
                 
@@ -16040,6 +16048,9 @@ INVENTORY SUMMARY:
         // Render feed mix history
         function renderFeedMixHistory() {
             const historyDiv = document.getElementById('feedMixHistory');
+            if (!historyDiv) {
+                return;
+            }
             
             if (feedMixHistory.length === 0) {
                 historyDiv.innerHTML = '<p class="text-muted">No recent feed mixes</p>';
@@ -16066,6 +16077,9 @@ INVENTORY SUMMARY:
         // Render feed mix database table
         function renderFeedMixDatabase() {
             const tbody = document.getElementById('feedMixDatabaseTable');
+            if (!tbody) {
+                return;
+            }
             
             tbody.innerHTML = feedMixDatabase.map(mix => `
                 <tr>
@@ -16095,8 +16109,11 @@ INVENTORY SUMMARY:
 
         // Update feed mix tab count
         function updateFeedMixTabCount() {
-            const count = feedMixDatabase.length;
-            document.getElementById('feed-mix-count').textContent = count;
+            const countEl = document.getElementById('feed-mix-count');
+            if (!countEl) {
+                return;
+            }
+            countEl.textContent = String(feedMixDatabase.length);
         }
 
         // Save feed mix database to localStorage
@@ -17910,7 +17927,22 @@ INVENTORY SUMMARY:
             insightsContainer.innerHTML = '<div class="col-12 text-center text-muted"><i class="fas fa-spinner fa-spin me-2"></i>Loading personalized recommendations...</div>';
 
             try {
-                const response = await fetch('/api/recommend?goal=high-yield&limit=3');
+                const apiBase =
+                    (window.SmartFarmAPI && window.SmartFarmAPI.baseURL) ||
+                    (window.SmartFarmConfig && window.SmartFarmConfig.API_BASE_URL) ||
+                    (window.API_CONFIG && window.API_CONFIG.API_BASE_URL) ||
+                    window.__SMARTFARM_API_BASE__ ||
+                    window.VITE_API_BASE_URL ||
+                    '';
+                // Prefer configured API host; never hit relative /api on static preview (browser 404 noise)
+                const recommendUrl = apiBase
+                    ? `${String(apiBase).replace(/\/$/, '')}/api/recommend?goal=high-yield&limit=3`
+                    : null;
+                if (!recommendUrl) {
+                    showLocalInsights(insightsContainer);
+                    return;
+                }
+                const response = await fetch(recommendUrl);
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => ({}));
                     throw new Error(`Request failed with status ${response.status}: ${errorData.error || 'Unknown error'}`);
