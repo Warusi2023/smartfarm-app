@@ -23,10 +23,10 @@ env:
   VITE_API_BASE_URL: https://test-api.example.com
 
 jobs:
-  web-gates:
-    name: Web build + Playwright + dist check
+  web-build:
+    name: Web Vite build + dist check
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 20
     defaults:
       run:
         working-directory: web-project
@@ -51,18 +51,122 @@ jobs:
       - name: Assert dist entry exists
         run: test -f dist/index.html
 
+  playwright:
+    name: Playwright (${{ matrix.artifact }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - project: chromium
+            artifact: chromium
+          - project: firefox
+            artifact: firefox
+          - project: webkit
+            artifact: webkit
+          - project: Mobile Chrome
+            artifact: mobile-chrome
+          - project: Mobile Safari
+            artifact: mobile-safari
+    defaults:
+      run:
+        working-directory: web-project
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: web-project/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
       # Playwright uses webServer: serve public/ (see web-project/playwright.config.js) — not dist.
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
-      - name: Run Playwright tests
-        run: npm run test
+      - name: Run Playwright tests (${{ matrix.project }})
+        env:
+          CI: true
+          PW_SHARD: ${{ matrix.artifact }}
+        run: |
+          echo "Playwright shard/project: ${{ matrix.project }} (artifact=${{ matrix.artifact }})"
+          npx playwright test --project="${{ matrix.project }}"
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: web-gates-test-results-${{ matrix.artifact }}
+          path: web-project/test-results/
+          if-no-files-found: ignore
+
+      - name: Upload test report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: web-gates-test-report-${{ matrix.artifact }}
+          path: web-project/playwright-report/
+          if-no-files-found: ignore
+
+      - name: Upload blob report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: web-gates-blob-report-${{ matrix.artifact }}
+          path: web-project/blob-report/
+          if-no-files-found: ignore
+
+  playwright-report:
+    name: Merge Playwright reports
+    runs-on: ubuntu-latest
+    needs: [playwright]
+    if: always()
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: web-project/package-lock.json
+
+      - name: Install dependencies
+        working-directory: web-project
+        run: npm ci
+
+      - name: Download blob reports
+        uses: actions/download-artifact@v4
+        with:
+          pattern: web-gates-blob-report-*
+          path: web-project/all-blob-reports
+          merge-multiple: true
+
+      - name: Merge reports
+        working-directory: web-project
+        run: |
+          echo "Merging Playwright blob reports from all browser projects"
+          npx playwright merge-reports --reporter html ./all-blob-reports
+
+      - name: Upload merged report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: web-gates-test-report-merged
+          path: web-project/playwright-report/
+          if-no-files-found: ignore
 
   # Optional: production Railway health only (CORS belongs in WEB_PRODUCTION_VERIFICATION.md in-browser).
+  # Independent of Playwright shards — only requires a successful Vite build.
   smoke-production-api:
     name: Smoke — production GET /api/health
     runs-on: ubuntu-latest
-    needs: web-gates
+    needs: web-build
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     steps:

@@ -1439,6 +1439,11 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showPetsManagement(); return false;">
+                                <i class="fas fa-paw me-2"></i>Pets
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" href="#" onclick="showAquacultureManagement(); return false;">
                                 <i class="fas fa-fish me-2"></i>Aquaculture
                             </a>
@@ -10215,10 +10220,16 @@
             const vaccinatedPets = pets.filter(pet => pet.vaccination === 'Up to date').length;
             const totalValue = pets.reduce((sum, pet) => sum + (pet.value || 0), 0);
 
-            document.getElementById('totalPets').textContent = totalPets;
-            document.getElementById('healthyPets').textContent = healthyPets;
-            document.getElementById('vaccinatedPets').textContent = vaccinatedPets;
-            document.getElementById('totalPetsValue').textContent = totalValue.toLocaleString();
+            const setText = (id, value) => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.textContent = value;
+                }
+            };
+            setText('totalPets', totalPets);
+            setText('healthyPets', healthyPets);
+            setText('vaccinatedPets', vaccinatedPets);
+            setText('totalPetsValue', totalValue.toLocaleString());
         }
 
         function getStatusColor(status) {
