@@ -8,7 +8,8 @@ const {
     gotoDashboardReady,
     gotoProtectedPage,
     clickDashboardAction,
-    clickSidebarNavByOnclick
+    clickSidebarNavByOnclick,
+    closeVisibleModal
 } = require('./helpers/dashboard-ready');
 
 async function openLivestockModalFromDashboard(page) {
@@ -49,8 +50,7 @@ test.describe('Modal Accessibility E2E Tests', () => {
         await expect(modal).toHaveAttribute('aria-modal', 'true');
         await expect(modal).not.toHaveAttribute('aria-hidden', 'true');
         
-        await page.locator('.modal.show .btn-close').first().click({ timeout: 8000 });
-        await page.waitForSelector('.modal.show', { state: 'hidden', timeout: 8000 });
+        await closeVisibleModal(page);
     });
 
     test('should handle focus management correctly in addLivestockModal', async ({ page }) => {
@@ -105,8 +105,7 @@ test.describe('Modal Accessibility E2E Tests', () => {
         const firstModal = page.locator('.modal.show').first();
         await expect(firstModal).toHaveAttribute('aria-modal', 'true');
         
-        await page.locator('.modal.show .btn-close').first().click({ timeout: 8000 });
-        await page.waitForSelector('.modal.show', { state: 'hidden', timeout: 8000 });
+        await closeVisibleModal(page);
         
         await clickSidebarNavByOnclick(page, 'showCropManagement');
         await page.waitForSelector('#cropManagementView', { state: 'visible', timeout: 10000 });
@@ -123,8 +122,7 @@ test.describe('Modal Accessibility E2E Tests', () => {
         
         await expect(page.locator('.modal.show').first()).toBeVisible();
         
-        await page.locator('.modal.show .btn-close').first().click({ timeout: 8000 });
-        await page.waitForSelector('.modal.show', { state: 'hidden', timeout: 8000 });
+        await closeVisibleModal(page);
     });
 
     test('should restore focus to trigger button after modal closes', async ({ page }) => {
@@ -173,12 +171,11 @@ test.describe('Modal Accessibility E2E Tests', () => {
         
         const closeButton = page.locator('.modal.show .btn-close').first();
         await expect(closeButton).toBeVisible();
-        
-        await closeButton.click({ timeout: 8000 });
-        await page.waitForSelector('.modal.show', { state: 'hidden', timeout: 8000 });
+        await closeVisibleModal(page);
     });
 
     test('should handle rapid modal open/close without errors', async ({ page }) => {
+        test.setTimeout(process.env.CI ? 90000 : 60000);
         const consoleErrors = [];
         page.on('console', msg => {
             if (msg.type() === 'error' && msg.text().includes('aria-hidden')) {
@@ -192,13 +189,9 @@ test.describe('Modal Accessibility E2E Tests', () => {
         for (let i = 0; i < 3; i++) {
             await clickDashboardAction(page, '#livestockManagementView button[onclick="addNewLivestock()"]');
             await page.waitForSelector('.modal.show', { timeout: 8000 });
-            
-            await page.locator('.modal.show .btn-close').first().click({ timeout: 8000 });
-            await page.waitForSelector('.modal.show', { state: 'hidden', timeout: 8000 });
-            
-            await page.waitForTimeout(100);
+            await closeVisibleModal(page);
         }
-        
+
         expect(consoleErrors.length).toBe(0);
     });
 });

@@ -145,14 +145,20 @@
                     }
                     
                     const errorMsg = document.createElement('div');
-                    errorMsg.className = 'alert alert-warning alert-dismissible fade show';
+                    errorMsg.className = 'alert alert-warning position-fixed';
                     errorMsg.setAttribute('role', 'status');
                     errorMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 1030; max-width: min(320px, calc(100vw - 40px)); pointer-events: auto;';
                     errorMsg.innerHTML = `
                         <strong>⚠️ QR Code Library Loading...</strong><br>
                         The QR code library is being loaded from CDN. Please wait a moment.
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        <button type="button" class="btn-close" aria-label="Close"></button>
                     `;
+                    const qrClose = errorMsg.querySelector('.btn-close');
+                    if (qrClose) {
+                        qrClose.addEventListener('click', () => {
+                            if (errorMsg.isConnected) errorMsg.remove();
+                        });
+                    }
                     document.body.appendChild(errorMsg);
                     
                     // Check again after 2 more seconds and update message if still not loaded
@@ -162,15 +168,21 @@
                                 <strong>⚠️ QR Code Library Issue</strong><br>
                                 Unable to load QR code library. Some features may not work.<br>
                                 <small>You can manually download qrcode.min.js and place it in /js/ directory.</small>
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                <button type="button" class="btn-close" aria-label="Close"></button>
                             `;
+                            const qrClose2 = errorMsg.querySelector('.btn-close');
+                            if (qrClose2) {
+                                qrClose2.addEventListener('click', () => {
+                                    if (errorMsg.isConnected) errorMsg.remove();
+                                });
+                            }
                             // Do not leave a permanent click-blocking toast on mobile
                             setTimeout(() => {
-                                if (errorMsg.parentNode) {
+                                if (errorMsg.isConnected) {
                                     errorMsg.remove();
                                 }
                             }, 6000);
-                        } else {
+                        } else if (errorMsg.isConnected) {
                             errorMsg.remove();
                         }
                     }, 2000);
@@ -8195,25 +8207,29 @@
             if (window.SmartFarmAPI && window.SmartFarmAPI.showSuccessMessage) {
                 window.SmartFarmAPI.showSuccessMessage(message);
             } else {
-                // Fallback notification
+                // Fallback notification (no Bootstrap Alert — avoid dispose races)
                 const notification = document.createElement('div');
-                notification.className = 'alert alert-success alert-dismissible fade show';
+                notification.className = 'alert alert-success position-fixed';
+                notification.setAttribute('role', 'alert');
                 notification.style.position = 'fixed';
                 notification.style.top = '20px';
                 notification.style.right = '20px';
                 notification.style.zIndex = '9999';
                 notification.innerHTML = `
                     <i class="fas fa-check-circle me-2"></i>${message}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    <button type="button" class="btn-close" aria-label="Close"></button>
                 `;
+                const closeBtn = notification.querySelector('.btn-close');
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', () => {
+                        if (notification.isConnected) notification.remove();
+                    });
+                }
                 
                 document.body.appendChild(notification);
                 
-                // Auto-remove after 3 seconds
                 setTimeout(() => {
-                    if (notification.parentNode) {
-                        notification.parentNode.removeChild(notification);
-                    }
+                    if (notification.isConnected) notification.remove();
                 }, 3000);
             }
         }
@@ -8222,25 +8238,29 @@
             if (window.SmartFarmAPI && window.SmartFarmAPI.showErrorMessage) {
                 window.SmartFarmAPI.showErrorMessage(message);
             } else {
-                // Fallback notification
+                // Fallback notification (no Bootstrap Alert — avoid dispose races)
                 const notification = document.createElement('div');
-                notification.className = 'alert alert-danger alert-dismissible fade show';
+                notification.className = 'alert alert-danger position-fixed';
+                notification.setAttribute('role', 'alert');
                 notification.style.position = 'fixed';
                 notification.style.top = '20px';
                 notification.style.right = '20px';
                 notification.style.zIndex = '9999';
                 notification.innerHTML = `
                     <i class="fas fa-exclamation-circle me-2"></i>${message}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    <button type="button" class="btn-close" aria-label="Close"></button>
                 `;
+                const closeBtn = notification.querySelector('.btn-close');
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', () => {
+                        if (notification.isConnected) notification.remove();
+                    });
+                }
                 
                 document.body.appendChild(notification);
                 
-                // Auto-remove after 5 seconds
                 setTimeout(() => {
-                    if (notification.parentNode) {
-                        notification.parentNode.removeChild(notification);
-                    }
+                    if (notification.isConnected) notification.remove();
                 }, 5000);
             }
         }
@@ -8631,15 +8651,19 @@
             renderOtherLivestockTab();
         }
 
+        function livestockTypeKey(animal) {
+            return String((animal && (animal.type || animal.species)) || '').toLowerCase();
+        }
+
         function updateLivestockTabCounts() {
             const counts = {
                 all: livestock.length,
-                cattle: livestock.filter(animal => animal.type.toLowerCase() === 'cattle').length,
-                pigs: livestock.filter(animal => animal.type.toLowerCase() === 'pigs').length,
-                poultry: livestock.filter(animal => ['chickens', 'ducks', 'turkeys'].includes(animal.type.toLowerCase())).length,
-                sheepGoats: livestock.filter(animal => ['sheep', 'goats'].includes(animal.type.toLowerCase())).length,
-                horses: livestock.filter(animal => animal.type.toLowerCase() === 'horses').length,
-                other: livestock.filter(animal => !['cattle', 'pigs', 'chickens', 'ducks', 'turkeys', 'sheep', 'goats', 'horses'].includes(animal.type.toLowerCase())).length
+                cattle: livestock.filter(animal => livestockTypeKey(animal) === 'cattle').length,
+                pigs: livestock.filter(animal => livestockTypeKey(animal) === 'pigs').length,
+                poultry: livestock.filter(animal => ['chickens', 'ducks', 'turkeys'].includes(livestockTypeKey(animal))).length,
+                sheepGoats: livestock.filter(animal => ['sheep', 'goats'].includes(livestockTypeKey(animal))).length,
+                horses: livestock.filter(animal => livestockTypeKey(animal) === 'horses').length,
+                other: livestock.filter(animal => !['cattle', 'pigs', 'chickens', 'ducks', 'turkeys', 'sheep', 'goats', 'horses'].includes(livestockTypeKey(animal))).length
             };
 
             // Safe element updates with null checks
@@ -8730,7 +8754,7 @@
             if (!tbody) return;
 
             tbody.innerHTML = '';
-            const cattle = livestock.filter(animal => animal.type.toLowerCase() === 'cattle');
+            const cattle = livestock.filter(animal => livestockTypeKey(animal) === 'cattle');
             cattle.forEach(animal => {
                 const row = createLivestockRow(animal, false);
                 tbody.appendChild(row);
@@ -8742,7 +8766,7 @@
             if (!tbody) return;
 
             tbody.innerHTML = '';
-            const pigs = livestock.filter(animal => animal.type.toLowerCase() === 'pigs');
+            const pigs = livestock.filter(animal => livestockTypeKey(animal) === 'pigs');
             pigs.forEach(animal => {
                 const row = createLivestockRow(animal, false);
                 tbody.appendChild(row);
@@ -8754,7 +8778,7 @@
             if (!tbody) return;
 
             tbody.innerHTML = '';
-            const poultry = livestock.filter(animal => ['chickens', 'ducks', 'turkeys'].includes(animal.type.toLowerCase()));
+            const poultry = livestock.filter(animal => ['chickens', 'ducks', 'turkeys'].includes(livestockTypeKey(animal)));
             poultry.forEach(animal => {
                 const row = createLivestockRow(animal, true);
                 tbody.appendChild(row);
@@ -8766,7 +8790,7 @@
             if (!tbody) return;
 
             tbody.innerHTML = '';
-            const sheepGoats = livestock.filter(animal => ['sheep', 'goats'].includes(animal.type.toLowerCase()));
+            const sheepGoats = livestock.filter(animal => ['sheep', 'goats'].includes(livestockTypeKey(animal)));
             sheepGoats.forEach(animal => {
                 const row = createLivestockRow(animal, true);
                 tbody.appendChild(row);
@@ -8778,7 +8802,7 @@
             if (!tbody) return;
 
             tbody.innerHTML = '';
-            const horses = livestock.filter(animal => animal.type.toLowerCase() === 'horses');
+            const horses = livestock.filter(animal => livestockTypeKey(animal) === 'horses');
             horses.forEach(animal => {
                 const row = createLivestockRow(animal, false);
                 tbody.appendChild(row);
@@ -8790,7 +8814,7 @@
             if (!tbody) return;
 
             tbody.innerHTML = '';
-            const other = livestock.filter(animal => !['cattle', 'pigs', 'chickens', 'ducks', 'turkeys', 'sheep', 'goats', 'horses'].includes(animal.type.toLowerCase()));
+            const other = livestock.filter(animal => !['cattle', 'pigs', 'chickens', 'ducks', 'turkeys', 'sheep', 'goats', 'horses'].includes(livestockTypeKey(animal)));
             other.forEach(animal => {
                 const row = createLivestockRow(animal, true);
                 tbody.appendChild(row);
@@ -9090,10 +9114,17 @@
             // Show the static modal using Bootstrap's standard method
             const modal = document.getElementById('dashboardAddLivestockModal');
             if (modal) {
-                const bsModal = new bootstrap.Modal(modal, {
-                    backdrop: 'static',  // Prevent closing by clicking backdrop
-                    keyboard: true       // Escape closes for accessibility (ModalAccessibility also handles Escape)
-                });
+                // Reuse one instance — `new Modal()` on every click leaves stale
+                // instances that ignore hide() during rapid open/close.
+                const bsModal = (window.bootstrap && bootstrap.Modal.getOrCreateInstance)
+                    ? bootstrap.Modal.getOrCreateInstance(modal, {
+                        backdrop: 'static',
+                        keyboard: true
+                    })
+                    : new bootstrap.Modal(modal, {
+                        backdrop: 'static',
+                        keyboard: true
+                    });
                 bsModal.show();
                 
                 // Store modal instance for later use
@@ -15385,8 +15416,29 @@ INVENTORY SUMMARY:
             
             if (!statusIndicator || !statusText) return;
             
-            // Check API status
-            fetch('https://web-production-86d39.up.railway.app/api/health')
+            // Absolute backend health URL only — never allow a Netlify-relative "/api/health".
+            const PRODUCTION_HEALTH =
+                'https://web-production-86d39.up.railway.app/api/health';
+            function resolveSystemHealthUrl() {
+                if (window.SmartFarmApiConfig && window.SmartFarmApiConfig.healthUrl) {
+                    return window.SmartFarmApiConfig.healthUrl;
+                }
+                const origin =
+                    (typeof window.__SMARTFARM_RESOLVE_API_ORIGIN__ === 'function' &&
+                        window.__SMARTFARM_RESOLVE_API_ORIGIN__()) ||
+                    window.__SMARTFARM_API_BASE__ ||
+                    '';
+                const base = String(origin || '')
+                    .trim()
+                    .replace(/\/+$/, '')
+                    .replace(/\/api$/i, '');
+                if (!/^https?:\/\//i.test(base)) {
+                    return PRODUCTION_HEALTH;
+                }
+                return base + '/api/health';
+            }
+            const healthUrl = resolveSystemHealthUrl();
+            fetch(healthUrl)
                 .then(response => {
                     if (response.ok) {
                         statusIndicator.className = 'status-indicator online';
@@ -16801,31 +16853,40 @@ INVENTORY SUMMARY:
 
         function showNotification(message, type = 'info') {
             const notification = document.createElement('div');
-            notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+            // Avoid Bootstrap Alert auto-dismiss (data-bs-dismiss) — it races with
+            // manual removal during fast view switches and throws in _destroyElement.
+            notification.className = `alert alert-${type} position-fixed`;
+            notification.setAttribute('role', 'alert');
             notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; max-width: 400px;';
             notification.innerHTML = `
                 <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
                 ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <button type="button" class="btn-close" aria-label="Close"></button>
             `;
+            const closeBtn = notification.querySelector('.btn-close');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', () => {
+                    if (notification.isConnected) notification.remove();
+                });
+            }
             
             document.body.appendChild(notification);
             
             setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.parentNode.removeChild(notification);
-                }
+                if (notification.isConnected) notification.remove();
             }, 5000);
         }
 
         // Professional Dialog System
         function showAlert(message, type = 'info', duration = 3000) {
-            // Remove any existing alerts
-            const existingAlerts = document.querySelectorAll('.custom-alert');
-            existingAlerts.forEach(alert => alert.remove());
+            // Remove any existing alerts without Bootstrap dispose races
+            document.querySelectorAll('.custom-alert').forEach((alert) => {
+                if (alert.isConnected) alert.remove();
+            });
             
             const alertDiv = document.createElement('div');
-            alertDiv.className = `custom-alert alert alert-${type} alert-dismissible fade show`;
+            alertDiv.className = `custom-alert alert alert-${type}`;
+            alertDiv.setAttribute('role', 'alert');
             alertDiv.style.cssText = `
                 position: fixed;
                 top: 20px;
@@ -16841,17 +16902,20 @@ INVENTORY SUMMARY:
                 <div class="d-flex align-items-center">
                     <i class="fas fa-${getAlertIcon(type)} me-2"></i>
                     <span>${message}</span>
-                    <button type="button" class="btn-close ms-auto" onclick="this.parentElement.parentElement.remove()"></button>
+                    <button type="button" class="btn-close ms-auto" aria-label="Close"></button>
                 </div>
             `;
+            const closeBtn = alertDiv.querySelector('.btn-close');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', () => {
+                    if (alertDiv.isConnected) alertDiv.remove();
+                });
+            }
             
             document.body.appendChild(alertDiv);
             
-            // Auto remove after duration
             setTimeout(() => {
-                if (alertDiv.parentNode) {
-                    alertDiv.remove();
-                }
+                if (alertDiv.isConnected) alertDiv.remove();
             }, duration);
         }
 

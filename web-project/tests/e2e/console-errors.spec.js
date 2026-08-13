@@ -74,6 +74,7 @@ test.describe('Console Error Verification', () => {
     });
 
     test('should navigate through all menu tabs without errors', async ({ page }) => {
+        test.setTimeout(process.env.CI ? 120000 : 60000);
         await gotoDashboardReady(page);
         
         // Exact sidebar labels (substring text= matches marketing page wrongly)

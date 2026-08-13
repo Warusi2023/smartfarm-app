@@ -1,6 +1,7 @@
 /**
  * E2E Tests for Server Connection
- * Tests frontend-backend connectivity from Netlify to Railway
+ * Matrix suite talks to the local Playwright mock API (see mock-api-server.js).
+ * Live Railway coverage lives in railway-smoke.spec.js (--project=railway-smoke).
  */
 
 const { test, expect } = require('@playwright/test');
@@ -9,17 +10,7 @@ const {
   gotoProtectedPage,
   fakeJwt
 } = require('./helpers/dashboard-ready');
-
-const API_BASE = (
-  process.env.SMARTFARM_API_BASE ||
-  process.env.VITE_API_BASE_URL ||
-  'https://web-production-86d39.up.railway.app'
-).replace(/\/$/, '');
-
-function apiUrl(path) {
-  const normalized = path.startsWith('/') ? path : `/${path}`;
-  return `${API_BASE}${normalized}`;
-}
+const { getE2EApiBase, apiUrl } = require('./helpers/api-base');
 
 function authHeaders() {
   return {
@@ -35,7 +26,11 @@ test.describe('Server Connection Tests', () => {
     await page.waitForSelector('body');
   });
 
-  test('should successfully connect to Railway backend', async ({ page }) => {
+  test('should successfully connect to backend API', async ({ page }) => {
+    const base = getE2EApiBase();
+    expect(base).toBeTruthy();
+    expect(base.includes('railway.app')).toBeFalsy();
+
     const healthResponse = await page.request.get(apiUrl('/api/health'));
     expect(healthResponse.ok()).toBeTruthy();
 
@@ -49,47 +44,39 @@ test.describe('Server Connection Tests', () => {
     const farmsResponse = await page.request.get(apiUrl('/api/farms'), {
       headers: authHeaders()
     });
-    // Reachable Railway endpoint: success or auth rejection (not a network/5xx outage)
-    expect([200, 401, 403]).toContain(farmsResponse.status());
+    expect(farmsResponse.status()).toBe(200);
     const farmsData = await farmsResponse.json();
-    if (farmsResponse.ok()) {
-      expect(Array.isArray(farmsData.data || farmsData)).toBeTruthy();
-    } else {
-      expect(farmsData.error || farmsData.message || farmsData.code).toBeTruthy();
-    }
+    expect(farmsData.success).toBeTruthy();
+    expect(Array.isArray(farmsData.data)).toBeTruthy();
+    expect(farmsData.data.length).toBeGreaterThan(0);
   });
 
   test('should fetch crops from backend API', async ({ page }) => {
     const cropsResponse = await page.request.get(apiUrl('/api/crops'), {
       headers: authHeaders()
     });
-    expect([200, 401, 403]).toContain(cropsResponse.status());
+    expect(cropsResponse.status()).toBe(200);
     const cropsData = await cropsResponse.json();
-    if (cropsResponse.ok()) {
-      expect(Array.isArray(cropsData.data || cropsData)).toBeTruthy();
-    } else {
-      expect(cropsData.error || cropsData.message || cropsData.code).toBeTruthy();
-    }
+    expect(cropsData.success).toBeTruthy();
+    expect(Array.isArray(cropsData.data)).toBeTruthy();
   });
 
   test('should fetch livestock from backend API', async ({ page }) => {
     const livestockResponse = await page.request.get(apiUrl('/api/livestock'), {
       headers: authHeaders()
     });
-    expect([200, 401, 403]).toContain(livestockResponse.status());
+    expect(livestockResponse.status()).toBe(200);
     const livestockData = await livestockResponse.json();
-    if (livestockResponse.ok()) {
-      expect(Array.isArray(livestockData.data || livestockData)).toBeTruthy();
-    } else {
-      expect(livestockData.error || livestockData.message || livestockData.code).toBeTruthy();
-    }
+    expect(livestockData.success).toBeTruthy();
+    expect(Array.isArray(livestockData.data)).toBeTruthy();
   });
 
   test('should create livestock via API', async ({ page }) => {
+    const tag = `E2E-TEST-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const newLivestock = {
       species: 'Cattle',
       breed: 'Holstein',
-      tag: 'E2E-TEST-' + Date.now(),
+      tag,
       sex: 'female',
       birthDate: '2023-01-01',
       weight: 500,
@@ -102,21 +89,27 @@ test.describe('Server Connection Tests', () => {
       headers: authHeaders()
     });
 
-    if (createResponse.ok()) {
-      const createData = await createResponse.json();
-      expect(createData.success || createData.id || createData.data).toBeTruthy();
-    } else {
-      expect([400, 401, 403, 422]).toContain(createResponse.status());
-      const body = await createResponse.json().catch(() => ({}));
-      expect(body.error || body.message || body.code || createResponse.status()).toBeTruthy();
-    }
+    expect(createResponse.status()).toBe(201);
+    const createData = await createResponse.json();
+    expect(createData.success).toBeTruthy();
+    expect(createData.data?.tag || createData.tag).toBe(tag);
+  });
+
+  test('should reject unauthenticated farms requests', async ({ page }) => {
+    const response = await page.request.get(apiUrl('/api/farms'));
+    expect(response.status()).toBe(401);
+    const body = await response.json();
+    expect(body.code || body.error).toBeTruthy();
   });
 
   test('should handle API errors gracefully', async ({ page }) => {
     const invalidResponse = await page.request.get(apiUrl('/api/invalid-endpoint'), {
       headers: authHeaders()
     });
-    expect([404, 401, 403]).toContain(invalidResponse.status());
+    expect(invalidResponse.status()).toBe(404);
+    const body = await invalidResponse.json();
+    expect(body.success).toBeFalsy();
+    expect(body.error || body.code).toBeTruthy();
   });
 
   test('should not have CORS violations in console', async ({ page }) => {
@@ -131,32 +124,7 @@ test.describe('Server Connection Tests', () => {
       }
     });
 
-    // Fulfill remote API from the page origin so we verify the app itself
-    // does not introduce CORS issues (static E2E preview is not on Netlify).
-    await page.route('**/api/livestock**', async (route) => {
-      const origin = 'http://localhost:8080';
-      if (route.request().method() === 'OPTIONS') {
-        return route.fulfill({
-          status: 204,
-          headers: {
-            'Access-Control-Allow-Origin': origin,
-            'Access-Control-Allow-Credentials': 'true',
-            'Access-Control-Allow-Methods': 'GET,POST,PUT,PATCH,DELETE,OPTIONS',
-            'Access-Control-Allow-Headers': 'Authorization,Content-Type,Accept'
-          }
-        });
-      }
-      return route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        headers: {
-          'Access-Control-Allow-Origin': origin,
-          'Access-Control-Allow-Credentials': 'true'
-        },
-        body: JSON.stringify({ success: true, data: [] })
-      });
-    });
-
+    // Hit the real local mock API from the page (credentials + CORS).
     await gotoProtectedPage(page, '/livestock-management.html');
     await page.waitForTimeout(2000);
 
@@ -233,7 +201,7 @@ test.describe('Server Connection Tests', () => {
         route.fulfill({
           status: 200,
           contentType: 'application/json',
-          body: JSON.stringify({ data: [] })
+          body: JSON.stringify({ success: true, data: [] })
         });
       }
     });
@@ -278,10 +246,11 @@ test.describe('Server Connection Tests', () => {
     });
     const endTime = Date.now();
 
-    expect([200, 401, 403]).toContain(response.status());
+    expect(response.status()).toBe(200);
     expect(endTime - startTime).toBeLessThan(5000);
 
     const data = await response.json();
-    expect(data).toBeDefined();
+    expect(Array.isArray(data.data)).toBeTruthy();
+    expect(data.data.length).toBeGreaterThan(100);
   });
 });

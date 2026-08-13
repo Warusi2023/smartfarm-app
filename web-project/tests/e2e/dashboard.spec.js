@@ -16,7 +16,7 @@ test.describe('SmartFarm Dashboard', () => {
 
   test('should load the dashboard successfully', async ({ page }) => {
     await expect(page.locator('#dashboardView')).toBeVisible();
-    await expect(page.locator('#dashboardView h2')).toContainText('Farm Dashboard');
+    await expect(page.getByRole('heading', { name: 'Farm Dashboard', exact: true })).toBeVisible();
     await expect(page.locator('.navbar')).toBeVisible();
     await expect(page.locator('#sidebar, .sidebar').first()).toBeVisible();
     await expect(page.locator('#mainContent.main-content, .main-content').first()).toBeVisible();
@@ -137,12 +137,35 @@ test.describe('SmartFarm Dashboard', () => {
     await page.fill('#farmName', 'Test Farm');
     await page.fill('#farmLocation', 'Test Location');
     await page.fill('#farmArea', '100');
-    await page.selectOption('#farmType', { index: 1 });
+    await page.selectOption('#farmType', { value: 'crops' });
 
-    await page.click('button[onclick="saveFarmData()"]');
-    await expect(page.locator('button[onclick="saveFarmData()"] .fa-spinner')).toBeVisible({
-      timeout: 8000
+    // Gate createFarm so the loading UI is observable on fast local/mock backends
+    // (including WebKit, where network route delays are not always reliable).
+    await page.evaluate(() => {
+      if (!window.SmartFarmAPI || typeof window.SmartFarmAPI.createFarm !== 'function') {
+        throw new Error('SmartFarmAPI.createFarm is not available');
+      }
+      window.__e2eFarmCreateGate = new Promise((resolve) => {
+        window.__e2eReleaseFarmCreate = resolve;
+      });
+      const original = window.SmartFarmAPI.createFarm.bind(window.SmartFarmAPI);
+      window.SmartFarmAPI.createFarm = async (farmData) => {
+        await window.__e2eFarmCreateGate;
+        return original(farmData);
+      };
     });
+
+    const saveButton = page.locator('button[onclick="saveFarmData()"]');
+    await saveButton.click();
+    await expect(saveButton).toBeDisabled({ timeout: 8000 });
+    await expect(saveButton.locator('.fa-spinner')).toBeVisible({ timeout: 8000 });
+
+    await page.evaluate(() => {
+      if (typeof window.__e2eReleaseFarmCreate === 'function') {
+        window.__e2eReleaseFarmCreate();
+      }
+    });
+    await expect(saveButton).toBeEnabled({ timeout: 15000 });
   });
 
   test('should display success notifications', async ({ page }) => {
@@ -151,9 +174,13 @@ test.describe('SmartFarm Dashboard', () => {
         return route.fulfill({
           status: 201,
           contentType: 'application/json',
+          headers: {
+            'Access-Control-Allow-Origin': 'http://localhost:8080',
+            'Access-Control-Allow-Credentials': 'true'
+          },
           body: JSON.stringify({
             success: true,
-            data: { id: 1, name: 'Test Farm' }
+            data: { id: `farm-notify-${Date.now()}`, name: 'Test Farm' }
           })
         });
       }
@@ -165,7 +192,17 @@ test.describe('SmartFarm Dashboard', () => {
     await page.fill('#farmLocation', 'Test Location');
     await page.fill('#farmArea', '100');
     await page.selectOption('#farmType', { index: 1 });
+
+    const saveResponsePromise = page.waitForResponse(
+      (res) =>
+        /\/api\/farms/.test(res.url()) &&
+        (res.request().method() === 'POST' || res.request().method() === 'PUT'),
+      { timeout: 15000 }
+    );
+
     await page.click('button[onclick="saveFarmData()"]');
+    const saveResponse = await saveResponsePromise;
+    expect(saveResponse.ok()).toBeTruthy();
 
     await expect(page.locator('.alert-success, .custom-alert.alert-success').first()).toBeVisible({
       timeout: 10000
@@ -173,28 +210,30 @@ test.describe('SmartFarm Dashboard', () => {
   });
 
   test('should display error notifications', async ({ page }) => {
-    await page.route('**/api/farms**', (route) => {
-      if (route.request().method() === 'POST' || route.request().method() === 'PUT') {
-        return route.fulfill({
-          status: 400,
-          contentType: 'application/json',
-          body: JSON.stringify({
-            success: false,
-            error: 'Validation failed'
-          })
-        });
-      }
-      return route.continue();
-    });
-
     await clickSidebarNavByOnclick(page, 'showFarmManagement');
     await page.fill('#farmName', 'Test Farm');
     await page.fill('#farmLocation', 'Test Location');
     await page.fill('#farmArea', '100');
-    await page.selectOption('#farmType', { index: 1 });
+    await page.selectOption('#farmType', { value: 'crops' });
+
+    // Stub createFarm so the error path is deterministic across browsers
+    // (WebKit page.route for cross-origin POST is not always intercepted).
+    await page.evaluate(() => {
+      if (!window.SmartFarmAPI || typeof window.SmartFarmAPI.createFarm !== 'function') {
+        throw new Error('SmartFarmAPI.createFarm is not available');
+      }
+      window.SmartFarmAPI.createFarm = async () => ({
+        success: false,
+        error: 'Validation failed',
+        statusCode: 400
+      });
+    });
+
     await page.click('button[onclick="saveFarmData()"]');
 
-    await expect(page.locator('.alert-danger, .custom-alert.alert-danger').first()).toBeVisible({
+    await expect(
+      page.locator('.alert-danger, .custom-alert.alert-danger, .alert.alert-danger').first()
+    ).toBeVisible({
       timeout: 10000
     });
   });

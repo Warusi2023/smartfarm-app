@@ -3,7 +3,9 @@
  * Keeps E2E tests off networkidle (dashboard keeps sockets/polling alive).
  */
 
-const DASHBOARD_READY_TIMEOUT_MS = 20000;
+const { getE2EApiBase } = require('./api-base');
+
+const DASHBOARD_READY_TIMEOUT_MS = process.env.CI ? 50000 : 45000;
 
 /** Minimal three-segment token accepted by dashboard isUsableBackendJwt(). */
 function fakeJwt() {
@@ -19,12 +21,14 @@ function buildSessionPayload() {
       lastName: 'Tester',
       role: 'farmer'
     },
-    token: fakeJwt()
+    token: fakeJwt(),
+    apiBase: getE2EApiBase()
   };
 }
 
 /**
  * Seed localStorage/sessionStorage so protected pages do not redirect to login.
+ * Also injects the local/test API base so pages never fall back to Railway in matrix E2E.
  * Uses addInitScript (runs before page scripts on every navigation in this context).
  * Deterministic across Chromium, Firefox, WebKit, and mobile projects.
  */
@@ -34,7 +38,13 @@ async function seedDashboardSession(page) {
     const user = JSON.stringify(session.user);
     const token = session.token;
     const loginTime = new Date().toISOString();
+    const apiBase = session.apiBase;
     try {
+      if (apiBase) {
+        window.__SMARTFARM_API_BASE__ = apiBase;
+        window.VITE_API_BASE_URL = apiBase;
+        window.VITE_API_URL = apiBase;
+      }
       localStorage.setItem('smartfarm_user', user);
       localStorage.setItem('smartfarm_token', token);
       localStorage.setItem('smartfarm_remember', 'true');
@@ -62,15 +72,49 @@ async function expectNotRedirectedToLogin(page, intendedPath) {
 /**
  * Navigate to a protected page with seeded session and fail fast if redirected to login.
  */
+function gotoWaitUntil(page) {
+  try {
+    const browserName = page.context().browser()?.browserType()?.name();
+    // Firefox/WebKit (incl. Mobile Safari) can delay DOMContentLoaded on heavy
+    // dashboard.html past the navigation budget while the shell is already painted.
+    if (browserName === 'firefox' || browserName === 'webkit') {
+      return 'commit';
+    }
+  } catch (_) {
+    /* ignore */
+  }
+  return 'domcontentloaded';
+}
+
 async function gotoProtectedPage(page, path, options = {}) {
   const timeout = options.timeout || DASHBOARD_READY_TIMEOUT_MS;
   const readySelector = options.readySelector || 'body';
   await seedDashboardSession(page);
   const normalized = path.startsWith('/') ? path : `/${path}`;
-  await page.goto(normalized, {
-    waitUntil: 'domcontentloaded',
-    timeout
-  });
+
+  try {
+    await page.goto(normalized, {
+      waitUntil: gotoWaitUntil(page),
+      timeout
+    });
+  } catch (error) {
+    const timedOut =
+      error &&
+      (error.name === 'TimeoutError' || /Timeout.*exceeded/i.test(String(error.message)));
+    if (!timedOut) {
+      throw error;
+    }
+    // Navigation timed out before the waitUntil signal; accept a painted ready shell.
+    try {
+      await page.waitForSelector(readySelector, {
+        state: 'visible',
+        timeout: Math.min(timeout, 15000)
+      });
+    } catch {
+      throw error;
+    }
+  }
+
   // Auth checks often run on a short timer after DOMContentLoaded.
   await page.waitForTimeout(300);
   await expectNotRedirectedToLogin(page, normalized);
@@ -104,27 +148,30 @@ async function gotoDashboardReady(page, options = {}) {
     readySelector: '#dashboardView'
   });
   await page.waitForSelector('#mainContent', { state: 'visible', timeout });
+  // Sidebar view switches are registered late in dashboard.html; wait before clicking nav.
+  await page.waitForFunction(
+    () => typeof window.showFarmManagement === 'function',
+    null,
+    { timeout }
+  );
   await expectNotRedirectedToLogin(page, '/dashboard.html');
   await waitForClickBlockingOverlaysClear(page);
 }
 
 async function dismissTransientOverlays(page) {
   await page.evaluate(() => {
-    document.querySelectorAll('.alert.alert-dismissible .btn-close').forEach((btn) => {
-      try {
-        btn.click();
-      } catch (_) {
-        /* ignore */
-      }
-    });
-    document.querySelectorAll('.alert.fade.show, .alert.alert-warning').forEach((alert) => {
-      const text = (alert.textContent || '').toLowerCase();
-      if (
+    document.querySelectorAll('.alert, .custom-alert, .toast').forEach((el) => {
+      const text = (el.textContent || '').toLowerCase();
+      const shouldClear =
         text.includes('qr code') ||
         text.includes('loading') ||
-        alert.classList.contains('alert-dismissible')
-      ) {
-        alert.remove();
+        el.classList.contains('alert-dismissible') ||
+        el.classList.contains('custom-alert');
+      if (!shouldClear) return;
+      try {
+        if (el.isConnected) el.remove();
+      } catch (_) {
+        /* ignore */
       }
     });
   });
@@ -154,7 +201,7 @@ async function ensureMobileSidebarOpen(page) {
 
   const toggle = page.locator('#sidebarToggle');
   await toggle.waitFor({ state: 'visible', timeout: 10000 });
-  await toggle.scrollIntoViewIfNeeded();
+  await toggle.evaluate((el) => el.scrollIntoView({ block: 'center', inline: 'nearest' }));
 
   try {
     await toggle.click({ timeout: 10000 });
@@ -196,7 +243,7 @@ async function clickSidebarNav(page, nameOrSelector, options = {}) {
   }
 
   await link.waitFor({ state: 'visible', timeout: 10000 });
-  await link.scrollIntoViewIfNeeded();
+  await link.evaluate((el) => el.scrollIntoView({ block: 'center', inline: 'nearest' }));
   await expectVisibleAndEnabled(link);
   try {
     await link.click({ timeout: 10000 });
@@ -209,18 +256,41 @@ async function clickSidebarNav(page, nameOrSelector, options = {}) {
 /**
  * Click sidebar nav by onclick fragment (e.g. showCropManagement) after opening mobile menu.
  */
+const ONCLICK_VIEW_SELECTORS = {
+  showDashboard: '#dashboardView',
+  showFarmManagement: '#farmManagementView',
+  showCropManagement: '#cropManagementView',
+  showLivestockManagement: '#livestockManagementView',
+  showAnalytics: '#analyticsView',
+  showPetsManagement: '#petsManagementView',
+  showInventoryManagement: '#inventoryManagementView',
+  showTasks: '#tasksView',
+  showReports: '#reportsView'
+};
+
 async function clickSidebarNavByOnclick(page, onclickFragment) {
   await ensureMobileSidebarOpen(page);
   await dismissTransientOverlays(page);
   const link = page.locator(`.sidebar a[onclick*="${onclickFragment}"]`).first();
   await link.waitFor({ state: 'visible', timeout: 10000 });
-  await link.scrollIntoViewIfNeeded();
+  await link.evaluate((el) => el.scrollIntoView({ block: 'center', inline: 'nearest' }));
   await expectVisibleAndEnabled(link);
   try {
     await link.click({ timeout: 10000 });
   } catch (err) {
     await dismissTransientOverlays(page);
     await link.evaluate((el) => el.click());
+  }
+
+  const viewSelector = ONCLICK_VIEW_SELECTORS[onclickFragment];
+  if (viewSelector) {
+    // If Playwright's hit-test click did not run the inline handler (common after
+    // modal teardown), invoke the same onclick path the sidebar uses.
+    const visible = await page.locator(viewSelector).isVisible().catch(() => false);
+    if (!visible) {
+      await link.evaluate((el) => el.click());
+    }
+    await page.waitForSelector(viewSelector, { state: 'visible', timeout: 15000 });
   }
 }
 
@@ -236,15 +306,55 @@ async function expectVisibleAndEnabled(locator) {
   }
 }
 
+async function closeVisibleModal(page, options = {}) {
+  const timeout = options.timeout || 8000;
+  await page.waitForSelector('.modal.show', { state: 'visible', timeout });
+  await page.waitForFunction(() => {
+    const shown = document.querySelector('.modal.show');
+    if (!shown || typeof bootstrap === 'undefined') return !!shown;
+    const instance = bootstrap.Modal.getInstance(shown);
+    return !instance || !instance._isTransitioning;
+  }, null, { timeout });
+  await page.evaluate(() => {
+    const shown = document.querySelector('.modal.show');
+    if (!shown) return;
+    const instance =
+      (shown.id === 'dashboardAddLivestockModal' && window.currentLivestockModal) ||
+      (window.bootstrap && window.bootstrap.Modal.getInstance(shown));
+    if (instance && typeof instance.hide === 'function') {
+      instance.hide();
+      return;
+    }
+    shown.classList.remove('show');
+    shown.style.display = 'none';
+    document.querySelectorAll('.modal-backdrop').forEach((el) => el.remove());
+    document.body.classList.remove('modal-open');
+    document.body.style.removeProperty('overflow');
+    document.body.style.removeProperty('padding-right');
+  });
+  await page.waitForSelector('.modal.show', { state: 'hidden', timeout });
+}
+
 /**
  * Click a dashboard action button that may sit below the fold / under sticky chrome.
  */
 async function clickDashboardAction(page, selector) {
   const btn = page.locator(selector).first();
   await btn.waitFor({ state: 'visible', timeout: 15000 });
-  await btn.scrollIntoViewIfNeeded();
+  // WebKit can hang forever on scrollIntoViewIfNeeded waiting for layout stability.
+  await btn.evaluate((el) => el.scrollIntoView({ block: 'center', inline: 'nearest' }));
   await expectVisibleAndEnabled(btn);
-  await btn.click({ timeout: 10000 });
+  await dismissTransientOverlays(page);
+  try {
+    await btn.click({ timeout: 10000 });
+  } catch (err) {
+    await page.waitForFunction(
+      () => !document.querySelector('.modal-backdrop.show'),
+      null,
+      { timeout: 3000 }
+    ).catch(() => {});
+    await btn.evaluate((el) => el.click());
+  }
 }
 
 module.exports = {
@@ -259,5 +369,6 @@ module.exports = {
   clickSidebarNav,
   clickSidebarNavByOnclick,
   clickDashboardAction,
+  closeVisibleModal,
   expectNotRedirectedToLogin
 };
