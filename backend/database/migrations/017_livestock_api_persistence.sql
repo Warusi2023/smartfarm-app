@@ -37,6 +37,11 @@ ALTER TABLE livestock ADD COLUMN IF NOT EXISTS photo TEXT;
 
 ALTER TABLE livestock ALTER COLUMN health_status SET DEFAULT 'healthy';
 
+-- 001_complete_schema.sql creates livestock with animal_type, not species.
+-- CREATE TABLE IF NOT EXISTS above is a no-op on those databases, so add
+-- species before any UPDATE that references it. 018 remains the full reconcile.
+ALTER TABLE livestock ADD COLUMN IF NOT EXISTS species VARCHAR(100);
+
 UPDATE livestock SET health_status = 'healthy'
 WHERE health_status IS NULL OR TRIM(health_status) = '';
 
