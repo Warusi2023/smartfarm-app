@@ -188,10 +188,13 @@ test.describe('SmartFarm Dashboard', () => {
     });
 
     await clickSidebarNavByOnclick(page, 'showFarmManagement');
-    await page.fill('#farmName', 'Test Farm');
-    await page.fill('#farmLocation', 'Test Location');
-    await page.fill('#farmArea', '100');
-    await page.selectOption('#farmType', { index: 1 });
+    await expect(page.locator('#farmManagementView')).toBeVisible();
+    const farmName = page.locator('#farmManagementView #farmName');
+    await expect(farmName).toBeVisible();
+    await farmName.fill('Test Farm');
+    await page.locator('#farmManagementView #farmLocation').fill('Test Location');
+    await page.locator('#farmManagementView #farmArea').fill('100');
+    await page.locator('#farmManagementView #farmType').selectOption({ index: 1 });
 
     const saveResponsePromise = page.waitForResponse(
       (res) =>
@@ -200,7 +203,7 @@ test.describe('SmartFarm Dashboard', () => {
       { timeout: 15000 }
     );
 
-    await page.click('button[onclick="saveFarmData()"]');
+    await page.locator('#farmManagementView button[onclick="saveFarmData()"]').click();
     const saveResponse = await saveResponsePromise;
     expect(saveResponse.ok()).toBeTruthy();
 
@@ -294,6 +297,13 @@ test.describe('SmartFarm Dashboard', () => {
   });
 
   test('should display accessibility enhancements', async ({ page }) => {
+    await page.waitForFunction(
+      () =>
+        typeof window.accessibilityEnhancer !== 'undefined' ||
+        typeof window.SmartFarmAccessibility !== 'undefined',
+      null,
+      { timeout: 20000 }
+    );
     const accessibilityLoaded = await page.evaluate(() => {
       return (
         typeof window.accessibilityEnhancer !== 'undefined' ||
@@ -304,6 +314,11 @@ test.describe('SmartFarm Dashboard', () => {
   });
 
   test('should display UX enhancements', async ({ page }) => {
+    await page.waitForFunction(
+      () => typeof window.SmartFarmUX !== 'undefined',
+      null,
+      { timeout: 20000 }
+    );
     const uxLoaded = await page.evaluate(() => {
       return typeof window.SmartFarmUX !== 'undefined';
     });

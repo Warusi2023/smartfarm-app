@@ -6,7 +6,10 @@
     "node": ">=18.17 <=22"
   },
   "scripts": {
-    "prebuild": "node scripts/fix-svg-viewbox.mjs",
+    "prebuild": "node scripts/vendor-qrcode.js && node scripts/vendor-chart.js && node scripts/fix-svg-viewbox.mjs",
+    "vendor:qrcode": "node scripts/vendor-qrcode.js",
+    "vendor:chart": "node scripts/vendor-chart.js",
+    "vendor": "npm run vendor:qrcode && npm run vendor:chart",
     "build": "vite build",
     "postbuild": "node scripts/postbuild-dist.mjs && node scripts/fix-svg-viewbox.mjs && node scripts/write-netlify-redirects.mjs",
     "dev": "vite --host --port 5173",
@@ -24,6 +27,8 @@
   },
   "dependencies": {
     "@sentry/react": "^7.91.0",
+    "chart.js": "4.4.1",
+    "qrcode": "1.5.1",
     "serve": "14.2.1"
   },
   "overrides": {

@@ -12,18 +12,25 @@ const {
     closeVisibleModal
 } = require('./helpers/dashboard-ready');
 
+async function waitForLivestockModalReady(page) {
+    const modal = page.locator('#dashboardAddLivestockModal');
+    await modal.waitFor({ state: 'visible', timeout: 8000 });
+    await page.waitForFunction(() => {
+        const el = document.getElementById('dashboardAddLivestockModal');
+        if (!el || !el.classList.contains('show')) return false;
+        const inst = window.bootstrap && window.bootstrap.Modal && window.bootstrap.Modal.getInstance(el);
+        if (inst && inst._isTransitioning) return false;
+        if (el.querySelectorAll('select[data-catalog-group][disabled]').length > 0) return false;
+        return true;
+    }, null, { timeout: 8000 });
+}
+
 async function openLivestockModalFromDashboard(page) {
     await clickSidebarNavByOnclick(page, 'showLivestockManagement');
     await page.waitForSelector('#livestockManagementView', { state: 'visible', timeout: 10000 });
     await clickDashboardAction(page, '#livestockManagementView button[onclick="addNewLivestock()"]');
-    await page.waitForSelector('.modal.show', { timeout: 8000 });
-    // Wait until catalog-enhanced selects are enabled, then assert first meaningful focus
-    await page.waitForFunction(() => {
-        const modal = document.querySelector('.modal.show');
-        if (!modal) return false;
-        return modal.querySelectorAll('select[data-catalog-group][disabled]').length === 0;
-    }, null, { timeout: 8000 });
-    const firstControl = page.locator('.modal.show').locator('select:not([disabled]), input:not([type="hidden"]):not([disabled]), textarea:not([disabled])').first();
+    await waitForLivestockModalReady(page);
+    const firstControl = page.locator('#dashboardAddLivestockModal').locator('select:not([disabled]), input:not([type="hidden"]):not([disabled]), textarea:not([disabled])').first();
     await expect(firstControl).toBeFocused({ timeout: 8000 });
 }
 
@@ -130,18 +137,15 @@ test.describe('Modal Accessibility E2E Tests', () => {
         await page.waitForSelector('#livestockManagementView', { state: 'visible', timeout: 10000 });
 
         const addButton = page.locator('#livestockManagementView button[onclick="addNewLivestock()"]').first();
-        await addButton.scrollIntoViewIfNeeded();
+        await addButton.waitFor({ state: 'visible', timeout: 15000 });
         await addButton.focus();
-        
-        await addButton.click({ timeout: 10000 });
-        await page.waitForSelector('.modal.show', { timeout: 8000 });
-        await page.waitForTimeout(100);
-        
-        await page.locator('.modal.show .btn-close').first().click({ timeout: 8000 });
-        await page.waitForSelector('.modal.show', { state: 'hidden', timeout: 8000 });
-        
-        await page.waitForTimeout(100);
-        
+
+        await clickDashboardAction(page, '#livestockManagementView button[onclick="addNewLivestock()"]');
+        await waitForLivestockModalReady(page);
+
+        await page.locator('#dashboardAddLivestockModal .btn-close').first().click({ timeout: 8000 });
+        await page.waitForSelector('#dashboardAddLivestockModal.show', { state: 'hidden', timeout: 8000 });
+
         await expect(addButton).toBeFocused({ timeout: 8000 });
     });
 

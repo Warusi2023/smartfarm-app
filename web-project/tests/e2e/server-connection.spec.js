@@ -22,8 +22,19 @@ function authHeaders() {
 test.describe('Server Connection Tests', () => {
   test.beforeEach(async ({ page }) => {
     await seedDashboardSession(page);
-    await page.goto('/');
-    await page.waitForSelector('body');
+    // Landing page CDNs (Bootstrap/FA) can stall the `load` event; do not wait for it.
+    // Wait for the real landing shell instead.
+    try {
+      await page.goto('/', { waitUntil: 'domcontentloaded' });
+    } catch (error) {
+      const timedOut =
+        error &&
+        (error.name === 'TimeoutError' || /Timeout.*exceeded/i.test(String(error.message)));
+      if (!timedOut) {
+        throw error;
+      }
+    }
+    await page.waitForSelector('.navbar-brand, #home.hero', { state: 'visible' });
   });
 
   test('should successfully connect to backend API', async ({ page }) => {

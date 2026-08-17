@@ -50,6 +50,26 @@ class DailyTipsWidget {
         }
     }
 
+    /**
+     * Compact labels only — never serialize full entity arrays into a GET query
+     * (large herds easily exceed browser/proxy header limits and cause 431 / Load failed).
+     */
+    summarizeTipLabels(items, keys, max = 12) {
+        const labels = [];
+        const seen = new Set();
+        for (const item of items || []) {
+            if (!item || typeof item !== 'object') continue;
+            const label = keys.map((k) => item[k]).find((v) => v != null && String(v).trim() !== '');
+            if (!label) continue;
+            const key = String(label).trim().toLowerCase();
+            if (seen.has(key)) continue;
+            seen.add(key);
+            labels.push(String(label).trim());
+            if (labels.length >= max) break;
+        }
+        return labels;
+    }
+
     async loadPersonalizedTip() {
         try {
             // Fetch user's crops and livestock
@@ -61,13 +81,20 @@ class DailyTipsWidget {
                 return null;
             }
 
-            // Build query parameters
-            const params = new URLSearchParams();
-            if (crops && crops.length > 0) {
-                params.append('crops', JSON.stringify(crops));
+            const cropLabels = this.summarizeTipLabels(crops, ['cropName', 'name', 'type', 'cropType']);
+            const livestockLabels = this.summarizeTipLabels(livestock, ['type', 'species', 'breed', 'name']);
+
+            if (cropLabels.length === 0 && livestockLabels.length === 0) {
+                return null;
             }
-            if (livestock && livestock.length > 0) {
-                params.append('livestock', JSON.stringify(livestock));
+
+            // Build query parameters (compact labels only)
+            const params = new URLSearchParams();
+            if (cropLabels.length > 0) {
+                params.append('crops', JSON.stringify(cropLabels));
+            }
+            if (livestockLabels.length > 0) {
+                params.append('livestock', JSON.stringify(livestockLabels));
             }
 
             const data = await window.SmartFarmApiClient.get(`/api/daily-tips/personalized?${params.toString()}`);

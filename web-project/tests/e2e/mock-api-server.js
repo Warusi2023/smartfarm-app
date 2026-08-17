@@ -48,6 +48,28 @@ function seedState() {
 
 let state = seedState();
 
+const CATALOG_ITEMS = [
+  { name: 'Cattle', group: 'pets', category: 'livestock' },
+  { name: 'Pigs', group: 'pets', category: 'livestock' },
+  { name: 'Chickens', group: 'pets', category: 'livestock' },
+  { name: 'Sheep', group: 'pets', category: 'livestock' },
+  { name: 'Goats', group: 'pets', category: 'livestock' },
+  { name: 'Tomato', group: 'plants', category: 'vegetable' },
+  { name: 'Maize', group: 'plants', category: 'grain' }
+];
+
+const LIVESTOCK_BULK = Array.from({ length: 150 }, (_, i) => ({
+  id: `livestock-bulk-${i}`,
+  type: 'Cattle',
+  species: 'Cattle',
+  breed: 'Holstein',
+  tag: `BULK-${i}`,
+  sex: i % 2 === 0 ? 'female' : 'male',
+  weight: 400 + i,
+  location: `Pen ${i % 10}`,
+  status: 'Healthy'
+}));
+
 function resetState() {
   state = seedState();
 }
@@ -220,7 +242,16 @@ function handleDashboardStub(method, path, req, res, origin) {
   }
 
   if (method === 'GET' && path === '/api/catalog') {
-    sendJson(res, 200, { success: true, data: [], items: [] }, origin);
+    sendJson(
+      res,
+      200,
+      {
+        success: true,
+        data: CATALOG_ITEMS,
+        items: CATALOG_ITEMS
+      },
+      origin
+    );
     return true;
   }
 
@@ -235,6 +266,26 @@ function handleDashboardStub(method, path, req, res, origin) {
           title: 'E2E tip',
           content: 'Deterministic tip for Playwright.',
           category: 'general'
+        },
+        date: new Date().toISOString().slice(0, 10)
+      },
+      origin
+    );
+    return true;
+  }
+
+  if (method === 'GET' && path === '/api/daily-tips/personalized') {
+    sendJson(
+      res,
+      200,
+      {
+        success: true,
+        tip: {
+          id: 'e2e-tip-personalized',
+          title: 'E2E personalized tip',
+          content: 'Deterministic personalized tip for Playwright.',
+          category: 'general',
+          crops: true
         },
         date: new Date().toISOString().slice(0, 10)
       },
@@ -336,23 +387,11 @@ const server = http.createServer(async (req, res) => {
 
     if (req.method === 'GET' && path === '/api/livestock') {
       if (!requireAuth(req, res, origin)) return;
-      const bulk = [];
-      for (let i = 0; i < 200; i++) {
-        bulk.push({
-          id: `livestock-bulk-${i}`,
-          type: 'Cattle',
-          species: 'Cattle',
-          breed: 'Holstein',
-          tag: `BULK-${i}`,
-          sex: i % 2 === 0 ? 'female' : 'male',
-          weight: 400 + i,
-          location: `Pen ${i % 10}`
-        });
-      }
+      // Large payload for API efficiency E2E; UI must not render every row at once.
       sendJson(
         res,
         200,
-        { success: true, data: [...state.livestock, ...bulk] },
+        { success: true, data: [...state.livestock, ...LIVESTOCK_BULK] },
         origin
       );
       return;

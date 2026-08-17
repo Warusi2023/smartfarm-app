@@ -353,10 +353,19 @@ class SmartFarmUXEnhancer {
     }
 }
 
-// Initialize UX enhancer when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-    window.SmartFarmUX = new SmartFarmUXEnhancer();
-});
+// Initialize UX enhancer when DOM is ready (or immediately if already ready).
+(function initSmartFarmUX() {
+  function start() {
+    if (!window.SmartFarmUX) {
+      window.SmartFarmUX = new SmartFarmUXEnhancer();
+    }
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start);
+  } else {
+    start();
+  }
+})();
 
 // Export for use in other modules
 if (typeof module !== 'undefined' && module.exports) {

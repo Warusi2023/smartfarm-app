@@ -82,122 +82,50 @@
             };
         })();
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- QR Code Library - Load from CDN with local fallback check -->
+    <!-- Chart.js + QR: local vendor only. Never load from CDN. Defer so body/#dashboardView can parse. -->
+    <script defer src="/vendor/chart.umd.js"></script>
+    <script defer src="/vendor/qrcode.js"></script>
     <script>
-        (function() {
-            // Function to load QR Code library from CDN
-            function loadQRCodeFromCDN() {
-                console.warn('Local QR code library not found, loading from CDN...');
-                // Try multiple CDN sources for node-qrcode library
-                const cdnSources = [
-                    'https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js',
-                    'https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js'
-                ];
-                
-                let currentIndex = 0;
-                let errorShown = false;
-                
-                function tryNextCDN() {
-                    if (currentIndex >= cdnSources.length) {
-                        if (!errorShown) {
-                            console.error('❌ All QR Code library CDN sources failed');
-                            showQRCodeError();
-                            errorShown = true;
-                        }
-                        return;
-                    }
-                    
-                    const script = document.createElement('script');
-                    script.src = cdnSources[currentIndex];
-                    script.onload = function() {
-                        console.log('✅ QR Code library loaded successfully from CDN:', cdnSources[currentIndex]);
-                        // Hide error if it was shown
-                        const existingError = document.querySelector('.alert-warning');
-                        if (existingError && existingError.textContent.includes('QR Code Library Missing')) {
-                            existingError.remove();
-                        }
-                    };
-                    script.onerror = function() {
-                        console.warn('CDN source failed:', cdnSources[currentIndex]);
-                        currentIndex++;
-                        tryNextCDN();
-                    };
-                    document.head.appendChild(script);
+        (function () {
+            function showQRCodeUnavailableMessage() {
+                if (typeof QRCode !== 'undefined') {
+                    return;
                 }
-                
-                tryNextCDN();
-            }
-            
-            function showQRCodeError() {
-                // Check if error already exists
-                const existingError = document.querySelector('.alert-warning');
-                if (existingError && existingError.textContent.includes('QR Code Library Missing')) {
-                    return; // Error already shown
+                if (document.querySelector('[data-qrcode-unavailable]')) {
+                    return;
                 }
-                
-                // Only show error after giving CDN time to load (3 seconds)
-                setTimeout(() => {
-                    // Check one more time if QRCode is now available
-                    if (typeof QRCode !== 'undefined') {
-                        console.log('✅ QR Code library loaded, error not needed');
-                        return;
-                    }
-                    
-                    const errorMsg = document.createElement('div');
-                    errorMsg.className = 'alert alert-warning position-fixed';
-                    errorMsg.setAttribute('role', 'status');
-                    errorMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 1030; max-width: min(320px, calc(100vw - 40px)); pointer-events: auto;';
-                    errorMsg.innerHTML = `
-                        <strong>⚠️ QR Code Library Loading...</strong><br>
-                        The QR code library is being loaded from CDN. Please wait a moment.
-                        <button type="button" class="btn-close" aria-label="Close"></button>
-                    `;
-                    const qrClose = errorMsg.querySelector('.btn-close');
-                    if (qrClose) {
-                        qrClose.addEventListener('click', () => {
-                            if (errorMsg.isConnected) errorMsg.remove();
-                        });
-                    }
-                    document.body.appendChild(errorMsg);
-                    
-                    // Check again after 2 more seconds and update message if still not loaded
-                    setTimeout(() => {
-                        if (typeof QRCode === 'undefined') {
-                            errorMsg.innerHTML = `
-                                <strong>⚠️ QR Code Library Issue</strong><br>
-                                Unable to load QR code library. Some features may not work.<br>
-                                <small>You can manually download qrcode.min.js and place it in /js/ directory.</small>
-                                <button type="button" class="btn-close" aria-label="Close"></button>
-                            `;
-                            const qrClose2 = errorMsg.querySelector('.btn-close');
-                            if (qrClose2) {
-                                qrClose2.addEventListener('click', () => {
-                                    if (errorMsg.isConnected) errorMsg.remove();
-                                });
-                            }
-                            // Do not leave a permanent click-blocking toast on mobile
-                            setTimeout(() => {
-                                if (errorMsg.isConnected) {
-                                    errorMsg.remove();
-                                }
-                            }, 6000);
-                        } else if (errorMsg.isConnected) {
-                            errorMsg.remove();
-                        }
-                    }, 2000);
-                }, 3000);
+                const errorMsg = document.createElement('div');
+                errorMsg.className = 'alert alert-warning position-fixed';
+                errorMsg.setAttribute('role', 'status');
+                errorMsg.setAttribute('data-qrcode-unavailable', '1');
+                errorMsg.style.cssText =
+                    'position: fixed; top: 20px; right: 20px; z-index: 1030; max-width: min(320px, calc(100vw - 40px)); pointer-events: auto;';
+                errorMsg.innerHTML =
+                    '<strong>QR Code unavailable</strong><br>' +
+                    'The local QR library did not load. QR features are disabled on this page.' +
+                    '<button type="button" class="btn-close" aria-label="Close"></button>';
+                const closeBtn = errorMsg.querySelector('.btn-close');
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', function () {
+                        if (errorMsg.isConnected) errorMsg.remove();
+                    });
+                }
+                document.body.appendChild(errorMsg);
+                setTimeout(function () {
+                    if (errorMsg.isConnected) errorMsg.remove();
+                }, 8000);
             }
-            
-            loadQRCodeFromCDN();
+
+            // Defer check until after deferred vendor scripts run (before/at DOMContentLoaded).
+            document.addEventListener('DOMContentLoaded', showQRCodeUnavailableMessage);
         })();
     </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js" async defer onerror="console.warn('Primary QR CDN failed')"></script>
     <script src="js/server-connectivity-fix.js"></script>
     <script src="js/navigation-dropdown.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <!-- Export helpers: defer CDN so a slow/unreachable CDN cannot block #dashboardView parse -->
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="js/currency-config.js"></script>
     <script src="js/currency-selector.js"></script>
     <script src="js/weather-service.js"></script>
@@ -4375,6 +4303,7 @@
                 const currentPath = window.location.pathname;
                 const pathToView = {
                     '/dashboard': 'dashboardView',
+                    '/dashboard.html': 'dashboardView',
                     '/farm-management': 'farmManagementView',
                     '/crop-management': 'cropManagementView',
                     '/livestock-management': 'livestockManagementView',
@@ -4386,9 +4315,13 @@
                     '/team-management': 'teamManagementView',
                     '/reports': 'reportsView'
                 };
-                
-                const viewId = pathToView[currentPath] || 'dashboardView';
-                showView(viewId);
+
+                // Only restore a SPA view from a rewritten path — never hide the
+                // dashboard shell just because the file URL is /dashboard.html.
+                const viewId = pathToView[currentPath];
+                if (viewId && currentPath !== '/dashboard.html' && currentPath !== '/dashboard') {
+                    showView(viewId);
+                }
                 
                 console.log('URL routing initialized for path:', currentPath);
             } catch (error) {
@@ -4563,7 +4496,7 @@
             if (typeof QRCode !== 'undefined') {
                 return true;
             }
-            console.error('❌ QR Code library not available. Check that js/qrcode.min.js exists and is accessible.');
+            console.error('❌ QR Code library not available. Check that vendor/qrcode.js exists and is accessible.');
             return false;
         }
         
@@ -4589,7 +4522,7 @@
                         resolve(true);
                     } else if (Date.now() - startTime >= maxWaitTime) {
                         clearInterval(checkInterval);
-                        console.error('❌ QR Code library load timeout - check file exists at js/qrcode.min.js');
+                        console.error('❌ QR Code library load timeout - check file exists at vendor/qrcode.js');
                         resolve(false);
                     }
                 }, 50); // Check more frequently since it's local
@@ -4608,10 +4541,9 @@
                     
                     if (typeof QRCode === 'undefined') {
                         showErrorDialog(
-                            'QR Code Library Not Available', 
-                            'The QR Code library file (js/qrcode.min.js) is missing or not accessible. ' +
-                            'Please ensure the file exists in the /js/ directory and refresh the page. ' +
-                            'If you are a developer, download the library from: https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js'
+                            'QR Code Library Not Available',
+                            'The QR Code library (vendor/qrcode.js) is missing or did not load. ' +
+                            'QR features are unavailable on this page. Refresh after restoring the local vendor file.'
                         );
                         return;
                     }
@@ -8032,7 +7964,6 @@
             console.log('Showing view:', viewId);
             
             try {
-                // Hide all views
                 const views = ['dashboardView', 'farmManagementView', 'cropManagementView', 
                               'livestockManagementView', 'aquacultureManagementView', 'petsManagementView', 'inventoryManagementView', 
                               'analyticsView', 'tasksView', 'teamManagementView', 'reportsView'];
@@ -8040,13 +7971,12 @@
                 views.forEach(id => {
                     const element = document.getElementById(id);
                     if (element) {
-                        element.style.display = 'none';
+                        element.style.display = id === viewId ? 'block' : 'none';
                     } else {
                         console.warn('View element not found:', id);
                     }
                 });
                 
-                // Show selected view
                 const targetView = document.getElementById(viewId);
                 if (targetView) {
                     targetView.style.display = 'block';
@@ -8517,7 +8447,8 @@
 
             livestockGrid.innerHTML = '';
 
-            livestock.forEach(animal => {
+            // Cap DOM rows — large herds stall WebKit when every animal is painted.
+            livestockForDomRender(livestock).forEach(animal => {
                 const animalCard = createLivestockCard(animal);
                 livestockGrid.appendChild(animalCard);
             });
@@ -8716,7 +8647,7 @@
                 <td>${animal.location}</td>
                 <td>${gpsDisplay}</td>
                 <td>${lastWeight} kg</td>
-                <td><span class="status-badge status-${animal.status.toLowerCase()}">${animal.status}</span></td>
+                <td><span class="status-badge status-${String(animal.status || animal.healthStatus || 'unknown').toLowerCase()}">${animal.status || animal.healthStatus || 'Unknown'}</span></td>
                 <td>
                     <button class="btn btn-sm btn-outline-primary me-1" onclick="editLivestock(${animal.id})" title="Edit">
                         <i class="fas fa-edit"></i>
@@ -8738,12 +8669,18 @@
             return row;
         }
 
+        const LIVESTOCK_DOM_RENDER_LIMIT = 40;
+
+        function livestockForDomRender(list) {
+            return (Array.isArray(list) ? list : []).slice(0, LIVESTOCK_DOM_RENDER_LIMIT);
+        }
+
         function renderAllLivestockTab() {
             const tbody = document.querySelector('#allLivestockTable');
             if (!tbody) return;
 
             tbody.innerHTML = '';
-            livestock.forEach(animal => {
+            livestockForDomRender(livestock).forEach(animal => {
                 const row = createLivestockRow(animal, true);
                 tbody.appendChild(row);
             });
@@ -8755,7 +8692,7 @@
 
             tbody.innerHTML = '';
             const cattle = livestock.filter(animal => livestockTypeKey(animal) === 'cattle');
-            cattle.forEach(animal => {
+            livestockForDomRender(cattle).forEach(animal => {
                 const row = createLivestockRow(animal, false);
                 tbody.appendChild(row);
             });
@@ -8767,7 +8704,7 @@
 
             tbody.innerHTML = '';
             const pigs = livestock.filter(animal => livestockTypeKey(animal) === 'pigs');
-            pigs.forEach(animal => {
+            livestockForDomRender(pigs).forEach(animal => {
                 const row = createLivestockRow(animal, false);
                 tbody.appendChild(row);
             });
@@ -8779,7 +8716,7 @@
 
             tbody.innerHTML = '';
             const poultry = livestock.filter(animal => ['chickens', 'ducks', 'turkeys'].includes(livestockTypeKey(animal)));
-            poultry.forEach(animal => {
+            livestockForDomRender(poultry).forEach(animal => {
                 const row = createLivestockRow(animal, true);
                 tbody.appendChild(row);
             });
@@ -8791,7 +8728,7 @@
 
             tbody.innerHTML = '';
             const sheepGoats = livestock.filter(animal => ['sheep', 'goats'].includes(livestockTypeKey(animal)));
-            sheepGoats.forEach(animal => {
+            livestockForDomRender(sheepGoats).forEach(animal => {
                 const row = createLivestockRow(animal, true);
                 tbody.appendChild(row);
             });
@@ -8803,7 +8740,7 @@
 
             tbody.innerHTML = '';
             const horses = livestock.filter(animal => livestockTypeKey(animal) === 'horses');
-            horses.forEach(animal => {
+            livestockForDomRender(horses).forEach(animal => {
                 const row = createLivestockRow(animal, false);
                 tbody.appendChild(row);
             });
@@ -8815,7 +8752,7 @@
 
             tbody.innerHTML = '';
             const other = livestock.filter(animal => !['cattle', 'pigs', 'chickens', 'ducks', 'turkeys', 'sheep', 'goats', 'horses'].includes(livestockTypeKey(animal)));
-            other.forEach(animal => {
+            livestockForDomRender(other).forEach(animal => {
                 const row = createLivestockRow(animal, true);
                 tbody.appendChild(row);
             });
@@ -14803,31 +14740,9 @@ INVENTORY SUMMARY:
         }
 
         // ===== URL ROUTING AND STATE PERSISTENCE =====
-
-        function initializeURLRouting() {
-            // Check if there's a hash in the URL
-            const hash = window.location.hash.substring(1);
-            
-            if (hash) {
-                // Navigate to the specified view
-                navigateToView(hash);
-            } else {
-                // Check localStorage for last viewed page
-                const lastView = localStorage.getItem('smartfarm_lastView');
-                if (lastView && lastView !== 'dashboardView') {
-                    navigateToView(lastView);
-                } else {
-                    // Default to dashboard
-                    showDashboard();
-                }
-            }
-            
-            // Listen for hash changes
-            window.addEventListener('hashchange', function() {
-                const newHash = window.location.hash.substring(1);
-                navigateToView(newHash);
-            });
-        }
+        // initializeURLRouting is defined once above. A second declaration here
+        // previously overwrote it and restored smartfarm_lastView / hash, which
+        // hid #dashboardView after a real /dashboard.html navigation.
 
         function navigateToView(viewName) {
             // Update URL hash
