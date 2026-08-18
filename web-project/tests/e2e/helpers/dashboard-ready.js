@@ -104,6 +104,7 @@ async function seedDashboardSession(page) {
     const loginTime = new Date().toISOString();
     const apiBase = session.apiBase;
     try {
+      window.__SMARTFARM_E2E__ = true;
       if (apiBase) {
         window.__SMARTFARM_API_BASE__ = apiBase;
         window.VITE_API_BASE_URL = apiBase;
@@ -352,6 +353,10 @@ async function dismissTransientOverlays(page) {
   await safeEvaluate(
     page,
     () => {
+      const debugPanel = document.getElementById('dashboardDebugPanel');
+      if (debugPanel && debugPanel.isConnected) {
+        debugPanel.remove();
+      }
       document.querySelectorAll('.alert, .custom-alert, .toast').forEach((el) => {
         const text = (el.textContent || '').toLowerCase();
         const shouldClear =

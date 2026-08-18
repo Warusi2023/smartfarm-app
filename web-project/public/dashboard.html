@@ -7868,12 +7868,17 @@
                 // Fallback: just show the view
                 document.getElementById('analyticsView').style.display = 'block';
             }
-            // Initialize analytics charts if not already initialized
-            if (!revenueChart || !costChart) {
-                initializeAnalyticsCharts();
-            }
-            // Update charts with current data
-            updateAnalyticsCharts();
+            // Paint the view before Chart.js so the click handler can return on WebKit/mobile.
+            window.requestAnimationFrame(function () {
+                try {
+                    if (!revenueChart || !costChart) {
+                        initializeAnalyticsCharts();
+                    }
+                    updateAnalyticsCharts();
+                } catch (chartError) {
+                    console.error('Error initializing analytics charts:', chartError);
+                }
+            });
         }
 
         function showTasks() {
@@ -15390,8 +15395,12 @@ INVENTORY SUMMARY:
         // Check status every 30 seconds
         setInterval(checkSystemStatus, 30000);
 
-        // Add debug panel for authentication issues (only in development)
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        // Add debug panel for authentication issues (localhost only, never during E2E).
+        // The panel is position:fixed z-index 9999 and covers most of an iPhone viewport.
+        if (
+            !window.__SMARTFARM_E2E__ &&
+            (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        ) {
             document.addEventListener('DOMContentLoaded', function() {
                 createDashboardDebugPanel();
             });

@@ -252,7 +252,7 @@ test.describe('Server Connection Tests', () => {
 
   test('should handle large API responses efficiently', async ({ page }) => {
     const startTime = Date.now();
-    const response = await page.request.get(apiUrl('/api/livestock'), {
+    const response = await page.request.get(apiUrl('/api/livestock?e2eBulk=1'), {
       headers: authHeaders()
     });
     const endTime = Date.now();

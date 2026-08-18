@@ -6,8 +6,7 @@
 const { test, expect } = require('@playwright/test');
 const {
     gotoDashboardReady,
-    clickSidebarNav,
-    ensureMobileSidebarOpen
+    clickSidebarNavByOnclick
 } = require('./helpers/dashboard-ready');
 
 test.describe('Console Error Verification', () => {
@@ -77,26 +76,24 @@ test.describe('Console Error Verification', () => {
         test.setTimeout(process.env.CI ? 120000 : 60000);
         await gotoDashboardReady(page);
         
-        // Exact sidebar labels (substring text= matches marketing page wrongly)
+        // SPA onclick handlers (duplicate sidebar labels like "Livestock" match the wrong link).
         const menuItems = [
-            'Dashboard',
-            'Farm Overview',
-            'Crop Management',
-            'Livestock',
-            'Inventory',
-            'Analytics',
-            'Farm Tasks',
-            'Reports'
+            ['Dashboard', 'showDashboard'],
+            ['Farm Overview', 'showFarmManagement'],
+            ['Crop Management', 'showCropManagement'],
+            ['Livestock', 'showLivestockManagement'],
+            ['Inventory', 'showInventoryManagement'],
+            ['Analytics', 'showAnalytics'],
+            ['Farm Tasks', 'showTasks'],
+            ['Reports', 'showReports']
         ];
 
-        for (const menuItem of menuItems) {
+        for (const [menuItem, onclick] of menuItems) {
             consoleErrors = [];
             consoleWarnings = [];
             
             try {
-                await ensureMobileSidebarOpen(page);
-                await clickSidebarNav(page, menuItem);
-                await page.waitForTimeout(500);
+                await clickSidebarNavByOnclick(page, onclick);
                 
                 const navigationErrors = consoleErrors.filter(error => {
                     const text = error.text.toLowerCase();

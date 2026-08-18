@@ -387,13 +387,14 @@ const server = http.createServer(async (req, res) => {
 
     if (req.method === 'GET' && path === '/api/livestock') {
       if (!requireAuth(req, res, origin)) return;
-      // Large payload for API efficiency E2E; UI must not render every row at once.
-      sendJson(
-        res,
-        200,
-        { success: true, data: [...state.livestock, ...LIVESTOCK_BULK] },
-        origin
-      );
+      // Default list is seed-sized so dashboard livestock/inventory views stay
+      // interactive on WebKit/Mobile Safari. Bulk payload is opt-in for the
+      // large-response API test only (page.request, not UI rendering).
+      const includeBulk = url.searchParams.get('e2eBulk') === '1';
+      const data = includeBulk
+        ? [...state.livestock, ...LIVESTOCK_BULK]
+        : state.livestock;
+      sendJson(res, 200, { success: true, data }, origin);
       return;
     }
 
