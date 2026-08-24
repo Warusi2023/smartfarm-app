@@ -24,11 +24,15 @@ Generate a disposable CI secret locally (example):
 openssl rand -hex 32
 ```
 
-### Netlify publish directory
+### Netlify production artifact
 
-`.github/workflows/netlify-deploy.yml` publishes **`web-project/public`** (not repo-root `public/`, which does not exist).
+**Sole production publish path:** `web-project/dist` (Vite build from `web-project/netlify.toml`).
 
-Site ID / auth token secrets (existing): `NETLIFY_AUTH_TOKEN`, `NETLIFY_SITE_ID`.
+- **Automatic production deploy:** `.github/workflows/frontend-ci-cd.yml` → job `Deploy to Production` publishes `./web-project/dist` on push to `main` (after Playwright / accessibility / performance / build).
+- **Do not publish raw `web-project/public` to production.** That folder is the pre-build source; postbuild writes `_redirects` and related artifacts into `dist/`.
+- **Legacy:** `.github/workflows/netlify-deploy.yml` is **manual-only** (`workflow_dispatch`). It no longer runs on push/PR to `main`. If invoked manually, it builds Vite and publishes `web-project/dist` only.
+
+Site ID / auth token secrets (existing): `NETLIFY_AUTH_TOKEN`, `NETLIFY_SITE_ID`. Optional health/Lighthouse: `NETLIFY_PRODUCTION_URL`.
 
 ## Required repository variables
 
