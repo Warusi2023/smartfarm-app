@@ -781,49 +781,10 @@ class SmartFarmCompetitive {
     }
 
     async waitForQRCodeLibrary(maxWaitTime = 10000) {
-        // If already loaded, return immediately
         if (typeof QRCode !== 'undefined') {
             return true;
         }
 
-        // Try to load from CDN if not already in the page
-        const scriptExists = document.querySelector('script[src*="qrcode"]');
-        if (!scriptExists) {
-            // Load QRCode library from CDN
-            return new Promise((resolve, reject) => {
-                const script = document.createElement('script');
-                script.src = 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js';
-                script.onload = () => {
-                    // Wait a bit for the library to initialize
-                    setTimeout(() => {
-                        if (typeof QRCode !== 'undefined') {
-                            resolve(true);
-                        } else {
-                            reject(new Error('QR Code library failed to initialize'));
-                        }
-                    }, 500);
-                };
-                script.onerror = () => {
-                    // Try alternative CDN
-                    const altScript = document.createElement('script');
-                    altScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js';
-                    altScript.onload = () => {
-                        setTimeout(() => {
-                            if (typeof QRCode !== 'undefined') {
-                                resolve(true);
-                            } else {
-                                reject(new Error('QR Code library failed to initialize'));
-                            }
-                        }, 500);
-                    };
-                    altScript.onerror = () => reject(new Error('Failed to load QR Code library from all sources'));
-                    document.head.appendChild(altScript);
-                };
-                document.head.appendChild(script);
-            });
-        }
-
-        // Wait for existing script to load
         const startTime = Date.now();
         return new Promise((resolve, reject) => {
             const checkInterval = setInterval(() => {
@@ -832,7 +793,7 @@ class SmartFarmCompetitive {
                     resolve(true);
                 } else if (Date.now() - startTime > maxWaitTime) {
                     clearInterval(checkInterval);
-                    reject(new Error('QR Code library not loaded within timeout'));
+                    reject(new Error('QR Code library not loaded (expected vendor/qrcode.js)'));
                 }
             }, 100);
         });

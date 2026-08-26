@@ -177,17 +177,7 @@ const CACHE_DURATION = {
 
 ### 2. Retry Logic
 
-Automatic retry with exponential backoff:
-
-```javascript
-// Retry configuration
-const RETRY_CONFIG = {
-    maxRetries: 3,
-    baseDelay: 1000,        // 1 second
-    maxDelay: 10000,        // 10 seconds
-    retryableErrors: ['Failed to fetch', 'NetworkError', 'HTTP 5']
-};
-```
+`SmartFarmAPI.request()` retries eligible network failures once after the initial attempt (`maxRetries = 1`), for a maximum of two total attempts. The single retry uses a short backoff (`1000 * (retryCount + 1)` ms). This limit is intentional to reduce error spam. Retryable client errors include messages matching `Failed to fetch`, `NetworkError`, or `timeout`.
 
 ### 3. Error Boundaries
 

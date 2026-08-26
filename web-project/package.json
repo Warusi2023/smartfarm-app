@@ -6,24 +6,29 @@
     "node": ">=18.17 <=22"
   },
   "scripts": {
-    "prebuild": "node scripts/fix-svg-viewbox.mjs",
+    "prebuild": "node scripts/vendor-qrcode.js && node scripts/vendor-chart.js && node scripts/fix-svg-viewbox.mjs",
+    "vendor:qrcode": "node scripts/vendor-qrcode.js",
+    "vendor:chart": "node scripts/vendor-chart.js",
+    "vendor": "npm run vendor:qrcode && npm run vendor:chart",
     "build": "vite build",
     "postbuild": "node scripts/postbuild-dist.mjs && node scripts/fix-svg-viewbox.mjs && node scripts/write-netlify-redirects.mjs",
     "dev": "vite --host --port 5173",
     "preview": "vite preview --strictPort --port 4173",
     "start": "node scripts/serve-dist-with-api-proxy.js",
-    "test": "npx playwright test",
-    "test:e2e": "npx playwright test",
-    "test:e2e:headed": "npx playwright test --headed"
+    "test": "playwright test",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed"
   },
   "devDependencies": {
-    "@playwright/test": "^1.59.1",
+    "@playwright/test": "1.59.1",
     "esbuild": "0.21.5",
     "typescript": "5.6.3",
     "vite": "^5.4.20"
   },
   "dependencies": {
     "@sentry/react": "^7.91.0",
+    "chart.js": "4.4.1",
+    "qrcode": "1.5.1",
     "serve": "14.2.1"
   },
   "overrides": {

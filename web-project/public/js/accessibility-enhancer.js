@@ -684,12 +684,17 @@ class AccessibilityEnhancer {
         // Announce modal opening
         this.announceModal('Modal opened: ' + (modal.querySelector('.modal-title')?.textContent || 'Dialog'));
 
-        // Ensure first focusable element gets focus
-        const firstFocusable = modal.querySelector(
-            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        // ModalAccessibility already focuses the first meaningful field after
+        // shown.bs.modal. Do not steal that focus onto .btn-close / header chrome.
+        if (window.ModalAccessibility) {
+            return;
+        }
+
+        const preferred = modal.querySelector(
+            'select:not([disabled]), input:not([type="hidden"]):not([disabled]), textarea:not([disabled])'
         );
-        if (firstFocusable) {
-            setTimeout(() => firstFocusable.focus(), 100);
+        if (preferred) {
+            setTimeout(() => preferred.focus(), 100);
         }
     }
 

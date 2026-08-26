@@ -144,7 +144,7 @@
     }
 
     async function enhanceSelect(select) {
-        if (!select || pendingEnhancements.has(select)) {
+        if (!select || pendingEnhancements.has(select) || select.dataset.catalogEnhanced === '1') {
             return;
         }
         const group = select.dataset.catalogGroup;
@@ -184,6 +184,7 @@
             console.error('catalog-picker: failed to populate select', error);
         } finally {
             select.disabled = false;
+            select.dataset.catalogEnhanced = '1';
         }
     }
 

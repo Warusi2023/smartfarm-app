@@ -82,106 +82,54 @@
             };
         })();
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- QR Code Library - Load from CDN with local fallback check -->
+    <!-- Chart.js + QR: local vendor only. Never load from CDN. Defer so body/#dashboardView can parse. -->
+    <script defer src="/vendor/chart.umd.js"></script>
+    <script defer src="/vendor/qrcode.js"></script>
     <script>
-        (function() {
-            // Function to load QR Code library from CDN
-            function loadQRCodeFromCDN() {
-                console.warn('Local QR code library not found, loading from CDN...');
-                // Try multiple CDN sources for node-qrcode library
-                const cdnSources = [
-                    'https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js',
-                    'https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js'
-                ];
-                
-                let currentIndex = 0;
-                let errorShown = false;
-                
-                function tryNextCDN() {
-                    if (currentIndex >= cdnSources.length) {
-                        if (!errorShown) {
-                            console.error('❌ All QR Code library CDN sources failed');
-                            showQRCodeError();
-                            errorShown = true;
-                        }
-                        return;
-                    }
-                    
-                    const script = document.createElement('script');
-                    script.src = cdnSources[currentIndex];
-                    script.onload = function() {
-                        console.log('✅ QR Code library loaded successfully from CDN:', cdnSources[currentIndex]);
-                        // Hide error if it was shown
-                        const existingError = document.querySelector('.alert-warning');
-                        if (existingError && existingError.textContent.includes('QR Code Library Missing')) {
-                            existingError.remove();
-                        }
-                    };
-                    script.onerror = function() {
-                        console.warn('CDN source failed:', cdnSources[currentIndex]);
-                        currentIndex++;
-                        tryNextCDN();
-                    };
-                    document.head.appendChild(script);
+        (function () {
+            function showQRCodeUnavailableMessage() {
+                if (typeof QRCode !== 'undefined') {
+                    return;
                 }
-                
-                tryNextCDN();
-            }
-            
-            function showQRCodeError() {
-                // Check if error already exists
-                const existingError = document.querySelector('.alert-warning');
-                if (existingError && existingError.textContent.includes('QR Code Library Missing')) {
-                    return; // Error already shown
+                if (document.querySelector('[data-qrcode-unavailable]')) {
+                    return;
                 }
-                
-                // Only show error after giving CDN time to load (3 seconds)
-                setTimeout(() => {
-                    // Check one more time if QRCode is now available
-                    if (typeof QRCode !== 'undefined') {
-                        console.log('✅ QR Code library loaded, error not needed');
-                        return;
-                    }
-                    
-                    const errorMsg = document.createElement('div');
-                    errorMsg.className = 'alert alert-warning alert-dismissible fade show';
-                    errorMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
-                    errorMsg.innerHTML = `
-                        <strong>⚠️ QR Code Library Loading...</strong><br>
-                        The QR code library is being loaded from CDN. Please wait a moment.
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    `;
-                    document.body.appendChild(errorMsg);
-                    
-                    // Check again after 2 more seconds and update message if still not loaded
-                    setTimeout(() => {
-                        if (typeof QRCode === 'undefined') {
-                            errorMsg.innerHTML = `
-                                <strong>⚠️ QR Code Library Issue</strong><br>
-                                Unable to load QR code library. Some features may not work.<br>
-                                <small>You can manually download qrcode.min.js and place it in /js/ directory.</small>
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                            `;
-                        } else {
-                            errorMsg.remove();
-                        }
-                    }, 2000);
-                }, 3000);
+                const errorMsg = document.createElement('div');
+                errorMsg.className = 'alert alert-warning position-fixed';
+                errorMsg.setAttribute('role', 'status');
+                errorMsg.setAttribute('data-qrcode-unavailable', '1');
+                errorMsg.style.cssText =
+                    'position: fixed; top: 20px; right: 20px; z-index: 1030; max-width: min(320px, calc(100vw - 40px)); pointer-events: auto;';
+                errorMsg.innerHTML =
+                    '<strong>QR Code unavailable</strong><br>' +
+                    'The local QR library did not load. QR features are disabled on this page.' +
+                    '<button type="button" class="btn-close" aria-label="Close"></button>';
+                const closeBtn = errorMsg.querySelector('.btn-close');
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', function () {
+                        if (errorMsg.isConnected) errorMsg.remove();
+                    });
+                }
+                document.body.appendChild(errorMsg);
+                setTimeout(function () {
+                    if (errorMsg.isConnected) errorMsg.remove();
+                }, 8000);
             }
-            
-            loadQRCodeFromCDN();
+
+            // Defer check until after deferred vendor scripts run (before/at DOMContentLoaded).
+            document.addEventListener('DOMContentLoaded', showQRCodeUnavailableMessage);
         })();
     </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js" async defer onerror="console.warn('Primary QR CDN failed')"></script>
     <script src="js/server-connectivity-fix.js"></script>
     <script src="js/navigation-dropdown.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <!-- Export helpers: defer CDN so a slow/unreachable CDN cannot block #dashboardView parse -->
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="js/currency-config.js"></script>
     <script src="js/currency-selector.js"></script>
     <script src="js/weather-service.js"></script>
+    <script src="js/weather-data-adapter.js"></script>
     <script src="js/location-selector.js"></script>
     <script src="js/accessibility-helpers.js"></script>
     <script src="js/button-handlers.js"></script>
@@ -1428,6 +1376,11 @@
                         <li class="nav-item">
                             <a class="nav-link" href="#" onclick="showLivestockManagement(); return false;">
                                 <i class="fas fa-cow me-2"></i>Livestock
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showPetsManagement(); return false;">
+                                <i class="fas fa-paw me-2"></i>Pets
                             </a>
                         </li>
                         <li class="nav-item">
@@ -4350,6 +4303,7 @@
                 const currentPath = window.location.pathname;
                 const pathToView = {
                     '/dashboard': 'dashboardView',
+                    '/dashboard.html': 'dashboardView',
                     '/farm-management': 'farmManagementView',
                     '/crop-management': 'cropManagementView',
                     '/livestock-management': 'livestockManagementView',
@@ -4361,9 +4315,13 @@
                     '/team-management': 'teamManagementView',
                     '/reports': 'reportsView'
                 };
-                
-                const viewId = pathToView[currentPath] || 'dashboardView';
-                showView(viewId);
+
+                // Only restore a SPA view from a rewritten path — never hide the
+                // dashboard shell just because the file URL is /dashboard.html.
+                const viewId = pathToView[currentPath];
+                if (viewId && currentPath !== '/dashboard.html' && currentPath !== '/dashboard') {
+                    showView(viewId);
+                }
                 
                 console.log('URL routing initialized for path:', currentPath);
             } catch (error) {
@@ -4538,7 +4496,7 @@
             if (typeof QRCode !== 'undefined') {
                 return true;
             }
-            console.error('❌ QR Code library not available. Check that js/qrcode.min.js exists and is accessible.');
+            console.error('❌ QR Code library not available. Check that vendor/qrcode.js exists and is accessible.');
             return false;
         }
         
@@ -4564,7 +4522,7 @@
                         resolve(true);
                     } else if (Date.now() - startTime >= maxWaitTime) {
                         clearInterval(checkInterval);
-                        console.error('❌ QR Code library load timeout - check file exists at js/qrcode.min.js');
+                        console.error('❌ QR Code library load timeout - check file exists at vendor/qrcode.js');
                         resolve(false);
                     }
                 }, 50); // Check more frequently since it's local
@@ -4583,10 +4541,9 @@
                     
                     if (typeof QRCode === 'undefined') {
                         showErrorDialog(
-                            'QR Code Library Not Available', 
-                            'The QR Code library file (js/qrcode.min.js) is missing or not accessible. ' +
-                            'Please ensure the file exists in the /js/ directory and refresh the page. ' +
-                            'If you are a developer, download the library from: https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js'
+                            'QR Code Library Not Available',
+                            'The QR Code library (vendor/qrcode.js) is missing or did not load. ' +
+                            'QR features are unavailable on this page. Refresh after restoring the local vendor file.'
                         );
                         return;
                     }
@@ -7911,12 +7868,17 @@
                 // Fallback: just show the view
                 document.getElementById('analyticsView').style.display = 'block';
             }
-            // Initialize analytics charts if not already initialized
-            if (!revenueChart || !costChart) {
-                initializeAnalyticsCharts();
-            }
-            // Update charts with current data
-            updateAnalyticsCharts();
+            // Paint the view before Chart.js so the click handler can return on WebKit/mobile.
+            window.requestAnimationFrame(function () {
+                try {
+                    if (!revenueChart || !costChart) {
+                        initializeAnalyticsCharts();
+                    }
+                    updateAnalyticsCharts();
+                } catch (chartError) {
+                    console.error('Error initializing analytics charts:', chartError);
+                }
+            });
         }
 
         function showTasks() {
@@ -8007,7 +7969,6 @@
             console.log('Showing view:', viewId);
             
             try {
-                // Hide all views
                 const views = ['dashboardView', 'farmManagementView', 'cropManagementView', 
                               'livestockManagementView', 'aquacultureManagementView', 'petsManagementView', 'inventoryManagementView', 
                               'analyticsView', 'tasksView', 'teamManagementView', 'reportsView'];
@@ -8015,13 +7976,12 @@
                 views.forEach(id => {
                     const element = document.getElementById(id);
                     if (element) {
-                        element.style.display = 'none';
+                        element.style.display = id === viewId ? 'block' : 'none';
                     } else {
                         console.warn('View element not found:', id);
                     }
                 });
                 
-                // Show selected view
                 const targetView = document.getElementById(viewId);
                 if (targetView) {
                     targetView.style.display = 'block';
@@ -8182,25 +8142,29 @@
             if (window.SmartFarmAPI && window.SmartFarmAPI.showSuccessMessage) {
                 window.SmartFarmAPI.showSuccessMessage(message);
             } else {
-                // Fallback notification
+                // Fallback notification (no Bootstrap Alert — avoid dispose races)
                 const notification = document.createElement('div');
-                notification.className = 'alert alert-success alert-dismissible fade show';
+                notification.className = 'alert alert-success position-fixed';
+                notification.setAttribute('role', 'alert');
                 notification.style.position = 'fixed';
                 notification.style.top = '20px';
                 notification.style.right = '20px';
                 notification.style.zIndex = '9999';
                 notification.innerHTML = `
                     <i class="fas fa-check-circle me-2"></i>${message}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    <button type="button" class="btn-close" aria-label="Close"></button>
                 `;
+                const closeBtn = notification.querySelector('.btn-close');
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', () => {
+                        if (notification.isConnected) notification.remove();
+                    });
+                }
                 
                 document.body.appendChild(notification);
                 
-                // Auto-remove after 3 seconds
                 setTimeout(() => {
-                    if (notification.parentNode) {
-                        notification.parentNode.removeChild(notification);
-                    }
+                    if (notification.isConnected) notification.remove();
                 }, 3000);
             }
         }
@@ -8209,25 +8173,29 @@
             if (window.SmartFarmAPI && window.SmartFarmAPI.showErrorMessage) {
                 window.SmartFarmAPI.showErrorMessage(message);
             } else {
-                // Fallback notification
+                // Fallback notification (no Bootstrap Alert — avoid dispose races)
                 const notification = document.createElement('div');
-                notification.className = 'alert alert-danger alert-dismissible fade show';
+                notification.className = 'alert alert-danger position-fixed';
+                notification.setAttribute('role', 'alert');
                 notification.style.position = 'fixed';
                 notification.style.top = '20px';
                 notification.style.right = '20px';
                 notification.style.zIndex = '9999';
                 notification.innerHTML = `
                     <i class="fas fa-exclamation-circle me-2"></i>${message}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    <button type="button" class="btn-close" aria-label="Close"></button>
                 `;
+                const closeBtn = notification.querySelector('.btn-close');
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', () => {
+                        if (notification.isConnected) notification.remove();
+                    });
+                }
                 
                 document.body.appendChild(notification);
                 
-                // Auto-remove after 5 seconds
                 setTimeout(() => {
-                    if (notification.parentNode) {
-                        notification.parentNode.removeChild(notification);
-                    }
+                    if (notification.isConnected) notification.remove();
                 }, 5000);
             }
         }
@@ -8484,7 +8452,8 @@
 
             livestockGrid.innerHTML = '';
 
-            livestock.forEach(animal => {
+            // Cap DOM rows — large herds stall WebKit when every animal is painted.
+            livestockForDomRender(livestock).forEach(animal => {
                 const animalCard = createLivestockCard(animal);
                 livestockGrid.appendChild(animalCard);
             });
@@ -8618,15 +8587,19 @@
             renderOtherLivestockTab();
         }
 
+        function livestockTypeKey(animal) {
+            return String((animal && (animal.type || animal.species)) || '').toLowerCase();
+        }
+
         function updateLivestockTabCounts() {
             const counts = {
                 all: livestock.length,
-                cattle: livestock.filter(animal => animal.type.toLowerCase() === 'cattle').length,
-                pigs: livestock.filter(animal => animal.type.toLowerCase() === 'pigs').length,
-                poultry: livestock.filter(animal => ['chickens', 'ducks', 'turkeys'].includes(animal.type.toLowerCase())).length,
-                sheepGoats: livestock.filter(animal => ['sheep', 'goats'].includes(animal.type.toLowerCase())).length,
-                horses: livestock.filter(animal => animal.type.toLowerCase() === 'horses').length,
-                other: livestock.filter(animal => !['cattle', 'pigs', 'chickens', 'ducks', 'turkeys', 'sheep', 'goats', 'horses'].includes(animal.type.toLowerCase())).length
+                cattle: livestock.filter(animal => livestockTypeKey(animal) === 'cattle').length,
+                pigs: livestock.filter(animal => livestockTypeKey(animal) === 'pigs').length,
+                poultry: livestock.filter(animal => ['chickens', 'ducks', 'turkeys'].includes(livestockTypeKey(animal))).length,
+                sheepGoats: livestock.filter(animal => ['sheep', 'goats'].includes(livestockTypeKey(animal))).length,
+                horses: livestock.filter(animal => livestockTypeKey(animal) === 'horses').length,
+                other: livestock.filter(animal => !['cattle', 'pigs', 'chickens', 'ducks', 'turkeys', 'sheep', 'goats', 'horses'].includes(livestockTypeKey(animal))).length
             };
 
             // Safe element updates with null checks
@@ -8679,7 +8652,7 @@
                 <td>${animal.location}</td>
                 <td>${gpsDisplay}</td>
                 <td>${lastWeight} kg</td>
-                <td><span class="status-badge status-${animal.status.toLowerCase()}">${animal.status}</span></td>
+                <td><span class="status-badge status-${String(animal.status || animal.healthStatus || 'unknown').toLowerCase()}">${animal.status || animal.healthStatus || 'Unknown'}</span></td>
                 <td>
                     <button class="btn btn-sm btn-outline-primary me-1" onclick="editLivestock(${animal.id})" title="Edit">
                         <i class="fas fa-edit"></i>
@@ -8701,12 +8674,18 @@
             return row;
         }
 
+        const LIVESTOCK_DOM_RENDER_LIMIT = 40;
+
+        function livestockForDomRender(list) {
+            return (Array.isArray(list) ? list : []).slice(0, LIVESTOCK_DOM_RENDER_LIMIT);
+        }
+
         function renderAllLivestockTab() {
             const tbody = document.querySelector('#allLivestockTable');
             if (!tbody) return;
 
             tbody.innerHTML = '';
-            livestock.forEach(animal => {
+            livestockForDomRender(livestock).forEach(animal => {
                 const row = createLivestockRow(animal, true);
                 tbody.appendChild(row);
             });
@@ -8717,8 +8696,8 @@
             if (!tbody) return;
 
             tbody.innerHTML = '';
-            const cattle = livestock.filter(animal => animal.type.toLowerCase() === 'cattle');
-            cattle.forEach(animal => {
+            const cattle = livestock.filter(animal => livestockTypeKey(animal) === 'cattle');
+            livestockForDomRender(cattle).forEach(animal => {
                 const row = createLivestockRow(animal, false);
                 tbody.appendChild(row);
             });
@@ -8729,8 +8708,8 @@
             if (!tbody) return;
 
             tbody.innerHTML = '';
-            const pigs = livestock.filter(animal => animal.type.toLowerCase() === 'pigs');
-            pigs.forEach(animal => {
+            const pigs = livestock.filter(animal => livestockTypeKey(animal) === 'pigs');
+            livestockForDomRender(pigs).forEach(animal => {
                 const row = createLivestockRow(animal, false);
                 tbody.appendChild(row);
             });
@@ -8741,8 +8720,8 @@
             if (!tbody) return;
 
             tbody.innerHTML = '';
-            const poultry = livestock.filter(animal => ['chickens', 'ducks', 'turkeys'].includes(animal.type.toLowerCase()));
-            poultry.forEach(animal => {
+            const poultry = livestock.filter(animal => ['chickens', 'ducks', 'turkeys'].includes(livestockTypeKey(animal)));
+            livestockForDomRender(poultry).forEach(animal => {
                 const row = createLivestockRow(animal, true);
                 tbody.appendChild(row);
             });
@@ -8753,8 +8732,8 @@
             if (!tbody) return;
 
             tbody.innerHTML = '';
-            const sheepGoats = livestock.filter(animal => ['sheep', 'goats'].includes(animal.type.toLowerCase()));
-            sheepGoats.forEach(animal => {
+            const sheepGoats = livestock.filter(animal => ['sheep', 'goats'].includes(livestockTypeKey(animal)));
+            livestockForDomRender(sheepGoats).forEach(animal => {
                 const row = createLivestockRow(animal, true);
                 tbody.appendChild(row);
             });
@@ -8765,8 +8744,8 @@
             if (!tbody) return;
 
             tbody.innerHTML = '';
-            const horses = livestock.filter(animal => animal.type.toLowerCase() === 'horses');
-            horses.forEach(animal => {
+            const horses = livestock.filter(animal => livestockTypeKey(animal) === 'horses');
+            livestockForDomRender(horses).forEach(animal => {
                 const row = createLivestockRow(animal, false);
                 tbody.appendChild(row);
             });
@@ -8777,8 +8756,8 @@
             if (!tbody) return;
 
             tbody.innerHTML = '';
-            const other = livestock.filter(animal => !['cattle', 'pigs', 'chickens', 'ducks', 'turkeys', 'sheep', 'goats', 'horses'].includes(animal.type.toLowerCase()));
-            other.forEach(animal => {
+            const other = livestock.filter(animal => !['cattle', 'pigs', 'chickens', 'ducks', 'turkeys', 'sheep', 'goats', 'horses'].includes(livestockTypeKey(animal)));
+            livestockForDomRender(other).forEach(animal => {
                 const row = createLivestockRow(animal, true);
                 tbody.appendChild(row);
             });
@@ -9077,10 +9056,17 @@
             // Show the static modal using Bootstrap's standard method
             const modal = document.getElementById('dashboardAddLivestockModal');
             if (modal) {
-                const bsModal = new bootstrap.Modal(modal, {
-                    backdrop: 'static',  // Prevent closing by clicking backdrop
-                    keyboard: false      // Prevent closing with ESC key
-                });
+                // Reuse one instance — `new Modal()` on every click leaves stale
+                // instances that ignore hide() during rapid open/close.
+                const bsModal = (window.bootstrap && bootstrap.Modal.getOrCreateInstance)
+                    ? bootstrap.Modal.getOrCreateInstance(modal, {
+                        backdrop: 'static',
+                        keyboard: true
+                    })
+                    : new bootstrap.Modal(modal, {
+                        backdrop: 'static',
+                        keyboard: true
+                    });
                 bsModal.show();
                 
                 // Store modal instance for later use
@@ -10207,10 +10193,16 @@
             const vaccinatedPets = pets.filter(pet => pet.vaccination === 'Up to date').length;
             const totalValue = pets.reduce((sum, pet) => sum + (pet.value || 0), 0);
 
-            document.getElementById('totalPets').textContent = totalPets;
-            document.getElementById('healthyPets').textContent = healthyPets;
-            document.getElementById('vaccinatedPets').textContent = vaccinatedPets;
-            document.getElementById('totalPetsValue').textContent = totalValue.toLocaleString();
+            const setText = (id, value) => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.textContent = value;
+                }
+            };
+            setText('totalPets', totalPets);
+            setText('healthyPets', healthyPets);
+            setText('vaccinatedPets', vaccinatedPets);
+            setText('totalPetsValue', totalValue.toLocaleString());
         }
 
         function getStatusColor(status) {
@@ -14753,31 +14745,9 @@ INVENTORY SUMMARY:
         }
 
         // ===== URL ROUTING AND STATE PERSISTENCE =====
-
-        function initializeURLRouting() {
-            // Check if there's a hash in the URL
-            const hash = window.location.hash.substring(1);
-            
-            if (hash) {
-                // Navigate to the specified view
-                navigateToView(hash);
-            } else {
-                // Check localStorage for last viewed page
-                const lastView = localStorage.getItem('smartfarm_lastView');
-                if (lastView && lastView !== 'dashboardView') {
-                    navigateToView(lastView);
-                } else {
-                    // Default to dashboard
-                    showDashboard();
-                }
-            }
-            
-            // Listen for hash changes
-            window.addEventListener('hashchange', function() {
-                const newHash = window.location.hash.substring(1);
-                navigateToView(newHash);
-            });
-        }
+        // initializeURLRouting is defined once above. A second declaration here
+        // previously overwrote it and restored smartfarm_lastView / hash, which
+        // hid #dashboardView after a real /dashboard.html navigation.
 
         function navigateToView(viewName) {
             // Update URL hash
@@ -15366,8 +15336,29 @@ INVENTORY SUMMARY:
             
             if (!statusIndicator || !statusText) return;
             
-            // Check API status
-            fetch('https://web-production-86d39.up.railway.app/api/health')
+            // Absolute backend health URL only — never allow a Netlify-relative "/api/health".
+            const PRODUCTION_HEALTH =
+                'https://web-production-86d39.up.railway.app/api/health';
+            function resolveSystemHealthUrl() {
+                if (window.SmartFarmApiConfig && window.SmartFarmApiConfig.healthUrl) {
+                    return window.SmartFarmApiConfig.healthUrl;
+                }
+                const origin =
+                    (typeof window.__SMARTFARM_RESOLVE_API_ORIGIN__ === 'function' &&
+                        window.__SMARTFARM_RESOLVE_API_ORIGIN__()) ||
+                    window.__SMARTFARM_API_BASE__ ||
+                    '';
+                const base = String(origin || '')
+                    .trim()
+                    .replace(/\/+$/, '')
+                    .replace(/\/api$/i, '');
+                if (!/^https?:\/\//i.test(base)) {
+                    return PRODUCTION_HEALTH;
+                }
+                return base + '/api/health';
+            }
+            const healthUrl = resolveSystemHealthUrl();
+            fetch(healthUrl)
                 .then(response => {
                     if (response.ok) {
                         statusIndicator.className = 'status-indicator online';
@@ -15404,8 +15395,12 @@ INVENTORY SUMMARY:
         // Check status every 30 seconds
         setInterval(checkSystemStatus, 30000);
 
-        // Add debug panel for authentication issues (only in development)
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        // Add debug panel for authentication issues (localhost only, never during E2E).
+        // The panel is position:fixed z-index 9999 and covers most of an iPhone viewport.
+        if (
+            !window.__SMARTFARM_E2E__ &&
+            (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        ) {
             document.addEventListener('DOMContentLoaded', function() {
                 createDashboardDebugPanel();
             });
@@ -16040,6 +16035,9 @@ INVENTORY SUMMARY:
         // Render feed mix history
         function renderFeedMixHistory() {
             const historyDiv = document.getElementById('feedMixHistory');
+            if (!historyDiv) {
+                return;
+            }
             
             if (feedMixHistory.length === 0) {
                 historyDiv.innerHTML = '<p class="text-muted">No recent feed mixes</p>';
@@ -16066,6 +16064,9 @@ INVENTORY SUMMARY:
         // Render feed mix database table
         function renderFeedMixDatabase() {
             const tbody = document.getElementById('feedMixDatabaseTable');
+            if (!tbody) {
+                return;
+            }
             
             tbody.innerHTML = feedMixDatabase.map(mix => `
                 <tr>
@@ -16095,8 +16096,11 @@ INVENTORY SUMMARY:
 
         // Update feed mix tab count
         function updateFeedMixTabCount() {
-            const count = feedMixDatabase.length;
-            document.getElementById('feed-mix-count').textContent = count;
+            const countEl = document.getElementById('feed-mix-count');
+            if (!countEl) {
+                return;
+            }
+            countEl.textContent = String(feedMixDatabase.length);
         }
 
         // Save feed mix database to localStorage
@@ -16773,31 +16777,40 @@ INVENTORY SUMMARY:
 
         function showNotification(message, type = 'info') {
             const notification = document.createElement('div');
-            notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+            // Avoid Bootstrap Alert auto-dismiss (data-bs-dismiss) — it races with
+            // manual removal during fast view switches and throws in _destroyElement.
+            notification.className = `alert alert-${type} position-fixed`;
+            notification.setAttribute('role', 'alert');
             notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; max-width: 400px;';
             notification.innerHTML = `
                 <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
                 ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <button type="button" class="btn-close" aria-label="Close"></button>
             `;
+            const closeBtn = notification.querySelector('.btn-close');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', () => {
+                    if (notification.isConnected) notification.remove();
+                });
+            }
             
             document.body.appendChild(notification);
             
             setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.parentNode.removeChild(notification);
-                }
+                if (notification.isConnected) notification.remove();
             }, 5000);
         }
 
         // Professional Dialog System
         function showAlert(message, type = 'info', duration = 3000) {
-            // Remove any existing alerts
-            const existingAlerts = document.querySelectorAll('.custom-alert');
-            existingAlerts.forEach(alert => alert.remove());
+            // Remove any existing alerts without Bootstrap dispose races
+            document.querySelectorAll('.custom-alert').forEach((alert) => {
+                if (alert.isConnected) alert.remove();
+            });
             
             const alertDiv = document.createElement('div');
-            alertDiv.className = `custom-alert alert alert-${type} alert-dismissible fade show`;
+            alertDiv.className = `custom-alert alert alert-${type}`;
+            alertDiv.setAttribute('role', 'alert');
             alertDiv.style.cssText = `
                 position: fixed;
                 top: 20px;
@@ -16813,17 +16826,20 @@ INVENTORY SUMMARY:
                 <div class="d-flex align-items-center">
                     <i class="fas fa-${getAlertIcon(type)} me-2"></i>
                     <span>${message}</span>
-                    <button type="button" class="btn-close ms-auto" onclick="this.parentElement.parentElement.remove()"></button>
+                    <button type="button" class="btn-close ms-auto" aria-label="Close"></button>
                 </div>
             `;
+            const closeBtn = alertDiv.querySelector('.btn-close');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', () => {
+                    if (alertDiv.isConnected) alertDiv.remove();
+                });
+            }
             
             document.body.appendChild(alertDiv);
             
-            // Auto remove after duration
             setTimeout(() => {
-                if (alertDiv.parentNode) {
-                    alertDiv.remove();
-                }
+                if (alertDiv.isConnected) alertDiv.remove();
             }, duration);
         }
 
@@ -17910,7 +17926,22 @@ INVENTORY SUMMARY:
             insightsContainer.innerHTML = '<div class="col-12 text-center text-muted"><i class="fas fa-spinner fa-spin me-2"></i>Loading personalized recommendations...</div>';
 
             try {
-                const response = await fetch('/api/recommend?goal=high-yield&limit=3');
+                const apiBase =
+                    (window.SmartFarmAPI && window.SmartFarmAPI.baseURL) ||
+                    (window.SmartFarmConfig && window.SmartFarmConfig.API_BASE_URL) ||
+                    (window.API_CONFIG && window.API_CONFIG.API_BASE_URL) ||
+                    window.__SMARTFARM_API_BASE__ ||
+                    window.VITE_API_BASE_URL ||
+                    '';
+                // Prefer configured API host; never hit relative /api on static preview (browser 404 noise)
+                const recommendUrl = apiBase
+                    ? `${String(apiBase).replace(/\/$/, '')}/api/recommend?goal=high-yield&limit=3`
+                    : null;
+                if (!recommendUrl) {
+                    showLocalInsights(insightsContainer);
+                    return;
+                }
+                const response = await fetch(recommendUrl);
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => ({}));
                     throw new Error(`Request failed with status ${response.status}: ${errorData.error || 'Unknown error'}`);

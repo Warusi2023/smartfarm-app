@@ -49,8 +49,8 @@ Your Netlify frontend deployment issues have been identified and fixed. Here's w
 
 3. **Configure Build Settings**
    - **Base directory**: `web-project`
-   - **Build command**: `npm run build`
-   - **Publish directory**: `web-project/public`
+   - **Build command**: `npm install --include=dev && npm run build`
+   - **Publish directory**: `dist` (relative to base = `web-project/dist`). Never publish raw `public/`.
 
 4. **Set Environment Variables**
    ```
@@ -62,8 +62,8 @@ Your Netlify frontend deployment issues have been identified and fixed. Here's w
    ```
 
 5. **Deploy**
-   - Click "Deploy site"
-   - Netlify will automatically deploy on every push to main branch
+   - Prefer GitHub Actions **`frontend-ci-cd.yml`** (`Deploy to Production`) which publishes `web-project/dist`.
+   - Legacy `.github/workflows/netlify-deploy.yml` is manual-only and must not auto-deploy.
 
 ### **Option 2: Manual Deployment**
 
@@ -75,8 +75,8 @@ Your Netlify frontend deployment issues have been identified and fixed. Here's w
 
 2. **Deploy to Netlify**
    - Go to Netlify dashboard
-   - Drag and drop the `web-project/public` folder
-   - Or use Netlify CLI: `netlify deploy --dir=public`
+   - Drag and drop the `web-project/dist` folder
+   - Or use Netlify CLI: `netlify deploy --dir=dist`
 
 ### **Option 3: Use Netlify CLI**
 
@@ -89,14 +89,14 @@ Your Netlify frontend deployment issues have been identified and fixed. Here's w
    ```bash
    cd web-project
    netlify login
-   netlify deploy --dir=public --prod
+   netlify deploy --dir=dist --prod
    ```
 
 ## 🎯 **Deployment Settings for Netlify:**
 
 ### **Build Settings:**
-- **Build command**: `npm run build`
-- **Publish directory**: `public`
+- **Build command**: `npm install --include=dev && npm run build`
+- **Publish directory**: `dist`
 - **Base directory**: `web-project` (if deploying from root)
 
 ### **Environment Variables:**

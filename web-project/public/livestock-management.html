@@ -4178,7 +4178,8 @@
                 window.ModalValidator.registerModal('addLivestockModal', {
                     requireValidation: true,
                     requiredFields: ['animalSpecies', 'animalBreed', 'animalTag', 'animalSex', 'birthDate', 'animalLocation'],
-                    allowEscapeKey: false,
+                    // Escape must dismiss for keyboard/accessibility; Save still validates required fields
+                    allowEscapeKey: true,
                     allowBackdropClick: false
                 });
                 
@@ -4186,7 +4187,7 @@
                 window.ModalValidator.registerModal('editLivestockModal', {
                     requireValidation: true,
                     requiredFields: ['editAnimalSpecies', 'editAnimalBreed', 'editAnimalTag', 'editAnimalSex', 'editBirthDate', 'editAnimalLocation'],
-                    allowEscapeKey: false,
+                    allowEscapeKey: true,
                     allowBackdropClick: false
                 });
                 
@@ -4194,7 +4195,7 @@
                 window.ModalValidator.registerModal('feedMixCalculatorModal', {
                     requireValidation: true,
                     requiredFields: ['feedMixSpecies', 'feedMixLifecycle', 'feedMixWeight'],
-                    allowEscapeKey: false,
+                    allowEscapeKey: true,
                     allowBackdropClick: false
                 });
                 

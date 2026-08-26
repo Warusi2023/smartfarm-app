@@ -1215,7 +1215,8 @@ class SmartFarmAPIService {
 
     showErrorMessage(message) {
         if (window.showNotification) {
-            window.showNotification(message, 'error');
+            // Bootstrap alert variants use "danger", not "error"
+            window.showNotification(message, 'danger');
         } else {
             alert(message);
         }

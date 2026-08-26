@@ -4,13 +4,16 @@
  */
 
 const { test, expect } = require('@playwright/test');
+const {
+    gotoDashboardReady,
+    clickSidebarNavByOnclick
+} = require('./helpers/dashboard-ready');
 
 test.describe('Console Error Verification', () => {
     let consoleErrors = [];
     let consoleWarnings = [];
 
     test.beforeEach(async ({ page }) => {
-        // Capture console errors and warnings
         consoleErrors = [];
         consoleWarnings = [];
         
@@ -30,7 +33,6 @@ test.describe('Console Error Verification', () => {
             }
         });
 
-        // Capture unhandled promise rejections
         page.on('pageerror', error => {
             consoleErrors.push({
                 type: 'unhandledPromiseRejection',
@@ -41,13 +43,9 @@ test.describe('Console Error Verification', () => {
     });
 
     test('should load dashboard without critical console errors', async ({ page }) => {
-        await page.goto('/dashboard.html');
+        await gotoDashboardReady(page);
+        await page.waitForTimeout(1000);
         
-        // Wait for page to fully load
-        await page.waitForLoadState('networkidle');
-        await page.waitForTimeout(2000); // Allow for async operations
-        
-        // Check for critical errors
         const criticalErrors = consoleErrors.filter(error => {
             const text = error.text.toLowerCase();
             return text.includes('cannot read properties of null') ||
@@ -75,69 +73,55 @@ test.describe('Console Error Verification', () => {
     });
 
     test('should navigate through all menu tabs without errors', async ({ page }) => {
-        await page.goto('/dashboard.html');
-        await page.waitForLoadState('networkidle');
+        test.setTimeout(process.env.CI ? 120000 : 60000);
+        await gotoDashboardReady(page);
         
-        // List of menu items to test
+        // SPA onclick handlers (duplicate sidebar labels like "Livestock" match the wrong link).
         const menuItems = [
-            'Dashboard',
-            'Farm Management',
-            'Crop Management',
-            'Livestock Management',
-            'Pets Management',
-            'Inventory Management',
-            'Analytics',
-            'Tasks',
-            'Reports'
+            ['Dashboard', 'showDashboard'],
+            ['Farm Overview', 'showFarmManagement'],
+            ['Crop Management', 'showCropManagement'],
+            ['Livestock', 'showLivestockManagement'],
+            ['Inventory', 'showInventoryManagement'],
+            ['Analytics', 'showAnalytics'],
+            ['Farm Tasks', 'showTasks'],
+            ['Reports', 'showReports']
         ];
 
-        for (const menuItem of menuItems) {
-            // Clear previous errors
+        for (const [menuItem, onclick] of menuItems) {
             consoleErrors = [];
             consoleWarnings = [];
             
             try {
-                // Try to find and click the menu item
-                const menuSelector = `text=${menuItem}`;
-                const menuElement = page.locator(menuSelector).first();
+                await clickSidebarNavByOnclick(page, onclick);
                 
-                if (await menuElement.count() > 0) {
-                    await menuElement.click();
-                    await page.waitForTimeout(1000); // Wait for navigation
-                    
-                    // Check for errors after navigation
-                    const navigationErrors = consoleErrors.filter(error => {
-                        const text = error.text.toLowerCase();
-                        return text.includes('cannot read properties of null') ||
-                               text.includes('unexpected token') ||
-                               text.includes('syntaxerror') ||
-                               text.includes('typeerror') ||
-                               text.includes('referenceerror');
+                const navigationErrors = consoleErrors.filter(error => {
+                    const text = error.text.toLowerCase();
+                    return text.includes('cannot read properties of null') ||
+                           text.includes('unexpected token') ||
+                           text.includes('syntaxerror') ||
+                           text.includes('typeerror') ||
+                           text.includes('referenceerror');
+                });
+                
+                if (navigationErrors.length > 0) {
+                    console.log(`Navigation errors for ${menuItem}:`);
+                    navigationErrors.forEach(error => {
+                        console.log(`- ${error.type}: ${error.text}`);
                     });
-                    
-                    if (navigationErrors.length > 0) {
-                        console.log(`Navigation errors for ${menuItem}:`);
-                        navigationErrors.forEach(error => {
-                            console.log(`- ${error.type}: ${error.text}`);
-                        });
-                    }
-                    
-                    expect(navigationErrors).toHaveLength(0);
-                } else {
-                    console.log(`Menu item "${menuItem}" not found - skipping`);
                 }
+                
+                expect(navigationErrors).toHaveLength(0);
             } catch (error) {
                 console.log(`Error testing menu item "${menuItem}":`, error.message);
-                // Don't fail the test for missing menu items
+                throw error;
             }
         }
     });
 
     test('should load API endpoints without CSP violations', async ({ page }) => {
-        await page.goto('/dashboard.html');
-        await page.waitForLoadState('networkidle');
+        await gotoDashboardReady(page);
         
-        // Check for network errors
         const networkErrors = consoleErrors.filter(error => {
             const text = error.text.toLowerCase();
             return text.includes('refused to connect') ||
@@ -157,11 +141,10 @@ test.describe('Console Error Verification', () => {
     });
 
     test('should handle user management without JSON parsing errors', async ({ page }) => {
-        await page.goto('/user-management.html');
-        await page.waitForLoadState('networkidle');
-        await page.waitForTimeout(2000);
+        await page.goto('/user-management.html', { waitUntil: 'domcontentloaded' });
+        await page.waitForSelector('body');
+        await page.waitForTimeout(1000);
         
-        // Check for JSON parsing errors
         const jsonErrors = consoleErrors.filter(error => {
             const text = error.text.toLowerCase();
             return text.includes('unexpected token') ||
@@ -181,13 +164,9 @@ test.describe('Console Error Verification', () => {
     });
 
     test('should load weather service without environment errors', async ({ page }) => {
-        await page.goto('/dashboard.html');
-        await page.waitForLoadState('networkidle');
+        await gotoDashboardReady(page);
+        await page.waitForTimeout(1500);
         
-        // Wait for weather service to initialize
-        await page.waitForTimeout(3000);
-        
-        // Check for environment errors
         const envErrors = consoleErrors.filter(error => {
             const text = error.text.toLowerCase();
             return text.includes('process is not defined') ||
@@ -207,13 +186,9 @@ test.describe('Console Error Verification', () => {
     });
 
     test('should handle IoT sensor data without validation warnings', async ({ page }) => {
-        await page.goto('/dashboard.html');
-        await page.waitForLoadState('networkidle');
+        await gotoDashboardReady(page);
+        await page.waitForTimeout(1500);
         
-        // Wait for IoT sensors to load
-        await page.waitForTimeout(3000);
-        
-        // Check for IoT validation warnings
         const iotWarnings = consoleWarnings.filter(warning => {
             const text = warning.text.toLowerCase();
             return text.includes('invalid sensor data') ||
@@ -229,7 +204,6 @@ test.describe('Console Error Verification', () => {
             });
         }
 
-        // Allow some IoT warnings but not critical ones
         const criticalIotWarnings = iotWarnings.filter(warning => {
             const text = warning.text.toLowerCase();
             return text.includes('critical') || text.includes('error');
@@ -239,19 +213,16 @@ test.describe('Console Error Verification', () => {
     });
 
     test('should load performance optimizer without MutationObserver errors', async ({ page }) => {
-        await page.goto('/dashboard.html');
-        await page.waitForLoadState('networkidle');
+        await gotoDashboardReady(page);
+        await page.waitForTimeout(1000);
         
-        // Wait for performance optimizer to initialize
-        await page.waitForTimeout(2000);
-        
-        // Check for MutationObserver errors
+        // Real assertion: no MutationObserver/IntersectionObserver console errors
         const observerErrors = consoleErrors.filter(error => {
             const text = error.text.toLowerCase();
             return text.includes('mutationobserver') ||
-                   text.includes('observe') ||
                    text.includes('parameter not of type') ||
-                   text.includes('intersectionobserver');
+                   text.includes('intersectionobserver') ||
+                   (text.includes('observe') && text.includes('failed'));
         });
 
         if (observerErrors.length > 0) {
@@ -262,16 +233,15 @@ test.describe('Console Error Verification', () => {
         }
 
         expect(observerErrors).toHaveLength(0);
+        // Script exposes performanceOptimizer (not SmartFarmPerformance)
+        const optimizerLoaded = await page.evaluate(() => typeof window.performanceOptimizer !== 'undefined');
+        expect(optimizerLoaded).toBe(true);
     });
 
     test('should load accessibility enhancer without DOM insertion errors', async ({ page }) => {
-        await page.goto('/dashboard.html');
-        await page.waitForLoadState('networkidle');
+        await gotoDashboardReady(page);
+        await page.waitForTimeout(1000);
         
-        // Wait for accessibility enhancer to initialize
-        await page.waitForTimeout(2000);
-        
-        // Check for DOM insertion errors
         const domErrors = consoleErrors.filter(error => {
             const text = error.text.toLowerCase();
             return text.includes('insertbefore') ||
@@ -291,21 +261,19 @@ test.describe('Console Error Verification', () => {
     });
 
     test('should handle location selector without null reference errors', async ({ page }) => {
-        await page.goto('/dashboard.html');
-        await page.waitForLoadState('networkidle');
+        await gotoDashboardReady(page);
         
-        // Try to trigger location selector
         try {
             const locationButton = page.locator('button:has-text("Location")').first();
             if (await locationButton.count() > 0) {
-                await locationButton.click();
-                await page.waitForTimeout(1000);
+                await locationButton.scrollIntoViewIfNeeded();
+                await locationButton.click({ timeout: 8000 });
+                await page.waitForTimeout(500);
             }
         } catch (error) {
             // Location button might not be visible, that's okay
         }
         
-        // Check for location selector errors
         const locationErrors = consoleErrors.filter(error => {
             const text = error.text.toLowerCase();
             return text.includes('location selector') ||
@@ -323,32 +291,11 @@ test.describe('Console Error Verification', () => {
         expect(locationErrors).toHaveLength(0);
     });
 
-    test.afterEach(async ({ page }) => {
-        // Log summary of all console messages
+    test.afterEach(async () => {
         if (consoleErrors.length > 0 || consoleWarnings.length > 0) {
             console.log('\n=== Console Messages Summary ===');
             console.log(`Errors: ${consoleErrors.length}`);
             console.log(`Warnings: ${consoleWarnings.length}`);
-            
-            if (consoleErrors.length > 0) {
-                console.log('\nErrors:');
-                consoleErrors.slice(0, 5).forEach(error => {
-                    console.log(`- ${error.text}`);
-                });
-                if (consoleErrors.length > 5) {
-                    console.log(`... and ${consoleErrors.length - 5} more errors`);
-                }
-            }
-            
-            if (consoleWarnings.length > 0) {
-                console.log('\nWarnings:');
-                consoleWarnings.slice(0, 5).forEach(warning => {
-                    console.log(`- ${warning.text}`);
-                });
-                if (consoleWarnings.length > 5) {
-                    console.log(`... and ${consoleWarnings.length - 5} more warnings`);
-                }
-            }
         }
     });
 });

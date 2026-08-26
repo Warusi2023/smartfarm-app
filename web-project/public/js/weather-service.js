@@ -443,9 +443,14 @@ class WeatherService {
     subscribe(callback) {
         this.callbacks.push(callback);
         
-        // If we already have weather data, call the callback immediately
-        if (this.weatherData) {
-            callback(this.weatherData);
+        // Only invoke immediately when observations exist. Never call with null —
+        // subscribers must not throw on incomplete payloads.
+        if (this.weatherData && this.weatherData.current) {
+            try {
+                callback(this.weatherData);
+            } catch (error) {
+                console.error('Error in weather subscriber callback:', error);
+            }
         }
     }
 
@@ -454,6 +459,10 @@ class WeatherService {
     }
 
     notifySubscribers() {
+        // Skip notification until a usable payload exists (avoids null location crashes).
+        if (!this.weatherData || !this.weatherData.current) {
+            return;
+        }
         this.callbacks.forEach(callback => {
             try {
                 callback(this.weatherData);

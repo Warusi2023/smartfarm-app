@@ -65,9 +65,10 @@ With a valid JWT:
 
 ### 3.1 Build and deploy
 
-- [ ] Trigger Netlify deploy from latest `main`.
+- [ ] Trigger Netlify deploy from latest `main` via **`.github/workflows/frontend-ci-cd.yml`** (`Deploy to Production`). That is the **only** automatic production Netlify path.
 - [ ] Confirm build succeeded (no JS bundle errors).
 - [ ] Confirm publish directory is **`web-project/dist`** (Vite build), not raw `public/` only.
+- [ ] Confirm legacy **`.github/workflows/netlify-deploy.yml`** did **not** run automatically (it is `workflow_dispatch` only) so raw `public` cannot overwrite `dist`.
 
 ### 3.2 Frontend smoke tests
 
@@ -123,9 +124,9 @@ In a fresh browser session (or private window):
 | Item | Detail |
 |------|--------|
 | **Production API** | `https://web-production-86d39.up.railway.app` — origin only in `web-project/.env.production` / `netlify.toml` (no `/api` suffix on env vars). |
-| **Netlify** | `web-project/netlify.toml` — `npm run build` → publish **`dist/`**; `/api/*` proxies to Railway. |
+| **Netlify** | `web-project/netlify.toml` — `npm run build` → publish **`dist/`**; `/api/*` proxies to Railway. Automatic production deploy: **`frontend-ci-cd.yml` only**. |
 | **Deploy order** | **Railway first** (migrations + API), **Netlify second** (frontend that calls new routes). |
-| **CI** | `.github/workflows/web-quality-gates.yml` — Vite build + `dist/index.html` + Playwright. |
+| **CI** | `.github/workflows/web-quality-gates.yml` — Vite build + `dist/index.html` + Playwright. `.github/workflows/netlify-deploy.yml` is manual-only and must not publish raw `public/`. |
 
 ### GO if…
 

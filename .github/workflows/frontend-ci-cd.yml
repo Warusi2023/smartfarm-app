@@ -16,81 +16,186 @@ env:
 
 jobs:
   test:
-    name: Test Frontend
+    name: Test Frontend (${{ matrix.artifact }})
     runs-on: ubuntu-latest
-    
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - project: chromium
+            artifact: chromium
+          - project: firefox
+            artifact: firefox
+          - project: webkit
+            artifact: webkit
+          - project: Mobile Chrome
+            artifact: mobile-chrome
+          - project: Mobile Safari
+            artifact: mobile-safari
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
+
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: ${{ env.NODE_VERSION }}
         cache: 'npm'
         cache-dependency-path: web-project/package-lock.json
-        
+
     - name: Install dependencies
       working-directory: ./web-project
-      run: npm ci
-      
+      run: npm ci --include=dev
+
     - name: Run linting
       working-directory: ./web-project
       run: npm run lint:check || echo "Linting not configured"
-      
+
     - name: Check code formatting
       working-directory: ./web-project
       run: npm run format:check || echo "Formatting not configured"
-      
+
     - name: Install Playwright browsers
       working-directory: ./web-project
-      run: npx playwright install --with-deps
-      
-    - name: Run E2E tests
+      run: ./node_modules/.bin/playwright install --with-deps
+
+    - name: Run E2E tests (${{ matrix.project }})
       working-directory: ./web-project
-      run: npm run test
-      
+      env:
+        CI: true
+        PW_SHARD: ${{ matrix.artifact }}
+        # Local mock API started by playwright.config.js webServer (not Railway)
+        SMARTFARM_API_BASE: http://127.0.0.1:3099
+        PLAYWRIGHT_API_BASE: http://127.0.0.1:3099
+        PLAYWRIGHT_API_PORT: '3099'
+        PLAYWRIGHT_API_HOST: 127.0.0.1
+        VITE_API_BASE_URL: http://127.0.0.1:3099
+        VITE_API_URL: http://127.0.0.1:3099
+      run: |
+        echo "Playwright shard/project: ${{ matrix.project }} (artifact=${{ matrix.artifact }})"
+        echo "SMARTFARM_API_BASE=$SMARTFARM_API_BASE"
+        ./node_modules/.bin/playwright test --project="${{ matrix.project }}"
+
     - name: Upload test results
       uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: frontend-test-results
+        name: frontend-test-results-${{ matrix.artifact }}
         path: web-project/test-results/
-        
+        if-no-files-found: ignore
+
     - name: Upload test report
       uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: frontend-test-report
+        name: frontend-test-report-${{ matrix.artifact }}
         path: web-project/playwright-report/
+        if-no-files-found: ignore
 
-  accessibility-test:
-    name: Accessibility Testing
+    - name: Upload blob report
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: frontend-blob-report-${{ matrix.artifact }}
+        path: web-project/blob-report/
+        if-no-files-found: ignore
+
+    - name: Upload Playwright traces on failure
+      uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: frontend-playwright-traces-${{ matrix.artifact }}
+        path: web-project/test-results/**/trace.zip
+        if-no-files-found: ignore
+
+    - name: Upload E2E server logs
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: frontend-e2e-server-logs-${{ matrix.artifact }}
+        path: web-project/test-results/e2e-server-logs/
+        if-no-files-found: ignore
+
+  test-report:
+    name: Merge Playwright reports
     runs-on: ubuntu-latest
-    
+    needs: [test]
+    if: always()
+    timeout-minutes: 15
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
+
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: ${{ env.NODE_VERSION }}
         cache: 'npm'
         cache-dependency-path: web-project/package-lock.json
-        
+
     - name: Install dependencies
       working-directory: ./web-project
-      run: npm ci
-      
+      run: npm ci --include=dev
+
+    - name: Download blob reports
+      uses: actions/download-artifact@v4
+      with:
+        pattern: frontend-blob-report-*
+        path: web-project/all-blob-reports
+        merge-multiple: true
+
+    - name: Merge reports
+      working-directory: ./web-project
+      run: |
+        echo "Merging Playwright blob reports from all browser projects"
+        ./node_modules/.bin/playwright merge-reports --reporter html ./all-blob-reports
+
+    - name: Upload merged report
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: frontend-test-report-merged
+        path: web-project/playwright-report/
+        if-no-files-found: ignore
+
+  accessibility-test:
+    name: Accessibility Testing
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: web-project/package-lock.json
+
+    - name: Install dependencies
+      working-directory: ./web-project
+      run: npm ci --include=dev
+
     - name: Install Playwright browsers
       working-directory: ./web-project
-      run: npx playwright install --with-deps
-      
+      run: ./node_modules/.bin/playwright install --with-deps
+
     - name: Run accessibility tests
       working-directory: ./web-project
-      run: npx playwright test --grep="accessibility"
-      
+      env:
+        CI: true
+        SMARTFARM_API_BASE: http://127.0.0.1:3099
+        PLAYWRIGHT_API_BASE: http://127.0.0.1:3099
+        PLAYWRIGHT_API_PORT: '3099'
+        PLAYWRIGHT_API_HOST: 127.0.0.1
+        VITE_API_BASE_URL: http://127.0.0.1:3099
+        VITE_API_URL: http://127.0.0.1:3099
+      run: ./node_modules/.bin/playwright test --grep="accessibility"
+
     - name: Upload accessibility report
       uses: actions/upload-artifact@v4
       if: always()
@@ -101,30 +206,39 @@ jobs:
   performance-test:
     name: Performance Testing
     runs-on: ubuntu-latest
-    
+    timeout-minutes: 30
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
+
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: ${{ env.NODE_VERSION }}
         cache: 'npm'
         cache-dependency-path: web-project/package-lock.json
-        
+
     - name: Install dependencies
       working-directory: ./web-project
-      run: npm ci
-      
+      run: npm ci --include=dev
+
     - name: Install Playwright browsers
       working-directory: ./web-project
-      run: npx playwright install --with-deps
-      
+      run: ./node_modules/.bin/playwright install --with-deps
+
     - name: Run performance tests
       working-directory: ./web-project
-      run: npx playwright test --grep="performance"
-      
+      env:
+        CI: true
+        SMARTFARM_API_BASE: http://127.0.0.1:3099
+        PLAYWRIGHT_API_BASE: http://127.0.0.1:3099
+        PLAYWRIGHT_API_PORT: '3099'
+        PLAYWRIGHT_API_HOST: 127.0.0.1
+        VITE_API_BASE_URL: http://127.0.0.1:3099
+        VITE_API_URL: http://127.0.0.1:3099
+      run: ./node_modules/.bin/playwright test --grep="performance"
+
     - name: Upload performance report
       uses: actions/upload-artifact@v4
       if: always()
@@ -136,18 +250,18 @@ jobs:
     name: Build Frontend
     runs-on: ubuntu-latest
     needs: [test, accessibility-test, performance-test]
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
+
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: ${{ env.NODE_VERSION }}
         cache: 'npm'
         cache-dependency-path: web-project/package-lock.json
-        
+
     - name: Install dependencies
       working-directory: ./web-project
       run: npm ci
@@ -181,11 +295,11 @@ jobs:
     needs: [build]
     if: github.ref == 'refs/heads/develop'
     environment: staging
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
+
     - name: Download build artifacts
       uses: actions/download-artifact@v4
       with:
@@ -216,11 +330,11 @@ jobs:
     needs: [build]
     if: github.ref == 'refs/heads/main'
     environment: production
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
+
     - name: Download build artifacts
       uses: actions/download-artifact@v4
       with:
@@ -243,7 +357,7 @@ jobs:
       env:
         NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
         NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-        
+
     - name: Health check
       run: |
         sleep 30
@@ -254,16 +368,16 @@ jobs:
     runs-on: ubuntu-latest
     needs: [deploy-production]
     if: github.ref == 'refs/heads/main'
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
+
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: ${{ env.NODE_VERSION }}
-        
+
     - name: Run Lighthouse CI
       uses: treosh/lighthouse-ci-action@v10
       with:
@@ -279,7 +393,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [deploy-staging, deploy-production, lighthouse-audit]
     if: always()
-    
+
     steps:
     - name: Notify Slack
       uses: 8398a7/action-slack@v3

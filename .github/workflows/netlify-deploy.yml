@@ -1,58 +1,63 @@
-name: Deploy to Netlify
+# LEGACY / MANUAL-ONLY
+#
+# Production Netlify deploys are owned solely by frontend-ci-cd.yml
+# (build Vite → publish web-project/dist).
+#
+# This workflow used to run on every push to main and publish raw
+# web-project/public, which could overwrite the intended dist artifact
+# (last-write-wins) and drop postbuild redirects such as dist/_redirects.
+#
+# It is now workflow_dispatch only so it cannot race production deploys.
+# If run manually, it builds and publishes web-project/dist — never raw public.
+
+name: Deploy to Netlify (manual / legacy)
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
+    defaults:
+      run:
+        working-directory: web-project
+
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
-      
+      uses: actions/checkout@v4
+
     - name: Setup Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: '18'
+        cache: npm
+        cache-dependency-path: web-project/package-lock.json
 
-    - name: Verify static publish directory
-      run: |
-        # Static web assets live under web-project/public (not repo-root public/).
-        test -d web-project/public || (echo "❌ web-project/public missing" && exit 1)
-        test -f web-project/public/index.html || (echo "❌ index.html missing" && exit 1)
-        test -f web-project/public/livestock-management.html || (echo "❌ livestock-management.html missing" && exit 1)
-        echo "✅ Publish directory web-project/public OK"
-        
     - name: Install dependencies
+      run: npm ci --include=dev
+
+    - name: Production build (Vite → dist)
+      run: npm run build
+      env:
+        CI: true
+        VITE_API_URL: https://web-production-86d39.up.railway.app
+        VITE_API_BASE_URL: https://web-production-86d39.up.railway.app
+
+    - name: Verify dist artifact
       run: |
-        if [ -f package.json ]; then
-          npm ci
-        fi
-        
-    - name: Build (if needed)
-      run: |
-        if [ -f package.json ] && [ -f netlify.toml ]; then
-          # Check if build command is needed
-          if grep -q "command.*npm run build" netlify.toml; then
-            npm run build
-          else
-            echo "No build command needed - serving static files"
-          fi
-        fi
-        
-    - name: Deploy to Netlify
+        test -f dist/index.html || (echo "❌ dist/index.html missing after Vite build" && exit 1)
+        test -f dist/_redirects || (echo "❌ dist/_redirects missing after postbuild" && exit 1)
+        echo "✅ Publish directory web-project/dist OK"
+
+    - name: Deploy to Netlify (dist only)
       uses: nwtgck/actions-netlify@v2.0
       with:
-        # Confirmed path: web-project/public (contains index.html, livestock-management.html, etc.)
-        publish-dir: './web-project/public'
+        # Production artifact is Vite output — never raw web-project/public.
+        publish-dir: './web-project/dist'
         production-branch: main
         github-token: ${{ secrets.GITHUB_TOKEN }}
-        deploy-message: "Deploy from GitHub Actions - ${{ github.event.head_commit.message }}"
+        deploy-message: "Manual Netlify deploy (dist) from GitHub Actions"
       env:
         NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
         NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-      timeout-minutes: 1
+      timeout-minutes: 5
